@@ -206,7 +206,7 @@ func (s *GetExistingReleaseSuite) TestNoReleases() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.NoError(t, err)
 }
@@ -215,7 +215,7 @@ func (s *GetExistingReleaseSuite) TestNoRepo() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.Error(t, err)
 }
@@ -227,7 +227,7 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 	httpmock.RegisterResponder("GET", s.releasesURL, resp)
 
-	result, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.NotNil(t, result)
 	require.Equal(t, *result, release)
 	require.NoError(t, err)
@@ -422,32 +422,27 @@ func TestGiteaCreateReleaseSuite(t *testing.T) {
 type GiteaUploadSuite struct {
 	GiteaReleasesTestSuite
 	artifact              *artifact.Artifact
-	file                  *os.File
 	releaseAttachmentsURL string
 }
 
 func (s *GiteaUploadSuite) SetupTest() {
 	t := s.T()
 	s.GiteaReleasesTestSuite.SetupTest()
-	s.artifact = &artifact.Artifact{Name: "ArtifactName"}
 	file, err := os.CreateTemp(t.TempDir(), "gitea_test_tempfile")
 	require.NoError(t, err)
 	require.NotNil(t, file)
-	t.Cleanup(func() {
-		_ = file.Close()
-	})
-	s.file = file
+	_ = file.Close()
+	s.artifact = &artifact.Artifact{Name: "ArtifactName", Path: file.Name()}
 	s.releaseAttachmentsURL = fmt.Sprintf("%v/assets", s.releaseURL)
 }
 
 func (s *GiteaUploadSuite) TearDownTest() {
 	s.GiteaReleasesTestSuite.TearDownTest()
-	s.Require().NoError(s.file.Close())
 }
 
 func (s *GiteaUploadSuite) TestErrorParsingReleaseID() {
 	t := s.T()
-	err := s.client.Upload(s.ctx, "notint", s.artifact, s.file)
+	err := s.client.Upload(s.ctx, "notint", s.artifact)
 	require.EqualError(t, err, "strconv.ParseInt: parsing \"notint\": invalid syntax")
 }
 
@@ -455,7 +450,7 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 	t := s.T()
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, httpmock.NewStringResponder(400, ""))
 
-	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
+	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.ErrorContains(t, err, "unknown API error: 400")
 }
 
@@ -466,7 +461,7 @@ func (s *GiteaUploadSuite) TestSuccess() {
 	require.NoError(t, err)
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, resp)
 
-	err = s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
+	err = s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.NoError(t, err)
 }
 

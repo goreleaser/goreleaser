@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -290,12 +291,10 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}
 
-	// Handle the artifact
-	asset, err := assetOpen(kind, artifact)
-	if err != nil {
-		return err
+	// Validate the artifact is not a directory before doing any other work.
+	if s, err := os.Stat(artifact.Path); err == nil && s.IsDir() {
+		return fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
-	defer asset.ReadCloser.Close()
 
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
@@ -328,7 +327,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		WithField("file", artifact.Name).
 		Info("uploading")
 
-	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, asset, check)
+	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, kind, artifact, check)
 	if err != nil {
 		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
 	}
@@ -340,13 +339,27 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 }
 
 // uploadAssetToServer uploads the asset file to target.
-func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
-	req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
-	if err != nil {
-		return nil, err
-	}
+func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, kind string, artifact *artifact.Artifact, check ResponseChecker) (*h.Response, error) {
+	var resp *h.Response
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
+		a, err := assetOpen(kind, artifact)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		defer a.ReadCloser.Close()
 
-	return executeHTTPRequest(ctx, upload, req, check)
+		req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+
+		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by executeHTTPRequest
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		return nil
+	}, retryx.IsRetriable)
+	return resp, err
 }
 
 // newUploadRequest creates a new h.Request for uploading.

@@ -8,6 +8,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/slack-go/slack"
@@ -71,7 +72,9 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Attachments: attachments,
 	}
 
-	return slack.PostWebhook(cfg.Webhook, wm)
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		return slack.PostWebhook(cfg.Webhook, wm)
+	}, retryx.IsNetworkError)
 }
 
 func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attachment, error) {

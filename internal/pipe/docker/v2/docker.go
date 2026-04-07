@@ -15,17 +15,17 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/redact"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -85,9 +85,15 @@ func (Base) Default(ctx *context.Context) error {
 		if docker.SBOM == "" {
 			docker.SBOM = "true"
 		}
-		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
-		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
-		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
+		if docker.Retry.Attempts > 0 ||
+			docker.Retry.MaxDelay > 0 ||
+			docker.Retry.Delay > 0 {
+			deprecate.Notice(ctx, "dockers_v2.retry")
+		}
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, ctx.Config.Retry.Attempts)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, ctx.Config.Retry.Delay)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, ctx.Config.Retry.MaxDelay)
+
 		ids.Inc(docker.ID)
 	}
 	return ids.Validate()
@@ -224,7 +230,9 @@ func appendDigest(images []string, digest string) []string {
 }
 
 func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
-	if err := retry.Do(
+	if err := retryx.Do(
+		ctx,
+		d.Retry,
 		func() error {
 			log.WithField("arg", arg).
 				Debug("running docker build")
@@ -260,11 +268,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			}
 			return nil
 		},
-		retry.RetryIf(isRetriableManifestCreate),
-		retry.Attempts(d.Retry.Attempts),
-		retry.Delay(d.Retry.Delay),
-		retry.MaxDelay(d.Retry.MaxDelay),
-		retry.LastErrorOnly(true),
+		isRetriableManifestCreate,
 	); err != nil {
 		return "", err
 	}

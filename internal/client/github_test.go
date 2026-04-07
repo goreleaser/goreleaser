@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -157,7 +156,7 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 
 	require.EqualError(
 		t,
-		client.Upload(ctx, "blah", &artifact.Artifact{}, nil),
+		client.Upload(ctx, "blah", &artifact.Artifact{}),
 		`strconv.ParseInt: parsing "blah": invalid syntax`,
 	)
 }
@@ -285,6 +284,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL,
 		},
+		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
@@ -1299,6 +1299,7 @@ func TestGitHubAuthorsLookup(t *testing.T) {
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL,
 		},
+		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
@@ -1652,10 +1653,9 @@ func TestGitHubUploadReplaceExisting(t *testing.T) {
 	f, err := os.CreateTemp(t.TempDir(), "upload-test")
 	require.NoError(t, err)
 	fmt.Fprint(f, "test content")
-	_, err = f.Seek(0, 0)
-	require.NoError(t, err)
-	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt"}, f)
-	require.ErrorAs(t, err, &RetriableError{})
+	require.NoError(t, f.Close())
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
+	require.Error(t, err)
 }
 
 func TestGitHubUploadNoReplace(t *testing.T) {
@@ -1684,11 +1684,9 @@ func TestGitHubUploadNoReplace(t *testing.T) {
 	f, err := os.CreateTemp(t.TempDir(), "upload-test")
 	require.NoError(t, err)
 	fmt.Fprint(f, "test content")
-	_, err = f.Seek(0, 0)
-	require.NoError(t, err)
-	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt"}, f)
+	require.NoError(t, f.Close())
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
 	require.Error(t, err)
-	require.False(t, errors.As(err, &RetriableError{}))
 }
 
 func TestHeadString(t *testing.T) {
@@ -2524,7 +2522,7 @@ func TestGitHubUploadParseError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.Upload(ctx, "not-a-number", &artifact.Artifact{}, nil)
+	err = client.Upload(ctx, "not-a-number", &artifact.Artifact{})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "parsing")
 }

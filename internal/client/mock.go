@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 
@@ -35,7 +34,6 @@ type Mock struct {
 	ReleasePublished     bool
 	UploadedFileNames    []string
 	UploadedFilePaths    map[string]string
-	FailFirstUpload      bool
 	Lock                 sync.Mutex
 	ClosedMilestone      string
 	FailToCloseMilestone bool
@@ -106,23 +104,19 @@ func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, con
 	return nil
 }
 
-func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact, file *os.File) error {
+func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact) error {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
 	if c.UploadedFilePaths == nil {
 		c.UploadedFilePaths = map[string]string{}
 	}
 	// ensure file is read to better mimic real behavior
-	_, err := io.ReadAll(file)
+	_, err := os.ReadFile(artifact.Path)
 	if err != nil {
 		return fmt.Errorf("unexpected error: %w", err)
 	}
 	if c.FailToUpload {
 		return errors.New("upload failed")
-	}
-	if c.FailFirstUpload {
-		c.FailFirstUpload = false
-		return RetriableError{Err: errors.New("upload failed, should retry")}
 	}
 	c.UploadedFile = true
 	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)

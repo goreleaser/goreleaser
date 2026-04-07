@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -94,38 +95,41 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Transport: customTransport,
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
-	if err != nil {
-		return err
-	}
-	req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
-	req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
+		req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
 
-	if cfg.BasicAuthHeader != "" {
-		log.Debugf("set basic auth header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BasicAuthHeader)
-	} else if cfg.BearerTokenHeader != "" {
-		log.Debugf("set bearer token header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BearerTokenHeader)
-	}
+		if cfg.BasicAuthHeader != "" {
+			log.Debugf("set basic auth header")
+			req.Header.Add(AuthorizationHeaderKey, cfg.BasicAuthHeader)
+		} else if cfg.BearerTokenHeader != "" {
+			log.Debugf("set bearer token header")
+			req.Header.Add(AuthorizationHeaderKey, cfg.BearerTokenHeader)
+		}
 
-	for key, value := range ctx.Config.Announce.Webhook.Headers {
-		log.Debugf("Header Key %s / Value %s", key, value)
-		req.Header.Add(key, value)
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		for key, value := range ctx.Config.Announce.Webhook.Headers {
+			log.Debugf("Header Key %s / Value %s", key, value)
+			req.Header.Add(key, value)
+		}
 
-	if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
-		_, _ = io.Copy(io.Discard, resp.Body)
-		return fmt.Errorf("request failed with status %v", resp.Status)
-	}
+		resp, err := client.Do(req)
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
-	log.Infof("Post OK: '%v'", resp.StatusCode)
-	log.Infof("Response : %v\n", string(body))
-	return nil
+		if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
+			_, _ = io.Copy(io.Discard, resp.Body)
+			return retryx.HTTP(fmt.Errorf("request failed with status %v", resp.Status), resp)
+		}
+
+		body, _ := io.ReadAll(resp.Body)
+		log.Infof("Post OK: '%v'", resp.StatusCode)
+		log.Infof("Response : %v\n", string(body))
+		return nil
+	}, retryx.IsRetriable)
 }
