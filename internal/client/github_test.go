@@ -2526,3 +2526,19 @@ func TestGitHubUploadParseError(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "parsing")
 }
+
+// githubTestServer creates a test HTTP server with automatic rate_limit handling
+// and cleanup. The provided handler is called for all non-rate-limit requests.
+func githubTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120},"search":{"remaining":10}}}`)
+			return
+		}
+		handler(w, r)
+	}))
+	t.Cleanup(srv.Close)
+	return srv
+}
