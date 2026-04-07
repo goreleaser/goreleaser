@@ -30,6 +30,8 @@ func TestIsNetworkError(t *testing.T) {
 		"i/o timeout",
 		"CONNECTION RESET",
 		"TLS Handshake Timeout",
+		"dial tcp: lookup example.com: no such host",
+		"context deadline exceeded",
 	} {
 		t.Run(s, func(t *testing.T) {
 			require.True(t, IsNetworkError(errors.New(s)))

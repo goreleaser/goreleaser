@@ -51,7 +51,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	url, err := retryx.DoWithData(ctx.Config.Retry, func() (string, error) {
 		return c.Share(ctx, message)
-	}, retryx.IsNetworkError)
+	}, retryx.IsRetriable)
 	if err != nil {
 		return err
 	}

@@ -99,7 +99,9 @@ func IsNetworkError(err error) bool {
 		strings.Contains(s, "connection closed") ||
 		strings.Contains(s, "connection refused") ||
 		strings.Contains(s, "tls handshake timeout") ||
-		strings.Contains(s, "i/o timeout")
+		strings.Contains(s, "i/o timeout") ||
+		strings.Contains(s, "no such host") ||
+		strings.Contains(s, "context deadline exceeded")
 }
 
 // Unrecoverable wraps an error so that the retry loop stops immediately.

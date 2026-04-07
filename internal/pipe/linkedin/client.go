@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"golang.org/x/oauth2"
 )
@@ -74,16 +75,23 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not GET /v2/me: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden {
 		return "", ErrLinkedinForbidden
+	}
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return "", retryx.HTTP(
+			fmt.Errorf("GET /v2/me returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
+			resp,
+		)
 	}
 
 	value, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("could not read response body: %w", err)
 	}
-	defer resp.Body.Close()
 
 	var result map[string]any
 	err = json.Unmarshal(value, &result)
@@ -111,16 +119,23 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not GET /v2/userinfo: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden {
 		return "", ErrLinkedinForbidden
+	}
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return "", retryx.HTTP(
+			fmt.Errorf("GET /v2/userinfo returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
+			resp,
+		)
 	}
 
 	value, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("could not read response body: %w", err)
 	}
-	defer resp.Body.Close()
 
 	var result map[string]any
 	if err := json.Unmarshal(value, &result); err != nil {
@@ -188,12 +203,19 @@ func (c client) Share(ctx stdctx.Context, message string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not POST /v2/shares: %w", err)
 	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return "", retryx.HTTP(
+			fmt.Errorf("POST /v2/shares returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
+			resp,
+		)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("could not read from body: %w", err)
 	}
-	defer resp.Body.Close()
 
 	var result map[string]any
 	err = json.Unmarshal(body, &result)

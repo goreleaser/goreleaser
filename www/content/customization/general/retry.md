@@ -5,7 +5,7 @@ weight: 115
 
 {{< version "v2.15.3-unreleased" >}}
 
-Every external service call goes through a retry mechanism with exponential
+Most external service calls go through a retry mechanism with exponential
 back-off on failures deemed _retriable_.
 
 This includes:

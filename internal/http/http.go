@@ -309,13 +309,6 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}
 
-	// Handle the artifact
-	asset, err := assetOpen(kind, artifact)
-	if err != nil {
-		return err
-	}
-	defer asset.ReadCloser.Close()
-
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
 	if !upload.CustomArtifactName {
@@ -347,7 +340,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		WithField("file", artifact.Name).
 		Info("uploading")
 
-	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, asset, check)
+	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, kind, artifact, check)
 	if err != nil {
 		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
 	}
@@ -359,9 +352,15 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 }
 
 // uploadAssetToServer uploads the asset file to target.
-func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
+func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, kind string, artifact *artifact.Artifact, check ResponseChecker) (*h.Response, error) {
 	var resp *h.Response
 	err := retryx.Do(ctx.Config.Retry, func() error {
+		a, err := assetOpen(kind, artifact)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		defer a.ReadCloser.Close()
+
 		req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
 		if err != nil {
 			return retryx.Unrecoverable(err)

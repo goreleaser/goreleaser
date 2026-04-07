@@ -106,6 +106,13 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		}
 		defer r.Body.Close()
 
+		if r.StatusCode >= http.StatusBadRequest {
+			return retryx.HTTP(
+				fmt.Errorf("unexpected status code: %d %s", r.StatusCode, http.StatusText(r.StatusCode)),
+				r,
+			)
+		}
+
 		return nil
 	}, retryx.IsRetriable)
 }

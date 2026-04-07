@@ -394,6 +394,9 @@ func isRetriablePush(err error) bool {
 	if errors.Is(err, io.EOF) {
 		return true
 	}
+	if retryx.IsNetworkError(err) {
+		return true
+	}
 	for _, code := range []int{
 		http.StatusInternalServerError,
 		// http.StatusNotImplemented,
