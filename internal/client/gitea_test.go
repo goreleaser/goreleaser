@@ -277,10 +277,6 @@ type GiteaupdateReleaseSuite struct {
 	GiteaReleasesTestSuite
 }
 
-func (s *GiteaupdateReleaseSuite) SetupTest() {
-	s.GiteaReleasesTestSuite.SetupTest()
-}
-
 func (s *GiteaupdateReleaseSuite) TestSuccess() {
 	t := s.T()
 	expectedRelease := gitea.Release{
