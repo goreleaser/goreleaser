@@ -2,7 +2,9 @@
 package bluesky
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -100,9 +102,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Password:   cfg.Password,
 	}
 
-	authResult, err := retryx.DoWithData(ctx.Config.Retry, func() (*atproto.ServerCreateSession_Output, error) {
-		return atproto.ServerCreateSession(ctx, xrpcClient, loginInput)
-	}, retryx.IsNetworkError)
+	authResult, err := retryx.DoWithData(ctx, ctx.Config.Retry, func() (*atproto.ServerCreateSession_Output, error) {
+		r, err := atproto.ServerCreateSession(ctx, xrpcClient, loginInput)
+		return r, xrpcHTTP(err)
+	}, retryx.IsRetriable)
 	if err != nil {
 		return fmt.Errorf("could not log in to Bluesky: %w", err)
 	}
@@ -114,15 +117,26 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Did:        authResult.Did,
 	}
 
-	_, err = retryx.DoWithData(ctx.Config.Retry, func() (*atproto.RepoCreateRecord_Output, error) {
-		return atproto.RepoCreateRecord(ctx, xrpcClient, &atproto.RepoCreateRecord_Input{
+	_, err = retryx.DoWithData(ctx, ctx.Config.Retry, func() (*atproto.RepoCreateRecord_Output, error) {
+		r, err := atproto.RepoCreateRecord(ctx, xrpcClient, &atproto.RepoCreateRecord_Input{
 			Collection: "app.bsky.feed.post",
 			Repo:       xrpcClient.Auth.Did,
 			Record: &util.LexiconTypeDecoder{
 				Val: &post,
 			},
 		})
-	}, retryx.IsNetworkError)
+		return r, xrpcHTTP(err)
+	}, retryx.IsRetriable)
 
+	return err
+}
+
+// xrpcHTTP wraps an xrpc.Error with retryx.HTTP so that status-code-based
+// retry classification works for Bluesky SDK calls.
+func xrpcHTTP(err error) error {
+	var xe *xrpc.Error
+	if errors.As(err, &xe) {
+		return retryx.HTTP(err, &http.Response{StatusCode: xe.StatusCode})
+	}
 	return err
 }

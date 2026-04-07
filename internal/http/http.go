@@ -341,7 +341,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 // uploadAssetToServer uploads the asset file to target.
 func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, kind string, artifact *artifact.Artifact, check ResponseChecker) (*h.Response, error) {
 	var resp *h.Response
-	err := retryx.Do(ctx.Config.Retry, func() error {
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		a, err := assetOpen(kind, artifact)
 		if err != nil {
 			return retryx.Unrecoverable(err)

@@ -355,6 +355,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	}
 
 	digest, err := retryx.DoWithData(
+		ctx,
 		docker.Retry,
 		func() (string, error) {
 			log.WithField("image", image.Name).

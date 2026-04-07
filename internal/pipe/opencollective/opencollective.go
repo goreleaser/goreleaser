@@ -191,7 +191,7 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 		return nil, fmt.Errorf("could not marshal payload: %w", err)
 	}
 
-	return retryx.DoWithData(ctx.Config.Retry, func() ([]byte, error) {
+	return retryx.DoWithData(ctx, ctx.Config.Retry, func() ([]byte, error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
 		if err != nil {
 			return nil, retryx.Unrecoverable(fmt.Errorf("could not create request: %w", err))

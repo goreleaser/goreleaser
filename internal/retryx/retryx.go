@@ -2,7 +2,9 @@
 package retryx
 
 import (
+	"context"
 	"errors"
+	"io"
 	"net/http"
 	"strings"
 
@@ -62,17 +64,18 @@ func IsRetriable(err error) bool {
 
 // DoWithData retries the given retryableFunc with the given configuration,
 // following retryIf, and returns the data from retryableFunc.
-func DoWithData[T any](c config.Retry, retryableFunc func() (T, error), retryIf func(error) bool) (T, error) {
-	return retry.DoWithData(retryableFunc, opts(c, retryIf)...)
+func DoWithData[T any](ctx context.Context, c config.Retry, retryableFunc func() (T, error), retryIf func(error) bool) (T, error) {
+	return retry.DoWithData(retryableFunc, opts(ctx, c, retryIf)...)
 }
 
 // Do retries the given retryableFunc with the given configuration, following retryIf.
-func Do(c config.Retry, retryableFunc func() error, retryIf func(error) bool) error {
-	return retry.Do(retryableFunc, opts(c, retryIf)...)
+func Do(ctx context.Context, c config.Retry, retryableFunc func() error, retryIf func(error) bool) error {
+	return retry.Do(retryableFunc, opts(ctx, c, retryIf)...)
 }
 
-func opts(c config.Retry, retryIf func(error) bool) []retry.Option {
+func opts(ctx context.Context, c config.Retry, retryIf func(error) bool) []retry.Option {
 	opts := []retry.Option{
+		retry.Context(ctx),
 		retry.Attempts(max(c.Attempts, 1)),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(c.Delay),
@@ -93,6 +96,9 @@ func IsNetworkError(err error) bool {
 	if err == nil {
 		return false
 	}
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		return true
+	}
 	s := strings.ToLower(err.Error())
 	return strings.Contains(s, "connection reset") ||
 		strings.Contains(s, "network is unreachable") ||
@@ -100,7 +106,8 @@ func IsNetworkError(err error) bool {
 		strings.Contains(s, "connection refused") ||
 		strings.Contains(s, "tls handshake timeout") ||
 		strings.Contains(s, "i/o timeout") ||
-		strings.Contains(s, "no such host") ||
+		strings.Contains(s, "broken pipe") ||
+		strings.Contains(s, "timeout awaiting response headers") ||
 		strings.Contains(s, "context deadline exceeded")
 }
 

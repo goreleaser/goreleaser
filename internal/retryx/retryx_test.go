@@ -1,7 +1,10 @@
 package retryx
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"sync/atomic"
 	"testing"
@@ -30,13 +33,23 @@ func TestIsNetworkError(t *testing.T) {
 		"i/o timeout",
 		"CONNECTION RESET",
 		"TLS Handshake Timeout",
-		"dial tcp: lookup example.com: no such host",
+		"write: broken pipe",
+		"net/http: timeout awaiting response headers",
 		"context deadline exceeded",
 	} {
 		t.Run(s, func(t *testing.T) {
 			require.True(t, IsNetworkError(errors.New(s)))
 		})
 	}
+	t.Run("io.EOF", func(t *testing.T) {
+		require.True(t, IsNetworkError(io.EOF))
+	})
+	t.Run("wrapped io.EOF", func(t *testing.T) {
+		require.True(t, IsNetworkError(fmt.Errorf("read: %w", io.EOF)))
+	})
+	t.Run("io.ErrUnexpectedEOF", func(t *testing.T) {
+		require.True(t, IsNetworkError(io.ErrUnexpectedEOF))
+	})
 }
 
 func TestIsNetworkErrorNil(t *testing.T) {
@@ -47,6 +60,7 @@ func TestIsNetworkErrorNotNetwork(t *testing.T) {
 	for _, s := range []string{
 		"file not found",
 		"permission denied",
+		"dial tcp: lookup example.com: no such host",
 		"",
 	} {
 		t.Run(s, func(t *testing.T) {
@@ -57,7 +71,7 @@ func TestIsNetworkErrorNotNetwork(t *testing.T) {
 
 func TestDoSuccess(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		err := Do(retryConfig(3), func() error {
+		err := Do(t.Context(), retryConfig(3), func() error {
 			return nil
 		}, nil)
 		require.NoError(t, err)
@@ -67,7 +81,7 @@ func TestDoSuccess(t *testing.T) {
 func TestDoRetries(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var calls atomic.Int32
-		err := Do(retryConfig(3), func() error {
+		err := Do(t.Context(), retryConfig(3), func() error {
 			if calls.Add(1) < 3 {
 				return errors.New("transient")
 			}
@@ -81,7 +95,7 @@ func TestDoRetries(t *testing.T) {
 func TestDoExhausted(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var calls atomic.Int32
-		err := Do(retryConfig(3), func() error {
+		err := Do(t.Context(), retryConfig(3), func() error {
 			calls.Add(1)
 			return errors.New("always fails")
 		}, nil)
@@ -96,7 +110,7 @@ func TestDoRetryIf(t *testing.T) {
 		fatal := errors.New("fatal")
 
 		var calls atomic.Int32
-		err := Do(retryConfig(5), func() error {
+		err := Do(t.Context(), retryConfig(5), func() error {
 			if calls.Add(1) == 1 {
 				return retryable
 			}
@@ -111,7 +125,7 @@ func TestDoRetryIf(t *testing.T) {
 
 func TestDoWithDataSuccess(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		val, err := DoWithData(retryConfig(3), func() (string, error) {
+		val, err := DoWithData(t.Context(), retryConfig(3), func() (string, error) {
 			return "hello", nil
 		}, nil)
 		require.NoError(t, err)
@@ -122,7 +136,7 @@ func TestDoWithDataSuccess(t *testing.T) {
 func TestDoWithDataRetries(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var calls atomic.Int32
-		val, err := DoWithData(retryConfig(3), func() (int, error) {
+		val, err := DoWithData(t.Context(), retryConfig(3), func() (int, error) {
 			if calls.Add(1) < 3 {
 				return 0, errors.New("transient")
 			}
@@ -136,7 +150,7 @@ func TestDoWithDataRetries(t *testing.T) {
 
 func TestDoWithDataExhausted(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		val, err := DoWithData(retryConfig(2), func() (string, error) {
+		val, err := DoWithData(t.Context(), retryConfig(2), func() (string, error) {
 			return "", errors.New("always fails")
 		}, nil)
 		require.ErrorContains(t, err, "always fails")
@@ -150,7 +164,7 @@ func TestDoWithDataRetryIf(t *testing.T) {
 		fatal := errors.New("fatal")
 
 		var calls atomic.Int32
-		val, err := DoWithData(retryConfig(5), func() (string, error) {
+		val, err := DoWithData(t.Context(), retryConfig(5), func() (string, error) {
 			if calls.Add(1) == 1 {
 				return "", retryable
 			}
@@ -234,11 +248,26 @@ func TestUnrecoverable(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		err := Unrecoverable(errors.New("permanent"))
 		var calls atomic.Int32
-		result := Do(retryConfig(5), func() error {
+		result := Do(t.Context(), retryConfig(5), func() error {
 			calls.Add(1)
 			return err
 		}, nil)
 		require.ErrorContains(t, result, "permanent")
 		require.Equal(t, int32(1), calls.Load())
+	})
+}
+
+func TestDoRespectsContextCancellation(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(t.Context())
+		var calls atomic.Int32
+		err := Do(ctx, retryConfig(10), func() error {
+			if calls.Add(1) == 2 {
+				cancel()
+			}
+			return errors.New("keep failing")
+		}, nil)
+		require.Error(t, err)
+		require.LessOrEqual(t, calls.Load(), int32(3))
 	})
 }

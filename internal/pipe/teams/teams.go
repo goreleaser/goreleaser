@@ -78,7 +78,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		return client.Send(cfg.Webhook, msgCard)
 	}, retryx.IsNetworkError)
 }

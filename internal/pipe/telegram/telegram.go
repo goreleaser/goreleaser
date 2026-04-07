@@ -69,7 +69,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	log.Infof("posting: '%s'", args["text"])
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
 		if err != nil {
 			return retryx.Unrecoverable(err)

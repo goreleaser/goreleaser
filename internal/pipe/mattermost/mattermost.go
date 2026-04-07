@@ -93,7 +93,7 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		return fmt.Errorf("failed to marshal the message: %w", err)
 	}
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
 		if err != nil {
 			return retryx.Unrecoverable(fmt.Errorf("failed new request: %w", err))

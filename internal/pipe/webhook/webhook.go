@@ -95,7 +95,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Transport: customTransport,
 	}
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
 		if err != nil {
 			return retryx.Unrecoverable(err)

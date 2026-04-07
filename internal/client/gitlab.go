@@ -39,7 +39,7 @@ type gitlabClient struct {
 func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error)) (T, *gitlab.Response, error) {
 	var result T
 	var resp *gitlab.Response
-	err := retryx.Do(ctx.Config.Retry, func() error {
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
 		if err != nil {
@@ -545,7 +545,7 @@ func (c *gitlabClient) Upload(
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return retryx.Unrecoverable(err)

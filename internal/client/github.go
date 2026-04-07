@@ -42,7 +42,7 @@ type githubClient struct {
 func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error)) (T, *github.Response, error) {
 	var result T
 	var resp *github.Response
-	err := retryx.Do(ctx.Config.Retry, func() error {
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
 		if err != nil {
@@ -666,7 +666,7 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 		if asset.GetName() != name {
 			continue
 		}
-		resp, err := retryx.DoWithData(ctx.Config.Retry, func() (*github.Response, error) {
+		resp, err := retryx.DoWithData(ctx, ctx.Config.Retry, func() (*github.Response, error) {
 			r, err := c.client.Repositories.DeleteReleaseAsset(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
@@ -706,7 +706,7 @@ func (c *githubClient) Upload(
 		return err
 	}
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return retryx.Unrecoverable(err)
@@ -791,7 +791,7 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 		return fmt.Errorf("could not delete existing drafts: %w", err)
 	}
 	if release != nil {
-		err := retryx.Do(ctx.Config.Retry, func() error {
+		err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 			_, err := c.client.Repositories.DeleteRelease(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,

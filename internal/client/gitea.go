@@ -29,7 +29,7 @@ var _ Client = &giteaClient{}
 func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, *gitea.Response, error) {
 	var result T
 	var resp *gitea.Response
-	err := retryx.Do(ctx.Config.Retry, func() error {
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
 		if err != nil {
@@ -368,7 +368,7 @@ func (c *giteaClient) Upload(
 	owner := releaseConfig.Gitea.Owner
 	repoName := releaseConfig.Gitea.Name
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return retryx.Unrecoverable(err)

@@ -222,6 +222,7 @@ func isPasswordError(err error) bool {
 
 func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
 	if err := retryx.Do(
+		ctx,
 		ctx.Config.Retry,
 		func() error {
 			dir := filepath.Join(parent, name)
@@ -244,6 +245,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 
 func pushRepo(ctx *context.Context, cwd string, env []string) error {
 	return retryx.Do(
+		ctx,
 		ctx.Config.Retry,
 		func() error {
 			return runGitCmds(ctx, cwd, env, [][]string{{"push", "origin", "HEAD"}})

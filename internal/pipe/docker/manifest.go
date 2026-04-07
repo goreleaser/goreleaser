@@ -117,6 +117,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 
 			manifester := manifesters[manifest.Use]
 			if err := retryx.Do(
+				ctx,
 				manifest.Retry,
 				func() error {
 					log.WithField("manifest", name).
@@ -139,6 +140,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			digest, err := retryx.DoWithData(
+				ctx,
 				manifest.Retry,
 				func() (string, error) {
 					log.WithField("manifest", name).Info("pushing manifest")

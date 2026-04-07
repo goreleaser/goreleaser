@@ -156,6 +156,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 
 	log.Debugf("tidying")
 	if err := retryx.Do(
+		ctx,
 		ctx.Config.Retry,
 		func() error {
 			cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)

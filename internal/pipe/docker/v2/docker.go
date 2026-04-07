@@ -231,6 +231,7 @@ func appendDigest(images []string, digest string) []string {
 
 func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
 	if err := retryx.Do(
+		ctx,
 		d.Retry,
 		func() error {
 			log.WithField("arg", arg).

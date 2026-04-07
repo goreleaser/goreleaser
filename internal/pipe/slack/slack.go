@@ -72,7 +72,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Attachments: attachments,
 	}
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		return slack.PostWebhook(cfg.Webhook, wm)
 	}, retryx.IsNetworkError)
 }

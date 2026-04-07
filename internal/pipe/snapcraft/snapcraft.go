@@ -468,6 +468,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
 	releases := artifact.MustExtra[[]string](*snap, releasesExtra)
 	if err := retryx.Do(
+		ctx,
 		ctx.Config.Retry,
 		func() error {
 			/* #nosec */

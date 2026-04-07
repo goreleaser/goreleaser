@@ -49,7 +49,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	url, err := retryx.DoWithData(ctx.Config.Retry, func() (string, error) {
+	url, err := retryx.DoWithData(ctx, ctx.Config.Retry, func() (string, error) {
 		return c.Share(ctx, message)
 	}, retryx.IsRetriable)
 	if err != nil {

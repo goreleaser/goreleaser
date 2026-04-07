@@ -50,7 +50,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	config := oauth1.NewConfig(cfg.ConsumerKey, cfg.ConsumerSecret)
 	token := oauth1.NewToken(cfg.AccessToken, cfg.AccessSecret)
 	client := twitter.NewClient(config.Client(oauth1.NoContext, token))
-	if err := retryx.Do(ctx.Config.Retry, func() error {
+	if err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		_, _, err := client.Statuses.Update(msg, nil)
 		return err
 	}, retryx.IsNetworkError); err != nil {

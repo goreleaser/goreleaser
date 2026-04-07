@@ -150,7 +150,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 	publishURL := p.registry + "/v0/publish"
 
-	return retryx.Do(ctx.Config.Retry, func() error {
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewReader(jsonData))
 		if err != nil {
 			return retryx.Unrecoverable(fmt.Errorf("could not create request: %w", err))
