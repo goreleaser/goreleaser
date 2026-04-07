@@ -24,11 +24,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAssetOpenDefault(t *testing.T) {
+func TestAssetOpen(t *testing.T) {
 	tf := filepath.Join(t.TempDir(), "asset")
 	require.NoError(t, os.WriteFile(tf, []byte("a"), 0o765))
 
-	a, err := assetOpenDefault("blah", &artifact.Artifact{
+	a, err := assetOpen("blah", &artifact.Artifact{
 		Path: tf,
 	})
 	if err != nil {
@@ -44,13 +44,13 @@ func TestAssetOpenDefault(t *testing.T) {
 	if string(bs) != "a" {
 		t.Fatalf("unexpected read content")
 	}
-	_, err = assetOpenDefault("blah", &artifact.Artifact{
+	_, err = assetOpen("blah", &artifact.Artifact{
 		Path: "blah",
 	})
 	if err == nil {
 		t.Fatalf("should fail on missing file")
 	}
-	_, err = assetOpenDefault("blah", &artifact.Artifact{
+	_, err = assetOpen("blah", &artifact.Artifact{
 		Path: t.TempDir(),
 	})
 	if err == nil {
@@ -220,13 +220,6 @@ func TestUpload(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Location", r.URL.RequestURI())
 	}))
-	assetOpen = func(_ string, _ *artifact.Artifact) (*asset, error) {
-		return &asset{
-			ReadCloser: io.NopCloser(bytes.NewReader(content)),
-			Size:       int64(len(content)),
-		}, nil
-	}
-	defer assetOpenReset()
 	var is2xx ResponseChecker = func(r *http.Response) error {
 		if r.StatusCode/100 == 2 {
 			return nil
@@ -258,7 +251,7 @@ func TestUpload(t *testing.T) {
 		{".pem", "", artifact.Certificate},
 	} {
 		file := filepath.Join(folder, "a"+a.ext)
-		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+		require.NoError(t, os.WriteFile(file, content, 0o644))
 		extra := map[string]any{
 			artifact.ExtraID: "foo",
 		}
@@ -536,7 +529,7 @@ func TestUpload(t *testing.T) {
 					TrustedCerts:   cert(s),
 				}
 			},
-			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "e37a649e5b4e9dd25672f22470f7ac0e5a902c2e02b54f9adc8ce791383d7514"}}),
 		},
 		{
 			"custom-headers", true, true, false, false,
@@ -722,13 +715,10 @@ func TestManyUploads(t *testing.T) {
 		uploaded.Store(true)
 	}))
 	t.Cleanup(srv.Close)
-	assetOpen = func(string, *artifact.Artifact) (*asset, error) {
-		return &asset{
-			ReadCloser: io.NopCloser(strings.NewReader("a")),
-			Size:       1,
-		}, nil
-	}
-	defer assetOpenReset()
+
+	tmpFile := filepath.Join(t.TempDir(), "checksums.txt")
+	require.NoError(t, os.WriteFile(tmpFile, []byte("a"), 0o644))
+
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "blah",
 		Env:         []string{"FOO=1"},
@@ -752,7 +742,7 @@ func TestManyUploads(t *testing.T) {
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "checksums.txt",
-		Path: "doesnt-matter",
+		Path: tmpFile,
 		Type: artifact.Checksum,
 	})
 	err := Upload(ctx, ctx.Config.Uploads, "test", func(*http.Response) error { return nil })
