@@ -198,7 +198,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [Nicolas Gotchac](https://github.com/ngotchac?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ryan Nixon](https://www.ryannixon.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Wails](https://wails.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Alex Viscreanu](https://github.com/aexvir?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [David Birks](https://github.com/dbirks?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Benjamin Kane](https://www.bbkane.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Carl Tsai](https://github.com/moonape1226?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
