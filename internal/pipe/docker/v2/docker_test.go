@@ -359,6 +359,7 @@ func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
 		"linux/amd64":  {os: "linux", arch: "amd64"},
 		"linux/arm/v6": {os: "linux", arch: "arm", arm: "6"},
+		"linux":        {os: "linux"},
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))

@@ -507,10 +507,12 @@ type platform struct {
 func parsePlatform(p string) platform {
 	parts := strings.Split(p, "/")
 	result := platform{
-		os:   parts[0],
-		arch: parts[1],
+		os: parts[0],
 	}
-	if len(parts) == 3 {
+	if len(parts) >= 2 {
+		result.arch = parts[1]
+	}
+	if len(parts) >= 3 {
 		result.arm = strings.TrimPrefix(parts[2], "v")
 	}
 	return result
