@@ -183,4 +183,16 @@ func TestRedactWriter(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "nothing secret here\n", buf.String())
 	})
+
+	t.Run("returns zero bytes on write error", func(t *testing.T) {
+		t.Parallel()
+		w := Writer(&errWriter{err: io.ErrShortWrite}, env)
+		n, err := w.Write([]byte("key123key123\n"))
+		require.ErrorIs(t, err, io.ErrShortWrite)
+		require.Equal(t, 0, n)
+	})
 }
+
+type errWriter struct{ err error }
+
+func (e *errWriter) Write([]byte) (int, error) { return 0, e.err }
