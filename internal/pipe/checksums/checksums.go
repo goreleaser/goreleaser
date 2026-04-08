@@ -170,7 +170,15 @@ func refreshAll(ctx *context.Context, filepath string) error {
 	// sort to ensure the signature is deterministic downstream
 	slices.SortFunc(sumLines, func(a, b string) int {
 		// sort by the filename of a checksum line ("{checksum}  {filename}\n")
-		return cmp.Compare(strings.Split(a, "  ")[1], strings.Split(b, "  ")[1])
+		_, nameA, okA := strings.Cut(a, "  ")
+		_, nameB, okB := strings.Cut(b, "  ")
+		if !okA {
+			nameA = a
+		}
+		if !okB {
+			nameB = b
+		}
+		return cmp.Compare(nameA, nameB)
 	})
 	_, err = file.WriteString(strings.Join(sumLines, ""))
 	return err
