@@ -77,7 +77,7 @@ type ErrDetailed struct {
 // pairs.
 func (e ErrDetailed) Details() iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
-		for i := 0; i < len(e.details); i += 2 {
+		for i := 0; i+1 < len(e.details); i += 2 {
 			key, ok := e.details[i].(string)
 			if !ok {
 				key = fmt.Sprintf("%v", e.details[i])
