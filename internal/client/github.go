@@ -620,10 +620,12 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 	if err != nil {
 		return nil, err
 	}
-	log.WithField("name", data.GetName()).
-		WithField("release-id", release.GetID()).
-		WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
-		Debug("release updated")
+	l := log.WithField("name", data.GetName()).
+		WithField("release-id", release.GetID())
+	if resp != nil {
+		l = l.WithField("request-id", resp.Header.Get("X-GitHub-Request-Id"))
+	}
+	l.Debug("release updated")
 	return release, nil
 }
 
