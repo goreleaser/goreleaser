@@ -44,6 +44,17 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
+      - run: df -h
+        if: matrix.os == 'ubuntu-latest'
+      - name: "node-cleanup"
+        # this should increase free space from ~21gb to ~38gb
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
+      - run: df -h
+        if: matrix.os == 'ubuntu-latest'
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
@@ -105,6 +116,9 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - run: git diff
+        if: ${{ always() }}
+      - run: df -h
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
   check:
     runs-on: ubuntu-latest
     steps:
