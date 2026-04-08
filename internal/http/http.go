@@ -353,7 +353,7 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 			return retryx.Unrecoverable(err)
 		}
 
-		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by executeHTTPRequest
+		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by caller (uploadAsset)
 		if err != nil {
 			return retryx.HTTP(err, resp)
 		}
@@ -413,6 +413,10 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx.
+//
+// On success the caller owns resp.Body and must close it.
+// On error the body is already closed; the returned resp (if non-nil)
+// can still be inspected for status code, headers, etc.
 func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Request, check ResponseChecker) (*h.Response, error) {
 	client, err := getHTTPClient(upload)
 	if err != nil {
@@ -431,14 +435,10 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
-	err = check(resp)
-	if err != nil {
-		// even though there was an error, we still return the response
-		// in case the caller wants to inspect it further
+	if err := check(resp); err != nil {
+		resp.Body.Close()
 		return resp, err
 	}
 
-	return resp, err
+	return resp, nil
 }
