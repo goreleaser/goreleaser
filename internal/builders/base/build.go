@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os/exec"
 	"slices"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -117,7 +118,7 @@ func Exec(ctx context.Context, command []string, env []string, dir string) error
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
 	if s := string(out); s != "" {
-		log.WithField("output", s).Info(command[0] + " " + command[1])
+		log.WithField("output", s).Info(strings.Join(command, " "))
 	}
 	return nil
 }
