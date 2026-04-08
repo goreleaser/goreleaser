@@ -118,3 +118,45 @@ func TestClientLegacyProfile_Share(t *testing.T) {
 	wantLink := "https://www.linkedin.com/feed/update/123456789"
 	require.Equal(t, wantLink, link)
 }
+
+func TestGetProfileSub_NonStringValue(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(rw, `{"sub": 12345}`)
+	}))
+	defer server.Close()
+
+	c, err := createLinkedInClient(oauthClientConfig{
+		Context:     testctx.Wrap(t.Context()),
+		AccessToken: "foo",
+	})
+	require.NoError(t, err)
+
+	c.baseURL = server.URL
+
+	_, err = c.Share(t.Context(), "test")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not unmarshal")
+}
+
+func TestGetProfileIDLegacy_NonStringValue(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.Path == "/v2/userinfo" {
+			rw.WriteHeader(http.StatusForbidden)
+			return
+		}
+		_, _ = io.WriteString(rw, `{"id": 12345}`)
+	}))
+	defer server.Close()
+
+	c, err := createLinkedInClient(oauthClientConfig{
+		Context:     testctx.Wrap(t.Context()),
+		AccessToken: "foo",
+	})
+	require.NoError(t, err)
+
+	c.baseURL = server.URL
+
+	_, err = c.Share(t.Context(), "test")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not unmarshal")
+}
