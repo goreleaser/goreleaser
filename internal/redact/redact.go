@@ -27,7 +27,10 @@ type redactWriter struct {
 // Write implements [io.Writer].
 func (w *redactWriter) Write(p []byte) (int, error) {
 	_, err := io.WriteString(w.w, w.re.Replace(string(p)))
-	return len(p), err
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
 }
 
 // redact returns a strings.Replacer that replaces all occurrences of
