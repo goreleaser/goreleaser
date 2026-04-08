@@ -34,6 +34,7 @@ func Copy(source io.Reader, target io.Writer) (Archive, error) {
 	if err != nil {
 		return Archive{}, err
 	}
+	defer srcgz.Close()
 	tw, err := tar.Copy(srcgz, gw)
 	return Archive{
 		gw: gw,
