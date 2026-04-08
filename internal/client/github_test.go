@@ -1,6 +1,7 @@
 package client
 
 import (
+	stdctx "context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -935,7 +936,9 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+	short, cancel := stdctx.WithTimeout(t.Context(), 250*time.Millisecond)
+	t.Cleanup(cancel)
+	ctx := testctx.WrapWithCfg(short, config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL,
 		},
