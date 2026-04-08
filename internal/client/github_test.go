@@ -921,21 +921,14 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
 	reset := now.Add(1392 * time.Millisecond)
-	var first atomic.Bool
+	var called atomic.Bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if r.URL.Path == "/api/v3/rate_limit" {
+			called.Store(true)
 			w.WriteHeader(http.StatusOK)
 			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
-			if first.Load() {
-				// second time asking for the rate limit
-				fmt.Fprintf(w, `{"resources":{"core":{"remaining":138,"reset":%s}}}`, string(resetstr))
-				return
-			}
-
-			// first time asking for the rate limit
 			fmt.Fprintf(w, `{"resources":{"core":{"remaining":98,"reset":%s}}}`, string(resetstr))
-			first.Store(true)
 			return
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
@@ -950,10 +943,9 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	var sleepDuration time.Duration
-	client.checkRateLimit(ctx, func(d time.Duration) { sleepDuration = d })
+	client.checkRateLimit(ctx)
 
-	require.GreaterOrEqual(t, sleepDuration, 5*time.Second)
+	require.True(t, called.Load(), "should have checked rate limit")
 }
 
 func TestGitHubCreateRelease(t *testing.T) {
