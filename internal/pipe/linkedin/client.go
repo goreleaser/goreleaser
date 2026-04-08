@@ -36,6 +36,15 @@ type postShareRequest struct {
 	Owner string        `json:"owner"`
 }
 
+type profileResponse struct {
+	ID  string `json:"id"`
+	Sub string `json:"sub"`
+}
+
+type shareResponse struct {
+	Activity string `json:"activity"`
+}
+
 func createLinkedInClient(cfg oauthClientConfig) (client, error) {
 	if cfg.Context == nil {
 		return client{}, errors.New("context is nil")
@@ -93,17 +102,15 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 		return "", fmt.Errorf("could not read response body: %w", err)
 	}
 
-	var result map[string]any
-	err = json.Unmarshal(value, &result)
-	if err != nil {
+	var result profileResponse
+	if err := json.Unmarshal(value, &result); err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
 	}
 
-	if v, ok := result["id"]; ok {
-		return v.(string), nil
+	if result.ID == "" {
+		return "", errors.New("could not find 'id' in result")
 	}
-
-	return "", fmt.Errorf("could not find 'id' in result: %w", err)
+	return result.ID, nil
 }
 
 // getProfileSub returns the Current Member's sub (formally ID) - requires 'profile' permission
@@ -137,16 +144,15 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 		return "", fmt.Errorf("could not read response body: %w", err)
 	}
 
-	var result map[string]any
+	var result profileResponse
 	if err := json.Unmarshal(value, &result); err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
 	}
 
-	if v, ok := result["sub"]; ok {
-		return v.(string), nil
+	if result.Sub == "" {
+		return "", errors.New("could not find 'sub' in result")
 	}
-
-	return "", fmt.Errorf("could not find 'sub' in result: %v", result)
+	return result.Sub, nil
 }
 
 // Person or Organization URN - urn:li:person:PROFILE_IDENTIFIER
@@ -217,18 +223,16 @@ func (c client) Share(ctx stdctx.Context, message string) (string, error) {
 		return "", fmt.Errorf("could not read from body: %w", err)
 	}
 
-	var result map[string]any
-	err = json.Unmarshal(body, &result)
-	if err != nil {
+	var result shareResponse
+	if err := json.Unmarshal(body, &result); err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
 	}
 
 	// Activity URN
 	// URN of the activity associated with this share. Activities act as a wrapper around
 	// shares and articles to represent content in the LinkedIn feed. Read only.
-	if v, ok := result["activity"]; ok {
-		return fmt.Sprintf("https://www.linkedin.com/feed/update/%s", v.(string)), nil
+	if result.Activity == "" {
+		return "", errors.New("could not find 'activity' in result")
 	}
-
-	return "", fmt.Errorf("could not find 'activity' in result: %w", err)
+	return fmt.Sprintf("https://www.linkedin.com/feed/update/%s", result.Activity), nil
 }
