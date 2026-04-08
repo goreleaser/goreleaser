@@ -31,16 +31,22 @@ func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) 
 
 func extractRelativeRepoFromConfig(ctx context.Context) (result config.Repo, err error) {
 	out, err := Clean(Run(ctx, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"))
-	if err != nil || out == "" {
-		return result, errors.New("unable to get upstream while qualifying relative remote")
+	if err != nil {
+		return result, fmt.Errorf("unable to get upstream while qualifying relative remote: %w", err)
+	}
+	if out == "" {
+		return result, errors.New("unable to get upstream while qualifying relative remote: empty output")
 	}
 	out, err = Clean(Run(ctx, "config", "--get", fmt.Sprintf("branch.%s.remote", out)))
-	if err != nil || out == "" {
-		return result, errors.New("unable to get upstream's remote while qualifying relative remote")
+	if err != nil {
+		return result, fmt.Errorf("unable to get upstream's remote while qualifying relative remote: %w", err)
+	}
+	if out == "" {
+		return result, errors.New("unable to get upstream's remote while qualifying relative remote: empty output")
 	}
 	out, err = Clean(Run(ctx, "ls-remote", "--get-url", out))
 	if err != nil {
-		return result, errors.New("unable to get upstream while qualifying relative remote")
+		return result, fmt.Errorf("unable to get upstream while qualifying relative remote: %w", err)
 	}
 	return ExtractRepoFromURL(out)
 }
