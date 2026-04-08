@@ -187,7 +187,7 @@ func TestRedactWriter(t *testing.T) {
 	t.Run("returns zero bytes on write error", func(t *testing.T) {
 		t.Parallel()
 		w := Writer(&errWriter{err: io.ErrShortWrite}, env)
-		n, err := w.Write([]byte("key123key123\n"))
+		n, err := io.WriteString(w, "key123key123\n")
 		require.ErrorIs(t, err, io.ErrShortWrite)
 		require.Equal(t, 0, n)
 	})
