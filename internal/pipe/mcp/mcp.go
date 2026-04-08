@@ -12,6 +12,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -149,40 +150,41 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 	publishURL := p.registry + "/v0/publish"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("could not create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewReader(jsonData))
+		if err != nil {
+			return retryx.Unrecoverable(fmt.Errorf("could not create request: %w", err))
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not send request: %w", err)
-	}
-	defer resp.Body.Close()
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(fmt.Errorf("could not send request: %w", err), resp)
+		}
+		defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("could not read response: %w", err)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("could not read response: %w", err)
+		}
 
-	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body))
-	}
+		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+			return retryx.HTTP(fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body)), resp)
+		}
 
-	var serverResponse apiv0.ServerResponse
-	if err := json.Unmarshal(body, &serverResponse); err != nil {
-		return fmt.Errorf("could not parse response: %w", err)
-	}
+		var serverResponse apiv0.ServerResponse
+		if err := json.Unmarshal(body, &serverResponse); err != nil {
+			return fmt.Errorf("could not parse response: %w", err)
+		}
 
-	log.
-		WithField("name", server.Name).
-		WithField("status", serverResponse.Meta.Official.Status).
-		Info("published to MCP registry")
+		log.
+			WithField("name", server.Name).
+			WithField("status", serverResponse.Meta.Official.Status).
+			Info("published to MCP registry")
 
-	return nil
+		return nil
+	}, retryx.IsRetriable)
 }
 
 func authProvider(registryURL, method, token string) (auth.Provider, error) {

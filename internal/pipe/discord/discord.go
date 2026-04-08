@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -92,23 +94,25 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != 204 && resp.StatusCode != 200 {
-		return fmt.Errorf("%s", resp.Status)
-	}
+		if resp.StatusCode != 204 && resp.StatusCode != 200 {
+			return retryx.HTTP(fmt.Errorf("%s", resp.Status), resp)
+		}
 
-	return nil
+		return nil
+	}, retryx.IsRetriable)
 }
 
 type WebhookMessageCreate struct {

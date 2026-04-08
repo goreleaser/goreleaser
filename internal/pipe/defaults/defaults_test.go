@@ -2,6 +2,7 @@ package defaults
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -34,6 +35,9 @@ func TestFillBasicData(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
+	require.Equal(t, uint(10), ctx.Config.Retry.Attempts)
+	require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
+	require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
 }
 
 func TestFillPartial(t *testing.T) {
@@ -94,6 +98,9 @@ func TestFillPartial(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	require.Equal(t, uint(10), ctx.Config.Retry.Attempts)
+	require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
+	require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
 
 	ctx = testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{

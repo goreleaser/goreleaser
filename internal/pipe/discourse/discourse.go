@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -86,25 +87,26 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return err
-	}
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "goreleaser/v2")
+		req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
+		req.Header.Set("Api-Key", cfg.APIKey)
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "goreleaser/v2")
-	req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
-	req.Header.Set("Api-Key", cfg.APIKey)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		defer resp.Body.Close()
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return retryx.HTTP(fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode), resp)
+		}
 
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
-	}
-
-	return nil
+		return nil
+	}, retryx.IsRetriable)
 }

@@ -2,9 +2,9 @@
 package client
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -62,7 +62,7 @@ type Client interface {
 	// Creates a release. It's marked as draft if possible (should call PublishRelease to finish publishing).
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	PublishRelease(ctx *context.Context, releaseID string) (err error)
-	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
+	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error)
 	ReleaseURLTemplater
 	FileCreator
@@ -161,7 +161,7 @@ func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) 
 
 func truncateReleaseBody(body string) string {
 	if len(body) > maxReleaseBodyLength {
-		body = body[1:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
+		body = body[:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
 	}
 	return body
 }
@@ -173,15 +173,6 @@ type ErrNoMilestoneFound struct {
 
 func (e ErrNoMilestoneFound) Error() string {
 	return fmt.Sprintf("no milestone found: %s", e.Title)
-}
-
-// RetriableError is an error that will cause the action to be retried.
-type RetriableError struct {
-	Err error
-}
-
-func (e RetriableError) Error() string {
-	return e.Err.Error()
 }
 
 // fillDeprecated fills the deprecated field based on the contents of Authors.
@@ -196,4 +187,8 @@ func fillDeprecated(i ChangelogItem) ChangelogItem {
 	i.AuthorUsername = author.Username
 	i.AuthorEmail = author.Email
 	return i
+}
+
+func must[T any](t *T) *T {
+	return cmp.Or(t, new(T))
 }

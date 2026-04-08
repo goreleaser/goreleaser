@@ -39,6 +39,7 @@ type DependencyChecker interface {
 //nolint:gochecknoglobals
 var HealthCheckers = []HealthChecker{
 	dockerv2.Base{},
+	docker.Pipe{},
 }
 
 // DependencyCheckers is the list of dependency checkers.

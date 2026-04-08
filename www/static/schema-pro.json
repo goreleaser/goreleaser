@@ -1674,9 +1674,6 @@
 						},
 						"type": "object"
 					},
-					"retry": {
-						"$ref": "#/$defs/Retry"
-					},
 					"flags": {
 						"items": {
 							"type": "string"
@@ -1702,6 +1699,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
 					}
 				},
 				"additionalProperties": false,
@@ -4830,6 +4830,9 @@
 					},
 					"mcp": {
 						"$ref": "#/$defs/MCP"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
 					},
 					"force_token": {
 						"type": "string",

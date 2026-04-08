@@ -6,6 +6,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -49,7 +50,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	config := oauth1.NewConfig(cfg.ConsumerKey, cfg.ConsumerSecret)
 	token := oauth1.NewToken(cfg.AccessToken, cfg.AccessSecret)
 	client := twitter.NewClient(config.Client(oauth1.NoContext, token))
-	if _, _, err := client.Statuses.Update(msg, nil); err != nil {
+	if err := retryx.Do(ctx, ctx.Config.Retry, func() error {
+		_, _, err := client.Statuses.Update(msg, nil)
+		return err
+	}, retryx.IsNetworkError); err != nil {
 		return err
 	}
 	return nil
