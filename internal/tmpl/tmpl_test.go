@@ -661,6 +661,18 @@ func TestInvalidMap(t *testing.T) {
 	require.ErrorContains(t, err, "map expects even number of arguments, got 1")
 }
 
+func TestFilterInvalidRegex(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	_, err := New(ctx).Apply(`{{ filter "some content" "[invalid" }}`)
+	require.Error(t, err)
+}
+
+func TestReverseFilterInvalidRegex(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	_, err := New(ctx).Apply(`{{ reverseFilter "some content" "[invalid" }}`)
+	require.Error(t, err)
+}
+
 func TestWithBuildOptions(t *testing.T) {
 	// testtarget doesn ot set riscv64, it still should not fail to compile the template
 	ts := "{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}{{with .Riscv64}}{{.}}{{end}}"

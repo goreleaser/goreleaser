@@ -456,9 +456,12 @@ func prefix(v string) string {
 	return ""
 }
 
-func filter(reverse bool) func(content, exp string) string {
-	return func(content, exp string) string {
-		re := regexp.MustCompilePOSIX(exp)
+func filter(reverse bool) func(content, exp string) (string, error) {
+	return func(content, exp string) (string, error) {
+		re, err := regexp.CompilePOSIX(exp)
+		if err != nil {
+			return "", err
+		}
 		var lines []string
 		for line := range strings.SplitSeq(content, "\n") {
 			if reverse && re.MatchString(line) {
@@ -470,7 +473,7 @@ func filter(reverse bool) func(content, exp string) string {
 			lines = append(lines, line)
 		}
 
-		return strings.Join(lines, "\n")
+		return strings.Join(lines, "\n"), nil
 	}
 }
 
