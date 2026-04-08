@@ -817,7 +817,7 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 }
 
 func (c *githubClient) findDraftRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
-	c.checkRateLimit(ctx, time.Sleep)
+	c.checkRateLimit(ctx)
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := githubDo(ctx, func() ([]*github.RepositoryRelease, *github.Response, error) {
@@ -856,6 +856,9 @@ func bodyOf(resp *github.Response) string {
 		return "no response"
 	}
 	defer resp.Body.Close()
-	bts, _ := io.ReadAll(resp.Body)
+	bts, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Sprintf("could not read response body: %v", err)
+	}
 	return string(bts)
 }
