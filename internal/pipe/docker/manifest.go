@@ -26,6 +26,8 @@ import (
 
 // ManifestPipe is an implementation for the docker manifest feature,
 // allowing to publish multi-arch docker images.
+//
+// Deprecated: use docker v2.
 type ManifestPipe struct{}
 
 func (ManifestPipe) String() string { return "docker manifests" }
