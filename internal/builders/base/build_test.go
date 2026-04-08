@@ -156,3 +156,7 @@ func TestTemplateEnv(t *testing.T) {
 func TestExec(t *testing.T) {
 	require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{"echo", "$FOO"}, []string{"FOO=foobar"}, "."))
 }
+
+func TestExecSingleElementCommand(t *testing.T) {
+	require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{"true"}, nil, "."))
+}
