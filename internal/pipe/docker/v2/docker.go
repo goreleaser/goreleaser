@@ -370,7 +370,7 @@ func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.
 	if err != nil {
 		return "", fmt.Errorf("invalid dockerfile: %w", err)
 	}
-	if strings.TrimSpace(d.Dockerfile) == "" {
+	if strings.TrimSpace(dockerfile) == "" {
 		return "", pipe.Skip("no dockerfile")
 	}
 
