@@ -80,6 +80,12 @@ func TestMakeContext(t *testing.T) {
 		}, nil)
 		testlib.RequireTemplateError(t, err)
 	})
+	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
+		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
+			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
+		}, nil)
+		testlib.AssertSkipped(t, err)
+	})
 	t.Run("simple", func(t *testing.T) {
 		dir, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "./testdata/Dockerfile",
