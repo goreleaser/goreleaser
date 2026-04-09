@@ -183,7 +183,7 @@ func formatChangelog(ctx *context.Context, entries []Item) (string, error) {
 			i := 0
 			for _, entry := range entries {
 				match := re.MatchString(entry.Message)
-				log.Debugf("entry: %s match: %b\n", entry, match)
+				log.Debugf("entry: %s match: %t\n", entry, match)
 				if match {
 					line, err := formatEntry(ctx, entry)
 					if err != nil {
