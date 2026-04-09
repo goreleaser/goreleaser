@@ -870,6 +870,11 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
+	t.Run("skip upload template", func(t *testing.T) {
+		ctx.Config.Krews[0].SkipUpload = "{{ .IsSnapshot }}"
+		ctx.Snapshot = true
+		assertNoPublish(t)
+	})
 }
 
 func TestRunEmptyTokenType(t *testing.T) {

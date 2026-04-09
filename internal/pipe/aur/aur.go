@@ -103,6 +103,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 	if err := tmpl.New(ctx).ApplyAll(
 		&aur.Name,
 		&aur.Directory,
+		&aur.SkipUpload,
 	); err != nil {
 		return err
 	}
