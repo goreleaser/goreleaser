@@ -116,15 +116,37 @@ func TestRun(t *testing.T) {
 		}, testctx.Partial)
 
 		t.Setenv("GGOOS", "linux")
-		for _, mips := range []string{"mips", "mips64", "mipsle", "mips64le"} {
+		for _, mips := range []string{"mips", "mipsle"} {
 			t.Run(mips, func(t *testing.T) {
 				t.Setenv("GGOARCH", mips)
 				t.Run("default", func(t *testing.T) {
 					require.NoError(t, pipe.Run(ctx))
 					require.Equal(t, "linux_"+mips, ctx.PartialTarget)
 				})
-				t.Run("default", func(t *testing.T) {
+				t.Run("with value", func(t *testing.T) {
 					t.Setenv("GGOMIPS", "softfloat")
+					require.NoError(t, pipe.Run(ctx))
+					require.Equal(t, "linux_"+mips+"_softfloat", ctx.PartialTarget)
+				})
+			})
+		}
+	})
+	t.Run("custom GGOMIPS64", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:   "dist",
+			Builds: []config.Build{{Builder: "go"}},
+		}, testctx.Partial)
+
+		t.Setenv("GGOOS", "linux")
+		for _, mips := range []string{"mips64", "mips64le"} {
+			t.Run(mips, func(t *testing.T) {
+				t.Setenv("GGOARCH", mips)
+				t.Run("default", func(t *testing.T) {
+					require.NoError(t, pipe.Run(ctx))
+					require.Equal(t, "linux_"+mips, ctx.PartialTarget)
+				})
+				t.Run("with value", func(t *testing.T) {
+					t.Setenv("GGOMIPS64", "softfloat")
 					require.NoError(t, pipe.Run(ctx))
 					require.Equal(t, "linux_"+mips+"_softfloat", ctx.PartialTarget)
 				})
@@ -148,6 +170,22 @@ func TestRun(t *testing.T) {
 			require.NoError(t, pipe.Run(ctx))
 			require.Equal(t, "linux_386_softfloat", ctx.PartialTarget)
 		})
+	})
+	t.Run("GOMIPS64 fallback for mips64", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:   "dist",
+			Builds: []config.Build{{Builder: "go"}},
+		}, testctx.Partial)
+
+		t.Setenv("GGOOS", "linux")
+		for _, mips := range []string{"mips64", "mips64le"} {
+			t.Run(mips, func(t *testing.T) {
+				t.Setenv("GGOARCH", mips)
+				t.Setenv("GOMIPS64", "softfloat")
+				require.NoError(t, pipe.Run(ctx))
+				require.Equal(t, "linux_"+mips+"_softfloat", ctx.PartialTarget)
+			})
+		}
 	})
 	t.Run("custom GGOPPC64", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
