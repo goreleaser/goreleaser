@@ -1110,6 +1110,17 @@ func TestAbbrev(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
+	t.Run("abbrev -2 should not panic", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: -2,
+			},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
 }
 
 func TestIssue5595(t *testing.T) {
