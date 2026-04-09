@@ -136,7 +136,7 @@ func newLineFor(ctx *context.Context) string {
 }
 
 func abbrevEntry(sha string, abbr int) string {
-	switch abbr {
+	switch abbr = max(abbr, -1); abbr {
 	case 0:
 		return sha
 	case -1:
