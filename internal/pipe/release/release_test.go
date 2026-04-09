@@ -19,6 +19,33 @@ func TestPipeDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
+func TestReleaseRepo(t *testing.T) {
+	t.Run("github", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "gh-owner", Name: "gh-repo"},
+			},
+		}, testctx.GitHubTokenType)
+		require.Equal(t, "gh-owner/gh-repo", releaseRepo(ctx).String())
+	})
+	t.Run("gitlab", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitLab: config.Repo{Owner: "gl-owner", Name: "gl-repo"},
+			},
+		}, testctx.GitLabTokenType)
+		require.Equal(t, "gl-owner/gl-repo", releaseRepo(ctx).String())
+	})
+	t.Run("gitea", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				Gitea: config.Repo{Owner: "gt-owner", Name: "gt-repo"},
+			},
+		}, testctx.GiteaTokenType)
+		require.Equal(t, "gt-owner/gt-repo", releaseRepo(ctx).String())
+	})
+}
+
 func createTmpFile(tb testing.TB, folder, path string) string {
 	tb.Helper()
 	f, err := os.Create(filepath.Join(folder, path))

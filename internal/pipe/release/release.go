@@ -112,9 +112,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
+func releaseRepo(ctx *context.Context) config.Repo {
+	switch ctx.TokenType {
+	case context.TokenTypeGitLab:
+		return ctx.Config.Release.GitLab
+	case context.TokenTypeGitea:
+		return ctx.Config.Release.Gitea
+	default:
+		return ctx.Config.Release.GitHub
+	}
+}
+
 func doPublish(ctx *context.Context, client client.Client) error {
 	log.WithField("tag", ctx.Git.CurrentTag).
-		WithField("repo", ctx.Config.Release.GitHub.String()).
+		WithField("repo", releaseRepo(ctx).String()).
 		Info("releasing")
 	if err := ctx.Artifacts.Refresh(); err != nil {
 		return err
