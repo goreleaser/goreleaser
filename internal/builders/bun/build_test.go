@@ -80,6 +80,11 @@ func TestParse(t *testing.T) {
 		_, err := Default.Parse("linux")
 		require.Error(t, err)
 	})
+	t.Run("invalid with prefix", func(t *testing.T) {
+		_, err := Default.Parse("bun-x")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "bun-x")
+	})
 }
 
 func TestWithDefaults(t *testing.T) {

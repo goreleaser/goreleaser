@@ -45,10 +45,11 @@ func (t Target) String() string {
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
+	raw := target
 	target = strings.TrimPrefix(target, "bun-")
 	parts := strings.Split(target, "-")
 	if len(parts) < 2 {
-		return nil, fmt.Errorf("%s is not a valid build target", target)
+		return nil, fmt.Errorf("%s is not a valid build target", raw)
 	}
 
 	t := Target{
