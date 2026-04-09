@@ -218,7 +218,7 @@ func withDigest(name string, images []*artifact.Artifact) string {
 	suggestionDistance := math.MaxInt
 	for _, img := range images {
 		if d := levenshtein.ComputeDistance(name, img.Name); d < suggestionDistance {
-			suggestion = name
+			suggestion = img.Name
 			suggestionDistance = d
 		}
 	}
