@@ -145,7 +145,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	if len(cargot.Workspace.Members) > 0 && !isSettingPackage(build.Flags) {
 		return fmt.Errorf(
 			"you need to specify which workspace to build, please add '--package=[name]' to your build flags, setting name to one of the available workspaces: %v",
-			cargot.Workspace.Members[0],
+			cargot.Workspace.Members,
 		)
 	}
 	t := options.Target.(Target)

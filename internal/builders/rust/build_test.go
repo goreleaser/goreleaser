@@ -69,6 +69,35 @@ func TestCustomGlibc(t *testing.T) {
 	})
 }
 
+func TestBuildWorkspaceErrorShowsAllMembers(t *testing.T) {
+	dir := testlib.Mktmp(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Cargo.toml"), []byte(`
+[workspace]
+members = ["crate-a", "crate-b", "crate-c"]
+`), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: "dist",
+		Builds: []config.Build{{
+			Dir:          ".",
+			BuildDetails: config.BuildDetails{Flags: []string{"--release"}},
+		}},
+	})
+
+	target, err := Default.Parse("aarch64-unknown-linux-gnu")
+	require.NoError(t, err)
+
+	err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Name:   "proj",
+		Path:   "dist/proj",
+		Target: target,
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "crate-a")
+	require.Contains(t, err.Error(), "crate-b")
+	require.Contains(t, err.Error(), "crate-c")
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
