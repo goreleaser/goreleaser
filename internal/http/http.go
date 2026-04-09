@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -295,7 +296,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		}
 		targetURL += artifact.Name
 	}
-	log.Debugf("generated target url: %s", targetURL)
+	log.Debugf("generated target url: %s", redact.String(targetURL, ctx.Env.Strings()))
 
 	headers := make(map[string]string, len(upload.CustomHeaders))
 	for name, value := range upload.CustomHeaders {
@@ -413,7 +414,7 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("executing request: %s %s (headers: %v)", req.Method, req.URL, req.Header)
+	log.Debugf("executing request: %s %s", req.Method, redact.String(req.URL.String(), ctx.Env.Strings()))
 	resp, err := client.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,

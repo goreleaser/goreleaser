@@ -25,7 +25,6 @@ func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) 
 	if out == "." {
 		return extractRelativeRepoFromConfig(ctx)
 	}
-	log.WithField("rawurl", out).Debugf("got git url")
 	return ExtractRepoFromURL(out)
 }
 

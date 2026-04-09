@@ -96,7 +96,6 @@ func TemplateEnv(input []string, tpl *tmpl.Template) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		log.Debugf("env %q evaluated to %q", e, ee)
 		if ee != "" {
 			output = append(output, ee)
 			tpl = tpl.SetEnv(ee)
