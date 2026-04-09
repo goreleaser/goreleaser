@@ -43,7 +43,7 @@ func redact(env []string) *strings.Replacer {
 	var secrets []kv
 	for _, e := range env {
 		k, v, ok := strings.Cut(e, "=")
-		if !ok || len(v) < 10 {
+		if !ok || v == "" {
 			continue
 		}
 		if looksSecret(k, v) {
@@ -80,6 +80,14 @@ var valuePrefixes = []string{
 	"glpat-",
 	"AIZA",
 	"xox",
+}
+
+// String redacts secret-looking environment variable values in s
+// with their "$NAME" counterparts.
+//
+// Each entry in env should be in "KEY=VALUE" format.
+func String(s string, env []string) string {
+	return redact(env).Replace(s)
 }
 
 func looksSecret(k, v string) bool {

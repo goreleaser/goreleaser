@@ -13,6 +13,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -231,7 +232,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			if err := os.RemoveAll(dir); err != nil {
 				return fmt.Errorf("failed to remove partial clone directory %q: %w", dir, err)
 			}
-			log.WithField("url", url).
+			log.WithField("url", redact.String(url, ctx.Env.Strings())).
 				WithField("dir", dir).
 				Info("cloning")
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})

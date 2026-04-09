@@ -84,10 +84,10 @@ func TestRedact(t *testing.T) {
 			want: "nothing here",
 		},
 		{
-			name: "short value is not redacted",
+			name: "short value is redacted when key looks secret",
 			env:  []string{"MY_TOKEN=short"},
 			in:   "short",
-			want: "short",
+			want: "$MY_TOKEN",
 		},
 		{
 			name: "minimum length value is redacted",
@@ -190,6 +190,24 @@ func TestRedactWriter(t *testing.T) {
 		n, err := io.WriteString(w, "key123key123\n")
 		require.ErrorIs(t, err, io.ErrShortWrite)
 		require.Equal(t, 0, n)
+	})
+}
+
+func TestRedactString(t *testing.T) {
+	t.Parallel()
+
+	t.Run("redacts secrets", func(t *testing.T) {
+		t.Parallel()
+		env := []string{"API_KEY=key123key123"}
+		got := String("using key123key123 to auth", env)
+		require.Equal(t, "using $API_KEY to auth", got)
+	})
+
+	t.Run("no secrets passes through", func(t *testing.T) {
+		t.Parallel()
+		env := []string{"API_KEY=key123key123"}
+		got := String("nothing secret here", env)
+		require.Equal(t, "nothing secret here", got)
 	})
 }
 
