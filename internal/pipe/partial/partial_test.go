@@ -205,6 +205,24 @@ func TestRun(t *testing.T) {
 			require.Equal(t, "linux_ppc64_power9", ctx.PartialTarget)
 		})
 	})
+	t.Run("custom GGOPPC64 with ppc64le", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:   "dist",
+			Builds: []config.Build{{Builder: "go"}},
+		}, testctx.Partial)
+
+		t.Setenv("GGOOS", "linux")
+		t.Setenv("GGOARCH", "ppc64le")
+		t.Run("default", func(t *testing.T) {
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_ppc64le", ctx.PartialTarget)
+		})
+		t.Run("with value", func(t *testing.T) {
+			t.Setenv("GGOPPC64", "power9")
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_ppc64le_power9", ctx.PartialTarget)
+		})
+	})
 	t.Run("custom GGORISCV64", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist:   "dist",

@@ -48,6 +48,7 @@ var archExtraEnvs = map[string][]string{
 	"mips64le": {"GGOMIPS64", "GOMIPS64"},
 	"mipsle":   {"GGOMIPS", "GOMIPS"},
 	"ppc64":    {"GGOPPC64", "GOPPC64"},
+	"ppc64le":  {"GGOPPC64", "GOPPC64"},
 	"riscv64":  {"GGORISCV64", "GORISCV64"},
 }
 
