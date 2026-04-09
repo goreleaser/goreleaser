@@ -230,8 +230,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer srpmFile.Close()
 	if err := packager.Package(info, srpmFile); err != nil {
+		srpmFile.Close()
 		return fmt.Errorf("nfpm failed: %w", err)
 	}
 	if err := srpmFile.Close(); err != nil {
