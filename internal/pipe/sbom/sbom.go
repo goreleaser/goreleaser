@@ -249,7 +249,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 		for _, match := range matches {
 			artifacts = append(artifacts, &artifact.Artifact{
 				Type: artifact.SBOM,
-				Name: filepath.Base(path),
+				Name: filepath.Base(match),
 				Path: match,
 				Extra: map[string]any{
 					artifact.ExtraID: cfg.ID,
