@@ -256,7 +256,6 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 						"args", strings.Join(cmd.Args, " "),
 						"id", d.ID,
 					),
-					gerrors.WithOutput(b.String()),
 				)
 			}
 			return nil
