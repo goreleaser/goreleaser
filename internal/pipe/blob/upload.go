@@ -98,11 +98,16 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
+	provider, err := tmpl.New(ctx).Apply(conf.Provider)
+	if err != nil {
+		return err
+	}
+
 	up := &productionUploader{
 		cacheControl:       conf.CacheControl,
 		contentDisposition: conf.ContentDisposition,
 	}
-	if conf.Provider == "s3" && conf.ACL != "" {
+	if provider == "s3" && conf.ACL != "" {
 		up.beforeWrite = func(asFunc func(any) bool) error {
 			req := &s3.PutObjectInput{}
 			if !asFunc(&req) {
