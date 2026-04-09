@@ -3,7 +3,6 @@ package winget
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -21,7 +20,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 	}
 
 	filename := winget.PackageIdentifier + extFor(tp)
-	path := path.Join(ctx.Config.Dist, "winget", winget.Path, filename)
+	path := filepath.Join(ctx.Config.Dist, "winget", winget.Path, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
