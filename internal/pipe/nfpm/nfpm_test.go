@@ -943,6 +943,45 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipeInvalidContentMTimeReportsCorrectValue(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		NFPMs: []config.NFPM{
+			{
+				// top-level MTime is empty, so the bug would show an empty
+				// value in the error instead of the actual invalid value.
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []config.NFPMContent{
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+							FileInfo: config.FileInfo{
+								MTime: "not-a-date",
+							},
+						},
+					},
+				},
+				Formats: []string{"deb"},
+				Builds:  []string{"default"},
+			},
+		},
+	})
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "/does/not/matter",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
+	err := Pipe{}.Run(ctx)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "failed to parse not-a-date:")
+}
+
 func TestNoBuildsFound(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
