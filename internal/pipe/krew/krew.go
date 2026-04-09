@@ -157,6 +157,7 @@ func templateFields(ctx *context.Context, krew config.Krew) (config.Krew, error)
 		&krew.Description,
 		&krew.Caveats,
 		&krew.ShortDescription,
+		&krew.SkipUpload,
 	); err != nil {
 		return config.Krew{}, err
 	}
