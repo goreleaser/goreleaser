@@ -367,7 +367,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			var err error
 			content.FileInfo.ParsedMTime, err = time.Parse(time.RFC3339Nano, content.FileInfo.MTime)
 			if err != nil {
-				return fmt.Errorf("failed to parse %s: %w", fpm.MTime, err)
+				return fmt.Errorf("failed to parse %s: %w", content.FileInfo.MTime, err)
 			}
 		}
 		contents = append(contents, &files.Content{
