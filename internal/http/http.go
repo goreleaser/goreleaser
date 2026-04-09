@@ -49,17 +49,8 @@ func assetOpen(kind string, a *artifact.Artifact) (*asset, error) {
 		return nil, fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
 	return &asset{
-		// Wrap the file so it only exposes io.Reader and io.Closer.
-		// This prevents Go's HTTP client from detecting *os.File and
-		// using sendFile/TransmitFile on Windows, which has a known
-		// data race between the connection's readLoop and writeBody
-		// goroutines on the underlying TCP socket FD.
-		// See: https://github.com/golang/go/issues/78015
-		ReadCloser: struct {
-			io.Reader
-			io.Closer
-		}{Reader: f, Closer: f},
-		Size: s.Size(),
+		ReadCloser: f,
+		Size:       s.Size(),
 	}, nil
 }
 
