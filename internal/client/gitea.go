@@ -173,12 +173,12 @@ func (c *giteaClient) CreateFile(
 	} else {
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
-			// Fall back to 'master' 😭
+			// leave branch empty so the Gitea API uses the repo's
+			// server-side default branch.
 			log.WithField("fileName", path).
 				WithField("projectID", repo.String()).
-				WithField("requestedBranch", branch).
 				WithError(err).
-				Warn("error checking for default branch, using master")
+				Warn("error checking for default branch, using server default")
 		}
 	}
 

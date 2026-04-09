@@ -903,7 +903,7 @@ func TestGiteaCreateFileDefaultBranchError(t *testing.T) {
 	client, err := newGitea(ctx, "giteatoken")
 	require.NoError(t, err)
 
-	// No branch specified, getDefaultBranch will fail, falls back to master
+	// No branch specified, getDefaultBranch will fail, falls back to server default
 	repo := Repo{Owner: "someone", Name: "something"}
 	err = client.CreateFile(ctx, config.CommitAuthor{Name: "test", Email: "test@test.com"}, repo, []byte("content"), "newfile.txt", "test commit")
 	require.NoError(t, err)
