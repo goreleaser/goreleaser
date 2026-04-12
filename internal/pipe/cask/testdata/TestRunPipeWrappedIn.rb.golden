@@ -4,14 +4,14 @@ cask "wrappedin" do
 
   on_macos do
     on_intel do
-      url "https://dummyhost/download/v#{version}/bin_amd64.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin_amd64.tar.gz"
       rename "wrappedin_1.0.1_darwin_amd64/wrappedin", "wrappedin"
       rename "wrappedin_1.0.1_darwin_amd64/other", "other"
     end
     on_arm do
-      url "https://dummyhost/download/v#{version}/bin_arm64.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin_arm64.tar.gz"
       rename "wrappedin_1.0.1_darwin_arm64/wrappedin", "wrappedin"
       rename "wrappedin_1.0.1_darwin_arm64/other", "other"
     end
@@ -19,8 +19,8 @@ cask "wrappedin" do
 
   on_linux do
     on_intel do
-      url "https://dummyhost/download/v#{version}/bin_linux.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin_linux.tar.gz"
       rename "wrappedin_1.0.1_linux_amd64/wrappedin", "wrappedin"
       rename "wrappedin_1.0.1_linux_amd64/other", "other"
     end
