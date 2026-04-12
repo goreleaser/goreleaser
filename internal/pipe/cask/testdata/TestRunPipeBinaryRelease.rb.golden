@@ -3,8 +3,8 @@ cask "foo" do
   version "1.2.1"
 
   on_macos do
-    url "https://dummyhost/download/v#{version}/foo_macos"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    url "https://dummyhost/download/v#{version}/foo_macos"
     binary "foo_macos", target: "foo"
   end
 

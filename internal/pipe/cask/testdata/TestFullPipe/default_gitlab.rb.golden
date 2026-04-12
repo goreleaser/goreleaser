@@ -4,19 +4,19 @@ cask "default_gitlab" do
 
   on_macos do
     on_intel do
-      url "https://dummyhost/download/v#{version}/bin.tgz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin.tgz"
     end
     on_arm do
-      url "https://dummyhost/download/v#{version}/bin.txz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin.txz"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://dummyhost/download/v#{version}/bin.tar.zst"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin.tar.zst"
     end
   end
 

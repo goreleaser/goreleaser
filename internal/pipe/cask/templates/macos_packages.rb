@@ -1,8 +1,8 @@
 {{- define "macos_packages" }}
 {{- range $element := .MacOSPackages }}
   {{- if eq $element.Arch "all" }}
-  url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
   sha256 "{{ $element.SHA256 }}"
+  url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
   {{- if .Binary }}
   binary "{{ .Name }}", target: "{{ .Binary }}"
   {{- end }}
@@ -14,8 +14,8 @@
   {{- if eq $element.Arch "arm64" }}
   on_arm do
   {{- end }}
-    url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
     sha256 "{{ $element.SHA256 }}"
+    url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
     {{- if .Binary }}
     binary "{{ .Name }}", target: "{{ .Binary }}"
     {{- end }}
