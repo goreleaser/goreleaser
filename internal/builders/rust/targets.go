@@ -56,13 +56,30 @@ func (t Target) String() string {
 // clean returns the target without any gnu version suffix.
 // this is used by cargo-zigbuild internally.
 func (t Target) clean() string {
-	if strings.Contains(t.Target, "-gnu.") {
-		prefix, _, ok := strings.Cut(t.Target, ".")
-		if ok {
-			return prefix
-		}
+	if clean, ok := stripGlibcVersion(t.Target); ok {
+		return clean
 	}
 	return t.Target
+}
+
+// stripGlibcVersion removes a glibc version suffix (e.g., ".2.17") from
+// gnu-based targets.
+// Returns the base target and true if a suffix was stripped.
+func stripGlibcVersion(target string) (string, bool) {
+	prefix, _, ok := strings.Cut(target, ".")
+	if !ok {
+		return target, false
+	}
+	// only gnu-based ABIs use glibc (not gnullvm which is Windows/LLVM)
+	lastDash := strings.LastIndex(prefix, "-")
+	if lastDash == -1 {
+		return target, false
+	}
+	abi := prefix[lastDash+1:]
+	if strings.HasPrefix(abi, "gnu") && abi != "gnullvm" {
+		return prefix, true
+	}
+	return target, false
 }
 
 func convertToGoarch(s string) string {
@@ -91,11 +108,8 @@ func isValid(target string) bool {
 	targetsOnce.Do(func() {
 		allTargets = strings.Split(string(allTargetsBts), "\n")
 	})
-	if strings.Contains(target, "-gnu.") {
-		prefix, _, ok := strings.Cut(target, ".")
-		if ok {
-			return slices.Contains(allTargets, prefix)
-		}
+	if clean, ok := stripGlibcVersion(target); ok {
+		return slices.Contains(allTargets, clean)
 	}
 	return slices.Contains(allTargets, target)
 }
