@@ -149,6 +149,16 @@ Projects that use Cargo workspaces might not work depending on usage.
 If you want to try it, add `-p=[name]` to the `flags` property.
 We might improve this in the future.
 
+### Custom glibc version
+
+By default, a `target` ending in `-gnu` will have Zig implicitly build for
+a default version of glibc that varies based on the release of Zig (v15
+releases default to glibc 2.31) (see
+[cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild#specify-glibc-version)).
+
+To override the default verison of glibc, you can append that version to the
+`target` in question, e.g. `x86_64-unknown-linux-gnu.2.38`.
+
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
