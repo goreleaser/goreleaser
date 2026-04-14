@@ -53,6 +53,12 @@ func (b *Builder) AllowConcurrentBuilds() bool { return false }
 // Prepare implements build.PreparedBuilder.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	for _, target := range build.Targets {
+		if strings.Contains(target, "-gnu.") {
+			prefix, _, ok := strings.Cut(target, ".")
+			if ok {
+				target = prefix
+			}
+		}
 		out, err := exec.CommandContext(ctx, "rustup", "target", "add", target).CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("could not add target %s: %w: %s", target, err, string(out))
