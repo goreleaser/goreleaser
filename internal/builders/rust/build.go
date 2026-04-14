@@ -53,11 +53,8 @@ func (b *Builder) AllowConcurrentBuilds() bool { return false }
 // Prepare implements build.PreparedBuilder.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	for _, target := range build.Targets {
-		if strings.Contains(target, "-gnu.") {
-			prefix, _, ok := strings.Cut(target, ".")
-			if ok {
-				target = prefix
-			}
+		if clean, ok := stripGlibcVersion(target); ok {
+			target = clean
 		}
 		out, err := exec.CommandContext(ctx, "rustup", "target", "add", target).CombinedOutput()
 		if err != nil {

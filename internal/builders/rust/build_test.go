@@ -61,9 +61,21 @@ func TestCustomGlibc(t *testing.T) {
 		})
 		require.NoError(t, err)
 	})
+	t.Run("valid-gnueabihf", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"armv7-unknown-linux-gnueabihf.2.17"},
+		})
+		require.NoError(t, err)
+	})
 	t.Run("invalid", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
 			Targets: []string{"aarch64-unknown-linux-musl.2.17"},
+		})
+		require.ErrorContains(t, err, "invalid target")
+	})
+	t.Run("invalid-gnullvm", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"aarch64-pc-windows-gnullvm.2.17"},
 		})
 		require.ErrorContains(t, err, "invalid target")
 	})
@@ -220,6 +232,40 @@ func TestParse(t *testing.T) {
 			Libc:   "2.17",
 		}, target)
 	})
+	t.Run("glibc-version-gnueabihf", func(t *testing.T) {
+		target, err := Default.Parse("armv7-unknown-linux-gnueabihf.2.17")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target: "armv7-unknown-linux-gnueabihf.2.17",
+			Os:     "linux",
+			Arch:   "arm",
+			Vendor: "unknown",
+			Abi:    "gnueabihf",
+			Libc:   "2.17",
+		}, target)
+	})
+}
+
+func TestStripGlibcVersion(t *testing.T) {
+	for name, tt := range map[string]struct {
+		input string
+		want  string
+		ok    bool
+	}{
+		"gnu":       {"aarch64-unknown-linux-gnu.2.17", "aarch64-unknown-linux-gnu", true},
+		"gnueabihf": {"armv7-unknown-linux-gnueabihf.2.17", "armv7-unknown-linux-gnueabihf", true},
+		"gnueabi":   {"arm-unknown-linux-gnueabi.2.31", "arm-unknown-linux-gnueabi", true},
+		"no-suffix": {"aarch64-unknown-linux-gnu", "aarch64-unknown-linux-gnu", false},
+		"musl":      {"aarch64-unknown-linux-musl.2.17", "aarch64-unknown-linux-musl.2.17", false},
+		"gnullvm":   {"aarch64-pc-windows-gnullvm.2.17", "aarch64-pc-windows-gnullvm.2.17", false},
+		"no-dashes": {"nodashes.2.17", "nodashes.2.17", false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, ok := stripGlibcVersion(tt.input)
+			require.Equal(t, tt.ok, ok)
+			require.Equal(t, tt.want, got)
+		})
+	}
 }
 
 func TestIsSettingPackage(t *testing.T) {
