@@ -582,6 +582,10 @@ func checkBuildElipsis(
 		return nil, nil, err
 	}
 
+	if len(mains) > 1 && !build.InternalDefaults.ID {
+		return nil, nil, errors.New("'main' contains an ellipsis path (e.g. './...') and resolves to more than one main package, and 'id' is set: either set 'main' to a specific package, or unset 'id'")
+	}
+
 	var bins []string
 	var pkgs []string
 	t := options.Target.(Target)
@@ -596,7 +600,11 @@ func checkBuildElipsis(
 		}
 		bins = append(bins, name)
 		pkgs = append(pkgs, mains[bin])
-		binaries = append(binaries, getBinaryArtifact(t, build, name, path, options.Ext))
+		a := getBinaryArtifact(t, build, name, path, options.Ext)
+		if len(mains) > 1 && build.InternalDefaults.ID {
+			a.Extra[artifact.ExtraID] = bin
+		}
+		binaries = append(binaries, a)
 	}
 
 	logBuild(pkgs, bins, t.String())

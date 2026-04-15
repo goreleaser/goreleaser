@@ -120,6 +120,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	}
 	if build.ID == "" {
 		build.ID = ctx.Config.ProjectName
+		build.InternalDefaults.ID = true
 	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)

@@ -521,6 +521,10 @@ type BuildInternalDefaults struct {
 	// whether the pipe set the current binary.
 	// this is true when the user didn't set a binary name.
 	Binary bool
+
+	// whether the pipe set the current ID.
+	// this is true when the user didn't set an ID.
+	ID bool
 }
 
 type BuildDetailsOverride struct {
