@@ -318,6 +318,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	build := ctx.Config.Builds[0]
 	require.Equal(t, ctx.Config.ProjectName, build.ID)
+	require.True(t, build.InternalDefaults.ID)
 	require.Equal(t, ctx.Config.ProjectName, build.Binary)
 	require.Equal(t, ".", build.Dir)
 	require.Equal(t, []string{"linux", "darwin", "windows"}, build.Goos)

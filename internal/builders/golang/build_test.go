@@ -646,12 +646,13 @@ func TestBuildVariadic(t *testing.T) {
 	writeMainWithoutMainFunc(t, filepath.Join(folder, "cmd/nope"))
 
 	build := config.Build{
-		ID:     "foo",
 		Main:   "./...",
 		Binary: "foo",
 		InternalDefaults: config.BuildInternalDefaults{
 			Binary: true,
+			ID:     true,
 		},
+		ID: "foo",
 		Targets: []string{
 			"linux_amd64",
 			"windows_amd64",
@@ -710,7 +711,7 @@ func TestBuildVariadic(t *testing.T) {
 			Target:  "linux_amd64_v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
-				artifact.ExtraID:      "foo",
+				artifact.ExtraID:      "a",
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "a",
 				artifact.ExtraBuilder: "go",
@@ -740,7 +741,7 @@ func TestBuildVariadic(t *testing.T) {
 			Target:  "windows_amd64_v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
-				artifact.ExtraID:      "foo",
+				artifact.ExtraID:      "a",
 				artifact.ExtraExt:     ".exe",
 				artifact.ExtraBinary:  "a",
 				artifact.ExtraBuilder: "go",
@@ -769,7 +770,7 @@ func TestBuildVariadic(t *testing.T) {
 			Target: "js_wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
-				artifact.ExtraID:      "foo",
+				artifact.ExtraID:      "a",
 				artifact.ExtraExt:     ".wasm",
 				artifact.ExtraBinary:  "a",
 				artifact.ExtraBuilder: "go",
@@ -1488,6 +1489,9 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 		UnproxiedMain: "./cmd/...",
 		UnproxiedDir:  folder,
 		Dir:           filepath.Join(folder, "dist", "proxy", "foo"),
+		InternalDefaults: config.BuildInternalDefaults{
+			ID: true,
+		},
 	}, options)
 	require.NoError(t, err)
 	require.Equal(t, map[string]string{
@@ -1499,6 +1503,54 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 		require.NotContains(t, b.Path, "github.com/foo/bar")
 		require.Equal(t, filepath.Dir(options.Path), filepath.Dir(b.Path))
 	}
+}
+
+func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
+	}
+
+	_, _, err := checkBuild(config.Build{
+		ID:   "myid",
+		Main: "./cmd/...",
+		Dir:  folder,
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+		},
+	}, options)
+	require.EqualError(t, err, "'main' contains an ellipsis path (e.g. './...') and resolves to more than one main package, and 'id' is set: either set 'main' to a specific package, or unset 'id'")
+}
+
+func TestCheckBuildElipsisSingleMain(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
+	}
+
+	mains, binaries, err := checkBuild(config.Build{
+		ID:   "foo",
+		Main: "./cmd/...",
+		Dir:  folder,
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}, options)
+	require.NoError(t, err)
+	require.Len(t, mains, 1)
+	require.Len(t, binaries, 1)
+	// single main with auto-set ID keeps the default ID
+	require.Equal(t, "foo", binaries[0].Extra[artifact.ExtraID])
 }
 
 func TestOverrides(t *testing.T) {
