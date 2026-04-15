@@ -7,15 +7,14 @@ GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload
 all the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
-## GitHub
-
 Let's see what can be customized in the `release` section for GitHub:
 
 ```yaml {filename=".goreleaser.yaml"}
 release:
-  # Repo in which the release will be created.
+  # Repository in which the release will be created.
   # Default: extracted from the origin remote URL or empty if its private hosted.
-  github:
+  # You can set only one of either 'github', 'gitlab', or 'gitea'.
+  github: # OR gitlab OR gitea
     owner: user
     name: repo
 
@@ -74,7 +73,7 @@ release:
   # Note: if you change this, you might want to change 'url_template' in the
   # subsequent publishers and announcers.
   #
-  # This feature is only available in GoReleaser Pro.
+  # {{< inline_pro >}}
   # Default: '{{ .PrefixedCurrentTag }}'.
   # Templates: allowed.
   tag: "{{ .CurrentTag }}"
@@ -124,7 +123,7 @@ release:
 
   # Header for the release body.
   #
-  # This feature is only available in GoReleaser Pro.
+  # {{< inline_pro >}}
   header:
     # Loads from an URL.
     from_url:
@@ -149,7 +148,7 @@ release:
 
   # Footer for the release body.
   #
-  # This feature is only available in GoReleaser Pro.
+  # {{< inline_pro >}}
   footer:
     # Loads from an URL.
     from_url:
@@ -200,7 +199,7 @@ release:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the release.
   #
-  # This feature is only available in GoReleaser Pro.
+  # {{< inline_pro >}}
   # Templates: allowed.
   templated_extra_files:
     - src: LICENSE.tpl
@@ -211,141 +210,13 @@ release:
 
 ```
 
-> [!NOTE]
-> [Learn how to set up an API token, GitHub Enterprise, etc](/customization/publish/scm/github/).
+If you need more info on a specific provider, follow along:
 
-{{< featpro >}}
-
-## GitLab
-
-Let's see what can be customized in the `release` section for GitLab.
-
-```yaml {filename=".goreleaser.yaml"}
-release:
-  # Default: extracted from the origin remote URL or empty if its private
-  #  hosted.
-  # You can also use Gitlab's internal project id by setting it in the name
-  #  field and leaving the owner field empty.
-  gitlab:
-    owner: user
-    name: repo
-
-  # IDs of the archives to use.
-  ids:
-    - foo
-    - bar
-
-  # You can change the name of the release.
-  #
-  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro).
-  # Templates: allowed.
-  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
-
-  # You can disable this pipe in order to not upload any artifacts.
-  disable: true
-
-  # What to do with the release notes in case there the release already exists.
-  #
-  # Valid options are:
-  # - `keep-existing`: keep the existing notes
-  # - `append`: append the current release notes to the existing notes
-  # - `prepend`: prepend the current release notes to the existing notes
-  # - `replace`: replace existing notes
-  #
-  # Default: 'keep-existing'.
-  mode: append
-
-  # You can add extra pre-existing files to the release.
-  # The filename on the release will be the last part of the path (base).
-  # If another file with the same name exists, the last one found will be used.
-  #
-  # Templates: allowed.
-  extra_files:
-    - glob: ./path/to/file.txt
-    - glob: ./glob/**/to/**/file/**/*
-    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
-    - glob: ./single_file.txt
-      name_template: file.txt # note that this only works if glob matches 1 file only
-```
-
-> [!NOTE]
-> [Learn how to set up an API token, self-hosted GitLab, etc](/customization/publish/scm/gitlab/).
-
-> [!NOTE]
-> If you use GitLab subgroups, you need to specify it in the `owner` field,
-> e.g. `mygroup/mysubgroup`.
-
-> [!WARNING]
-> Only GitLab `v12.9+` is supported for releases.
-
-## Gitea
-
-You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
-
-```yaml {filename=".goreleaser.yaml"}
-release:
-  gitea:
-    owner: user
-    name: repo
-
-  # IDs of the artifacts to use.
-  ids:
-    - foo
-    - bar
-
-  # You can change the name of the release.
-  #
-  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro).
-  # Templates: allowed.
-  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
-
-  # You can disable this pipe in order to not upload any artifacts.
-  disable: true
-
-  # What to do with the release notes in case there the release already exists.
-  #
-  # Valid options are:
-  # - `keep-existing`: keep the existing notes
-  # - `append`: append the current release notes to the existing notes
-  # - `prepend`: prepend the current release notes to the existing notes
-  # - `replace`: replace existing notes
-  #
-  # Default: 'keep-existing'.
-  mode: append
-
-  # You can add extra pre-existing files to the release.
-  # The filename on the release will be the last part of the path (base).
-  # If another file with the same name exists, the last one found will be used.
-  #
-  # Templates: allowed.
-  extra_files:
-    - glob: ./path/to/file.txt
-    - glob: ./glob/**/to/**/file/**/*
-    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
-    - glob: ./single_file.txt
-      name_template: file.txt # note that this only works if glob matches 1 file only
-```
-
-To enable uploading `tar.gz` and `checksums.txt` files you need to add the
-following to your Gitea config in `app.ini`:
-
-```ini
-[attachment]
-ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|application/x-tgz|application/x-compressed-tar|text/plain
-```
-
-> [!NOTE]
-> [Learn how to set up an API token](/customization/publish/scm/gitea/).
+- [GitHub](/customization/publish/scm/github/)
+- [GitLab](/customization/publish/scm/gitlab/)
+- [Gitea](/customization/publish/scm/gitea/)
 
 {{< templates >}}
-
-> [!WARNING]
-> Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
-> files because of a [bug](https://github.com/go-gitea/gitea/issues/7882),
-> so you will have to enable all file types with `*/*`.
-
-> [!WARNING]
-> `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 ## Custom release notes
 
@@ -371,4 +242,4 @@ Some changelog generators you can use:
 > [!NOTE]
 > If you create the release before running GoReleaser, and the said release
 > has some text in its body, GoReleaser will not override it with its release
-> notes.
+> notes, unless you configure it to do so (e.g. `mode: replace`).

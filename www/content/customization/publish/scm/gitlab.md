@@ -3,6 +3,17 @@ title: "GitLab"
 weight: 20
 ---
 
+> [!WARNING]
+> Only GitLab `v12.9+` is supported for releases.
+
+## Subgroups and project ID
+
+If you use GitLab subgroups, you need to specify it in the `owner` field,
+e.g. `mygroup/mysubgroup`.
+
+You can also use Gitlab's internal project id by setting it in the
+`release.gitlab.name` field and leaving the owner field empty.
+
 ## API Token
 
 GoReleaser requires an API token with the `api` scope selected to deploy the artifacts to GitLab.
