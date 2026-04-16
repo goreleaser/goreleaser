@@ -4,7 +4,7 @@ linkTitle: Flatpak
 weight: 110
 ---
 
-{{< version "v2.15" >}}
+{{< g_version "v2.15" >}}
 
 GoReleaser can create [Flatpak][] bundles (`.flatpak` files) for your Linux
 binaries.
@@ -90,7 +90,7 @@ flatpak:
     disable: "{{ .Env.SKIP_FLATPAK }}"
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 > [!NOTE]
 > **Supported Architectures**

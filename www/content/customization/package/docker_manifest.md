@@ -58,7 +58,7 @@ docker_manifests:
 
     # Retry configuration for manifest operations.
     #
-    # {{< inline_version "v2.12" >}}
+    # {{< g_inline_version "v2.12" >}}
     retry:
       # Attempts of retry.
       #
@@ -97,7 +97,7 @@ docker_manifests:
     use: docker
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## How it works
 
@@ -165,7 +165,7 @@ and push everything to Docker Hub.
 
 ## Using Podman
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use`
 to `podman` on your configuration:

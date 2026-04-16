@@ -16,7 +16,7 @@ announce:
   teams:
     # Whether its enabled or not.
     #
-    # Templates: allowed. {{< inline_version "v2.6" >}}
+    # Templates: allowed. {{< g_inline_version "v2.6" >}}
     enabled: true
 
     # Title template to use while publishing.
@@ -42,4 +42,4 @@ announce:
     icon_url: ""
 ```
 
-{{< templates >}}
+{{< g_templates >}}

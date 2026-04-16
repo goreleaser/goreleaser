@@ -28,7 +28,7 @@ snapcrafts:
 
     # IDs of the builds which should be archived in this package.
     #
-    # {{< inline_version "v2.8" >}} (use 'builds' in previous versions)
+    # {{< g_inline_version "v2.8" >}} (use 'builds' in previous versions)
     # Default: empty (include all).
     ids:
       - foo
@@ -326,7 +326,7 @@ snapcrafts:
           - $HOME/.foobar
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 > [!NOTE]
 > GoReleaser will not install `snapcraft` nor any of its dependencies for you.

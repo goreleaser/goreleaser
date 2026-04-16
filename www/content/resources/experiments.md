@@ -10,7 +10,7 @@ Currently, the following experiments are available.
 
 ## Default `GOARM` change to `7`
 
-{{< version "v2.4" >}}
+{{< g_version "v2.4" >}}
 
 Historically, GoReleaser sets `GOARM` to `6` by default.
 You can make it use `7` instead by setting:

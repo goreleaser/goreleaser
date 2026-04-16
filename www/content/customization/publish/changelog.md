@@ -41,7 +41,7 @@ changelog:
   # - `SHA`: the commit SHA1
   # - `Message`: the first line of the commit message, otherwise known as commit subject
   # - `Authors`: all authors of the commit
-  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git') (since v2.14)
+  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git') {{< g_inline_version "v2.14" >}}
   #
   # An `Author` is composed of:
   # - `Name`: the author full name (considers mailmap if 'git')
@@ -53,7 +53,7 @@ changelog:
   # - `AuthorEmail`: the author email (considers mailmap if 'git')
   # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
   #
-  # Usage with 'github': {{< inline_version "v2.8" >}}
+  # Usage with 'github':
   format: "{{.SHA}}: {{.Message}}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
 
   # Sorts the changelog by the commit's messages.
@@ -92,8 +92,8 @@ changelog:
   # Title of the changelog.
   #
   # Default: "Changelog".
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.12" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.12" >}}
   # Templates: allowed.
   title: "Release Notes"
 
@@ -176,9 +176,9 @@ changelog:
 
 ## Enhance with AI
 
-{{< featpro >}}
+{{< g_featpro >}}
 
-{{< version "v2.6" >}}
+{{< g_version "v2.6" >}}
 
 You can also use AI to enhance your release notes:
 

@@ -75,8 +75,8 @@ sboms:
     #               the cwd should be cataloged
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc)
-    # - installer:  Installers (MSI, NSIS, macOS pkgs) {{< inline_pro >}}
-    # - diskimage:  macOS DMG disk images {{< inline_pro >}}
+    # - installer:  Installers (MSI, NSIS, macOS pkgs) {{< g_inline_pro >}}
+    # - diskimage:  macOS DMG disk images {{< g_inline_pro >}}
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
     #
@@ -94,7 +94,7 @@ sboms:
     #
     # Default: 'true'.
     # Templates: allowed.
-    # {{< inline_version "v2.10" >}}
+    # {{< g_inline_version "v2.10" >}}
     disable: true
 ```
 

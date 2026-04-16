@@ -98,13 +98,13 @@ notarize:
         # Allows to set the signature entitlements XML file.
         #
         # Templates: allowed.
-        # {{< inline_version "v2.6" >}}
+        # {{< g_inline_version "v2.6" >}}
         entitlements: ./path/to/entitlements.xml
 
       # Then, we notarize the binaries.
       #
       # You can leave this section empty if you only want
-      # to sign the binaries ({{< inline_version "v2.1" >}})
+      # to sign the binaries ({{< g_inline_version "v2.1" >}})
       notarize:
         # The issuer ID.
         # Its the UUID you see when creating the App Store Connect key.
@@ -136,7 +136,7 @@ notarize:
         timeout: 20m
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 ### GitHub Actions
 
@@ -183,8 +183,8 @@ jobs:
 
 ## Native
 
-{{< version "v2.8" >}}
-{{< featpro >}}
+{{< g_version "v2.8" >}}
+{{< g_featpro >}}
 
 This method can sign and notarize [App Bundles](/customization/package/app_bundles/)
 and [macOS Pkgs][macospkg], but it depends on `xcrun`, `codesign`, and
@@ -217,7 +217,7 @@ notarize:
       # When "pkg": signs MacOSPkg with productsign, notarizes MacOSPkg.
       #
       # Default: "dmg".
-      # {{< inline_version "v2.14" >}}
+      # {{< g_inline_version "v2.14" >}}
       use: dmg
 
       # Before notarizing, we need to sign the artifact.
@@ -256,7 +256,7 @@ notarize:
         wait: true
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 {{< details title="Creating a profile" closed="true" >}}
 

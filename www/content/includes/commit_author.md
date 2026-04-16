@@ -1,6 +1,6 @@
     # Git author used to commit to the repository.
     #
-    # Default: inferred from global metadata. {{< inline_version "v2.12" >}}
+    # Default: inferred from global metadata. {{< g_inline_version "v2.12" >}}
     commit_author:
       # Git author name.
       #
@@ -17,14 +17,14 @@
       # allowing GitHub to automatically sign commits with the GitHub App identity.
       # See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
       #
-      # Since: v2.13.
+      # {{< g_inline_version "v2.13" >}}
       # Default: false.
       use_github_app_token: false
 
       # Git commit signing configuration.
       # Only useful if repository is of type 'git'.
       #
-      # Since: v2.11.
+      # {{< g_inline_version "v2.11" >}}
       signing:
         # Enable commit signing.
         enabled: true

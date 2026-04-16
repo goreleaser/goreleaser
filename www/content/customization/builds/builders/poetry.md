@@ -3,7 +3,7 @@ title: Poetry
 weight: 80
 ---
 
-{{< version "v2.9" >}}
+{{< g_version "v2.9" >}}
 
 You can now build Python `wheel` and `sdist` files using `poetry build` and
 GoReleaser!

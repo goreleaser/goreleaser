@@ -170,6 +170,6 @@ Please refer to the [Makeself documentation][Makeself] for more information.
 > create executable files.
 > Make sure your target users can execute them on their systems.
 
-{{< templates >}}
+{{< g_templates >}}
 
 [Makeself]: https://makeself.io/

@@ -3,7 +3,7 @@ title: "Nightlies"
 weight: 40
 ---
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 Whether you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
@@ -41,7 +41,7 @@ nightly:
   # end up with no published nightly releases.
   #
   # Default: value of 'release.draft'.
-  # {{< inline_version "v2.12" >}}
+  # {{< g_inline_version "v2.12" >}}
   draft: true
 ```
 
@@ -55,7 +55,7 @@ When you run GoReleaser with `--nightly`, it will set the `Version` template
 variable to the evaluation of `nightly.name_template`. This means that if you
 use `{{ .Version }}` on your name templates, you'll get the nightly version.
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## What is skipped when using `--nightly`?
 

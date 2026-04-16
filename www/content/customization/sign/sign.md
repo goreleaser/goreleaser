@@ -63,8 +63,8 @@ signs:
     # - checksum:   checksum files
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc)
-    # - installer:  Installers (MSI, NSIS, macOS Pkgs) {{< inline_pro >}}
-    # - diskimage:  macOS DMG disk images {{< inline_pro >}}
+    # - installer:  Installers (MSI, NSIS, macOS Pkgs) {{< g_inline_pro >}}
+    # - diskimage:  macOS DMG disk images {{< g_inline_pro >}}
     # - archive:    archives from archive pipe
     # - sbom:       any SBOMs generated for other artifacts
     # - binary:     binaries (only when `archives.format` is 'binary', use binary_signs otherwise)
@@ -83,8 +83,8 @@ signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}
-    # {{< inline_version "v2.2" >}}
+    # {{< g_inline_pro >}}
+    # {{< g_inline_version "v2.2" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -118,7 +118,7 @@ signs:
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Templates: allowed. {{< inline_version "v2.13" >}}
+    # Templates: allowed. {{< g_inline_version "v2.13" >}}
     output: true
 ```
 

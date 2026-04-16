@@ -25,7 +25,7 @@ You can join the discussion [in our Discord][discord].
 
 ## Use AI to increment your release notes
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can now use ChatGPT, Anthropic, and Ollama to increment/change your release
 notes.
@@ -49,7 +49,7 @@ You can read the full docs [here](/customization/publish/changelog).
 
 ## New macOS App Bundle capatilities
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 On [macOS App Bundles](/customization/package/app_bundles), you may now set extra
 files (and templated extra files), and use that to override your `Info.plist`

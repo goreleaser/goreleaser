@@ -3,9 +3,9 @@ title: "Hooks"
 weight: 10
 ---
 
-{{< version "v2.1" >}}
+{{< g_version "v2.1" >}}
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.
@@ -36,7 +36,7 @@ before_publish:
     # - checksum:   checksum files
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc) and macOS .pkg
-    # - installer:  Installers (MSI, NSIS, macOS pkgs) {{< inline_pro >}}
+    # - installer:  Installers (MSI, NSIS, macOS pkgs) {{< g_inline_pro >}}
     # - diskimage:  macOS DMG disk images
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
@@ -66,4 +66,4 @@ before_publish:
       - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
 ```
 
-{{< templates >}}
+{{< g_templates >}}

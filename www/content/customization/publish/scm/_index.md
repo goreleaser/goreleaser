@@ -41,7 +41,7 @@ release:
   # Whether to use an existing draft release as the target release.
   #
   # Available only for GitHub.
-  # {{< inline_version "v2.5" >}}
+  # {{< g_inline_version "v2.5" >}}
   use_existing_draft: true
 
   # Whether to remove an artifact that already exists.
@@ -73,7 +73,7 @@ release:
   # Note: if you change this, you might want to change 'url_template' in the
   # subsequent publishers and announcers.
   #
-  # {{< inline_pro >}}
+  # {{< g_inline_pro >}}
   # Default: '{{ .PrefixedCurrentTag }}'.
   # Templates: allowed.
   tag: "{{ .CurrentTag }}"
@@ -99,7 +99,7 @@ release:
   # Available only for GitHub.
   #
   # Default: true.
-  # Templates: allowed. {{< inline_version "v2.6" >}}
+  # Templates: allowed. {{< g_inline_version "v2.6" >}}
   make_latest: true
 
   # What to do with the release notes in case the release already exists.
@@ -123,7 +123,7 @@ release:
 
   # Header for the release body.
   #
-  # {{< inline_pro >}}
+  # {{< g_inline_pro >}}
   header:
     # Loads from an URL.
     from_url:
@@ -148,7 +148,7 @@ release:
 
   # Footer for the release body.
   #
-  # {{< inline_pro >}}
+  # {{< g_inline_pro >}}
   footer:
     # Loads from an URL.
     from_url:
@@ -199,7 +199,7 @@ release:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the release.
   #
-  # {{< inline_pro >}}
+  # {{< g_inline_pro >}}
   # Templates: allowed.
   templated_extra_files:
     - src: LICENSE.tpl
@@ -216,7 +216,7 @@ If you need more info on a specific provider, follow along:
 - [GitLab](/customization/publish/scm/gitlab/)
 - [Gitea](/customization/publish/scm/gitea/)
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Custom release notes
 

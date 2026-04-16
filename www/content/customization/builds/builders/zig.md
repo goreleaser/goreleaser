@@ -3,7 +3,7 @@ title: Zig
 weight: 40
 ---
 
-{{< version "v2.5" >}}
+{{< g_version "v2.5" >}}
 
 You can now build Zig binaries using `zig build` and GoReleaser!
 
@@ -104,4 +104,4 @@ ABI as `.Abi`.
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
 
-{{< templates >}}
+{{< g_templates >}}

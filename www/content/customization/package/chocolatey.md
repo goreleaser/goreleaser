@@ -54,8 +54,8 @@ chocolateys:
     # Which format to use.
     #
     # Valid options are:
-    # - 'msi':     msi installers (requires the MSI pipe configured) {{< inline_pro >}}
-    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< inline_pro >}}
+    # - 'msi':     msi installers (requires the MSI pipe configured) {{< g_inline_pro >}}
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< g_inline_pro >}}
     # - 'archive': archives (only if format is zip),
     #
     # Default: 'archive'.
@@ -145,7 +145,7 @@ chocolateys:
 > Chocolatey packages are manually reviewed, so please, be mindful to not
 > publish "testing" packages that you do not intend on having published.
 
-{{< templates >}}
+{{< g_templates >}}
 
 > [!NOTE]
 > GoReleaser will not install `chocolatey`/`choco` nor any of its dependencies

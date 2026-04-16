@@ -159,9 +159,9 @@ v2.13.0 we made **a lot** of improvements:
 You can install or upgrade using your favorite package manager, or see the
 full release notes and download the pre-compiled binaries from GitHub:
 
-{{< button href="https://goreleaser.com/install" label="Install" icon="download" primary="true" >}}
-{{< button href="https://github.com/goreleaser/goreleaser/releases/tag/v2.13.0" label="v2.13.0 (OSS)" icon="github" primary="false" >}}
-{{< button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.13.0" label="v2.13.0 (Pro)" icon="github" primary="false" >}}
+{{< g_button href="https://goreleaser.com/install" label="Install" icon="download" primary="true" >}}
+{{< g_button href="https://github.com/goreleaser/goreleaser/releases/tag/v2.13.0" label="v2.13.0 (OSS)" icon="github" primary="false" >}}
+{{< g_button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.13.0" label="v2.13.0 (Pro)" icon="github" primary="false" >}}
 
 ## Helping out
 
@@ -169,7 +169,7 @@ You can help by reporting issues, contributing features, documentation
 improvements, and bug fixes.
 You can also sponsor the project, or get a GoReleaser Pro license.
 
-{{< button href="https://goreleaser.com/pro" label="Get the Pro license" icon="pro" primary="true" >}}
-{{< button href="https://goreleaser.com/sponsors" label="Sponsor the project" icon="sponsor" primary="false" >}}
+{{< g_button href="https://goreleaser.com/pro" label="Get the Pro license" icon="pro" primary="true" >}}
+{{< g_button href="https://goreleaser.com/sponsors" label="Sponsor the project" icon="sponsor" primary="false" >}}
 
 [discord]: https://goreleaser.com/discord

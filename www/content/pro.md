@@ -88,7 +88,7 @@ If you use the GitHub action, you will want to set the `distribution` option to
 
 ### Offline licenses
 
-{{< version "v2.14" >}}
+{{< g_version "v2.14" >}}
 
 If you run GoReleaser in an environment without internet access (air-gapped),
 you can export an offline license and use it instead of the regular key.

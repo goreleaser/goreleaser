@@ -1,7 +1,14 @@
 {{- $file := .Get "file" -}}
 {{- $lang := .Get "lang" | default "" -}}
 {{- $path := path.Join "content" $file -}}
-{{- $content := readFile $path -}}
+{{- $content := "" -}}
+{{- with site.GetPage $file -}}
+  {{- $content = .RenderShortcodes -}}
+{{- else -}}
+  {{- $content = readFile $path -}}
+{{- end -}}
+{{/* Strip internal Hugo context markers left by RenderShortcodes */}}
+{{- $content = replaceRE `\{\{__hugo_ctx[^}]*\}\}` "" $content -}}
 {{/* Strip YAML frontmatter (--- ... ---) */}}
 {{- $content = replaceRE "(?s)^---\\s*\\n.*?\\n---\\s*\\n" "" $content -}}
 {{/* Strip leading blank lines */}}

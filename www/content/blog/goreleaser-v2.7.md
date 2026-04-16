@@ -14,7 +14,7 @@ Let's dig into some of the news!
 
 ## Simplified versioning
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 GoReleaser Pro always had a `-pro` suffix in its versions.
 This doesn't make a lot of sense, as the project is already called
@@ -31,7 +31,7 @@ Regardless, let us know if you find any issues.
 
 ## MSI Improvements
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 The MSI builder got some nice improvements in this release:
 
@@ -40,7 +40,7 @@ The MSI builder got some nice improvements in this release:
 
 ## New Package Repository Features
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 Package repository integrations got better:
 
@@ -50,7 +50,7 @@ Package repository integrations got better:
 
 ## Conditional Hooks
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can now use conditions in hooks with the new `if` property, allowing more
 granular control over when hooks should run.

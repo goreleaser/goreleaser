@@ -67,4 +67,4 @@ Environment variables are inherited and overridden in the following order:
 - build (`builds[].env`)
 - hook (`builds[].hooks.pre[].env` and `builds[].hooks.post[].env`)
 
-{{< templates >}}
+{{< g_templates >}}

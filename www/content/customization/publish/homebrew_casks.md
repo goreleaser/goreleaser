@@ -4,7 +4,7 @@ linkTitle: Homebrew
 weight: 90
 ---
 
-{{< version "v2.10" >}}
+{{< g_version "v2.10" >}}
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _Homebrew Cask_ into a repository (_Tap_) that you have access to.
@@ -51,7 +51,7 @@ homebrew_casks:
     # App to use instead of the binary.
     # This will then make GoReleaser use only the DMG files instead of archives.
     #
-    # {{< inline_pro >}}
+    # {{< g_inline_pro >}}
     # Templates: allowed.
     app: Foo.app
 
@@ -74,7 +74,7 @@ homebrew_casks:
     #
     # All fields except `executable` are optional.
     #
-    # {{< inline_version "v2.15" >}}
+    # {{< g_inline_version "v2.15" >}}
     generate_completions_from_executable:
       # Path to the executable inside the cask bundle.
       #
@@ -204,7 +204,7 @@ homebrew_casks:
 
     # Hooks for the cask lifecycle.
     #
-    # Templates: allowed. {{< inline_version "v2.13" >}}
+    # Templates: allowed. {{< g_inline_version "v2.13" >}}
     hooks:
       pre:
         install: |
@@ -253,10 +253,10 @@ homebrew_casks:
         - "~/.foo/bar"
         - "~/otherfile"
 
-{{% include file="includes/repository.md" %}}
+{{% g_include file="includes/repository.md" %}}
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Signing and Notarizing
 
@@ -309,7 +309,7 @@ homebrew_casks:
 
 ## Versioned Casks
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 GoReleaser can also create a versioned Cask.
 For instance, you might want to make keep previous minor versions available to
@@ -396,4 +396,4 @@ homebrew_casks:
         - "X-GitHub-Api-Version: 2022-11-28"
 ```
 
-{{% include file="includes/prs.md" %}}
+{{% g_include file="includes/prs.md" %}}

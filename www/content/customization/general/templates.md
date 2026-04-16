@@ -38,7 +38,7 @@ In fields that support templates, these fields are always available:
 | `.IsDraft`         | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
 | `.IsSnapshot`      | `true` if `--snapshot` is set, `false` otherwise                                                           |
 | `.IsNightly`       | `true` if `--nightly` is set, `false` otherwise                                                            |
-| `.IsSingleTarget`  | `true` if `--single-target` is set, `false` otherwise {{< inline_version "v2.3" >}}                        |
+| `.IsSingleTarget`  | `true` if `--single-target` is set, `false` otherwise {{< g_inline_version "v2.3" >}}                        |
 | `.Env`             | a map with system's environment variables                                                                  |
 | `.Date`            | current UTC date in RFC 3339 format                                                                        |
 | `.Now`             | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
@@ -51,27 +51,27 @@ In fields that support templates, these fields are always available:
 | `.TagBody`         | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
-| `.Outputs`         | custom outputs {{< inline_version "v2.11" >}}                                                              |
+| `.Outputs`         | custom outputs {{< g_inline_version "v2.11" >}}                                                              |
 
 ## Common Fields (Pro)
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 | Key                    | Description                                                                            |
 | ---------------------- | -------------------------------------------------------------------------------------- |
 | `.PrefixedTag`         | the current git tag prefixed with the monorepo config tag prefix (if any)              |
 | `.PrefixedPreviousTag` | the previous git tag prefixed with the monorepo config tag prefix (if any)             |
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                  |
-| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) {{< inline_version "v2.8" >}} |
-| `.IsMerging`           | `true` if you are running with `--merge` {{< inline_version "v2.8" >}}                 |
+| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) {{< g_inline_version "v2.8" >}} |
+| `.IsMerging`           | `true` if you are running with `--merge` {{< g_inline_version "v2.8" >}}                 |
 | `.Artifacts`           | [the current artifacts list](#artifacts)                                               |
-| `.Metadata`            | [project metadata fields](#metadata) {{< inline_version "v2.13" >}}                    |
+| `.Metadata`            | [project metadata fields](#metadata) {{< g_inline_version "v2.13" >}}                    |
 
 ## Metadata
 
-{{< featpro >}}
+{{< g_featpro >}}
 
-{{< version "v2.13" >}}
+{{< g_version "v2.13" >}}
 
 If you use the `.Metadata` field, it evaluates to the project metadata configuration.
 You can access all fields defined in the `metadata` section of your config:
@@ -86,7 +86,7 @@ You can access all fields defined in the `metadata` section of your config:
 
 ## Artifacts
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 If you use the `.Artifacts` field, it evaluates to an
 [`artifact.Artifact` list](https://pkg.go.dev/github.com/goreleaser/goreleaser@main/internal/artifact#Artifact).
@@ -99,12 +99,12 @@ You should be able to use all its fields on each item:
 - `.Goarm`
 - `.Gomips`
 - `.Goamd64`
-- `.Goarm64` {{< inline_version "v2.4" >}}
-- `.Gomips64` {{< inline_version "v2.4" >}}
-- `.Goppc64` {{< inline_version "v2.4" >}}
-- `.Goriscv64` {{< inline_version "v2.4" >}}
-- `.Go386` {{< inline_version "v2.4" >}}
-- `.Target` {{< inline_version "v2.5" >}}
+- `.Goarm64` {{< g_inline_version "v2.4" >}}
+- `.Gomips64` {{< g_inline_version "v2.4" >}}
+- `.Goppc64` {{< g_inline_version "v2.4" >}}
+- `.Goriscv64` {{< g_inline_version "v2.4" >}}
+- `.Go386` {{< g_inline_version "v2.4" >}}
+- `.Target` {{< g_inline_version "v2.5" >}}
 - `.Type`
 - `.Extra`
 
@@ -120,14 +120,14 @@ may have some extra fields:
 | `.Arm`          | `GOARM`                                                     |
 | `.Mips`         | `GOMIPS`                                                    |
 | `.Amd64`        | `GOAMD64`                                                   |
-| `.Arm64`        | `GOARM64` {{< inline_version "v2.4" >}}                     |
-| `.Mips64`       | `GOMIPS64` {{< inline_version "v2.4" >}}                    |
-| `.Ppc64`        | `GOPPC64` {{< inline_version "v2.4" >}}                     |
-| `.Riscv64`      | `GORISCV64` {{< inline_version "v2.4" >}}                   |
-| `.I386`         | `GO386` {{< inline_version "v2.4" >}}                       |
-| `.Target`       | the whole target {{< inline_version "v2.5" >}}              |
+| `.Arm64`        | `GOARM64` {{< g_inline_version "v2.4" >}}                     |
+| `.Mips64`       | `GOMIPS64` {{< g_inline_version "v2.4" >}}                    |
+| `.Ppc64`        | `GOPPC64` {{< g_inline_version "v2.4" >}}                     |
+| `.Riscv64`      | `GORISCV64` {{< g_inline_version "v2.4" >}}                   |
+| `.I386`         | `GO386` {{< g_inline_version "v2.4" >}}                       |
+| `.Target`       | the whole target {{< g_inline_version "v2.5" >}}              |
 | `.Binary`       | artifact name (without the extension)                       |
-| `.ArtifactID`   | artifact id {{< inline_version "v2.3" >}}{{< inline_pro >}} |
+| `.ArtifactID`   | artifact id {{< g_inline_version "v2.3" >}}{{< g_inline_pro >}} |
 | `.ArtifactName` | artifact name                                               |
 | `.ArtifactPath` | absolute path to artifact                                   |
 | `.ArtifactExt`  | artifact extension (e.g. `.exe`, `.dmg`, etc)               |
@@ -182,34 +182,34 @@ On all fields, you have these available functions:
 | `incpatch "v1.2.4"`               | increments the patch of the given version[^panic-if-not-semver]                                                                 |
 | `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                                 |
 | `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                                 |
-| `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) {{< inline_version "v2.5" >}}                        |
-| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) {{< inline_version "v2.9" >}} |
-| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) {{< inline_version "v2.9" >}} |
-| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) {{< inline_version "v2.15" >}}      |
-| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) {{< inline_version "v2.9" >}}                      |
-| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) {{< inline_version "v2.9" >}}                          |
-| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) {{< inline_version "v2.9" >}}                 |
-| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}      |
-| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256) {{< inline_version "v2.9" >}}                 |
-| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1) {{< inline_version "v2.9" >}}                       |
-| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512) {{< inline_version "v2.9" >}}                 |
-| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}  |
-| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}  |
-| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}  |
-| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}  |
-| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read {{< inline_version "v2.12" >}}                                             |
-| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string {{< inline_version "v2.12" >}}                             |
-| `englishJoin`                     | will join multiple items in english {{< inline_version "v2.14" >}}                                                              |
+| `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) {{< g_inline_version "v2.5" >}}                        |
+| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) {{< g_inline_version "v2.9" >}} |
+| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) {{< g_inline_version "v2.9" >}} |
+| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) {{< g_inline_version "v2.15" >}}      |
+| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) {{< g_inline_version "v2.9" >}}                      |
+| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) {{< g_inline_version "v2.9" >}}                          |
+| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) {{< g_inline_version "v2.9" >}}                 |
+| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}      |
+| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256) {{< g_inline_version "v2.9" >}}                 |
+| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1) {{< g_inline_version "v2.9" >}}                       |
+| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512) {{< g_inline_version "v2.9" >}}                 |
+| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
+| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
+| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
+| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
+| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read {{< g_inline_version "v2.12" >}}                                             |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string {{< g_inline_version "v2.12" >}}                             |
+| `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                         |
 
 ## Functions (Pro)
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 | Usage                                | Description                                                                                                                                                                                                                              |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `in (list "a" "b" "c") "b"`          | checks if a slice contains a value                                                                                                                                                                                                       |
-| `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments {{< inline_version "v2.8" >}} |
+| `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments {{< g_inline_version "v2.8" >}} |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
@@ -236,7 +236,7 @@ GOVERSION=$(go version | awk '{print $3;}') goreleaser
 
 ## Custom variables
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can also declare custom variables. This feature is specially useful with
 [includes](/customization/general/includes/), so you can have more generic configuration

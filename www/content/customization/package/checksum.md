@@ -75,4 +75,4 @@ checksum:
       dst: LICENSE.txt
 ```
 
-{{< templates >}}
+{{< g_templates >}}

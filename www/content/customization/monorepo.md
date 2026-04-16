@@ -3,7 +3,7 @@ title: "Monorepo"
 weight: 25
 ---
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 If you want to use GoReleaser within a monorepo and use tag prefixes to mark
 "which tags belong to which sub project", GoReleaser has you covered.
