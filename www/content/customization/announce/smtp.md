@@ -14,7 +14,7 @@ announce:
   smtp:
     # Whether its enabled or not.
     #
-    # Templates: allowed. {{< inline_version "v2.6" >}}
+    # Templates: allowed. {{< g_inline_version "v2.6" >}}
     enabled: true
 
     # SMTP Host.
@@ -53,4 +53,4 @@ announce:
     subject_template: "GoReleaser {{ .Tag }} was just released!"
 ```
 
-{{< templates >}}
+{{< g_templates >}}

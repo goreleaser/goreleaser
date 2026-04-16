@@ -52,8 +52,8 @@ blobs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}
-    # {{< inline_version "v2.3" >}}
+    # {{< g_inline_pro >}}
+    # {{< g_inline_version "v2.3" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -133,7 +133,7 @@ blobs:
     extra_files_only: true
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Authentication
 

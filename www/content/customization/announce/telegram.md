@@ -22,7 +22,7 @@ announce:
   telegram:
     # Whether it's enabled or not.
     #
-    # Templates: allowed. {{< inline_version "v2.6" >}}
+    # Templates: allowed. {{< g_inline_version "v2.6" >}}
     enabled: true
 
     # Integer or `@` representation of your channel.
@@ -32,7 +32,7 @@ announce:
 
     # Specific thread ID to reply to.
     #
-    # {{< inline_version "v2.15" >}}
+    # {{< g_inline_version "v2.15" >}}
     message_thread_id: 1234
 
     # Message template to use while publishing.
@@ -59,4 +59,4 @@ You can format your message using `MarkdownV2` or `HTML`, for reference, see the
 You can also follow [our channel on Telegram](https://t.me/goreleasernews) if
 you'd like.
 
-{{< templates >}}
+{{< g_templates >}}

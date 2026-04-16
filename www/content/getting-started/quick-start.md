@@ -225,7 +225,7 @@ We have a ton of example repositories!
 You can use them to learn more and see how GoReleaser works.
 
 <br>
-{{< button href="https://github.com/orgs/goreleaser/repositories?q=example" label="Browse example repositories" icon="github" primary="true" >}}
+{{< g_button href="https://github.com/orgs/goreleaser/repositories?q=example" label="Browse example repositories" icon="github" primary="true" >}}
 
 ## Dry run
 

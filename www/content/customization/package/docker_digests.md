@@ -3,7 +3,7 @@ title: "Docker Digests"
 weight: 160
 ---
 
-{{< version "v2.12" >}}
+{{< g_version "v2.12" >}}
 
 Creates a `digests.txt` file with the digests and image names of all images and
 manifests published.
@@ -30,7 +30,7 @@ docker_digest:
 See [this page](/customization/publish/attestations/) for information on how to use this to attest
 images.
 
-{{< templates >}}
+{{< g_templates >}}
 
 > [!WARNING]
 > **`sha256:` prefix**

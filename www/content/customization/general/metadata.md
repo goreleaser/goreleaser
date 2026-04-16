@@ -18,31 +18,31 @@ metadata:
   # The maintainers of this software.
   # Most features will only use the first maintainer defined here.
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.1" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   maintainers:
     - "Foo Bar <foo at bar dot com>"
 
   # SPDX identifier of your app's license.
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.1" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   license: "MIT"
 
   # Your homepage.
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.1" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   homepage: "https://example.com/"
 
   # Your app's description.
   # Sometimes also referred as "short description".
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.1" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   description: "Software to create fast and easy drum rolls."
 
@@ -51,8 +51,8 @@ metadata:
   # It can be a string directly, or you can use `from_url` or `from_file` to
   # source it from somewhere else.
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.1" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   full_description:
     # Loads from an URL.
@@ -70,8 +70,8 @@ metadata:
 
   # Default git author used to commit to AUR, Homebrew, Winget, Nix, etc.
   #
-  # {{< inline_pro >}}
-  # {{< inline_version "v2.12" >}}
+  # {{< g_inline_pro >}}
+  # {{< g_inline_version "v2.12" >}}
   commit_author:
     # Git author name.
     #
@@ -107,4 +107,4 @@ metadata:
       format: openpgp
 ```
 
-{{< templates >}}
+{{< g_templates >}}

@@ -3,7 +3,7 @@ title: Deno
 weight: 50
 ---
 
-{{< version "v2.6" >}}
+{{< g_version "v2.6" >}}
 
 You can now build TypeScript binaries using `deno compile` and GoReleaser!
 
@@ -112,4 +112,4 @@ the ABI and Vendor as `.Abi` and `.Vendor`, respectively.
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
 
-{{< templates >}}
+{{< g_templates >}}

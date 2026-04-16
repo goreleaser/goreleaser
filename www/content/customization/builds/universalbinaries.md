@@ -55,7 +55,7 @@ universal_binaries:
       post: ./script.sh {{ .Path }}
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 For more info about hooks, see the [build section](/customization/builds/hooks/).
 

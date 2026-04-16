@@ -58,7 +58,7 @@
         # If the repository has a pull request template, it will be appended to
         # this.
         #
-        # Since: v2.12.
+        # {{< g_inline_version "v2.12" >}}
         body: |
           cc/ @foobar
 
@@ -100,8 +100,8 @@
 
     # Git author used to commit to the repository.
     #
-    # {{< inline_version "v2.11" >}}
-    # Default: inferred from global metadata. {{< inline_version "v2.12" >}}
+    # {{< g_inline_version "v2.11" >}}
+    # Default: inferred from global metadata. {{< g_inline_version "v2.12" >}}
     commit_author:
       # Git author name.
       #
@@ -116,7 +116,7 @@
       # Git commit signing configuration.
       # Only useful if repository is of type 'git'.
       #
-      # Since: v2.11.
+      # {{< g_inline_version "v2.11" >}}
       signing:
         # Enable commit signing.
         enabled: true

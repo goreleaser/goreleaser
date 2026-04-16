@@ -350,7 +350,7 @@ and iterate from that.
 Download the `.deb`, `.rpm`, or `.apk` packages from the releases page and
 install them with the appropriate tools.
 
-{{% button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+{{% g_button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
 
 {{< /tab >}}
 {{< tab "Pro" >}}
@@ -358,7 +358,7 @@ install them with the appropriate tools.
 Download the `.deb`, `.rpm`, or `.apk` packages from the releases page and
 install them with the appropriate tools.
 
-{{% button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+{{% g_button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
 
 {{< /tab >}}
 {{< /tabs >}}
@@ -423,7 +423,7 @@ curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION
 Download the pre-compiled binaries from the releases page and copy them to the
 desired location:
 
-{{% button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+{{% g_button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
 
 {{< /tab >}}
 {{< tab "Pro" >}}
@@ -431,7 +431,7 @@ desired location:
 Download the pre-compiled binaries from the releases page and copy them to the
 desired location:
 
-{{% button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+{{% g_button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
 
 {{< /tab >}}
 {{< /tabs >}}

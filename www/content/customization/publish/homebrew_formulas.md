@@ -192,10 +192,10 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-{{% include file="includes/repository.md" %}}
+{{% g_include file="includes/repository.md" %}}
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -262,7 +262,7 @@ Our suggestion is to create a `my-app-head.rb` file on your tap following
 
 ## Versioned formulas
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 GoReleaser can also create a versioned formula.
 For instance, you might want to make keep previous minor versions available to
@@ -295,4 +295,4 @@ You can check the [resource not accessible by integration](https://goreleaser.co
 
 - Only one `GOARM` build is allowed;
 
-{{% include file="includes/prs.md" %}}
+{{% g_include file="includes/prs.md" %}}

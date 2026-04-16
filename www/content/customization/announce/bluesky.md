@@ -16,7 +16,7 @@ announce:
   bluesky:
     # Whether it's enabled or not.
     #
-    # Templates: allowed. {{< inline_version "v2.6" >}}
+    # Templates: allowed. {{< g_inline_version "v2.6" >}}
     enabled: true
 
     # Message template to use while publishing.
@@ -30,4 +30,4 @@ announce:
     username: "my-project.bsky.social"
 ```
 
-{{< templates >}}
+{{< g_templates >}}

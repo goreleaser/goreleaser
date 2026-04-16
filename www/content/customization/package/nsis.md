@@ -3,8 +3,8 @@ title: "NSIS"
 weight: 90
 ---
 
-{{< featpro >}}
-{{< version "v2.14" >}}
+{{< g_featpro >}}
+{{< g_version "v2.14" >}}
 
 GoReleaser can create Nullsoft Scriptable Install System (NSIS) installers for
 Windows binaries using [makensis][].
@@ -68,7 +68,7 @@ nsis:
     # Whether to disable this particular NSIS configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.12" >}}
+    # {{< g_inline_version "v2.12" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Whether to remove the archives from the artifact list.
@@ -131,6 +131,6 @@ Section "Uninstall"
 SectionEnd
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 [makensis]: https://nsis.sourceforge.io/

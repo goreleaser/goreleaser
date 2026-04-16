@@ -26,7 +26,7 @@ dockers:
       - user/repo
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 You also need to create a `Dockerfile` in your project's root directory:
 
@@ -174,7 +174,7 @@ dockers:
 
     # Retry configuration for push operations.
     #
-    # {{< inline_version "v2.12" >}}
+    # {{< g_inline_version "v2.12" >}}
     retry:
       # Attempts of retry.
       #
@@ -220,7 +220,7 @@ dockers:
 > Note that you will have to manually login into the Docker registries you
 > want to push to — GoReleaser does not login by itself.
 
-{{< templates >}}
+{{< g_templates >}}
 
 > [!NOTE]
 > You can also create multi-platform images using the [docker_manifests](/customization/package/docker_manifest/) config.
@@ -246,7 +246,7 @@ This will build and publish the following images:
 
 - `myuser/foo`
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Keeping docker images updated for current major
 
@@ -273,7 +273,7 @@ This will build and publish the following images:
 With these settings you can hopefully push several Docker images
 with multiple tags.
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Publishing to multiple docker registries
 
@@ -324,7 +324,7 @@ docker build -t myuser/myimage . \
   --label=org.opencontainers.image.version=1.6.4
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 ## Use a specific builder with Docker buildx
 
@@ -347,7 +347,7 @@ dockers:
 
 ## Using Podman
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

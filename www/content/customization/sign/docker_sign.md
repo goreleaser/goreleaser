@@ -58,8 +58,8 @@ docker_signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}
-    # {{< inline_version "v2.2" >}}
+    # {{< g_inline_pro >}}
+    # {{< g_inline_version "v2.2" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -81,7 +81,7 @@ docker_signs:
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Templates: allowed. {{< inline_version "v2.13" >}}
+    # Templates: allowed. {{< g_inline_version "v2.13" >}}
     output: true
 ```
 

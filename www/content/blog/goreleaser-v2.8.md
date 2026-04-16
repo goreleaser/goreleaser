@@ -15,7 +15,7 @@ Let's dig into some of the news!
 
 ## New Package Repository Features
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 The Cloudsmith integration now supports multiple distributions.
 
@@ -23,7 +23,7 @@ The Cloudsmith integration now supports multiple distributions.
 
 ## Publish to NPM
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 This is a long asked feature: publish your project to NPM.
 
@@ -37,7 +37,7 @@ You can [read more about it here][npm].
 
 ## Native macOS DMG signing and notarizing
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 GoReleaser Pro and OSS can already sign and notarize binaries, but DMGs and
 `.app`s are a whole different ordeal.
@@ -46,7 +46,7 @@ This version adds support to it, and you can [read more about it here][notary].
 
 ## New templating features
 
-{{< featpro >}}
+{{< g_featpro >}}
 
 - `.IsMerging`: will be `true` if its the final step of a
   [partial build][partial];
@@ -126,9 +126,9 @@ To make options more alike, `archives.builds`, `nfpms.builds`, and
 You can install or upgrade using your favorite package manager, or see the
 full release notes and download the pre-compiled binaries from GitHub:
 
-{{< button href="https://goreleaser.com/install" label="Install" icon="download" primary="true" >}}
-{{< button href="https://github.com/goreleaser/goreleaser/releases/tag/v2.8.0" label="v2.8.0 (OSS)" icon="github" primary="false" >}}
-{{< button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.8.0" label="v2.8.0 (Pro)" icon="github" primary="false" >}}
+{{< g_button href="https://goreleaser.com/install" label="Install" icon="download" primary="true" >}}
+{{< g_button href="https://github.com/goreleaser/goreleaser/releases/tag/v2.8.0" label="v2.8.0 (OSS)" icon="github" primary="false" >}}
+{{< g_button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.8.0" label="v2.8.0 (Pro)" icon="github" primary="false" >}}
 
 ## Helping out
 
@@ -136,8 +136,8 @@ You can help by reporting issues, contributing features, documentation
 improvements, and bug fixes.
 You can also sponsor the project, or get a GoReleaser Pro license.
 
-{{< button href="https://goreleaser.com/pro" label="Get the Pro license" icon="pro" primary="true" >}}
-{{< button href="https://goreleaser.com/sponsors" label="Sponsor the project" icon="sponsor" primary="false" >}}
+{{< g_button href="https://goreleaser.com/pro" label="Get the Pro license" icon="pro" primary="true" >}}
+{{< g_button href="https://goreleaser.com/sponsors" label="Sponsor the project" icon="sponsor" primary="false" >}}
 
 [discord]: https://goreleaser.com/discord
 [npm]: https://goreleaser.com/customization/npm

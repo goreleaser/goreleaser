@@ -40,7 +40,7 @@ kos:
 
     # Base image to publish to use.
     #
-    # Local images will take priority over fetching remote images. {{< inline_version "v2.13" >}}
+    # Local images will take priority over fetching remote images. {{< g_inline_version "v2.13" >}}
     #
     # Default: 'cgr.dev/chainguard/static'.
     base_image: alpine
@@ -117,7 +117,7 @@ kos:
     # Use the local_domain attribute to configure the local registry (e.g. kind.local).
     #
     # Default "goreleaser.ko.local" - local docker registry is used.
-    # {{< inline_version "v2.10" >}}
+    # {{< g_inline_version "v2.10" >}}
     local_domain: "goreleaser.ko.local"
 
     # Ldflags to use on build.
@@ -144,7 +144,7 @@ kos:
     # Whether to disable this particular Ko configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.8" >}}
+    # {{< g_inline_version "v2.8" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.

@@ -38,8 +38,8 @@ scoops:
     # Which format to use.
     #
     # Valid options are:
-    # - 'msi':     msi installers (requires the MSI pipe configured) {{< inline_pro >}}
-    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< inline_pro >}}
+    # - 'msi':     msi installers (requires the MSI pipe configured) {{< g_inline_pro >}}
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< g_inline_pro >}}
     # - 'archive': archives (only if format is zip),
     #
     # This feature is only available in GoReleaser Pro.
@@ -100,10 +100,10 @@ scoops:
     # Default: 'v1'.
     goamd64: v3
 
-{{% include file="includes/repository.md" %}}
+{{% g_include file="includes/repository.md" %}}
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
 By defining the `scoop` section, GoReleaser will take care of publishing the
 Scoop app. Assuming that the project name is `drumroll`, and the current tag is
@@ -140,4 +140,4 @@ You can check the
 [Scoop documentation](https://github.com/lukesampson/scoop/wiki) for more
 details.
 
-{{% include file="includes/prs.md" %}}
+{{% g_include file="includes/prs.md" %}}

@@ -49,7 +49,7 @@ winget:
 
     # Privacy URL.
     #
-    # {{< inline_version "v2.9" >}}
+    # {{< g_inline_version "v2.9" >}}
     # Templates: allowed.
     privacy_url: "https://carlosbecker.com/privacy"
 
@@ -62,7 +62,7 @@ winget:
     # Package name.
     #
     # Default: name.
-    # {{< inline_version "v2.14" >}}
+    # {{< g_inline_version "v2.14" >}}
     # Templates: allowed.
     package_name: "Foo Bar"
 
@@ -76,8 +76,8 @@ winget:
     #
     # Valid options are:
     # - '':        archives or binaries
-    # - 'msi':     msi installers (requires the MSI pipe configured) {{< inline_pro >}}
-    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< inline_pro >}}
+    # - 'msi':     msi installers (requires the MSI pipe configured) {{< g_inline_pro >}}
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< g_inline_pro >}}
     # - 'archive': archives (only if format is zip),
     # - 'binary':  binaries (requires an archive configuration with format set to 'binary' as well)
     #
@@ -165,7 +165,7 @@ winget:
 
     # Installation notes.
     #
-    # {{< inline_version "v2.9" >}}
+    # {{< g_inline_version "v2.9" >}}
     # Templates: allowed.
     installation_notes: "Information on how to install. Can also be a URL"
 
@@ -185,10 +185,10 @@ winget:
         minimum_version: 1.2.3
 
 
-{{% include file="includes/repository.md" %}}
+{{% g_include file="includes/repository.md" %}}
 
 ```
 
-{{< templates >}}
+{{< g_templates >}}
 
-{{% include file="includes/prs.md" %}}
+{{% g_include file="includes/prs.md" %}}
