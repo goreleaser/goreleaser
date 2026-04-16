@@ -571,15 +571,15 @@ func checkBuildElipsis(
 ) (map[string]string, []*artifact.Artifact, error) {
 	logFindingMains(build, main)
 
-	// we should try and find all `func main`'s:
-	if build.Binary != "" && !build.InternalDefaults.Binary {
-		return nil, nil, errors.New("'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
-	}
-
 	var binaries []*artifact.Artifact
 	mains, err := gomain.All(dir, main)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// we should try and find all `func main`'s:
+	if len(mains) > 1 && build.Binary != "" && !build.InternalDefaults.Binary {
+		return nil, nil, errors.New("'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
 	}
 
 	if len(mains) > 1 && !build.InternalDefaults.ID {
