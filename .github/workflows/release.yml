@@ -6,7 +6,7 @@ on:
     tags:
       - "v*"
 permissions:
-  contents: write
+  contents: read
 jobs:
   trigger-generate:
     runs-on: ubuntu-latest
