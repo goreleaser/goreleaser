@@ -1527,6 +1527,29 @@ func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
 	require.EqualError(t, err, "'main' contains an ellipsis path (e.g. './...') and resolves to more than one main package, and 'id' is set: either set 'main' to a specific package, or unset 'id'")
 }
 
+func TestCheckBuildElipsisWithExplicitBinaryError(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
+	}
+
+	_, _, err := checkBuild(config.Build{
+		ID:     "default",
+		Main:   "./cmd/...",
+		Dir:    folder,
+		Binary: "mybin",
+		InternalDefaults: config.BuildInternalDefaults{
+			ID: true,
+		},
+	}, options)
+	require.EqualError(t, err, "'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
+}
+
 func TestCheckBuildElipsisSingleMain(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoMod(t, folder, "github.com/foo/bar")
@@ -1551,6 +1574,27 @@ func TestCheckBuildElipsisSingleMain(t *testing.T) {
 	require.Len(t, binaries, 1)
 	// single main with auto-set ID keeps the default ID
 	require.Equal(t, "foo", binaries[0].Extra[artifact.ExtraID])
+}
+
+func TestCheckBuildElipsisSingleMainWithExplicitBinary(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "mybin"),
+	}
+
+	mains, binaries, err := checkBuild(config.Build{
+		ID:     "foo",
+		Main:   "./cmd/...",
+		Dir:    folder,
+		Binary: "mybin",
+	}, options)
+	require.NoError(t, err)
+	require.Len(t, mains, 1)
+	require.Len(t, binaries, 1)
 }
 
 func TestOverrides(t *testing.T) {
