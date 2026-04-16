@@ -178,7 +178,7 @@ homebrew_casks:
   - repository:
       owner: goreleaser
       name: homebrew-tap
-      token: "{{ .Secrets.GH_PAT }}"
+      token: "{{ .Env.GH_PAT }}"
     homepage: https://goreleaser.com
     description: Release engineering, simplified
     license: MIT
@@ -198,7 +198,7 @@ nix:
     repository:
       owner: goreleaser
       name: nur
-      token: "{{ .Secrets.GH_PAT }}"
+      token: "{{ .Env.GH_PAT }}"
     homepage: https://goreleaser.com
     description: Release engineering, simplified
     path: pkgs/goreleaser/default.nix
@@ -216,7 +216,7 @@ winget:
     repository:
       owner: goreleaser
       name: winget-pkgs
-      token: "{{ .Secrets.GH_PAT }}"
+      token: "{{ .Env.GH_PAT }}"
       branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
@@ -256,7 +256,7 @@ scoops:
   - repository:
       owner: goreleaser
       name: scoop-bucket
-      token: "{{ .Secrets.GH_PAT }}"
+      token: "{{ .Env.GH_PAT }}"
     directory: bucket
     homepage: https://goreleaser.com
     description: Release engineering, simplified
