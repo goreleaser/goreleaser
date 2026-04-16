@@ -7,9 +7,6 @@ on:
       - "v*"
 permissions:
   contents: write
-  id-token: write
-  packages: write
-  attestations: write
 jobs:
   trigger-generate:
     runs-on: ubuntu-latest
@@ -100,6 +97,11 @@ jobs:
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+      attestations: write
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
@@ -170,7 +172,8 @@ jobs:
           version: "~> 2"
           args: release --clean --timeout 60m -f .goreleaser-pro.yaml
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
           MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
           MASTODON_CLIENT_SECRET: ${{ secrets.MASTODON_CLIENT_SECRET }}
           MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
@@ -193,7 +196,7 @@ jobs:
           go build .
           ./goreleaser release --clean --timeout 60m --snapshot
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         if: ${{ always() }}
         with:
