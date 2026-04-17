@@ -13,18 +13,19 @@ import (
 func TestFlipSentinel(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "fake-node")
-		body := append([]byte("prefix\x00\x00"), []byte(Sentinel)...)
-		body = append(body, 0x00, 0xff, 0xee)
+		body := append([]byte("prefix\x00\x00"), []byte(SentinelStock)...)
+		body = append(body, 0xff, 0xee)
 		require.NoError(t, os.WriteFile(path, body, 0o644))
 
 		require.NoError(t, FlipSentinel(path))
 
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
-		idx := bytes.Index(got, []byte(Sentinel))
-		require.GreaterOrEqual(t, idx, 0)
-		require.Equal(t, byte(1), got[idx+len(Sentinel)])
-		require.Equal(t, byte(0xff), got[idx+len(Sentinel)+1])
+		require.Contains(t, string(got), SentinelFused)
+		require.NotContains(t, string(got), SentinelStock)
+		// trailing bytes preserved
+		idx := bytes.Index(got, []byte(SentinelFused))
+		require.Equal(t, byte(0xff), got[idx+len(SentinelFused)])
 	})
 
 	t.Run("missing sentinel", func(t *testing.T) {
@@ -33,6 +34,30 @@ func TestFlipSentinel(t *testing.T) {
 		err := FlipSentinel(path)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, ErrSentinelNotFound))
+	})
+
+	t.Run("already fused", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "fused")
+		body := append([]byte("prefix"), []byte(SentinelFused)...)
+		require.NoError(t, os.WriteFile(path, body, 0o644))
+		err := FlipSentinel(path)
+		require.ErrorIs(t, err, ErrAlreadyFused)
+	})
+
+	t.Run("ambiguous", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "dup")
+		body := append([]byte(SentinelStock), []byte(SentinelStock)...)
+		require.NoError(t, os.WriteFile(path, body, 0o644))
+		err := FlipSentinel(path)
+		require.ErrorIs(t, err, ErrSentinelAmbiguous)
+	})
+
+	t.Run("malformed marker", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "malformed")
+		body := append([]byte(Sentinel), 'x', '0')
+		require.NoError(t, os.WriteFile(path, body, 0o644))
+		err := FlipSentinel(path)
+		require.ErrorIs(t, err, ErrSentinelNotFound)
 	})
 }
 
