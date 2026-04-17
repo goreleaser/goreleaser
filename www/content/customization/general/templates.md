@@ -11,7 +11,19 @@ support templating.
 
 ## Common Fields
 
-In fields that support templates, these fields are always available:
+In fields that support templates, these fields are always available,
+**with one exception**: the top-level `env` block is resolved before the
+git state is collected, so `.FullCommit`, `.Commit`, `.ShortCommit`,
+`.CommitDate`, `.CommitTimestamp`, `.GitURL`, `.GitTreeState`,
+`.IsGitClean`, `.IsGitDirty`, `.Branch`, `.Tag`, `.PreviousTag`, `.Summary`,
+`.TagSubject`, `.TagContents`, and `.TagBody` all evaluate to their
+zero values there (empty strings, or `0001-01-01T00:00:00Z` /
+`-62135596800` for the date/timestamp fields). Use these fields in
+hooks, builds, archives, etc. instead. For reproducible-build use cases
+in particular, the common `SOURCE_DATE_EPOCH={{ .CommitTimestamp }}` trick
+will not work in the top-level `env:` block and should be set in a
+`before.hooks` step or exported from the CI system instead
+(see [goreleaser/goreleaser#6500](https://github.com/goreleaser/goreleaser/issues/6500)).
 
 | Key                | Description                                                                                                |
 | ------------------ | ---------------------------------------------------------------------------------------------------------- |
