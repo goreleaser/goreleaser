@@ -98,7 +98,7 @@ func CacheDir() (string, error) {
 //
 // The caller is responsible for any further mutation (e.g. stripping a
 // code signature) before injecting a SEA blob.
-func downloadHost(ctx context.Context, cacheDir, version string, target Target) (string, error) { //nolint:unparam // PrepareHost will pass varying versions
+func downloadHost(ctx context.Context, cacheDir, version string, target Target) (string, error) {
 	hostDir := filepath.Join(cacheDir, version, string(target))
 	hostPath := filepath.Join(hostDir, target.hostBinaryName())
 

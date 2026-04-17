@@ -19,8 +19,10 @@
 package node
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -29,6 +31,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -110,16 +113,24 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
-// Build implements build.Builder.
+// blobCache memoizes per-build (id, dir) blob generation so we don't
+// invoke `node --experimental-sea-config` once per target.
 //
-// NOTE: the binary-format work (signature stripping + blob injection) is
-// not yet wired in. This stub validates inputs, registers the artifact,
-// and returns a clear error so the rest of the pipeline (config wiring,
-// dependency healthchecks, init template) can be exercised end-to-end.
-// The remaining work tracked in the implementation plan covers
-// internal/nodesea/{unsign_macho,unsign_pe,inject_elf,inject_macho,inject_pe}.go.
+//nolint:gochecknoglobals
+var (
+	blobMu    sync.Mutex
+	blobCache = map[string]blobResult{}
+)
+
+type blobResult struct {
+	bytes   []byte
+	version string
+}
+
+// Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	t := options.Target.(Target)
+	target := nodesea.Target(t.Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
@@ -135,17 +146,121 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		},
 	}
 
-	tpl := tmpl.New(ctx).WithBuildOptions(options).WithArtifact(a)
-
-	if _, err := base.TemplateEnv(build.Env, tpl); err != nil {
+	env := append([]string{}, ctx.Env.Strings()...)
+	tpl := tmpl.New(ctx).WithBuildOptions(options).WithEnvS(env).WithArtifact(a)
+	tenv, err := base.TemplateEnv(build.Env, tpl)
+	if err != nil {
 		return err
 	}
+	env = append(env, tenv...)
 
 	log.WithField("binary", options.Name).
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	return errors.New("nodesea: blob injection not yet implemented; see https://github.com/goreleaser/goreleaser/pull/6136 follow-up")
+	// Resolve config file and validate.
+	seaCfgPath := filepath.Join(build.Dir, "sea-config.json")
+	cfg, err := readSeaConfig(seaCfgPath)
+	if err != nil {
+		return fmt.Errorf("nodesea: %w", err)
+	}
+	if err := rejectIncompatibleSnapshot(cfg, target); err != nil {
+		return err
+	}
+
+	// Generate or fetch cached blob.
+	res, err := ensureBlob(ctx, build, env, seaCfgPath, cfg)
+	if err != nil {
+		return err
+	}
+
+	// Prepare host (download, copy, unsign).
+	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+		return err
+	}
+	if _, err := nodesea.PrepareHost(ctx, res.version, target, options.Path); err != nil {
+		return err
+	}
+
+	// Inject blob and flip sentinel.
+	if err := nodesea.Inject(target, options.Path, res.bytes); err != nil {
+		return fmt.Errorf("nodesea: inject %s: %w", target, err)
+	}
+
+	if err := os.Chmod(options.Path, 0o755); err != nil {
+		return err
+	}
+	if err := base.ChTimes(build, tpl, a); err != nil {
+		return err
+	}
+
+	ctx.Artifacts.Add(a)
+	return nil
+}
+
+func ensureBlob(ctx *context.Context, build config.Build, env []string, seaCfgPath string, cfg *seaConfig) (blobResult, error) {
+	key := build.ID + "\x00" + build.Dir
+	blobMu.Lock()
+	defer blobMu.Unlock()
+	if r, ok := blobCache[key]; ok {
+		return r, nil
+	}
+
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	if err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: resolve node version: %w", err)
+	}
+	log.WithField("version", version).WithField("source", source).
+		Info("resolved node version")
+
+	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", filepath.Base(seaCfgPath)}, env, build.Dir); err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: generate blob: %w", err)
+	}
+
+	blobPath := filepath.Join(build.Dir, cfg.Output)
+	bytes, err := os.ReadFile(blobPath)
+	if err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: read generated blob %s: %w", blobPath, err)
+	}
+
+	res := blobResult{bytes: bytes, version: version}
+	blobCache[key] = res
+	return res, nil
+}
+
+type seaConfig struct {
+	Main         string `json:"main"`
+	Output       string `json:"output"`
+	UseCodeCache bool   `json:"useCodeCache"` //nolint:tagliatelle // node SEA spec
+	UseSnapshot  bool   `json:"useSnapshot"`  //nolint:tagliatelle // node SEA spec
+}
+
+func readSeaConfig(path string) (*seaConfig, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", path, err)
+	}
+	var c seaConfig
+	if err := json.Unmarshal(b, &c); err != nil {
+		return nil, fmt.Errorf("parse %s: %w", path, err)
+	}
+	if c.Main == "" {
+		return nil, fmt.Errorf(`%s: missing "main"`, path)
+	}
+	if c.Output == "" {
+		return nil, fmt.Errorf(`%s: missing "output"`, path)
+	}
+	return &c, nil
+}
+
+func rejectIncompatibleSnapshot(cfg *seaConfig, target nodesea.Target) error {
+	if !cfg.UseCodeCache && !cfg.UseSnapshot {
+		return nil
+	}
+	if string(target) == CurrentTarget() {
+		return nil
+	}
+	return errors.New("nodesea: useCodeCache/useSnapshot are host-specific; remove them when cross-compiling")
 }
 
 // CurrentTarget returns the nodejs.org/dist target identifier matching the
