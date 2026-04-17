@@ -18,11 +18,11 @@ require (
 	github.com/caarlos0/log v0.6.0
 	github.com/charmbracelet/fang v1.0.0
 	github.com/charmbracelet/keygen v0.5.4
-	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.1.0
-	github.com/google/go-containerregistry v0.21.4
+	github.com/gaganhr94/docker-credential-acr v1.0.2
+	github.com/google/go-containerregistry v0.21.5
 	github.com/google/go-github/v84 v84.0.0
 	github.com/google/ko v0.18.2-0.20260407063826-ae9c7272d7de
 	github.com/google/uuid v1.6.0
@@ -60,6 +60,7 @@ require (
 	cel.dev/expr v0.25.1 // indirect
 	cloud.google.com/go/monitoring v1.24.3 // indirect
 	github.com/42wim/httpsig v1.2.4 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.2.3 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azkeys v1.4.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/internal v1.2.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.31.0 // indirect
@@ -140,7 +141,6 @@ require (
 	cloud.google.com/go/longrunning v0.8.0 // indirect
 	cloud.google.com/go/storage v1.59.2 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
-	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
@@ -149,14 +149,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.3 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest v0.11.30 // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.24 // indirect
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13 // indirect
-	github.com/Azure/go-autorest/autorest/azure/cli v0.4.7 // indirect
-	github.com/Azure/go-autorest/autorest/date v0.3.1 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.4.1 // indirect
-	github.com/Azure/go-autorest/logger v0.2.2 // indirect
-	github.com/Azure/go-autorest/tracing v0.6.1 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 // indirect
 	github.com/BurntSushi/toml v1.6.0
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -208,9 +201,8 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
-	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v29.3.1+incompatible // indirect
+	github.com/docker/cli v29.4.0+incompatible // indirect
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/docker-credential-helpers v0.9.5 // indirect
 	github.com/docker/go-connections v0.6.0 // indirect
