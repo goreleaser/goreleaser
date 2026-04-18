@@ -12,7 +12,7 @@ The new major version of [GoReleaser][gorel] is here!
 
 <!--more-->
 
-![GoReelaser banner](https://carlosbecker.com/posts/goreleaser-v2/header.png)
+![GoReelaser banner](https://carlosbecker.com/posts/goreleaser-v2/header.webp)
 
 I first launched [GoReleaser v1.0.0][v1] in November 2021 - 2.5 years ago!
 

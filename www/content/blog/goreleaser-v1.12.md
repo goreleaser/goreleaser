@@ -15,7 +15,7 @@ and this one has 149 since previous feature release!
 
 Definitely a big release, with some big features. Let's dive in!
 
-![GoReleaser Pro release using the new spli/merge feature](https://carlosbecker.com/posts/goreleaser-v1.12/picture.png)
+![GoReleaser Pro release using the new spli/merge feature](https://carlosbecker.com/posts/goreleaser-v1.12/picture.webp)
 
 ### Highlights
 
@@ -35,7 +35,6 @@ Definitely a big release, with some big features. Let's dive in!
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 ### Other news
 

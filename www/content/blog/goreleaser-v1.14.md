@@ -13,7 +13,7 @@ In fact, the last release of the year.
 This one in particular marks the 6 years anniversary of GoReleaser, and is
 packed with new features and improvements.
 
-![Santa](https://carlosbecker.com/posts/goreleaser-v1.14/img.png)
+![Santa](https://carlosbecker.com/posts/goreleaser-v1.14/img.webp)
 
 Let's see what's new:
 
@@ -35,7 +35,6 @@ Let's see what's new:
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 ### Other news
 

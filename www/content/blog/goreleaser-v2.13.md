@@ -17,7 +17,7 @@ stickers!
 
 We also had a booth on GitHub Universe day 1!
 
-![The GoReleaser booth](https://carlosbecker.com/posts/goreleaser-v2.13/booth.png)
+![The GoReleaser booth](https://carlosbecker.com/posts/goreleaser-v2.13/booth.webp)
 
 I don't usually do this kind of thing, but it was pretty fun!
 Thanks to everyone that passed by to chat, and thanks specially to Abby and Lee

@@ -21,7 +21,7 @@ You can read the announcement
 
 ## Finally, air-gapped license checks
 
-![](https://carlosbecker.com/posts/goreleaser-v2.14/img.png)
+![](https://carlosbecker.com/posts/goreleaser-v2.14/img.webp)
 
 If you need to release in an air-gapped environment, you may now export your key
 and validate it offline:
