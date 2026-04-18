@@ -190,7 +190,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 func authProvider(registryURL, method, token string) (auth.Provider, error) {
 	switch method {
 	case proto.MethodGitHub:
-		return auth.NewGitHubATProvider(true, registryURL, token), nil
+		return auth.NewGitHubATProvider(registryURL, token), nil
 	case proto.MethodGitHubOIDC:
 		return auth.NewGitHubOIDCProvider(registryURL), nil
 	case proto.MethodNone:
