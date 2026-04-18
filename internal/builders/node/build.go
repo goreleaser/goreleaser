@@ -207,7 +207,7 @@ func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobRes
 	log.WithField("version", version).WithField("source", source).
 		Info("resolved node version")
 
-	scratch, err := os.MkdirTemp(build.Dir, ".goreleaser-node-sea-*")
+	scratch, err := os.MkdirTemp(ctx.Config.Dist, "node-sea-*")
 	if err != nil {
 		return blobResult{}, fmt.Errorf("nodesea: create scratch dir: %w", err)
 	}
@@ -228,11 +228,11 @@ func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobRes
 		return blobResult{}, fmt.Errorf("nodesea: write sea-config: %w", err)
 	}
 
-	relCfg, err := filepath.Rel(build.Dir, cfgPath)
+	absCfg, err := filepath.Abs(cfgPath)
 	if err != nil {
-		relCfg = cfgPath
+		absCfg = cfgPath
 	}
-	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", relCfg}, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", absCfg}, env, build.Dir); err != nil {
 		return blobResult{}, fmt.Errorf("nodesea: generate blob: %w", err)
 	}
 
