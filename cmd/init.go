@@ -66,7 +66,7 @@ func newInitCmd() *initCmd {
 				example = static.DenoExampleConfig
 			case "node":
 				example = static.NodeExampleConfig
-				gitignoreLines = append(gitignoreLines, "sea-prep.blob", "sea-config.json")
+				gitignoreLines = append(gitignoreLines, "node_modules/")
 			case "uv":
 				example = static.UVExampleConfig
 				gitignoreLines = append(gitignoreLines, "build/")

@@ -96,8 +96,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if len(build.Flags) > 0 {
 		return build, errors.New("flags is not supported for the node builder")
 	}
-	if build.Main != "" {
-		return build, errors.New("main is not supported for the node builder; set it inside sea-config.json")
+	if build.Main == "" {
+		build.Main = "index.js"
 	}
 
 	if err := base.ValidateNonGoConfig(build); err != nil {
@@ -158,18 +158,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	// Resolve config file and validate.
-	seaCfgPath := filepath.Join(build.Dir, "sea-config.json")
-	cfg, err := readSeaConfig(seaCfgPath)
-	if err != nil {
-		return fmt.Errorf("nodesea: %w", err)
-	}
-	if err := rejectIncompatibleSnapshot(cfg, target); err != nil {
-		return err
-	}
-
 	// Generate or fetch cached blob.
-	res, err := ensureBlob(ctx, build, env, seaCfgPath, cfg)
+	res, err := ensureBlob(ctx, build, env)
 	if err != nil {
 		return err
 	}
@@ -198,12 +188,16 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	return nil
 }
 
-func ensureBlob(ctx *context.Context, build config.Build, env []string, seaCfgPath string, cfg *seaConfig) (blobResult, error) {
+func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobResult, error) {
 	key := build.ID + "\x00" + build.Dir
 	blobMu.Lock()
 	defer blobMu.Unlock()
 	if r, ok := blobCache[key]; ok {
 		return r, nil
+	}
+
+	if _, err := os.Stat(filepath.Join(build.Dir, build.Main)); err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
 	}
 
 	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
@@ -213,11 +207,35 @@ func ensureBlob(ctx *context.Context, build config.Build, env []string, seaCfgPa
 	log.WithField("version", version).WithField("source", source).
 		Info("resolved node version")
 
-	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", filepath.Base(seaCfgPath)}, env, build.Dir); err != nil {
+	scratch, err := os.MkdirTemp(build.Dir, ".goreleaser-node-sea-*")
+	if err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: create scratch dir: %w", err)
+	}
+	defer os.RemoveAll(scratch)
+
+	cfgPath := filepath.Join(scratch, "sea-config.json")
+	blobPath := filepath.Join(scratch, "sea-prep.blob")
+	cfg := map[string]any{
+		"main":                          build.Main,
+		"output":                        blobPath,
+		"disableExperimentalSEAWarning": true,
+	}
+	cfgBytes, err := json.Marshal(cfg)
+	if err != nil {
+		return blobResult{}, err
+	}
+	if err := os.WriteFile(cfgPath, cfgBytes, 0o600); err != nil {
+		return blobResult{}, fmt.Errorf("nodesea: write sea-config: %w", err)
+	}
+
+	relCfg, err := filepath.Rel(build.Dir, cfgPath)
+	if err != nil {
+		relCfg = cfgPath
+	}
+	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", relCfg}, env, build.Dir); err != nil {
 		return blobResult{}, fmt.Errorf("nodesea: generate blob: %w", err)
 	}
 
-	blobPath := filepath.Join(build.Dir, cfg.Output)
 	bytes, err := os.ReadFile(blobPath)
 	if err != nil {
 		return blobResult{}, fmt.Errorf("nodesea: read generated blob %s: %w", blobPath, err)
@@ -226,41 +244,6 @@ func ensureBlob(ctx *context.Context, build config.Build, env []string, seaCfgPa
 	res := blobResult{bytes: bytes, version: version}
 	blobCache[key] = res
 	return res, nil
-}
-
-type seaConfig struct {
-	Main         string `json:"main"`
-	Output       string `json:"output"`
-	UseCodeCache bool   `json:"useCodeCache"` //nolint:tagliatelle // node SEA spec
-	UseSnapshot  bool   `json:"useSnapshot"`  //nolint:tagliatelle // node SEA spec
-}
-
-func readSeaConfig(path string) (*seaConfig, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("read %s: %w", path, err)
-	}
-	var c seaConfig
-	if err := json.Unmarshal(b, &c); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", path, err)
-	}
-	if c.Main == "" {
-		return nil, fmt.Errorf(`%s: missing "main"`, path)
-	}
-	if c.Output == "" {
-		return nil, fmt.Errorf(`%s: missing "output"`, path)
-	}
-	return &c, nil
-}
-
-func rejectIncompatibleSnapshot(cfg *seaConfig, target nodesea.Target) error {
-	if !cfg.UseCodeCache && !cfg.UseSnapshot {
-		return nil
-	}
-	if string(target) == CurrentTarget() {
-		return nil
-	}
-	return errors.New("nodesea: useCodeCache/useSnapshot are host-specific; remove them when cross-compiling")
 }
 
 // CurrentTarget returns the nodejs.org/dist target identifier matching the

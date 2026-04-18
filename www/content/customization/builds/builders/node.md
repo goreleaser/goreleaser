@@ -27,8 +27,9 @@ For each requested target, GoReleaser:
    builds are offline.
 3. Strips the existing code signature from the host binary on macOS and
    Windows (no-op on Linux).
-4. Runs `node --experimental-sea-config sea-config.json` to generate the
-   SEA blob.
+4. Generates a minimal `sea-config.json` on the fly (pointing at
+   `builds.main`, with `disableExperimentalSEAWarning: true`) and runs
+   `node --experimental-sea-config` against it to produce the SEA blob.
 5. Copies the prepared host binary to the build output path and injects
    the blob (ELF section / Mach-O segment / PE resource), flipping the
    `NODE_SEA_FUSE_…` sentinel so Node.js loads the embedded
@@ -47,6 +48,11 @@ builds:
     # Default: Project directory name.
     binary: program
 
+    # Entrypoint script bundled into the SEA blob.
+    #
+    # Default: 'index.js'.
+    main: index.js
+
     # Targets, in nodejs.org/dist format.
     # Default: all of: darwin-arm64, darwin-x64, linux-arm64, linux-x64,
     #                  win-arm64, win-x64.
@@ -54,8 +60,8 @@ builds:
       - linux-x64
       - darwin-arm64
 
-    # Path to the project's (sub)directory containing the code, the
-    # sea-config.json, and (typically) package.json.
+    # Path to the project's (sub)directory containing the code and
+    # (typically) package.json.
     #
     # Default: '.'.
     dir: my-app
@@ -83,9 +89,8 @@ builds:
 The following standard build fields are intentionally **not** supported
 by the `node` builder:
 
-- `tool`, `command`, `flags`, `main` — the SEA pipeline invokes `node`
-  directly with a known set of arguments. Configure the build via your
-  `sea-config.json` instead.
+- `tool`, `command`, `flags` — the SEA pipeline invokes `node`
+  directly with a known set of arguments.
 
 ## Version resolution
 
@@ -100,25 +105,6 @@ binary is resolved in this order:
 Either an exact version (`v22.10.0`, `22.10.0`) or a semver range
 (`>=22 <23`, `^22`) is accepted. Ranges are resolved against the
 nodejs.org release index.
-
-## sea-config.json
-
-GoReleaser does not generate a `sea-config.json` for you — keep your own
-under the build `dir`. The minimum is:
-
-```json {filename="sea-config.json"}
-{
-  "main": "dist/index.js",
-  "output": "sea-prep.blob",
-  "disableExperimentalSEAWarning": true
-}
-```
-
-> [!IMPORTANT]
-> When building for a target other than the host platform, you must set
-> `useCodeCache` and `useSnapshot` to `false` (or omit them), because V8
-> code caches and snapshots are platform-specific. GoReleaser will fail
-> the build with a clear message if you violate this.
 
 ## Code signing
 

@@ -1,12 +1,8 @@
 package node
 
 import (
-	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -66,7 +62,14 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, ".", build.Dir)
+		require.Equal(t, "index.js", build.Main)
 		require.ElementsMatch(t, defaultTargets(), build.Targets)
+	})
+
+	t.Run("respects main override", func(t *testing.T) {
+		build, err := Default.WithDefaults(config.Build{Main: "src/cli.mjs"})
+		require.NoError(t, err)
+		require.Equal(t, "src/cli.mjs", build.Main)
 	})
 
 	t.Run("invalid target", func(t *testing.T) {
@@ -92,11 +95,6 @@ func TestWithDefaults(t *testing.T) {
 		})
 		require.ErrorContains(t, err, "flags is not supported")
 	})
-
-	t.Run("rejects main", func(t *testing.T) {
-		_, err := Default.WithDefaults(config.Build{Main: "index.js"})
-		require.ErrorContains(t, err, "main is not supported")
-	})
 }
 
 func TestCurrentTarget(t *testing.T) {
@@ -111,54 +109,4 @@ func TestConvertHelpers(t *testing.T) {
 	require.Equal(t, "arm64", convertToGoarch("arm64"))
 	require.Equal(t, "windows", convertToGoos("win"))
 	require.Equal(t, "linux", convertToGoos("linux"))
-}
-
-func TestReadSeaConfig(t *testing.T) {
-	dir := t.TempDir()
-	t.Run("valid", func(t *testing.T) {
-		p := filepath.Join(dir, "ok.json")
-		require.NoError(t, os.WriteFile(p, []byte(`{"main":"x.js","output":"x.blob"}`), 0o644))
-		cfg, err := readSeaConfig(p)
-		require.NoError(t, err)
-		require.Equal(t, "x.js", cfg.Main)
-		require.Equal(t, "x.blob", cfg.Output)
-	})
-	t.Run("missing main", func(t *testing.T) {
-		p := filepath.Join(dir, "nomain.json")
-		require.NoError(t, os.WriteFile(p, []byte(`{"output":"x.blob"}`), 0o644))
-		_, err := readSeaConfig(p)
-		require.ErrorContains(t, err, `missing "main"`)
-	})
-	t.Run("missing output", func(t *testing.T) {
-		p := filepath.Join(dir, "noout.json")
-		require.NoError(t, os.WriteFile(p, []byte(`{"main":"x.js"}`), 0o644))
-		_, err := readSeaConfig(p)
-		require.ErrorContains(t, err, `missing "output"`)
-	})
-	t.Run("invalid json", func(t *testing.T) {
-		p := filepath.Join(dir, "bad.json")
-		require.NoError(t, os.WriteFile(p, []byte(`{`), 0o644))
-		_, err := readSeaConfig(p)
-		require.Error(t, err)
-	})
-	t.Run("missing file", func(t *testing.T) {
-		_, err := readSeaConfig(filepath.Join(dir, "nope.json"))
-		require.Error(t, err)
-	})
-}
-
-func TestRejectIncompatibleSnapshot(t *testing.T) {
-	host := nodesea.Target(CurrentTarget())
-	other := nodesea.Target("linux-x64")
-	if string(host) == "linux-x64" {
-		other = "darwin-arm64"
-	}
-
-	require.NoError(t, rejectIncompatibleSnapshot(&seaConfig{}, other))
-	require.NoError(t, rejectIncompatibleSnapshot(&seaConfig{UseSnapshot: true}, host))
-	require.Error(t, rejectIncompatibleSnapshot(&seaConfig{UseSnapshot: true}, other))
-	require.Error(t, rejectIncompatibleSnapshot(&seaConfig{UseCodeCache: true}, other))
-
-	// silence runtime import on platforms where current target diverges
-	_ = runtime.GOOS
 }
