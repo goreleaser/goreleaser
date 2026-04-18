@@ -34,7 +34,7 @@ GoReleaser v2 is basically the same as the [GoReleaser v1.26.2][last-v1] - the
 latest v1.
 The differences between them should be only the removal of deprecated options.
 
-[goreleaser --version](https://carlosbecker.com/posts/goreleaser-v2/pro.png)
+[goreleaser --version](https://carlosbecker.com/posts/goreleaser-v2/pro.webp)
 
 All that being said, we do have a lot of new features since the [first v1][v1].
 Here's an incomplete list with some of my favorites:

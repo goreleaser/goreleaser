@@ -63,8 +63,9 @@ to update your configuration, fixing deprecated options.
 
 Here's how it looks like on [Charm's Crush](https://charm.land/crush):
 
-![Choosing the prompt](https://carlosbecker.com/posts/goreleaser-v2.13/crush1.png)
-![Running it](https://carlosbecker.com/posts/goreleaser-v2.13/crush2.png)
+![Choosing the
+prompt](https://carlosbecker.com/posts/goreleaser-v2.13/crush1.webp)
+![Running it](https://carlosbecker.com/posts/goreleaser-v2.13/crush2.webp)
 
 There's also a prompt to fix all the issues with
 [Cosign v3](https://goreleaser.com/blog/cosign-v3/).

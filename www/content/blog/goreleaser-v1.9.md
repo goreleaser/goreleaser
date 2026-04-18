@@ -30,7 +30,7 @@ You can see the full changelog [here](https://github.com/goreleaser/goreleaser/
 
 ## **Other news**
 
-![We hit 10k stars!](https://carlosbecker.com/posts/goreleaser-v1.9/23d24a10-64ad-4fbd-aa37-d7e0367fe9d9.png)
+![We hit 10k stars!](https://carlosbecker.com/posts/goreleaser-v1.9/23d24a10-64ad-4fbd-aa37-d7e0367fe9d9.webp)
 
 - Still no community meeting, sorry 🫠. [Link](https://github.com/goreleaser/community/pull/2).
 - We hit 10k stars on our [main repository](https://github.com/goreleaser/goreleaser)!
