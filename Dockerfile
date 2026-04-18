@@ -1,11 +1,13 @@
+# Pull syft, cosign, and docker-buildx from their upstream images so we
+# control the dependency versions (Alpine packages bundle older grpc, see
+# CVE-2026-33186) and Dependabot can keep these tags up to date.
+FROM anchore/syft:v1.42.4@sha256:e9f29bec38cc856bfd3a7966d2f99711b5b244a531bf121da9de3b47789eecfa AS syft
+FROM gcr.io/projectsigstore/cosign:v3.0.6@sha256:de9c65609e6bde17e6b48de485ee788407c9502fa08b8f4459f595b21f56cd00 AS cosign
+FROM docker/buildx-bin:0.33.0@sha256:450be95fa632a3986797cd23b8b5d8d5fff47e9fd8e1fa483c9d44b07da2a559 AS buildx
+
 FROM golang:1.26.2-alpine@sha256:c2a1f7b2095d046ae14b286b18413a05bb82c9bca9b25fe7ff5efef0f0826166
 
 ARG TARGETPLATFORM
-
-# Pinned tool versions — update these to pull newer upstream releases.
-ARG SYFT_VERSION=1.42.4
-ARG COSIGN_VERSION=3.0.6
-ARG BUILDX_VERSION=0.33.0
 
 RUN apk add --no-cache bash \
 	build-base \
@@ -20,26 +22,9 @@ RUN apk add --no-cache bash \
 	tini \
 	upx
 
-# Install syft, cosign, and docker-buildx from upstream releases to control
-# dependency versions and avoid CVEs in Alpine-packaged binaries.
-RUN set -eux; \
-	case "${TARGETPLATFORM}" in \
-		linux/amd64) ARCH=amd64 ;; \
-		linux/arm64) ARCH=arm64 ;; \
-		*) echo "unsupported platform: ${TARGETPLATFORM}" >&2; exit 1 ;; \
-	esac; \
-	# syft
-	curl -fsSL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_${ARCH}.tar.gz" \
-		| tar xz -C /usr/bin syft; \
-	# cosign
-	curl -fsSL -o /usr/bin/cosign \
-		"https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-${ARCH}"; \
-	chmod +x /usr/bin/cosign; \
-	# docker-buildx
-	mkdir -p /usr/libexec/docker/cli-plugins; \
-	curl -fsSL -o /usr/libexec/docker/cli-plugins/docker-buildx \
-		"https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-${ARCH}"; \
-	chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --from=syft   /syft          /usr/bin/syft
+COPY --from=cosign /ko-app/cosign /usr/bin/cosign
+COPY --from=buildx /buildx        /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 CMD [ "-h" ]
