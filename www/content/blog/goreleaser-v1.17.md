@@ -12,7 +12,7 @@ The Easter release is here!
 
 <!--more-->
 
-![better docker image build error output](https://carlosbecker.com/posts/goreleaser-v1.17/img.png)
+![better docker image build error output](https://carlosbecker.com/posts/goreleaser-v1.17/img.webp)
 
 It is packed with some juicy features and tons of bug fixes and quality-of-life
 improvements.
@@ -36,7 +36,6 @@ Let's take a look:
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 ### Other news
 

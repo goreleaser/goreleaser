@@ -110,7 +110,7 @@ the full list of configuration fields and an example Fedora-style spec template.
 
 ## New website
 
-![goreleaser.com](https://carlosbecker.com/posts/goreleaser-v2.15/img.png)
+![goreleaser.com](https://carlosbecker.com/posts/goreleaser-v2.15/img.webp)
 
 We migrated the documentation website from Material for MkDocs to
 Hugo with the Hextra theme.

@@ -14,7 +14,7 @@ It comes packed with some great features and fixes by several people!
 
 <!--more-->
 
-![Christmas GoReleaser gopher!](https://carlosbecker.com/posts/goreleaser-v1.2/a49c5832-6576-42ce-989f-f717cd8096f1.png)
+![Christmas GoReleaser gopher!](https://carlosbecker.com/posts/goreleaser-v1.2/a49c5832-6576-42ce-989f-f717cd8096f1.webp)
 
 Here are some highlights:
 

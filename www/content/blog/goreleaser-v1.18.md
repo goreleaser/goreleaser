@@ -13,7 +13,7 @@ first like to thank all the maintainers out there for the hard work, you rock!
 
 <!--more-->
 
-![new goreleaser -v output (pro)](https://carlosbecker.com/posts/goreleaser-v1.18/img1.png)
+![new goreleaser -v output (pro)](https://carlosbecker.com/posts/goreleaser-v1.18/img1.webp)
 
 Now, onto new features!
 
@@ -162,7 +162,6 @@ Thanks for the comprehension. 😃
 You can [install][] or upgrade using your favorite package manager, or see the
 full release notes and download the pre-compiled binaries [here][oss-rel] and
 [here (for Pro)][pro-rel].
-
 
 [install]: /getting-started/install/
 [oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.18.0
