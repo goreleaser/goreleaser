@@ -16,7 +16,7 @@ This is not a flashy release, but I bet you're going to like it anyway 😄
 
 ## Highlights
 
-![Releasing...](https://carlosbecker.com/posts/goreleaser-v1.20/pic.png)
+![Releasing...](https://carlosbecker.com/posts/goreleaser-v1.20/pic.webp)
 
 ### Nightlies
 
@@ -87,7 +87,6 @@ As always, we also had a bunch of bug fixes and documentation improvements.
 You can [install][] or upgrade using your favorite package manager, or see the
 full release notes and download the pre-compiled binaries [here][oss-rel] and
 [here (for Pro)][pro-rel].
-
 
 ## Helping out
 

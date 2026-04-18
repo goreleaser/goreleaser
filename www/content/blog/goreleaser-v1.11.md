@@ -18,7 +18,7 @@ Oh, and, over 100 commits!
 It might be the biggest GoReleaser release in commits made, although I have no
 data to back it up — except my memory.
 
-![GoReleaser Screenshot](https://carlosbecker.com/posts/goreleaser-v1.11/picture.png)
+![GoReleaser Screenshot](https://carlosbecker.com/posts/goreleaser-v1.11/picture.webp)
 
 ### Highlights
 

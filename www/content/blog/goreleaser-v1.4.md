@@ -13,7 +13,7 @@ Repositories!
 
 <!--more-->
 
-![neofetch in an arch linux container](https://carlosbecker.com/posts/goreleaser-v1.4/0fab21e9-bab6-4ba6-bd6a-c99b63c868a8.png)
+![neofetch in an arch linux container](https://carlosbecker.com/posts/goreleaser-v1.4/0fab21e9-bab6-4ba6-bd6a-c99b63c868a8.webp)
 
 This amazing new feature was sponsored by [Charm](https://charm.sh/).
 

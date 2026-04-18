@@ -12,7 +12,7 @@ This release contains several minor improvements and a couple of new features! L
 
 <!--more-->
 
-![goreleaser changelog preview](https://carlosbecker.com/posts/goreleaser-v1.9/136319f0-2346-4c3b-aa77-e239a7563527.png)
+![goreleaser changelog preview](https://carlosbecker.com/posts/goreleaser-v1.9/136319f0-2346-4c3b-aa77-e239a7563527.webp)
 
 ## **Highlights**
 

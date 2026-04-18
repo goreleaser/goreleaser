@@ -10,7 +10,7 @@ authors:
 
 GoReleaser can help you, to some extent, to have reproducible builds.
 
-![](https://carlosbecker.com/posts/goreleaser-reproducible-buids/c4824165-c6e2-40df-b4b5-8abe443195ce.png)
+![](https://carlosbecker.com/posts/goreleaser-reproducible-buids/c4824165-c6e2-40df-b4b5-8abe443195ce.webp)
 
 <!--more-->
 
