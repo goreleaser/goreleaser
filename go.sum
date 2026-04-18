@@ -514,8 +514,8 @@ github.com/goreleaser/fileglob v1.4.0 h1:Y7zcUnzQjT1gbntacGAkIIfLv+OwojxTXBFxjSF
 github.com/goreleaser/fileglob v1.4.0/go.mod h1:1pbHx7hhmJIxNZvm6fi6WVrnP0tndq6p3ayWdLn1Yf8=
 github.com/goreleaser/go-shellwords v1.0.13 h1:ivvhC/RvUyud74c0urb1ZGYWPYGibY5QiFzcwHCege4=
 github.com/goreleaser/go-shellwords v1.0.13/go.mod h1:UtDFSSvW7wQL/4jmyzZbuP6HfI6R+oSm0v63cs61oDw=
-github.com/goreleaser/nfpm/v2 v2.46.1 h1:VObAFc002Ez41dbTPQR0qksTDfWe41OIiTOGVmFSEOw=
-github.com/goreleaser/nfpm/v2 v2.46.1/go.mod h1:A4DesiyEHGqJ2QQR83mtTU9qFO0m+IRIAZ9jtOBxsrI=
+github.com/goreleaser/nfpm/v2 v2.46.3 h1:sMNcGjbVnABe33avsFo++WwKubY8msP5j9ieulX09VI=
+github.com/goreleaser/nfpm/v2 v2.46.3/go.mod h1:wYKICOnvMALZcoGM20TcP9QuIV+Fb9fmLH364HyTvDQ=
 github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05 h1:iillcQW89rysvFhPQKQEKfQNcQi+Yu+f2DH1ZF7i6kQ=
 github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05/go.mod h1:gDef5vWJO4JWWFeWCnJ+hQnJsAEQWazvzmh39qd5Ods=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
