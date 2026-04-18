@@ -8,13 +8,18 @@ import (
 
 // Inject dispatches to the format-appropriate injector for the given
 // target binary. It is a no-op error when target is not one of the three
-// supported formats.
+// supported formats. After injection, Mach-O binaries are also ad-hoc
+// codesigned because macOS arm64 kernels refuse to exec unsigned
+// binaries.
 func Inject(target Target, hostPath string, blob []byte) error {
 	switch FormatFor(target.Goos()) {
 	case FormatELF:
 		return InjectELF(hostPath, blob)
 	case FormatMachO:
-		return InjectMachO(hostPath, blob)
+		if err := InjectMachO(hostPath, blob); err != nil {
+			return err
+		}
+		return AdHocSignMachO(hostPath, "")
 	case FormatPE:
 		return InjectPE(hostPath, blob)
 	default:

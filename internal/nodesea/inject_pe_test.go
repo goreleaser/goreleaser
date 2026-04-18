@@ -28,18 +28,22 @@ func TestInjectPE(t *testing.T) {
 		f, err := pe.NewFile(newReadSeeker(got))
 		require.NoError(t, err)
 
-		var rsrc *pe.Section
+		// Resources now live in the new ".sea" section we appended.
+		var sea *pe.Section
 		for _, s := range f.Sections {
-			if s.Name == ".rsrc" {
-				rsrc = s
+			if s.Name == ".sea" {
+				sea = s
 			}
 		}
-		require.NotNil(t, rsrc)
+		require.NotNil(t, sea, "appended SEA section missing")
 
 		// Parse the new resource tree and locate our entry.
-		raw2, err := rsrc.Data()
+		raw2, err := sea.Data()
 		require.NoError(t, err)
-		tree, err := parseResourceDir(raw2, 0, rsrc.VirtualAddress)
+		// sea.Data() may return the padded raw size — the resource tree
+		// itself is shorter; parseResourceDir tolerates trailing zeros
+		// because it walks counts.
+		tree, err := parseResourceDir(raw2, 0, sea.VirtualAddress)
 		require.NoError(t, err)
 		entry := tree.find(rtRCData, PEResourceName)
 		require.NotNil(t, entry, "NODE_SEA_BLOB resource missing")

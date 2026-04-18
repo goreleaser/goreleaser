@@ -30,8 +30,12 @@ func (b *peBuilder) build() []byte {
 		sectionHdrCnt = 2
 	}
 
-	totalLen := dosStubLen + peSigLen + fileHeaderLen + optHeaderLen +
-		sectionHdrLen*int(sectionHdrCnt) + sectionDataLen
+	// Align section data start to FileAlignment (0x200), as real PEs do.
+	headersEnd := dosStubLen + peSigLen + fileHeaderLen + optHeaderLen +
+		sectionHdrLen*int(sectionHdrCnt)
+	const fileAlign = 0x200
+	textRawOff := uint32((headersEnd + fileAlign - 1) &^ (fileAlign - 1))
+	totalLen := int(textRawOff) + sectionDataLen
 	if b.rsrcSize > 0 {
 		totalLen += b.rsrcSize
 	}
@@ -68,7 +72,6 @@ func (b *peBuilder) build() []byte {
 	binary.LittleEndian.PutUint32(buf[textOff+8:], sectionDataLen)  // VirtualSize
 	binary.LittleEndian.PutUint32(buf[textOff+12:], 0x1000)         // VirtualAddress
 	binary.LittleEndian.PutUint32(buf[textOff+16:], sectionDataLen) // SizeOfRawData
-	textRawOff := uint32(dosStubLen + peSigLen + fileHeaderLen + optHeaderLen + sectionHdrLen*int(sectionHdrCnt))
 	binary.LittleEndian.PutUint32(buf[textOff+20:], textRawOff)
 	binary.LittleEndian.PutUint32(buf[textOff+36:], 0x60000020) // characteristics
 	off += sectionHdrLen

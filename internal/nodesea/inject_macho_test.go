@@ -33,7 +33,13 @@ func TestInjectMachO(t *testing.T) {
 		require.NoError(t, err)
 		seg := f.Segment(MachOSegmentName)
 		require.NotNil(t, seg, "segment must exist")
-		require.Equal(t, uint64(len(blob)), seg.Filesz)
+		// Segment filesize is page-aligned (covers the file region
+		// between the blob and the next segment); the embedded
+		// section is the one whose size matches the blob.
+		require.GreaterOrEqual(t, seg.Filesz, uint64(len(blob)))
+		sect := f.Section(MachOSectionName)
+		require.NotNil(t, sect, "section must exist")
+		require.Equal(t, uint64(len(blob)), sect.Size)
 
 		require.Contains(t, string(got), SentinelFused)
 	})

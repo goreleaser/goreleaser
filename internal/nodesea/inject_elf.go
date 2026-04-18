@@ -91,108 +91,118 @@ func InjectELF(path string, blob []byte) error {
 
 	// Read header values directly from raw bytes (debug/elf hides them).
 	rawPhoff := binary.LittleEndian.Uint64(data[ePhoffOff:])
-	rawShoff := binary.LittleEndian.Uint64(data[eShoffOff:])
 	rawPhentSize := binary.LittleEndian.Uint16(data[ePhentSizeOff:])
 	rawPhnum := binary.LittleEndian.Uint16(data[ePhnumOff:])
 	rawShentSize := binary.LittleEndian.Uint16(data[eShentSizeOff:])
-	rawShnum := binary.LittleEndian.Uint16(data[eShnumOff:])
-	rawShstrndx := binary.LittleEndian.Uint16(data[eShstrndxOff:])
 
 	if rawShentSize != shentSize || rawPhentSize != phentSize {
 		return fmt.Errorf("%w: unexpected ELF header sizes", ErrNotSupported)
 	}
 
+	// Compute a new vaddr above the highest existing PT_LOAD's vmaddr
+	// end, page-aligned. The note must live inside a PT_LOAD so that
+	// dl_iterate_phdr-based lookup (postject runtime) can read it via
+	// `base_addr + phdr->p_vaddr`. We'll create a fresh PT_LOAD that
+	// covers the new program-header table + the note bytes.
+	const pageSize = uint64(0x1000)
+	var maxLoadEnd uint64
+	for _, p := range f.Progs {
+		if p.Type != elf.PT_LOAD {
+			continue
+		}
+		end := p.Vaddr + p.Memsz
+		if end > maxLoadEnd {
+			maxLoadEnd = end
+		}
+	}
+	newVaddr := alignUp64(maxLoadEnd+pageSize, pageSize)
+
 	out := make([]byte, len(data))
 	copy(out, data)
 
-	// Step 1: append note bytes.
-	noteFileOff := uint64(len(out))
-	out = append(out, note...)
-
-	// Step 2: extend .shstrtab in place by appending the new section name
-	// and rewriting the table at end. To keep file simple we'll just
-	// **append** a fresh strtab containing original + new names and
-	// repoint e_shstrndx-style; but rewriting all section sh_name fields
-	// would be invasive. Instead: use the original .shstrtab and append
-	// our new name to it directly (it lives in the file as a normal
-	// section; we extend it by copying its bytes to a new location with
-	// the additional name appended, then update its section header to
-	// point at the new location & size).
-	shstrSec := f.Sections[rawShstrndx]
-	if shstrSec.Type != elf.SHT_STRTAB {
-		return fmt.Errorf("%w: .shstrtab is not a STRTAB", ErrNotSupported)
+	// Pad to a page boundary so file_off aligns with vaddr (mod
+	// pageSize), as required by ELF (p_offset ≡ p_vaddr (mod p_align)).
+	for uint64(len(out))%pageSize != 0 {
+		out = append(out, 0)
 	}
-	origShStr, err := shstrSec.Data()
-	if err != nil {
-		return fmt.Errorf("nodesea: read .shstrtab: %w", err)
-	}
-	newSecName := ".note.node.sea\x00"
-	newShStrOff := uint64(len(out))
-	newShStr := make([]byte, 0, len(origShStr)+len(newSecName))
-	newShStr = append(newShStr, origShStr...)
-	newSecNameIdx := uint32(len(newShStr))
-	newShStr = append(newShStr, newSecName...)
-	out = append(out, newShStr...)
+	newFileOff := uint64(len(out))
 
-	// Step 3: copy section headers to a new area at EOF, append the new
-	// note section header, and update e_shoff/e_shnum.
-	oldShoff := int(rawShoff)
-	oldShnum := int(rawShnum)
-	if oldShoff+oldShnum*shentSize > len(data) {
-		return fmt.Errorf("%w: section header table out of range", ErrNotSupported)
-	}
-	newShoff := uint64(len(out))
-	out = append(out, data[oldShoff:oldShoff+oldShnum*shentSize]...)
-	// Patch the .shstrtab section header (index = e_shstrndx) to point
-	// at our extended copy.
-	shstrIdx := int(rawShstrndx)
-	shstrEntryOff := int(newShoff) + shstrIdx*shentSize
-	binary.LittleEndian.PutUint64(out[shstrEntryOff+24:], newShStrOff)           // sh_offset
-	binary.LittleEndian.PutUint64(out[shstrEntryOff+32:], uint64(len(newShStr))) // sh_size
-	// Append a new section header for our note.
-	noteShdr := make([]byte, shentSize)
-	binary.LittleEndian.PutUint32(noteShdr[0:], newSecNameIdx)        // sh_name
-	binary.LittleEndian.PutUint32(noteShdr[4:], uint32(elf.SHT_NOTE)) // sh_type
-	binary.LittleEndian.PutUint64(noteShdr[8:], 0)                    // sh_flags
-	binary.LittleEndian.PutUint64(noteShdr[16:], 0)                   // sh_addr
-	binary.LittleEndian.PutUint64(noteShdr[24:], noteFileOff)         // sh_offset
-	binary.LittleEndian.PutUint64(noteShdr[32:], uint64(len(note)))   // sh_size
-	binary.LittleEndian.PutUint32(noteShdr[40:], 0)                   // sh_link
-	binary.LittleEndian.PutUint32(noteShdr[44:], 0)                   // sh_info
-	binary.LittleEndian.PutUint64(noteShdr[48:], 4)                   // sh_addralign
-	binary.LittleEndian.PutUint64(noteShdr[56:], 0)                   // sh_entsize
-	out = append(out, noteShdr...)
-	newShnum := uint16(oldShnum + 1)
+	// New layout at newFileOff:
+	//   [new program-header table (oldPhnum + 2 entries)]
+	//   [note bytes]
+	newPhnum := rawPhnum + 2
+	newPhdrSize := uint64(newPhnum) * phentSize
+	noteOffsetInBlock := newPhdrSize
 
-	// Step 4: copy program headers to a new area at EOF, append a new
-	// PT_NOTE phdr, update e_phoff/e_phnum.
+	// Append the original program headers at newFileOff (we'll add the
+	// new PT_LOAD and PT_NOTE entries below).
 	oldPhoff := int(rawPhoff)
 	oldPhnum := int(rawPhnum)
 	if oldPhoff+oldPhnum*phentSize > len(data) {
 		return fmt.Errorf("%w: program header table out of range", ErrNotSupported)
 	}
-	newPhoff := uint64(len(out))
 	out = append(out, data[oldPhoff:oldPhoff+oldPhnum*phentSize]...)
-	notePhdr := make([]byte, phentSize)
-	binary.LittleEndian.PutUint32(notePhdr[0:], uint32(elf.PT_NOTE)) // p_type
-	binary.LittleEndian.PutUint32(notePhdr[4:], uint32(elf.PF_R))    // p_flags
-	binary.LittleEndian.PutUint64(notePhdr[8:], noteFileOff)         // p_offset
-	binary.LittleEndian.PutUint64(notePhdr[16:], 0)                  // p_vaddr
-	binary.LittleEndian.PutUint64(notePhdr[24:], 0)                  // p_paddr
-	binary.LittleEndian.PutUint64(notePhdr[32:], uint64(len(note)))  // p_filesz
-	binary.LittleEndian.PutUint64(notePhdr[40:], uint64(len(note)))  // p_memsz
-	binary.LittleEndian.PutUint64(notePhdr[48:], 4)                  // p_align
-	out = append(out, notePhdr...)
-	newPhnum := uint16(oldPhnum + 1)
 
-	// Patch ELF header.
-	binary.LittleEndian.PutUint64(out[ePhoffOff:], newPhoff)
-	binary.LittleEndian.PutUint64(out[eShoffOff:], newShoff)
+	// Append two empty phdr slots (PT_LOAD then PT_NOTE) — we'll fill
+	// them in below.
+	out = append(out, make([]byte, 2*phentSize)...)
+
+	// Append the note bytes.
+	noteFileOff := newFileOff + noteOffsetInBlock
+	out = append(out, note...)
+
+	blockSize := uint64(len(out)) - newFileOff
+
+	// Walk the (now copied) program headers at newFileOff and update the
+	// PHDR self-entry to point at the new location. Without this fix-up
+	// the dynamic linker reads stale phdr metadata at the old vaddr.
+	for i := range oldPhnum {
+		entry := int(newFileOff) + i*phentSize
+		ptype := elf.ProgType(binary.LittleEndian.Uint32(out[entry:]))
+		if ptype != elf.PT_PHDR {
+			continue
+		}
+		binary.LittleEndian.PutUint64(out[entry+8:], newFileOff)   // p_offset
+		binary.LittleEndian.PutUint64(out[entry+16:], newVaddr)    // p_vaddr
+		binary.LittleEndian.PutUint64(out[entry+24:], newVaddr)    // p_paddr
+		binary.LittleEndian.PutUint64(out[entry+32:], newPhdrSize) // p_filesz
+		binary.LittleEndian.PutUint64(out[entry+40:], newPhdrSize) // p_memsz
+	}
+
+	// Fill in the new PT_LOAD entry (covers the entire new block).
+	loadEntry := int(newFileOff) + oldPhnum*phentSize
+	binary.LittleEndian.PutUint32(out[loadEntry:], uint32(elf.PT_LOAD))
+	binary.LittleEndian.PutUint32(out[loadEntry+4:], uint32(elf.PF_R))
+	binary.LittleEndian.PutUint64(out[loadEntry+8:], newFileOff) // p_offset
+	binary.LittleEndian.PutUint64(out[loadEntry+16:], newVaddr)  // p_vaddr
+	binary.LittleEndian.PutUint64(out[loadEntry+24:], newVaddr)  // p_paddr
+	binary.LittleEndian.PutUint64(out[loadEntry+32:], blockSize) // p_filesz
+	binary.LittleEndian.PutUint64(out[loadEntry+40:], blockSize) // p_memsz
+	binary.LittleEndian.PutUint64(out[loadEntry+48:], pageSize)  // p_align
+
+	// Fill in the new PT_NOTE entry (covers just the note bytes within
+	// the new PT_LOAD).
+	noteEntry := loadEntry + phentSize
+	noteVaddr := newVaddr + noteOffsetInBlock
+	binary.LittleEndian.PutUint32(out[noteEntry:], uint32(elf.PT_NOTE))
+	binary.LittleEndian.PutUint32(out[noteEntry+4:], uint32(elf.PF_R))
+	binary.LittleEndian.PutUint64(out[noteEntry+8:], noteFileOff)        // p_offset
+	binary.LittleEndian.PutUint64(out[noteEntry+16:], noteVaddr)         // p_vaddr
+	binary.LittleEndian.PutUint64(out[noteEntry+24:], noteVaddr)         // p_paddr
+	binary.LittleEndian.PutUint64(out[noteEntry+32:], uint64(len(note))) // p_filesz
+	binary.LittleEndian.PutUint64(out[noteEntry+40:], uint64(len(note))) // p_memsz
+	binary.LittleEndian.PutUint64(out[noteEntry+48:], 4)                 // p_align
+
+	// Patch ELF header: e_phoff and e_phnum. Leave section header
+	// table alone — sections aren't needed at runtime.
+	binary.LittleEndian.PutUint64(out[ePhoffOff:], newFileOff)
 	binary.LittleEndian.PutUint16(out[ePhnumOff:], newPhnum)
-	binary.LittleEndian.PutUint16(out[eShnumOff:], newShnum)
 	_ = ePhentSizeOff
 	_ = eShentSizeOff
 	_ = eShstrndxOff
+	_ = eShoffOff
+	_ = eShnumOff
+	_ = shentSize
 
 	tmp := path + ".inject.tmp"
 	if err := os.WriteFile(tmp, out, 0o755); err != nil {
@@ -202,6 +212,10 @@ func InjectELF(path string, blob []byte) error {
 		return err
 	}
 	return FlipSentinel(path)
+}
+
+func alignUp64(v, align uint64) uint64 {
+	return (v + align - 1) &^ (align - 1)
 }
 
 // buildNote serializes a single ELF note record.
@@ -225,18 +239,21 @@ func buildNote(name string, ntype uint32, desc []byte) []byte {
 	return buf.Bytes()
 }
 
-// findElfNote scans every SHT_NOTE section in the file looking for a
-// note matching name and type.
+// findElfNote scans every PT_NOTE program header in the file looking
+// for a note matching name and type. We use program headers rather than
+// section headers because postject's runtime lookup
+// (postject_find_resource on Linux) walks PT_NOTE phdrs via
+// dl_iterate_phdr and we mirror the same convention.
 func findElfNote(f *elf.File, raw []byte, name string, ntype uint32) bool {
-	for _, s := range f.Sections {
-		if s.Type != elf.SHT_NOTE {
+	for _, p := range f.Progs {
+		if p.Type != elf.PT_NOTE {
 			continue
 		}
-		end := int(s.Offset + s.Size)
+		end := int(p.Off + p.Filesz)
 		if end > len(raw) {
 			continue
 		}
-		data := raw[s.Offset:end]
+		data := raw[p.Off:end]
 		for len(data) >= 12 {
 			namesz := binary.LittleEndian.Uint32(data[0:4])
 			descsz := binary.LittleEndian.Uint32(data[4:8])

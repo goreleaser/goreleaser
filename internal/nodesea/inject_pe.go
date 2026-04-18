@@ -18,15 +18,21 @@ const PEResourceName = "NODE_SEA_BLOB"
 // rtRCData is the PE resource type ID for raw data.
 const rtRCData = 10
 
-// InjectPE injects blob into the existing `.rsrc` section of the PE
-// binary at path as a `NODE_SEA_BLOB` (RT_RCDATA) resource, then flips
-// the SEA fuse sentinel.
+// InjectPE injects blob into the PE binary at path as a `NODE_SEA_BLOB`
+// (RT_RCDATA) resource, then flips the SEA fuse sentinel.
 //
-// v1 limitations: the host must already contain a `.rsrc` section
-// (always true for stock node.exe); `.rsrc` must be the last raw
-// section in the file (so we can grow it without shifting other section
-// data). Returns ErrNotSupported otherwise. Returns ErrAlreadyInjected
-// if a NODE_SEA_BLOB resource is already present.
+// Strategy: parse the existing `.rsrc` tree (so we preserve version-info,
+// icon, etc.), add our `NODE_SEA_BLOB` entry, then write the fully
+// serialized tree as a brand-new section appended at end-of-file. The
+// resource data directory is repointed at the new section. The original
+// `.rsrc` bytes stay mapped but become unreferenced (the loader uses the
+// data-directory pointer for resource lookup).
+//
+// This approach handles real-world `node.exe`, where `.rsrc` is not the
+// last raw section (`.reloc` follows it). Returns ErrNotSupported when
+// the binary lacks a `.rsrc` section, or when there is not enough slack
+// in the section header table for one more entry. Returns
+// ErrAlreadyInjected when a `NODE_SEA_BLOB` resource is already present.
 func InjectPE(path string, blob []byte) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -61,33 +67,53 @@ func InjectPE(path string, blob []byte) error {
 		return fmt.Errorf("%w: unknown OptionalHeader magic %#x", ErrNotSupported, magic)
 	}
 
-	// Find .rsrc section.
+	sectAlign := binary.LittleEndian.Uint32(data[optStart+32:])
+	fileAlign := binary.LittleEndian.Uint32(data[optStart+36:])
+	if sectAlign == 0 {
+		sectAlign = 0x1000
+	}
+	if fileAlign == 0 {
+		fileAlign = 512
+	}
+
+	// Find the section currently pointed at by DataDirectory[2] (which
+	// may not be ".rsrc" — e.g. on a binary we already injected, the
+	// data directory points at our appended ".sea" section).
+	resDirEntryOff := dirOff + 2*8
+	resVA := binary.LittleEndian.Uint32(data[resDirEntryOff:])
+	resSize := binary.LittleEndian.Uint32(data[resDirEntryOff+4:])
 	var rsrc *pe.Section
-	rsrcIdx := -1
-	for i, s := range f.Sections {
-		if s.Name == ".rsrc" {
-			rsrc = s
-			rsrcIdx = i
+	if resVA != 0 {
+		for _, s := range f.Sections {
+			if resVA >= s.VirtualAddress && resVA < s.VirtualAddress+s.VirtualSize {
+				rsrc = s
+				break
+			}
+		}
+	}
+	if rsrc == nil {
+		// Fall back to the conventional name.
+		for _, s := range f.Sections {
+			if s.Name == ".rsrc" {
+				rsrc = s
+				resVA = s.VirtualAddress
+				resSize = s.VirtualSize
+				break
+			}
 		}
 	}
 	if rsrc == nil {
 		return fmt.Errorf("%w: PE binary has no .rsrc section", ErrNotSupported)
 	}
 
-	// Check it's the last raw section.
-	maxRaw := uint32(0)
-	for _, s := range f.Sections {
-		if s.Offset+s.Size > maxRaw {
-			maxRaw = s.Offset + s.Size
-		}
+	// Parse existing resource tree so we preserve existing resources
+	// (version info, icon, manifest, …).
+	resOffInSect := resVA - rsrc.VirtualAddress
+	if resOffInSect+resSize > rsrc.Size {
+		return fmt.Errorf("%w: resource directory exceeds section bounds", ErrNotSupported)
 	}
-	if rsrc.Offset+rsrc.Size != maxRaw {
-		return fmt.Errorf("%w: .rsrc must be the last raw section (NODE_SEA_BLOB injection v1)", ErrNotSupported)
-	}
-
-	// Parse existing .rsrc tree.
-	rsrcRaw := data[rsrc.Offset : rsrc.Offset+rsrc.Size]
-	tree, err := parseResourceDir(rsrcRaw, 0, rsrc.VirtualAddress)
+	rsrcRaw := data[rsrc.Offset+resOffInSect : rsrc.Offset+resOffInSect+resSize]
+	tree, err := parseResourceDir(rsrcRaw, 0, resVA)
 	if err != nil {
 		return fmt.Errorf("nodesea: parse .rsrc: %w", err)
 	}
@@ -97,46 +123,85 @@ func InjectPE(path string, blob []byte) error {
 		return ErrAlreadyInjected
 	}
 
-	// Add our entry.
 	tree.add(rtRCData, PEResourceName, 0, blob)
 
-	// Serialize. The new .rsrc will be placed at the same RVA but we
-	// may need a different raw size.
-	newRsrc := tree.serialize(rsrc.VirtualAddress)
+	// Compute the VA for our new section: just past the highest virtual
+	// extent of any existing section, rounded up to SectionAlignment.
+	maxVirtEnd := uint32(0)
+	for _, s := range f.Sections {
+		end := s.VirtualAddress + s.VirtualSize
+		if end > maxVirtEnd {
+			maxVirtEnd = end
+		}
+	}
+	newVA := alignUp(maxVirtEnd, sectAlign)
 
-	// Truncate file at end of penultimate raw section (i.e., drop the
-	// old .rsrc), then write new .rsrc.
-	preRsrcEnd := rsrc.Offset
-	out := make([]byte, 0, int(preRsrcEnd)+len(newRsrc))
-	out = append(out, data[:preRsrcEnd]...)
+	// Serialize new resource tree at the new VA.
+	newRsrc := tree.serialize(newVA)
+	newRsrcSize := uint32(len(newRsrc))
+
+	// Pad raw size to FileAlignment.
+	paddedSize := alignUp(newRsrcSize, fileAlign)
+
+	// Verify there's room in the section header table for one more entry.
+	sizeOfOpt := int(binary.LittleEndian.Uint16(data[peOff+20 : peOff+22]))
+	numSections := binary.LittleEndian.Uint16(data[peOff+6 : peOff+8])
+	sectTableOff := peOff + 24 + sizeOfOpt
+	newSectHeaderOff := sectTableOff + int(numSections)*40
+
+	firstRaw := uint32(len(data))
+	for _, s := range f.Sections {
+		if s.Offset > 0 && s.Offset < firstRaw {
+			firstRaw = s.Offset
+		}
+	}
+	if uint32(newSectHeaderOff)+40 > firstRaw {
+		return fmt.Errorf("%w: no header slack for new section (need 40 bytes, have %d)",
+			ErrNotSupported, int(firstRaw)-newSectHeaderOff)
+	}
+
+	// Build output: original data + padded new section payload.
+	// Pad the original tail to FileAlignment first so our new raw offset
+	// sits on a FileAlignment boundary (PE requirement).
+	out := make([]byte, 0, len(data)+int(paddedSize)+int(fileAlign))
+	out = append(out, data...)
+	for uint32(len(out))%fileAlign != 0 {
+		out = append(out, 0)
+	}
+	newRaw := uint32(len(out))
 	out = append(out, newRsrc...)
-
-	// Pad to FileAlignment.
-	fileAlign := readFileAlignment(out, peOff)
 	for uint32(len(out))%fileAlign != 0 {
 		out = append(out, 0)
 	}
 
-	// Update .rsrc section header: SizeOfRawData and VirtualSize.
-	shTableOff := peOff + 24 + int(binary.LittleEndian.Uint16(data[peOff+20:peOff+22]))
-	shOff := shTableOff + rsrcIdx*40
-	newSize := uint32(len(newRsrc))
-	binary.LittleEndian.PutUint32(out[shOff+8:], newSize)                       // VirtualSize
-	binary.LittleEndian.PutUint32(out[shOff+16:], uint32(len(out))-rsrc.Offset) // SizeOfRawData
-	// PointerToRawData stays the same (rsrc.Offset).
+	// Section header (40 bytes): Name[8], VirtualSize, VirtualAddress,
+	// SizeOfRawData, PointerToRawData, PointerToRelocations,
+	// PointerToLinenumbers, NumberOfRelocations, NumberOfLinenumbers,
+	// Characteristics.
+	const (
+		imageScnCntInitData = 0x00000040
+		imageScnMemRead     = 0x40000000
+	)
+	hdr := make([]byte, 40)
+	copy(hdr[0:8], ".sea\x00\x00\x00\x00")
+	binary.LittleEndian.PutUint32(hdr[8:], newRsrcSize)
+	binary.LittleEndian.PutUint32(hdr[12:], newVA)
+	binary.LittleEndian.PutUint32(hdr[16:], paddedSize)
+	binary.LittleEndian.PutUint32(hdr[20:], newRaw)
+	// PointerToRelocations, PointerToLinenumbers, counts: zero.
+	binary.LittleEndian.PutUint32(hdr[36:], imageScnCntInitData|imageScnMemRead)
+	copy(out[newSectHeaderOff:newSectHeaderOff+40], hdr)
 
-	// Update DataDirectory[2] (RESOURCE) size.
-	resDirEntryOff := dirOff + 2*8
-	binary.LittleEndian.PutUint32(out[resDirEntryOff+4:], newSize)
+	// Update NumberOfSections.
+	binary.LittleEndian.PutUint16(out[peOff+6:], numSections+1)
 
-	// Update SizeOfImage (must include the grown .rsrc virtually).
-	// Round VirtualSize up to SectionAlignment, add to VirtualAddress.
-	sectAlign := binary.LittleEndian.Uint32(out[optStart+32:])
-	virtEnd := rsrc.VirtualAddress + ((newSize + sectAlign - 1) &^ (sectAlign - 1))
-	// SizeOfImage at optStart+56.
-	if curSize := binary.LittleEndian.Uint32(out[optStart+56:]); virtEnd > curSize {
-		binary.LittleEndian.PutUint32(out[optStart+56:], virtEnd)
-	}
+	// Update DataDirectory[2] (resource): RVA + Size.
+	binary.LittleEndian.PutUint32(out[resDirEntryOff:], newVA)
+	binary.LittleEndian.PutUint32(out[resDirEntryOff+4:], newRsrcSize)
+
+	// Update SizeOfImage = newVA + alignUp(newRsrcSize, sectAlign).
+	newSizeOfImage := newVA + alignUp(newRsrcSize, sectAlign)
+	binary.LittleEndian.PutUint32(out[optStart+56:], newSizeOfImage)
 
 	// Recompute checksum (zero field first, then store).
 	for i := checksumOff; i < checksumOff+4; i++ {
@@ -154,13 +219,11 @@ func InjectPE(path string, blob []byte) error {
 	return FlipSentinel(path)
 }
 
-func readFileAlignment(data []byte, peOff int) uint32 {
-	optStart := peOff + 24
-	a := binary.LittleEndian.Uint32(data[optStart+36:])
+func alignUp(v, a uint32) uint32 {
 	if a == 0 {
-		return 512
+		return v
 	}
-	return a
+	return (v + a - 1) &^ (a - 1)
 }
 
 // --- resource tree model ---
