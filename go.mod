@@ -29,7 +29,7 @@ require (
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
 	github.com/goreleaser/nfpm/v2 v2.46.1
-	github.com/goreleaser/quill v0.0.0-20251224035235-ab943733386f
+	github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
 	github.com/jarcoal/httpmock v1.4.1
@@ -171,7 +171,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.12 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.12 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.20 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.20.16 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.21.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.22 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.22 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.6 // indirect
@@ -191,7 +191,7 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blacktop/go-dwarf v1.0.14 // indirect
-	github.com/blacktop/go-macho v1.1.258 // indirect
+	github.com/blacktop/go-macho v1.1.263 // indirect
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/buger/jsonparser v1.1.2 // indirect
