@@ -204,7 +204,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, Target{
 			Target: "aarch64-apple-darwin",
 			Os:     "darwin",
-			Arch:   "arm64",
+			Arch:   "aarch64",
 			Vendor: "apple",
 		}, target)
 	})
@@ -215,7 +215,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, Target{
 			Target: "aarch64-pc-windows-gnullvm",
 			Os:     "windows",
-			Arch:   "arm64",
+			Arch:   "aarch64",
 			Vendor: "pc",
 			Abi:    "gnullvm",
 		}, target)
@@ -226,7 +226,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, Target{
 			Target: "aarch64-unknown-linux-gnu.2.17",
 			Os:     "linux",
-			Arch:   "arm64",
+			Arch:   "aarch64",
 			Vendor: "unknown",
 			Abi:    "gnu",
 			Libc:   "2.17",
@@ -238,7 +238,7 @@ func TestParse(t *testing.T) {
 		require.Equal(t, Target{
 			Target: "armv7-unknown-linux-gnueabihf.2.17",
 			Os:     "linux",
-			Arch:   "arm",
+			Arch:   "armv7",
 			Vendor: "unknown",
 			Abi:    "gnueabihf",
 			Libc:   "2.17",
