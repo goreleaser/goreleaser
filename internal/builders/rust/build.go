@@ -161,7 +161,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Path:   options.Path,
 		Name:   options.Name,
 		Goos:   t.Os,
-		Goarch: convertToGoarch(t.Arch),
+		Goarch: t.Arch,
 		Target: t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
