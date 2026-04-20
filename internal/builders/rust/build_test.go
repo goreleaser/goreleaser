@@ -124,6 +124,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, f.Close())
 	require.NoError(t, err)
 
+	target := "aarch64-unknown-linux-gnu.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
@@ -132,6 +133,7 @@ func TestBuild(t *testing.T) {
 			{
 				ID:           "default",
 				Dir:          ".",
+				Targets:      []string{target},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"--release"},
@@ -144,7 +146,6 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := "aarch64-unknown-linux-gnu.2.17"
 	options := api.Options{
 		Name: "proj",
 		Path: filepath.Join("dist", "proj-"+target, "proj"),
@@ -206,6 +207,7 @@ func TestBuildArm(t *testing.T) {
 	require.NoError(t, f.Close())
 	require.NoError(t, err)
 
+	target := "armv7-unknown-linux-gnueabihf.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
@@ -214,6 +216,7 @@ func TestBuildArm(t *testing.T) {
 			{
 				ID:           "default",
 				Dir:          ".",
+				Targets:      []string{target},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"--release"},
@@ -226,7 +229,6 @@ func TestBuildArm(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := "armv7-unknown-linux-gnueabihf.2.17"
 	options := api.Options{
 		Name: "proj",
 		Path: filepath.Join("dist", "proj-"+target, "proj"),
