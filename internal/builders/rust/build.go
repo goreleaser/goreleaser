@@ -78,6 +78,10 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		Arch:   convertToGoarch(parts[0]),
 	}
 
+	if arm, ok := getArmVersion(parts[0]); ok {
+		t.Arm = arm
+	}
+
 	if len(parts) > 3 {
 		t.Abi = parts[3]
 		abi, libc, ok := strings.Cut(t.Abi, ".")
@@ -157,7 +161,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Path:   options.Path,
 		Name:   options.Name,
 		Goos:   t.Os,
-		Goarch: convertToGoarch(t.Arch),
+		Goarch: t.Arch,
+		Goarm:  t.Arm,
 		Target: t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),

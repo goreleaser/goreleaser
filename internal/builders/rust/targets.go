@@ -32,6 +32,7 @@ type Target struct {
 	Target string
 	Os     string
 	Arch   string
+	Arm    string
 	Vendor string
 	Abi    string
 	Libc   string
@@ -42,6 +43,7 @@ func (t Target) Fields() map[string]string {
 	return map[string]string{
 		tmpl.KeyOS:   t.Os,
 		tmpl.KeyArch: t.Arch,
+		tmpl.KeyArm:  t.Arm,
 		keyAbi:       t.Abi,
 		keyVendor:    t.Vendor,
 		keyLibc:      t.Libc,
@@ -122,4 +124,18 @@ func defaultTargets() []string {
 		"aarch64-unknown-linux-gnu",
 		"aarch64-apple-darwin",
 	}
+}
+
+// Get ARM version for `(artifact.Artifact).Goarm`
+func getArmVersion(s string) (string, bool) {
+	// Values sourced from https://go.dev/wiki/GoArm in combination with
+	// https://doc.rust-lang.org/nightly/rustc/platform-support.html
+	ss, ok := map[string]string{
+		"arm":     "6",
+		"armv5te": "5",
+		"armv7":   "7",
+		"armv7a":  "7",
+		"armv7r":  "7",
+	}[s]
+	return ss, ok
 }
