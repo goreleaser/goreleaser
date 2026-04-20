@@ -13,7 +13,12 @@
 	-}}{{- /* no empty line */ -}}
 {{- else -}}
 	{{- $tag := $text -}}
-	{{- $link := printf "/blog/goreleaser-%s" $tag -}}
+	{{- $linkTag := $tag -}}
+	{{- $parts := split $tag "." -}}
+	{{- if ge (len $parts) 3 -}}
+		{{- $linkTag = delimit (first 2 $parts) "." -}}
+	{{- end -}}
+	{{- $link := printf "/blog/goreleaser-%s" $linkTag -}}
 	{{- $content := printf "Since %s" $tag -}}
 <a href="{{ $link }}"
 	title="{{ $content | plainify }}"
