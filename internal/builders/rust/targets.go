@@ -123,3 +123,17 @@ func defaultTargets() []string {
 		"aarch64-apple-darwin",
 	}
 }
+
+// Get ARM version for `(artifact.Artifact).Goarm`
+func getArmVersion(s string) (string, bool) {
+	// Values sourced from https://go.dev/wiki/GoArm in combination with
+	// https://doc.rust-lang.org/nightly/rustc/platform-support.html
+	ss, ok := map[string]string{
+		"arm":     "6",
+		"armv5te": "5",
+		"armv7":   "7",
+		"armv7a":  "7",
+		"armv7r":  "7",
+	}[s]
+	return ss, ok
+}

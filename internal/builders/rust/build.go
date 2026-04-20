@@ -171,6 +171,10 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		a.Extra[keyLibc] = t.Libc
 	}
 
+	if arm, ok := getArmVersion(t.Arch); ok {
+		a.Goarm = arm
+	}
+
 	env := []string{}
 	env = append(env, ctx.Env.Strings()...)
 
