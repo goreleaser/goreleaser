@@ -322,6 +322,7 @@ func TestParse(t *testing.T) {
 			Target: "armv7-unknown-linux-gnueabihf.2.17",
 			Os:     "linux",
 			Arch:   "arm",
+			Arm:    "7",
 			Vendor: "unknown",
 			Abi:    "gnueabihf",
 			Libc:   "2.17",
