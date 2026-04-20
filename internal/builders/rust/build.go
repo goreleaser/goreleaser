@@ -78,6 +78,10 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		Arch:   convertToGoarch(parts[0]),
 	}
 
+	if arm, ok := getArmVersion(parts[0]); ok {
+		t.Arm = arm
+	}
+
 	if len(parts) > 3 {
 		t.Abi = parts[3]
 		abi, libc, ok := strings.Cut(t.Abi, ".")
@@ -170,9 +174,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	if t.Libc != "" {
 		a.Extra[keyLibc] = t.Libc
 	}
-
-	if arm, ok := getArmVersion(t.Arch); ok {
-		a.Goarm = arm
+	if t.Arm != "" {
+		a.Goarm = t.Arm
 	}
 
 	env := []string{}

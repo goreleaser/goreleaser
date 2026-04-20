@@ -32,6 +32,7 @@ type Target struct {
 	Target string
 	Os     string
 	Arch   string
+	Arm    string
 	Vendor string
 	Abi    string
 	Libc   string
@@ -42,6 +43,7 @@ func (t Target) Fields() map[string]string {
 	return map[string]string{
 		tmpl.KeyOS:   t.Os,
 		tmpl.KeyArch: t.Arch,
+		tmpl.KeyArm:  t.Arm,
 		keyAbi:       t.Abi,
 		keyVendor:    t.Vendor,
 		keyLibc:      t.Libc,
