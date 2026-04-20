@@ -14,6 +14,11 @@ on:
       - "Taskfile.yml"
       - "Dockerfile"
       - ".github/workflows/*.yml"
+      # XXX: these dirs might have yml, txt, and golden files that when changed
+      # need to trigger CI as well
+      - "cmd/**/*"
+      - "pkg/**/*"
+      - "internal/**/*"
 permissions:
   contents: read
 jobs:
