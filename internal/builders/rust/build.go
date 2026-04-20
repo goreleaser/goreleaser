@@ -75,7 +75,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		Target: target,
 		Os:     parts[2],
 		Vendor: parts[1],
-		Arch:   convertToGoarch(parts[0]),
+		Arch:   parts[0],
 	}
 
 	if len(parts) > 3 {
