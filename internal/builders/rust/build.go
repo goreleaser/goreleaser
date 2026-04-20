@@ -162,6 +162,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Name:   options.Name,
 		Goos:   t.Os,
 		Goarch: t.Arch,
+		Goarm:  t.Arm,
 		Target: t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
@@ -173,9 +174,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	if t.Libc != "" {
 		a.Extra[keyLibc] = t.Libc
-	}
-	if t.Arm != "" {
-		a.Goarm = t.Arm
 	}
 
 	env := []string{}
