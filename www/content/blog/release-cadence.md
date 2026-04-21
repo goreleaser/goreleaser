@@ -136,7 +136,7 @@ See you all soon!
 
 [v1]: /blog/goreleaser-v1/
 [deprecations]: /resources/deprecations/
-[dis]: https://github.com/orgs/goreleaser/discussions/4169
+[dis]: https://github.com/goreleaser/goreleaser/discussions/4169
 [gpro]: /pro/
 [gha]: https://github.com/goreleaser/goreleaser-action
 [Sponsors]: https://github.com/caarlos0

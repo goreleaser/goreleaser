@@ -5,7 +5,7 @@ weight: 130
 
 {{< g_version "v2.12" >}}
 
-{{< g_experimental "https://github.com/orgs/goreleaser/discussions/6005" >}}
+{{< g_experimental "https://github.com/goreleaser/goreleaser/discussions/6005" >}}
 
 This feature uses `docker buildx` to build multi-arch manifests,
 reusing the previously built binaries and/or packages.
