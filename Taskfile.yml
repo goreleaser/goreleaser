@@ -213,7 +213,7 @@ tasks:
         msg: "Git is dirty"
     cmds:
       - git tag -d nightly
-      - git tag {{.NEXT}}
+      - git tag -m {{.NEXT}} {{.NEXT}}
       - echo {{.NEXT}}
       - git push origin --tags
 
