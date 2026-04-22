@@ -6,7 +6,7 @@ weight: 160
 
 {{< g_version "v2.13" >}}
 
-{{< g_experimental "https://github.com/orgs/goreleaser/discussions/6251" >}}
+{{< g_experimental "https://github.com/goreleaser/goreleaser/discussions/6251" >}}
 
 After building your binaries, GoReleaser can generate and publish a Model
 Context Protocol (MCP) server manifest file (`server.json`) to the

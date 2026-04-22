@@ -126,7 +126,7 @@ and that's it.
 
 We're also very interested in other tools GoReleaser MCP can provide.
 Feel free to hop in our
-[discussion](https://github.com/orgs/goreleaser/discussions/5816) and give
+[discussion](https://github.com/goreleaser/goreleaser/discussions/5816) and give
 whatever feedback or ideas you have!
 
 ## Other smaller changes
