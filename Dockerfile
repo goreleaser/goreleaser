@@ -1,8 +1,8 @@
 # Pull syft, cosign, docker, and docker-buildx from their upstream images so
 # we control the dependency versions.
-FROM anchore/syft:v1.42.4@sha256:e9f29bec38cc856bfd3a7966d2f99711b5b244a531bf121da9de3b47789eecfa AS syft
+FROM anchore/syft:v1.43.0@sha256:0bf6a5b15e854c53bd8b09abe5d1ff12c07bdb06c6edc9b2df99643049233d28 AS syft
 FROM gcr.io/projectsigstore/cosign:v3.0.6@sha256:de9c65609e6bde17e6b48de485ee788407c9502fa08b8f4459f595b21f56cd00 AS cosign
-FROM docker:29.4.0-cli-alpine3.23@sha256:2efe7c8e806b35050def6ba1ba0ddad67b521a0a6d37f4910b3d88f11b495d03 AS docker
+FROM docker:29.4.1-cli-alpine3.23@sha256:17b5c235f40be7432a7c0914c154e9278aed63bad4afe5607e4f91840696a9f8 AS docker
 FROM docker/buildx-bin:0.33.0@sha256:450be95fa632a3986797cd23b8b5d8d5fff47e9fd8e1fa483c9d44b07da2a559 AS buildx
 
 FROM golang:1.26.2-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
