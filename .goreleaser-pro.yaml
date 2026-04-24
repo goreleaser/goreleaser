@@ -5,8 +5,8 @@ pro: true
 
 nightly:
   publish_release: true
-  keep_single_release: true
-  version_template: "{{ incminor .Version }}-nightly"
+  tag_name: "{{ incminor .Version }}-{{ .ShortCommit }}-nightly"
+  version_template: "{{ incminor .Version }}-{{ .ShortCommit }}-nightly"
 
 npms:
   - name: "@goreleaser/goreleaser"
