@@ -38,6 +38,7 @@ archives:
     # - `tzst` {{< g_inline_version "v2.1" >}}
     # - `tar`
     # - `gz`
+    # - `xz` {{< g_inline_version "v2.16-unreleased" >}}
     # - `zip`
     # - `binary`
     #
@@ -102,6 +103,7 @@ archives:
         # - `tzst` # {{< g_inline_version "v2.1" >}}
         # - `tar`
         # - `gz`
+        # - `xz` {{< g_inline_version "v2.16-unreleased" >}}
         # - `zip`
         # - `binary` # be extra-cautious with the file name template in this case!
         # - `none`   # skips this archive
@@ -275,23 +277,24 @@ archive. Any glob that doesn't match any file should work.
 
 For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
 
-## A note about Gzip
+## A note about Gzip/XZ
 
-Gzip is a compression-only format, therefore, it couldn't have more than one
-file inside.
+Gzip and xz are a compression-only format, therefore, it couldn't have more than
+one file inside.
 
 Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:
 
 ```yaml {filename=".goreleaser.yaml"}
 archives:
+  # Note: Replace gz with xz for xz.
   - format: gz
     files:
       - none*
 ```
 
 This should create `.gz` files with the binaries only, which should be
-extracted with something like `gzip -d file.gz`.
+extracted with something like `gzip -d file.gz` (`unxz file.xz` for xz).
 
 > [!WARNING]
 > You won't be able to package multiple builds in a single archive either.

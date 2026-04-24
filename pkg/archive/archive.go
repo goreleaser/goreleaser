@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/targz"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarxz"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarzst"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/xz"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/zip"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
@@ -36,6 +37,8 @@ func New(w io.Writer, format string) (Archive, error) {
 		return tarzst.New(w), nil
 	case "zip":
 		return zip.New(w), nil
+	case "xz":
+		return xz.New(w), nil
 	}
 	return nil, fmt.Errorf("invalid archive format: %s", format)
 }
