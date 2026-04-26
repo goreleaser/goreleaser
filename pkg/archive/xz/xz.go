@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/ulikunitz/xz"
@@ -14,9 +13,8 @@ import (
 
 // Archive as xz.
 type Archive struct {
-	name    string
-	modTime time.Time
-	xzw     *xz.Writer
+	name string
+	xzw  *xz.Writer
 }
 
 // New xz archive.
