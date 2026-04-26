@@ -545,7 +545,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	if err != nil {
 		return fmt.Errorf("templating GitHub make_latest: %w", err)
 	}
-	if ctx.PreRelease && latest == "" {
+	if ctx.PreRelease {
 		latest = "false"
 	}
 	if latest != "" {

@@ -1401,8 +1401,9 @@ func TestGitHubPublishRelease(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{API: srv.URL},
 			Release: config.Release{
-				GitHub: config.Repo{Owner: "owner", Name: "name"},
-				Draft:  false,
+				GitHub:     config.Repo{Owner: "owner", Name: "name"},
+				Draft:      false,
+				MakeLatest: "true",
 			},
 		})
 		client, err := newGitHub(ctx, "test-token")
