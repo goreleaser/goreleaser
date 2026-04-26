@@ -538,9 +538,15 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	data := &github.RepositoryRelease{
 		Draft: &draft,
 	}
+	if ctx.PreRelease {
+		data.Prerelease = &ctx.PreRelease
+	}
 	latest, err := tmpl.New(ctx).Apply(ctx.Config.Release.MakeLatest)
 	if err != nil {
 		return fmt.Errorf("templating GitHub make_latest: %w", err)
+	}
+	if ctx.PreRelease {
+		latest = "false"
 	}
 	if latest != "" {
 		data.MakeLatest = &latest
