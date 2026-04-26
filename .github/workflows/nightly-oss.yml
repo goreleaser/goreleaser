@@ -65,7 +65,7 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+      - uses: cachix/install-nix-action@ab739621df7a23f52766f9ccc97f38da6b7af14f # v31.10.5
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
@@ -79,7 +79,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: goreleaser/goreleaser-action@4c6ab561adb47e50c45ef534e2155934e91c40c1 # v7.2.0
+      - uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7.2.1
         with:
           distribution: goreleaser-pro
           version: "nightly"
