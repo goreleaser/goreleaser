@@ -1411,6 +1411,35 @@ func TestGitHubPublishRelease(t *testing.T) {
 		require.Contains(t, requestBody, `"draft":false`)
 	})
 
+	t.Run("publish prerelease", func(t *testing.T) {
+		t.Parallel()
+		var requestBody string
+		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/owner/name/releases/123" && r.Method == http.MethodPatch {
+				bts, _ := io.ReadAll(r.Body)
+				requestBody = string(bts)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"id":123,"html_url":"https://github.com/owner/name/releases/tag/v1.0.0"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "owner", Name: "name"},
+				Draft:  false,
+			},
+		})
+		ctx.PreRelease = true
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		require.NoError(t, client.PublishRelease(ctx, "123"))
+		require.Contains(t, requestBody, `"prerelease":true`)
+		require.Contains(t, requestBody, `"make_latest":"false"`)
+	})
+
 	t.Run("with make latest", func(t *testing.T) {
 		t.Parallel()
 		var requestBody string
