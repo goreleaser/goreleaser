@@ -78,6 +78,14 @@ jobs:
 > [!NOTE]
 > For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
+### Nightly builds
+
+Setting `version: nightly` on `goreleaser-action` (≥ `v7.2.0`) installs the
+latest immutable nightly release (e.g. `v2.16.0-abc1234-nightly`) instead of a
+moving tag. The action resolves it through the GitHub Releases API, so make
+sure `GITHUB_TOKEN` is exported on the step (the example above already does)
+to avoid the unauthenticated rate limit.
+
 ### Signing
 
 If [signing is enabled][signing] in your GoReleaser configuration, you can use
