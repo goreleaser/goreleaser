@@ -370,6 +370,7 @@ milestones:
 
 release:
   name_template: "v{{ .Version }}"
+  prerelease: auto
   header: |
     ## Announcement
 
