@@ -369,7 +369,7 @@ milestones:
   - close: true
 
 release:
-  name_template: "v{{ .Version }}"
+  name_template: "{{ .Tag }}"
   prerelease: auto
   header: |
     ## Announcement
