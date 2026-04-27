@@ -486,9 +486,10 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		parts = append(parts, a.Goarch)
 	case "arm":
 		parts = append(parts, a.Goarch)
-		switch a.Goarm {
+		goarm := normalizeGoarm(a.Goarm)
+		switch goarm {
 		case "5", "6", "7":
-			parts = append(parts, "v"+a.Goarm)
+			parts = append(parts, "v"+goarm)
 		default:
 			return "", fmt.Errorf("unsupported arch: arm/v%q", a.Goarm)
 		}
@@ -496,6 +497,15 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		return "", fmt.Errorf("unsupported arch: %q", a.Goarch)
 	}
 	return path.Join(parts...), nil
+}
+
+// normalizeGoarm extracts the base GOARM version from values like "6_softfloat" or "7_hardfloat".
+// For plain values like "6" or "7", it returns them as-is.
+func normalizeGoarm(goarm string) string {
+	if idx := strings.Index(goarm, "_"); idx > 0 {
+		return goarm[:idx]
+	}
+	return goarm
 }
 
 type platform struct {
