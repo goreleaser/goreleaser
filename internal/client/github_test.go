@@ -1429,14 +1429,17 @@ func TestGitHubPublishRelease(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{API: srv.URL},
 			Release: config.Release{
-				GitHub: config.Repo{Owner: "owner", Name: "name"},
-				Draft:  false,
+				NameTemplate: "custom title",
+				GitHub:       config.Repo{Owner: "owner", Name: "name"},
+				Draft:        false,
+				MakeLatest:   "true",
 			},
 		})
 		ctx.PreRelease = true
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
 		require.NoError(t, client.PublishRelease(ctx, "123"))
+		require.Contains(t, requestBody, `"name":"custom title"`)
 		require.Contains(t, requestBody, `"prerelease":true`)
 		require.Contains(t, requestBody, `"make_latest":"false"`)
 	})

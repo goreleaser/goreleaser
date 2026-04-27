@@ -482,7 +482,8 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
+	tpl := tmpl.New(ctx)
+	title, err := tpl.Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
 	}
@@ -508,7 +509,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	}
 
 	if target := ctx.Config.Release.TargetCommitish; target != "" {
-		target, err := tmpl.New(ctx).Apply(target)
+		target, err := tpl.Apply(target)
 		if err != nil {
 			return "", err
 		}
@@ -527,8 +528,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 }
 
 func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) error {
-	draft := ctx.Config.Release.Draft
-	if draft {
+	if ctx.Config.Release.Draft {
 		return nil
 	}
 	releaseIDInt, err := strconv.ParseInt(releaseID, 10, 64)
@@ -536,12 +536,20 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
 	data := &github.RepositoryRelease{
-		Draft: &draft,
+		Draft: new(false),
+	}
+	tpl := tmpl.New(ctx)
+	title, err := tpl.Apply(ctx.Config.Release.NameTemplate)
+	if err != nil {
+		return fmt.Errorf("templating GitHub release name: %w", err)
+	}
+	if title != "" {
+		data.Name = &title
 	}
 	if ctx.PreRelease {
 		data.Prerelease = &ctx.PreRelease
 	}
-	latest, err := tmpl.New(ctx).Apply(ctx.Config.Release.MakeLatest)
+	latest, err := tpl.Apply(ctx.Config.Release.MakeLatest)
 	if err != nil {
 		return fmt.Errorf("templating GitHub make_latest: %w", err)
 	}
