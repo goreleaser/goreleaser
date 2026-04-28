@@ -42,8 +42,6 @@ cask "generate_completions_default_executable" do
     ]
 
   binary "generate_completions_default_executable"
-  generate_completions_from_executable "generate_completions_default_executable",
-    shell_parameter_format: :cobra
 
   service "foo.plist"
 
@@ -51,6 +49,8 @@ cask "generate_completions_default_executable" do
     system "echo"
     touch "/tmp/hi"
   end
+  generate_completions_from_executable "generate_completions_default_executable",
+    shell_parameter_format: :cobra
 
   # No zap stanza required
 
