@@ -6,7 +6,7 @@ set -euo pipefail
 	echo
 	echo "package nix"
 	echo "var validLicenses = []string {"
-	curl -s https://raw.githubusercontent.com/NixOS/nixpkgs/master/lib/licenses.nix |
+	curl -s https://raw.githubusercontent.com/NixOS/nixpkgs/refs/heads/master/lib/licenses/licenses.nix |
 		grep -E '.* = \{' |
 		grep -v default |
 		cut -f1 -d= |

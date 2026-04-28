@@ -15,7 +15,7 @@ contributors!
 
 <!--more-->
 
-![Mastodon integration](https://carlosbecker.com/posts/goreleaser-v1.13/picture.png)
+![Mastodon integration](https://carlosbecker.com/posts/goreleaser-v1.13/picture.webp)
 
 This one also marks the point of 1 year since v1.0.0!
 
@@ -37,7 +37,6 @@ This one also marks the point of 1 year since v1.0.0!
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 ### Other news
 

@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"golang.org/x/oauth2"
@@ -91,10 +92,11 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return "", retryx.HTTP(
+		body, _ := io.ReadAll(resp.Body)
+		return "", retryx.HTTP(gerrors.Wrap(
 			fmt.Errorf("GET /v2/me returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
-			resp,
-		)
+			gerrors.WithOutput(string(body)),
+		), resp)
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -133,10 +135,11 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return "", retryx.HTTP(
+		body, _ := io.ReadAll(resp.Body)
+		return "", retryx.HTTP(gerrors.Wrap(
 			fmt.Errorf("GET /v2/userinfo returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
-			resp,
-		)
+			gerrors.WithOutput(string(body)),
+		), resp)
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -212,10 +215,11 @@ func (c client) Share(ctx stdctx.Context, message string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return "", retryx.HTTP(
+		body, _ := io.ReadAll(resp.Body)
+		return "", retryx.HTTP(gerrors.Wrap(
 			fmt.Errorf("POST /v2/shares returned %d %s", resp.StatusCode, http.StatusText(resp.StatusCode)),
-			resp,
-		)
+			gerrors.WithOutput(string(body)),
+		), resp)
 	}
 
 	body, err := io.ReadAll(resp.Body)

@@ -12,7 +12,7 @@ Keeping our pace of 1 minor a month, this is the January 2023 release.
 
 <!--more-->
 
-![GoReleaser’s Ko integration documentation](https://carlosbecker.com/posts/goreleaser-v1.15/img.png)
+![GoReleaser’s Ko integration documentation](https://carlosbecker.com/posts/goreleaser-v1.15/img.webp)
 
 It is packed with some juicy features and tons of bug fixes and quality-of-life
 improvements.
@@ -32,7 +32,6 @@ Let's take a look:
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 #### GitHub Action incident
 

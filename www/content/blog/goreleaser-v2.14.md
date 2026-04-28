@@ -21,7 +21,7 @@ You can read the announcement
 
 ## Finally, air-gapped license checks
 
-![](https://carlosbecker.com/posts/goreleaser-v2.14/img.png)
+![](https://carlosbecker.com/posts/goreleaser-v2.14/img.webp)
 
 If you need to release in an air-gapped environment, you may now export your key
 and validate it offline:
@@ -58,7 +58,7 @@ changelog:
 
 GoReleaser Pro can now create, sign, and notarize `.pkg` installers for macOS!
 
-![](https://carlosbecker.com/posts/goreleaser-v2.14/img2.png)
+![](https://carlosbecker.com/posts/goreleaser-v2.14/img2.webp)
 
 A minimal example:
 
@@ -115,7 +115,7 @@ derivations based on that (namely, use `autoPatchelfHook`, `stdenv.cc`, etc).
 
 ## Better, safer, output
 
-![](https://carlosbecker.com/posts/goreleaser-v2.14/img3.png)
+![](https://carlosbecker.com/posts/goreleaser-v2.14/img3.webp)
 
 We made some improvements on our internal `gerrors` package, which should allow
 us to give better, more detailed, error outputs.

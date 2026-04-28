@@ -12,7 +12,7 @@ This release contains several minor improvements and a couple of new features! L
 
 <!--more-->
 
-![goreleaser changelog preview](https://carlosbecker.com/posts/goreleaser-v1.9/136319f0-2346-4c3b-aa77-e239a7563527.png)
+![goreleaser changelog preview](https://carlosbecker.com/posts/goreleaser-v1.9/136319f0-2346-4c3b-aa77-e239a7563527.webp)
 
 ## **Highlights**
 
@@ -30,7 +30,7 @@ You can see the full changelog [here](https://github.com/goreleaser/goreleaser/
 
 ## **Other news**
 
-![We hit 10k stars!](https://carlosbecker.com/posts/goreleaser-v1.9/23d24a10-64ad-4fbd-aa37-d7e0367fe9d9.png)
+![We hit 10k stars!](https://carlosbecker.com/posts/goreleaser-v1.9/23d24a10-64ad-4fbd-aa37-d7e0367fe9d9.webp)
 
 - Still no community meeting, sorry 🫠. [Link](https://github.com/goreleaser/community/pull/2).
 - We hit 10k stars on our [main repository](https://github.com/goreleaser/goreleaser)!

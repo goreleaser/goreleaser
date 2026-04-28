@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -123,8 +124,11 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		defer resp.Body.Close()
 
 		if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
-			_, _ = io.Copy(io.Discard, resp.Body)
-			return retryx.HTTP(fmt.Errorf("request failed with status %v", resp.Status), resp)
+			body, _ := io.ReadAll(resp.Body)
+			return retryx.HTTP(gerrors.Wrap(
+				fmt.Errorf("request failed with status %v", resp.Status),
+				gerrors.WithOutput(string(body)),
+			), resp)
 		}
 
 		body, _ := io.ReadAll(resp.Body)

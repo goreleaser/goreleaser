@@ -23,9 +23,11 @@ git:
   # This means that GoReleaser will not pick up tags that match any of the
   # provided values as either previous or current tags.
   #
+  # Glob patterns are supported. {{< g_inline_version "v2.15.4" >}} {{< g_inline_pro >}}
   # Templates: allowed.
   ignore_tags:
     - nightly
+    - "*-nightly"
     - "{{.Env.IGNORE_TAG}}"
 
   # Tags that begin with these prefixes will be ignored.

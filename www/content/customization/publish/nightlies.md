@@ -25,6 +25,12 @@ nightly:
   version_template: "{{ incpatch .Version }}-devel"
 
   # Tag name to create if publish_release is enabled.
+  #
+  # Note that if you use templates, you'll also want to add a matching glob
+  # pattern to `git.ignore_tags`, e.g. '*-devel', so GoReleaser can properly
+  # ignore these tags when determining the current and previous versions.
+  #
+  # Templates: allowed. {{< g_inline_version "v2.16-unreleased" >}}
   tag_name: devel
 
   # Whether to publish a release or not.

@@ -12,7 +12,7 @@ The February release got a little late... _better later than even later, I guess
 
 <!--more-->
 
-![goreleaser healthcheck](https://carlosbecker.com/posts/goreleaser-v1.16/img.png)
+![goreleaser healthcheck](https://carlosbecker.com/posts/goreleaser-v1.16/img.webp)
 
 It is packed with some juicy features and tons of bug fixes and quality-of-life
 improvements.

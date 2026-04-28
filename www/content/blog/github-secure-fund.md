@@ -13,7 +13,7 @@ That's why we were thrilled to be selected for the third session of the
 
 <!--more-->
 
-![](http://carlosbecker.com/posts/goreleaser-github-secure-oss-fund/img.png)
+![](http://carlosbecker.com/posts/goreleaser-github-secure-oss-fund/img.webp)
 
 We joined a group with so [many great projects][announcement] that I feel bad
 trying to name just a few of them - so you should check the official
@@ -71,7 +71,7 @@ the [GoReleaser Discord](https://discord.gg/RGEBtg8vQ6) - feel free to chime in 
 Our greatest thanks to both the fund and the fund's partners for making this
 possible.
 
-[discussions]: https://github.com/orgs/goreleaser/discussions/new?category=ideas-issue-triage-and-general-discussions
+[discussions]: https://github.com/goreleaser/goreleaser/discussions/new?category=ideas-issue-triage-and-general-discussions
 [ghosf]: https://github.com/open-source/github-secure-open-source-fund
 [example]: https://github.com/goreleaser/example-secure
 [govulncheck]: https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck

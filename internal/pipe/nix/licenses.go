@@ -266,6 +266,7 @@ var validLicenses = []string{
 	"unicode-dfs-2015",
 	"unicode-dfs-2016",
 	"unicodeTOU",
+	"universalFOSSException-10",
 	"unlicense",
 	"upl",
 	"vim",

@@ -21,7 +21,7 @@ generate() {
 		curl \
 			-H "Authorization: Bearer $GITHUB_TOKEN" \
 			-sSf "$url?page=$page" |
-			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name != "nightly")]' >"$tmp/$i.json"
+			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name | contains("nightly") | not)]' >"$tmp/$i.json"
 
 	done
 

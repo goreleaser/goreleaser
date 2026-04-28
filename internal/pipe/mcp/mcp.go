@@ -190,7 +190,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 func authProvider(registryURL, method, token string) (auth.Provider, error) {
 	switch method {
 	case proto.MethodGitHub:
-		return auth.NewGitHubATProvider(true, registryURL, token), nil
+		return auth.NewGitHubATProvider(registryURL, token), nil
 	case proto.MethodGitHubOIDC:
 		return auth.NewGitHubOIDCProvider(registryURL), nil
 	case proto.MethodNone:
@@ -202,6 +202,6 @@ func authProvider(registryURL, method, token string) (auth.Provider, error) {
 
 func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
-Please provide any feedback you might have at https://github.com/orgs/goreleaser/discussions/6251`).
+Please provide any feedback you might have at https://github.com/goreleaser/goreleaser/discussions/6251`).
 		Warn(logext.Warning("mcp is experimental and subject to change"))
 }

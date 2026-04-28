@@ -124,6 +124,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, f.Close())
 	require.NoError(t, err)
 
+	target := "aarch64-unknown-linux-gnu.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
@@ -132,6 +133,7 @@ func TestBuild(t *testing.T) {
 			{
 				ID:           "default",
 				Dir:          ".",
+				Targets:      []string{target},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"--release"},
@@ -144,7 +146,6 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := "aarch64-unknown-linux-gnu.2.17"
 	options := api.Options{
 		Name: "proj",
 		Path: filepath.Join("dist", "proj-"+target, "proj"),
@@ -182,6 +183,90 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraID:       "default",
 			artifact.ExtranDynLink: true,
 			keyAbi:                 "gnu",
+			keyLibc:                "2.17",
+		},
+	}, *bin)
+
+	require.FileExists(t, bin.Path)
+	fi, err := os.Stat(bin.Path)
+	require.NoError(t, err)
+	require.True(t, modTime.Equal(fi.ModTime()))
+}
+
+func TestBuildArm(t *testing.T) {
+	testlib.CheckPath(t, "cargo")
+	testlib.CheckPath(t, "cargo-zigbuild")
+
+	folder := testlib.Mktmp(t)
+	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
+	require.NoError(t, err)
+
+	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
+	require.NoError(t, err)
+	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
+	require.NoError(t, f.Close())
+	require.NoError(t, err)
+
+	target := "armv7-unknown-linux-gnueabihf.2.17"
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        "dist",
+		ProjectName: "proj",
+		Builds: []config.Build{
+			{
+				ID:           "default",
+				Dir:          ".",
+				Targets:      []string{target},
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Flags: []string{"--release"},
+				},
+			},
+		},
+	})
+
+	build, err := Default.WithDefaults(ctx.Config.Builds[0])
+	require.NoError(t, err)
+	require.NoError(t, Default.Prepare(ctx, build))
+
+	options := api.Options{
+		Name: "proj",
+		Path: filepath.Join("dist", "proj-"+target, "proj"),
+	}
+	options.Target, err = Default.Parse(target)
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
+
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	bins := list.List()
+	require.Len(t, bins, 1)
+
+	bin := bins[0]
+	require.Equal(t, artifact.Artifact{
+		Name:   "proj",
+		Path:   filepath.ToSlash(options.Path),
+		Goos:   "linux",
+		Goarch: "arm",
+		Goarm:  "7",
+		Target: target,
+		Type:   artifact.Binary,
+		Extra: artifact.Extras{
+			artifact.ExtraBinary:   "proj",
+			artifact.ExtraBuilder:  "rust",
+			artifact.ExtraExt:      "",
+			artifact.ExtraID:       "default",
+			artifact.ExtranDynLink: true,
+			keyAbi:                 "gnueabihf",
 			keyLibc:                "2.17",
 		},
 	}, *bin)
@@ -239,6 +324,7 @@ func TestParse(t *testing.T) {
 			Target: "armv7-unknown-linux-gnueabihf.2.17",
 			Os:     "linux",
 			Arch:   "arm",
+			Arm:    "7",
 			Vendor: "unknown",
 			Abi:    "gnueabihf",
 			Libc:   "2.17",

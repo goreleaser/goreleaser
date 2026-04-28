@@ -12,7 +12,7 @@ Fun fact: it is actually winter now here in Brazil. Regardless, this release is 
 
 <!--more-->
 
-![GoReleaser Screenshot](https://carlosbecker.com/posts/goreleaser-v1.10/488e0554-ebcb-4e4f-90ed-a0c2c8b36fde.png)
+![GoReleaser Screenshot](https://carlosbecker.com/posts/goreleaser-v1.10/488e0554-ebcb-4e4f-90ed-a0c2c8b36fde.webp)
 
 ### Highlights
 

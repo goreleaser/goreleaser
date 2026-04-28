@@ -360,7 +360,7 @@ tags, and will create Docker images instead of manifests, as manifests can't be
 created without pushing.
 
 Feel free to suggest improvements
-[here](https://github.com/orgs/goreleaser/discussions/6005).
+[here](https://github.com/goreleaser/goreleaser/discussions/6005).
 
 Regarding signing, you may also remove the `artifacts` option from you
 `docker_signs`:

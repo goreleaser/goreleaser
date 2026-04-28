@@ -27,7 +27,7 @@ feature introduced in the last release, and in other features.
   on timeouts or `SIGINT`), removed the usage of some libraries, and many other
   smaller changes;
 
-![New output of 'goreleaser --help'](https://carlosbecker.com/posts/goreleaser-v2.11/help.png)
+![New output of 'goreleaser --help'](https://carlosbecker.com/posts/goreleaser-v2.11/help.webp)
 
 ## Other news
 

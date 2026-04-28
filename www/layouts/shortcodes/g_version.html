@@ -23,7 +23,12 @@
 			{{- if $unreleased -}}
 				This will be available in the next release (<strong>{{ $tag }}</strong>). Stay tuned!
 			{{- else -}}
-			Since <a href="/blog/goreleaser-{{ $tag }}">{{ $tag }}</a>.
+			{{- $linkTag := $tag -}}
+			{{- $parts := split $tag "." -}}
+			{{- if ge (len $parts) 3 -}}
+				{{- $linkTag = delimit (first 2 $parts) "." -}}
+			{{- end -}}
+			Since <a href="/blog/goreleaser-{{ $linkTag }}">{{ $tag }}</a>.
 			{{- end -}}
 		</div>
 	</div>
