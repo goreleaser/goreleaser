@@ -38,6 +38,7 @@ cask "test" do
   bash_completion "mybin.bash"
   fish_completion "mybin.fish"
   zsh_completion "mybin.zsh"
+
   generate_completions_from_executable "bin/myapp"
 
   # No zap stanza required

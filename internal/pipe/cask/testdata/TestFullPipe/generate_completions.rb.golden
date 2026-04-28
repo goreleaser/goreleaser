@@ -42,10 +42,6 @@ cask "generate_completions" do
     ]
 
   binary "generate_completions"
-  generate_completions_from_executable "bin/generate_completions", "completions",
-    base_name: "generate_completions",
-    shell_parameter_format: :cobra,
-    shells: [:bash, :zsh, :fish, :pwsh]
 
   service "foo.plist"
 
@@ -53,6 +49,10 @@ cask "generate_completions" do
     system "echo"
     touch "/tmp/hi"
   end
+  generate_completions_from_executable "bin/generate_completions", "completions",
+    base_name: "generate_completions",
+    shell_parameter_format: :cobra,
+    shells: [:bash, :zsh, :fish, :pwsh]
 
   # No zap stanza required
 
