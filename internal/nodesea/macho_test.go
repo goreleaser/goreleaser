@@ -22,7 +22,7 @@ func TestUnsignMachOBytes(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, got, len(raw)-128, "file should be truncated by signature size")
 
-		f, err := macho.NewFile(newReadSeeker(got))
+		f, err := macho.NewFile(bytes.NewReader(got))
 		require.NoError(t, err)
 		require.Equal(t, uint32(2), f.Ncmd, "LC count should drop by 1")
 		linkedit := f.Segment("__LINKEDIT")
@@ -88,7 +88,7 @@ func TestInjectMachOBytes(t *testing.T) {
 		got, err := injectMachOBytes(raw, blob)
 		require.NoError(t, err)
 
-		f, err := macho.NewFile(newReadSeeker(got))
+		f, err := macho.NewFile(bytes.NewReader(got))
 		require.NoError(t, err)
 		seg := f.Segment(MachOSegmentName)
 		require.NotNil(t, seg, "segment must exist")
@@ -126,20 +126,20 @@ func TestInjectMachOBytes(t *testing.T) {
 func TestFlipMachOSentinel(t *testing.T) {
 	t.Run("flips :0 to :1", func(t *testing.T) {
 		data := []byte("padding " + SentinelStock + " more")
-		got, err := flipMachOSentinel(data)
+		got, err := flipSentinelBytes(data)
 		require.NoError(t, err)
 		require.Contains(t, string(got), SentinelFused)
 	})
 
 	t.Run("rejects already fused", func(t *testing.T) {
 		data := []byte("padding " + SentinelFused + " more")
-		_, err := flipMachOSentinel(data)
+		_, err := flipSentinelBytes(data)
 		require.ErrorIs(t, err, ErrAlreadyFused)
 	})
 
 	t.Run("rejects missing sentinel", func(t *testing.T) {
 		data := []byte("nothing to see here")
-		_, err := flipMachOSentinel(data)
+		_, err := flipSentinelBytes(data)
 		require.ErrorIs(t, err, ErrSentinelNotFound)
 	})
 }

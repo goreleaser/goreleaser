@@ -1,6 +1,7 @@
 package nodesea
 
 import (
+	"bytes"
 	"debug/pe"
 	"encoding/binary"
 	"fmt"
@@ -21,7 +22,7 @@ func unsignPE(path string) error {
 		return err
 	}
 
-	f, err := pe.NewFile(newReadSeeker(data))
+	f, err := pe.NewFile(bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("nodesea: parse PE: %w", err)
 	}

@@ -75,7 +75,7 @@ func buildMachO(srcPath, outPath string, blob []byte, id string) error {
 	if err != nil {
 		return fmt.Errorf("nodesea: inject mach-o: %w", err)
 	}
-	out, err = flipMachOSentinel(out)
+	out, err = flipSentinelBytes(out)
 	if err != nil {
 		return fmt.Errorf("nodesea: flip sentinel: %w", err)
 	}
@@ -141,33 +141,6 @@ func adHocSignFile(path, id string) error {
 	return nil
 }
 
-// flipMachOSentinel returns data with the SEA fuse sentinel's trailing
-// `:0` flipped to `:1`. Matches FlipSentinel's semantics but operates
-// on a byte slice (no I/O) so it can be chained with the other
-// in-memory passes.
-func flipMachOSentinel(data []byte) ([]byte, error) {
-	idx := bytes.Index(data, []byte(Sentinel))
-	if idx < 0 {
-		return nil, ErrSentinelNotFound
-	}
-	if bytes.Count(data, []byte(Sentinel)) > 1 {
-		return nil, ErrSentinelAmbiguous
-	}
-	markerAt := idx + len(Sentinel)
-	if markerAt+2 > len(data) || data[markerAt] != ':' {
-		return nil, ErrSentinelNotFound
-	}
-	switch data[markerAt+1] {
-	case '0':
-		data[markerAt+1] = '1'
-		return data, nil
-	case '1':
-		return nil, ErrAlreadyFused
-	default:
-		return nil, ErrSentinelNotFound
-	}
-}
-
 // ---------------------------------------------------------------------
 // unsign
 // ---------------------------------------------------------------------
@@ -209,7 +182,7 @@ func unsignMachOBytes(orig []byte) ([]byte, error) {
 	}
 
 	data := append([]byte(nil), orig...)
-	f, err := macho.NewFile(newReadSeeker(data))
+	f, err := macho.NewFile(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("parse: %w", err)
 	}
@@ -383,7 +356,7 @@ func injectMachOBytes(data, blob []byte) ([]byte, error) {
 		return nil, fmt.Errorf("%w: only thin 64-bit Mach-O is supported", ErrNotSupported)
 	}
 
-	f, err := macho.NewFile(newReadSeeker(data))
+	f, err := macho.NewFile(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("parse: %w", err)
 	}

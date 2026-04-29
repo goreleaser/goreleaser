@@ -1,6 +1,7 @@
 package nodesea
 
 import (
+	"bytes"
 	"debug/elf"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func TestInjectELF(t *testing.T) {
 
 		// Reparse and verify a PT_NOTE phdr exists pointing at a SHT_NOTE
 		// section whose note matches our name+type+desc.
-		f, err := elf.NewFile(newReadSeeker(got))
+		f, err := elf.NewFile(bytes.NewReader(got))
 		require.NoError(t, err)
 
 		require.True(t, findElfNote(f, got, noteName, noteType), "note must be present after injection")

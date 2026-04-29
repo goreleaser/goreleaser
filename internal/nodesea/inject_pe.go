@@ -40,7 +40,7 @@ func injectPE(path string, blob []byte) error {
 		return err
 	}
 
-	f, err := pe.NewFile(newReadSeeker(data))
+	f, err := pe.NewFile(bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("nodesea: parse PE: %w", err)
 	}

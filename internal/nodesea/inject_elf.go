@@ -48,7 +48,7 @@ func injectELF(path string, blob []byte) error {
 		return fmt.Errorf("%w: only little-endian ELF is supported", ErrNotSupported)
 	}
 
-	f, err := elf.NewFile(newReadSeeker(data))
+	f, err := elf.NewFile(bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("nodesea: parse ELF: %w", err)
 	}
@@ -69,22 +69,12 @@ func injectELF(path string, blob []byte) error {
 	//   4) a new PT_NOTE program header (we move/extend the program
 	//      header table to a fresh area at EOF).
 	//
-	// ELF64 layout offsets in the header:
-	//   e_phoff   @ 0x20  (uint64)
-	//   e_shoff   @ 0x28  (uint64)
-	//   e_phentsize @ 0x36 (uint16)
-	//   e_phnum   @ 0x38  (uint16)
-	//   e_shentsize @ 0x3a (uint16)
-	//   e_shnum   @ 0x3c  (uint16)
-	//   e_shstrndx @ 0x3e (uint16)
+	// ELF64 header field offsets we touch directly (debug/elf hides them).
 	const (
 		ePhoffOff     = 0x20
-		eShoffOff     = 0x28
 		ePhentSizeOff = 0x36
 		ePhnumOff     = 0x38
 		eShentSizeOff = 0x3a
-		eShnumOff     = 0x3c
-		eShstrndxOff  = 0x3e
 
 		shentSize = 64
 		phentSize = 56
@@ -198,12 +188,6 @@ func injectELF(path string, blob []byte) error {
 	// table alone — sections aren't needed at runtime.
 	binary.LittleEndian.PutUint64(out[ePhoffOff:], newFileOff)
 	binary.LittleEndian.PutUint16(out[ePhnumOff:], newPhnum)
-	_ = ePhentSizeOff
-	_ = eShentSizeOff
-	_ = eShstrndxOff
-	_ = eShoffOff
-	_ = eShnumOff
-	_ = shentSize
 
 	tmp := path + ".inject.tmp"
 	if err := os.WriteFile(tmp, out, 0o755); err != nil {

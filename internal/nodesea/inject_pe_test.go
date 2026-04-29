@@ -25,7 +25,7 @@ func TestInjectPE(t *testing.T) {
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
 
-		f, err := pe.NewFile(newReadSeeker(got))
+		f, err := pe.NewFile(bytes.NewReader(got))
 		require.NoError(t, err)
 
 		// Resources now live in the new ".sea" section we appended.

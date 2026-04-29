@@ -3,7 +3,6 @@ package nodesea
 import (
 	"bytes"
 	"errors"
-	"io"
 	"os"
 )
 
@@ -30,40 +29,60 @@ var ErrAlreadyFused = errors.New("nodesea: binary already has fused sentinel")
 //   - ErrSentinelAmbiguous when the sentinel appears more than once,
 //   - ErrAlreadyFused when the sentinel is already `:1`.
 func FlipSentinel(path string) error {
-	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	idx, err := findFuseMarker(data)
+	if err != nil {
+		return err
+	}
+	f, err := os.OpenFile(path, os.O_WRONLY, 0)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
-	data, err := io.ReadAll(f)
-	if err != nil {
-		return err
-	}
-
-	idx := bytes.Index(data, []byte(Sentinel))
-	if idx < 0 {
-		return ErrSentinelNotFound
-	}
-	if bytes.Count(data, []byte(Sentinel)) > 1 {
-		return ErrSentinelAmbiguous
-	}
-
-	markerAt := idx + len(Sentinel)
-	if markerAt+2 > len(data) || data[markerAt] != ':' {
-		return ErrSentinelNotFound
-	}
-	switch data[markerAt+1] {
-	case '0':
-		// fall through and flip
-	case '1':
-		return ErrAlreadyFused
-	default:
-		return ErrSentinelNotFound
-	}
-
-	if _, err := f.WriteAt([]byte{'1'}, int64(markerAt+1)); err != nil {
+	if _, err := f.WriteAt([]byte{'1'}, int64(idx)); err != nil {
 		return err
 	}
 	return f.Sync()
+}
+
+// flipSentinelBytes returns data with the SEA fuse sentinel's trailing
+// `:0` marker flipped to `:1` in place. Same semantics as
+// FlipSentinel, but byte-pure so it can be chained with other
+// in-memory passes.
+func flipSentinelBytes(data []byte) ([]byte, error) {
+	idx, err := findFuseMarker(data)
+	if err != nil {
+		return nil, err
+	}
+	data[idx] = '1'
+	return data, nil
+}
+
+// findFuseMarker locates the trailing fuse byte (the `0`/`1` after
+// `Sentinel:`) in data. It mirrors postject's runtime contract:
+// exactly one sentinel, in `:0` state. Returns the absolute index of
+// the marker byte.
+func findFuseMarker(data []byte) (int, error) {
+	idx := bytes.Index(data, []byte(Sentinel))
+	if idx < 0 {
+		return 0, ErrSentinelNotFound
+	}
+	if bytes.Count(data, []byte(Sentinel)) > 1 {
+		return 0, ErrSentinelAmbiguous
+	}
+	markerAt := idx + len(Sentinel)
+	if markerAt+2 > len(data) || data[markerAt] != ':' {
+		return 0, ErrSentinelNotFound
+	}
+	switch data[markerAt+1] {
+	case '0':
+		return markerAt + 1, nil
+	case '1':
+		return 0, ErrAlreadyFused
+	default:
+		return 0, ErrSentinelNotFound
+	}
 }
