@@ -108,6 +108,13 @@ func TestCurrentTarget(t *testing.T) {
 	require.True(t, isValid(got), "%s should be a valid target", got)
 }
 
+func TestGoarmFor(t *testing.T) {
+	require.Equal(t, "7", goarmFor("armv7l"))
+	require.Empty(t, goarmFor("arm64"))
+	require.Empty(t, goarmFor("x64"))
+	require.Empty(t, goarmFor("ppc64"))
+}
+
 func TestConvertHelpers(t *testing.T) {
 	require.Equal(t, "amd64", convertToGoarch("x64"))
 	require.Equal(t, "arm64", convertToGoarch("arm64"))

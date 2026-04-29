@@ -78,6 +78,16 @@ func convertToGoos(s string) string {
 	}
 }
 
+// goarmFor returns the GOARM value implied by the nodejs.org arch
+// component, or "" when no GOARM applies. Node's only 32-bit ARM
+// publication is the ARMv7 hard-float build, so armv7l implies "7".
+func goarmFor(arch string) string {
+	if arch == "armv7l" {
+		return "7"
+	}
+	return ""
+}
+
 func isValid(target string) bool {
 	targetsOnce.Do(func() {
 		for t := range strings.SplitSeq(string(allTargetsBts), "\n") {
