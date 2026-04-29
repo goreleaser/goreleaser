@@ -7,15 +7,15 @@ import (
 	"os"
 )
 
-// UnsignPE removes the Authenticode certificate table from a PE binary,
+// unsignPE removes the Authenticode certificate table from a PE binary,
 // zeroes the corresponding data directory entry, and recomputes the
 // OptionalHeader checksum.
 //
-// Like UnsignMachO this is conservative: the certificate table must be
-// the last thing in the file. If anything follows it the function
-// rejects the binary with ErrNotSupported. If there is no certificate
-// table the function is a no-op.
-func UnsignPE(path string) error {
+// Conservative: the certificate table must be the last thing in the
+// file. If anything follows it the function rejects the binary with
+// ErrNotSupported. If there is no certificate table the function is a
+// no-op.
+func unsignPE(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err

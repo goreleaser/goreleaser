@@ -20,7 +20,7 @@ func TestInjectPE(t *testing.T) {
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
 		blob := []byte("a sea blob payload!")
-		require.NoError(t, InjectPE(path, blob))
+		require.NoError(t, injectPE(path, blob))
 
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
@@ -63,8 +63,8 @@ func TestInjectPE(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "host.exe")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
-		require.NoError(t, InjectPE(path, []byte("blob")))
-		err := InjectPE(path, []byte("blob"))
+		require.NoError(t, injectPE(path, []byte("blob")))
+		err := injectPE(path, []byte("blob"))
 		require.ErrorIs(t, err, ErrAlreadyInjected)
 	})
 
@@ -72,7 +72,7 @@ func TestInjectPE(t *testing.T) {
 		raw := (&peBuilder{}).build()
 		path := filepath.Join(t.TempDir(), "host.exe")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
-		err := InjectPE(path, []byte("blob"))
+		err := injectPE(path, []byte("blob"))
 		require.ErrorIs(t, err, ErrNotSupported)
 	})
 }

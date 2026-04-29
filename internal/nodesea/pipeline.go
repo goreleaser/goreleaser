@@ -6,66 +6,71 @@ import (
 	"os"
 )
 
-// Inject dispatches to the format-appropriate injector for the given
-// target binary. It is a no-op error when target is not one of the three
-// supported formats. After injection, Mach-O binaries are also ad-hoc
-// codesigned because macOS arm64 kernels refuse to exec unsigned
-// binaries.
-func Inject(target Target, hostPath string, blob []byte) error {
+// Build produces a Node.js Single Executable Application at outPath for
+// (version, target) by downloading the official Node host binary into
+// the user cache, then splicing blob into a private SEA segment/section
+// in a single in-memory pass per format.
+//
+// One call replaces what was previously download + copy + unsign +
+// inject + sentinel-flip + (Mach-O only) ad-hoc sign. outPath is
+// written atomically: on success it has executable permissions
+// regardless of any pre-existing file at that path.
+func Build(ctx context.Context, version string, target Target, outPath string, blob []byte) error {
+	cacheDir, err := CacheDir()
+	if err != nil {
+		return err
+	}
+	cachedPath, err := downloadHost(ctx, cacheDir, version, target)
+	if err != nil {
+		return err
+	}
+
 	switch FormatFor(target.Goos()) {
 	case FormatELF:
-		return InjectELF(hostPath, blob)
+		return buildELF(cachedPath, outPath, blob)
 	case FormatMachO:
-		if err := InjectMachO(hostPath, blob); err != nil {
-			return err
-		}
-		return AdHocSignMachO(hostPath, "")
+		return buildMachO(cachedPath, outPath, blob, "")
 	case FormatPE:
-		return InjectPE(hostPath, blob)
+		return buildPE(cachedPath, outPath, blob)
 	default:
 		return fmt.Errorf("%w: target %q has no SEA injector", ErrNotSupported, target)
 	}
 }
 
-// Unsign strips the existing signature, if any, from the host binary
-// at hostPath. No-op for ELF.
-func Unsign(target Target, hostPath string) error {
-	switch FormatFor(target.Goos()) {
-	case FormatMachO:
-		return UnsignMachO(hostPath)
-	case FormatPE:
-		return UnsignPE(hostPath)
-	default:
-		return nil
+// buildELF reads cachedPath, injects blob, flips the sentinel, and
+// writes outPath atomically with executable permissions.
+func buildELF(cachedPath, outPath string, blob []byte) error {
+	if err := copyFile(cachedPath, outPath); err != nil {
+		return err
 	}
+	if err := injectELF(outPath, blob); err != nil {
+		return fmt.Errorf("nodesea: inject elf: %w", err)
+	}
+	return nil
 }
 
-// PrepareHost ensures a host binary for (version, target) is available
-// and ready to be injected into. It downloads and caches the binary
-// (verifying its SHA256), then copies it into outPath and strips the
-// existing signature.
-//
-// If outPath already exists it is overwritten. Returns the same path on
-// success.
-func PrepareHost(ctx context.Context, version string, target Target, outPath string) (string, error) {
-	cacheDir, err := CacheDir()
-	if err != nil {
-		return "", err
+// buildPE reads cachedPath, strips its Authenticode signature, injects
+// blob as a NODE_SEA_BLOB resource, flips the sentinel, and writes
+// outPath atomically with executable permissions.
+func buildPE(cachedPath, outPath string, blob []byte) error {
+	if err := copyFile(cachedPath, outPath); err != nil {
+		return err
 	}
-	cachedPath, err := downloadHost(ctx, cacheDir, version, target)
-	if err != nil {
-		return "", err
+	if err := unsignPE(outPath); err != nil {
+		return fmt.Errorf("nodesea: unsign pe: %w", err)
 	}
+	if err := injectPE(outPath, blob); err != nil {
+		return fmt.Errorf("nodesea: inject pe: %w", err)
+	}
+	return nil
+}
 
-	src, err := os.ReadFile(cachedPath)
+// copyFile copies src to dst with executable permissions, replacing
+// dst if it already exists.
+func copyFile(src, dst string) error {
+	data, err := os.ReadFile(src)
 	if err != nil {
-		return "", err
+		return err
 	}
-	if err := os.WriteFile(outPath, src, 0o755); err != nil {
-		return "", err
-	}
-	if err := Unsign(target, outPath); err != nil {
-		return "", fmt.Errorf("nodesea: unsign host: %w", err)
-	}
-	return outPath, nil
+	return os.WriteFile(dst, data, 0o755)
 }

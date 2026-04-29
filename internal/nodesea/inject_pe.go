@@ -18,7 +18,7 @@ const PEResourceName = "NODE_SEA_BLOB"
 // rtRCData is the PE resource type ID for raw data.
 const rtRCData = 10
 
-// InjectPE injects blob into the PE binary at path as a `NODE_SEA_BLOB`
+// injectPE injects blob into the PE binary at path as a `NODE_SEA_BLOB`
 // (RT_RCDATA) resource, then flips the SEA fuse sentinel.
 //
 // Strategy: parse the existing `.rsrc` tree (so we preserve version-info,
@@ -33,7 +33,7 @@ const rtRCData = 10
 // the binary lacks a `.rsrc` section, or when there is not enough slack
 // in the section header table for one more entry. Returns
 // ErrAlreadyInjected when a `NODE_SEA_BLOB` resource is already present.
-func InjectPE(path string, blob []byte) error {
+func injectPE(path string, blob []byte) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err

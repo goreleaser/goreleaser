@@ -164,22 +164,15 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	// Prepare host (download, copy, unsign).
+	// Prepare host (download), unsign, inject blob, flip sentinel,
+	// and ad-hoc sign — all in one pass per format.
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
 	}
-	if _, err := nodesea.PrepareHost(ctx, res.version, target, options.Path); err != nil {
-		return err
+	if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
+		return fmt.Errorf("nodesea: build %s: %w", target, err)
 	}
 
-	// Inject blob and flip sentinel.
-	if err := nodesea.Inject(target, options.Path, res.bytes); err != nil {
-		return fmt.Errorf("nodesea: inject %s: %w", target, err)
-	}
-
-	if err := os.Chmod(options.Path, 0o755); err != nil {
-		return err
-	}
 	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
 	}

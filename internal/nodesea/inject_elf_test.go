@@ -16,7 +16,7 @@ func TestInjectELF(t *testing.T) {
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
 		blob := []byte("hello sea blob")
-		require.NoError(t, InjectELF(path, blob))
+		require.NoError(t, injectELF(path, blob))
 
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
@@ -46,15 +46,15 @@ func TestInjectELF(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "host")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
-		require.NoError(t, InjectELF(path, []byte("blob")))
-		err := InjectELF(path, []byte("blob"))
+		require.NoError(t, injectELF(path, []byte("blob")))
+		err := injectELF(path, []byte("blob"))
 		require.ErrorIs(t, err, ErrAlreadyInjected)
 	})
 
 	t.Run("rejects non-elf", func(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "notelf")
 		require.NoError(t, os.WriteFile(path, []byte("not an ELF file"), 0o755))
-		err := InjectELF(path, []byte("blob"))
+		err := injectELF(path, []byte("blob"))
 		require.ErrorIs(t, err, ErrNotSupported)
 	})
 }

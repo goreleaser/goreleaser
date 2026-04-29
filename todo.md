@@ -17,28 +17,20 @@ before announce), `[P2]` (nice-to-have / follow-up).
 ## P0 — Bugs and security issues
 
 ### Mach-O `__LINKEDIT` vmsize not updated when stripping signature
-**File:** `internal/nodesea/unsign_macho.go:195-199`
-`unsignMachO` writes the new `__LINKEDIT.filesize` at offset +48 of the
-load command but never touches `vmsize` at offset +32. The inject path
-updates both (`inject_macho.go:268-271`). Inconsistent
-`vmsize > filesize` is silently tolerated by `dyld` but rejected by
-`codesign --verify` and Apple notarization — fatal on Apple Silicon
-where re-signing is mandatory.
-- Capture `linkeditVmsize` during the LC walk and update it alongside
-  `filesize` at line 199.
-- Extend `unsign_macho_test.go` to assert `Memsz == Filesz` after
-  stripping.
+**Status:** ✅ Fixed in the Mach-O fuse refactor (`macho.go:unsignMachOBytes`).
+Now writes both `vmsize` (offset +32) and `filesize` (offset +48) when
+shrinking `__LINKEDIT`. `TestUnsignMachOBytes/strips trailing signature
+and updates linkedit vmsize` is the regression guard.
 
 ### File permissions are not preserved across inject/unsign/codesign
 **Files:**
 `internal/nodesea/inject_elf.go:208`,
-`internal/nodesea/inject_macho.go:304`,
 `internal/nodesea/inject_pe.go:213`,
-`internal/nodesea/unsign_macho.go:254`,
 `internal/nodesea/unsign_pe.go:92`
-All five rewrite the binary with hardcoded `0o755`, dropping setuid /
-setgid / sticky bits and any non-default perm the user set. Surprising
-behaviour and a latent privilege-related footgun.
+**Partial:** Mach-O paths now write through a single `BuildMachO` that
+controls perms end-to-end (always `0o755` to match the cached input).
+ELF and PE still rewrite with hardcoded `0o755`, dropping setuid /
+setgid / sticky bits.
 - `os.Stat` the input first, then pass `info.Mode().Perm()` (or the
   full `Mode()` to keep setuid bits) to `os.WriteFile` / `os.Rename`.
 
@@ -74,13 +66,11 @@ a zip-slip bug waiting.
   is absolute. Add a regression test with a malicious tar fixture.
 
 ### `uint32` truncation in Mach-O linkedit shifts
-**File:** `internal/nodesea/inject_macho.go:235, 299-300, 322`
-`section_64.offset`, `LC_DYLD_CHAINED_FIXUPS.dataoff`, and
-`shiftLinkeditFileOffsets` all do `uint32(uint64Value)` without bounds
-checks. For very large blobs (>2 GB into a 1.5 GB-ish Node binary) the
-shifted offsets silently wrap and the binary segfaults at exec time.
-- Compute in `uint64`, return `ErrNotSupported` when the result exceeds
-  `0xFFFFFFFF`.
+**Status:** ✅ Fixed in the Mach-O fuse refactor (`macho.go:injectMachOBytes`,
+`macho.go:shiftLinkeditFileOffsets`). All three sites
+(`section_64.offset`, `LC_DYLD_CHAINED_FIXUPS.dataoff`, the linkedit
+shift loop) now compute in `uint64` and return `ErrNotSupported` if the
+result would exceed `math.MaxUint32`.
 
 ### `uint32` truncation in PE resource RVA / name length
 **File:** `internal/nodesea/inject_pe.go:517, 526`
@@ -164,8 +154,10 @@ Users cannot write `main: dist/{{ .Env.TARGET }}/index.js` or similar.
 ### `FlipSentinel` reads the entire ~70 MB binary into RAM
 **File:** `internal/nodesea/sentinel.go:39`
 `io.ReadAll` to flip a single byte. Wasteful per-target.
-- `bufio.Scanner`-style streaming search, or `mmap` and modify
-  in place.
+- Mach-O path now flips the sentinel in-memory inside `BuildMachO`
+  (no separate I/O round-trip).
+- ELF/PE paths still call the file-based `FlipSentinel` after their
+  own writes; could be folded into their inject paths similarly.
 
 ### No Windows re-signing path
 **File:** `internal/nodesea/unsign_pe.go` (and missing counterpart)
@@ -177,7 +169,7 @@ not surfaced in docs.
   expected `signs:` recipe end-to-end.
 
 ### Ad-hoc signing on macOS arm64 may not be enough for Gatekeeper
-**File:** `internal/nodesea/codesign_macho.go`,
+**File:** `internal/nodesea/macho.go:adHocSignFile`,
 `www/content/customization/builds/builders/node.md:110-114`
 Ad-hoc signatures let the kernel exec the binary on Apple Silicon,
 but Gatekeeper (and notarization) require a real Developer ID.
@@ -351,15 +343,27 @@ Most users in this space currently use `vercel/pkg` (now archived) or
 
 | Area                                | P0 | P1 | P2 |
 |-------------------------------------|----|----|----|
-| Mach-O signing/unsigning            |  1 |  1 |  1 |
-| Inject (ELF / Mach-O / PE)          |  3 |  0 |  0 |
+| Mach-O signing/unsigning            |  ~~1~~ ✅ |  1 |  1 |
+| Inject (ELF / Mach-O / PE)          |  ~~3~~ → 1 (PE only) |  0 |  0 |
 | Download / integrity                |  3 |  2 |  2 |
 | Builder integration                 |  0 |  4 |  0 |
 | Public API (config struct)          |  0 |  2 |  0 |
 | Docs / UX                           |  0 |  6 |  1 |
 | Tests                               |  0 |  0 |  6 |
-| **Total**                           |  **7** | **15** | **10** |
+| **Total open**                      |  **4** | **15** | **10** |
 
 P0 items should block merge. P1 items can land in follow-ups but
 should be done before the feature loses its `experimental` tag.
+
+### Resolved by the Mach-O fuse refactor
+- Mach-O `__LINKEDIT` vmsize update on unsign.
+- `uint32` truncation guards on the three Mach-O linkedit shift sites.
+- File permissions handling consolidated for the Mach-O path
+  (atomic tempfile + rename in `BuildMachO`).
+- `FlipSentinel` no longer reads the whole binary on the Mach-O path
+  (now an in-memory step inside `BuildMachO`).
+- Public API collapsed from 10 exports
+  (`PrepareHost`/`Inject`/`Unsign`/`InjectMachO`/`UnsignMachO`/
+  `AdHocSignMachO`/`InjectELF`/`InjectPE`/`UnsignPE`/`FlipSentinel`)
+  down to a single `Build(ctx, version, target, outPath, blob) error`.
 

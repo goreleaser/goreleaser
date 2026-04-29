@@ -16,7 +16,7 @@ func TestUnsignPE(t *testing.T) {
 		path := filepath.Join(t.TempDir(), "signed.exe")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
-		require.NoError(t, UnsignPE(path))
+		require.NoError(t, unsignPE(path))
 
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
@@ -33,7 +33,7 @@ func TestUnsignPE(t *testing.T) {
 		raw := (&peBuilder{}).build()
 		path := filepath.Join(t.TempDir(), "unsigned.exe")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
-		require.NoError(t, UnsignPE(path))
+		require.NoError(t, unsignPE(path))
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
 		require.Equal(t, raw, got)
@@ -45,7 +45,7 @@ func TestUnsignPE(t *testing.T) {
 		raw = append(raw, 0xff)
 		path := filepath.Join(t.TempDir(), "tailed.exe")
 		require.NoError(t, os.WriteFile(path, raw, 0o755))
-		err := UnsignPE(path)
+		err := unsignPE(path)
 		require.ErrorIs(t, err, ErrNotSupported)
 	})
 }

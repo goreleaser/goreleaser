@@ -9,8 +9,9 @@ import (
 	"os"
 )
 
-// ErrAlreadyInjected is returned when InjectELF / InjectMachO / InjectPE
-// detects that a SEA blob has already been added to the host binary.
+// ErrAlreadyInjected is returned when injectELF / injectMachOBytes /
+// injectPE detects that a SEA blob has already been added to the host
+// binary.
 var ErrAlreadyInjected = errors.New("nodesea: blob already injected")
 
 // noteName is the postject-api.h note name used to look up the SEA blob
@@ -21,7 +22,7 @@ const noteName = "NODE_SEA_BLOB"
 // used to identify SEA notes.
 const noteType uint32 = 0x4F575354 // 'P' 'O' 'S' 'T'
 
-// InjectELF injects blob as an ELF note (postject-style, reachable via
+// injectELF injects blob as an ELF note (postject-style, reachable via
 // PT_NOTE) into the file at path, then flips the SEA fuse sentinel.
 //
 // The implementation appends a new SHT_NOTE section at the end of the
@@ -31,7 +32,7 @@ const noteType uint32 = 0x4F575354 // 'P' 'O' 'S' 'T'
 //
 // Limitations: ELFCLASS64, little-endian only. Returns
 // ErrAlreadyInjected if a NODE_SEA_BLOB note is already present.
-func InjectELF(path string, blob []byte) error {
+func injectELF(path string, blob []byte) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -212,10 +213,6 @@ func InjectELF(path string, blob []byte) error {
 		return err
 	}
 	return FlipSentinel(path)
-}
-
-func alignUp64(v, align uint64) uint64 {
-	return (v + align - 1) &^ (align - 1)
 }
 
 // buildNote serializes a single ELF note record.
