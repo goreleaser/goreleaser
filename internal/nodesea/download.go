@@ -67,11 +67,32 @@ func (t Target) hostBinaryName() string {
 	return "node"
 }
 
+// MirrorEnv is the environment variable read by the nodesea downloader
+// to override the default https://nodejs.org/dist mirror. Mirrors the
+// same name nvm uses (NODEJS_MIRROR) so users with an existing CN /
+// corporate-proxy setup can reuse it.
+const MirrorEnv = "NODEJS_MIRROR"
+
+// defaultDistBaseURL is the upstream nodejs.org distribution URL prefix.
+const defaultDistBaseURL = "https://nodejs.org/dist"
+
 // distBaseURL is the prefix every nodejs.org/dist URL uses. It is a
-// package-level variable so tests can point it at a stub server.
+// package-level variable so tests can point it at a stub server. In
+// production it is consulted via mirrorBaseURL, which lets the
+// NODEJS_MIRROR env var override the default at call time.
 //
 //nolint:gochecknoglobals
-var distBaseURL = "https://nodejs.org/dist"
+var distBaseURL = defaultDistBaseURL
+
+// mirrorBaseURL returns the effective dist URL: $NODEJS_MIRROR when
+// set, distBaseURL otherwise. Trailing slashes are stripped so callers
+// can append "/<version>/<file>" without duplicating the separator.
+func mirrorBaseURL() string {
+	if u := strings.TrimRight(os.Getenv(MirrorEnv), "/"); u != "" {
+		return u
+	}
+	return strings.TrimRight(distBaseURL, "/")
+}
 
 // httpClient is the HTTP client used for nodejs.org downloads. Tests may
 // override it; production uses http.DefaultClient.
@@ -128,7 +149,7 @@ func downloadHost(ctx context.Context, cacheDir, version string, target Target) 
 		return "", err
 	}
 
-	archiveURL := fmt.Sprintf("%s/%s/%s", distBaseURL, version, target.archiveName(version))
+	archiveURL := fmt.Sprintf("%s/%s/%s", mirrorBaseURL(), version, target.archiveName(version))
 	tmp, err := os.CreateTemp(hostDir, "download-*")
 	if err != nil {
 		return "", err
@@ -204,7 +225,7 @@ func downloadTo(ctx context.Context, url string, dst *os.File) (string, error) {
 // SHA-256 line matching the supplied archive file name. Transient
 // failures are retried per defaultRetry.
 func fetchExpectedSHA(ctx context.Context, version, archiveName string) (string, error) {
-	url := fmt.Sprintf("%s/%s/SHASUMS256.txt", distBaseURL, version)
+	url := fmt.Sprintf("%s/%s/SHASUMS256.txt", mirrorBaseURL(), version)
 	body, err := getBody(ctx, url)
 	if err != nil {
 		return "", err

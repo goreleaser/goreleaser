@@ -50,7 +50,7 @@ type indexEntry struct {
 var indexFetcher = fetchNodeIndex
 
 func fetchNodeIndex(ctx context.Context) ([]indexEntry, error) {
-	const u = "https://nodejs.org/dist/index.json"
+	u := mirrorBaseURL() + "/index.json"
 	body, err := getBody(ctx, u)
 	if err != nil {
 		return nil, err

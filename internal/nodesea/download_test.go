@@ -246,3 +246,44 @@ type atomicCounter struct{ v atomic.Int32 }
 
 func (c *atomicCounter) Inc() int32  { return c.v.Add(1) }
 func (c *atomicCounter) Load() int32 { return c.v.Load() }
+
+func TestMirrorBaseURL(t *testing.T) {
+	t.Run("default", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "")
+		require.Equal(t, defaultDistBaseURL, mirrorBaseURL())
+	})
+	t.Run("env override", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "https://npmmirror.com/mirrors/node")
+		require.Equal(t, "https://npmmirror.com/mirrors/node", mirrorBaseURL())
+	})
+	t.Run("trailing slash trimmed", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "https://npmmirror.com/mirrors/node/")
+		require.Equal(t, "https://npmmirror.com/mirrors/node", mirrorBaseURL())
+	})
+}
+
+func TestDownloadHost_HonoursMirrorEnv(t *testing.T) {
+	const version = "v22.10.0"
+	target := Target("linux-x64")
+	payload := []byte("fake node binary contents")
+	archive := fakeNode(t, version, target, payload)
+	sum := sha256.Sum256(archive)
+	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), target.archiveName(version))
+
+	server := newDistServer(t, map[string][]byte{
+		"/" + version + "/" + target.archiveName(version): archive,
+		"/" + version + "/SHASUMS256.txt":                 []byte(shaLine),
+	})
+	defer server.Close()
+
+	// Leave distBaseURL pointed at a *different* host so the test fails
+	// loudly if the env override does not take effect.
+	prev := distBaseURL
+	distBaseURL = "https://nowhere.invalid/dist"
+	t.Cleanup(func() { distBaseURL = prev })
+	t.Setenv(MirrorEnv, server.URL)
+
+	hostPath, err := downloadHost(t.Context(), t.TempDir(), version, target)
+	require.NoError(t, err)
+	require.FileExists(t, hostPath)
+}
