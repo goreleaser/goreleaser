@@ -11,8 +11,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -197,3 +199,50 @@ func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, leftovers, "tempfile not cleaned up")
 }
+
+func TestDownloadHost_RetriesOn5xx(t *testing.T) {
+	const version = "v22.10.0"
+	target := Target("linux-x64")
+	payload := []byte("fake node binary contents")
+	archive := fakeNode(t, version, target, payload)
+	sum := sha256.Sum256(archive)
+	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), target.archiveName(version))
+
+	var archiveHits, shaHits atomicCounter
+	mux := http.NewServeMux()
+	mux.HandleFunc("/"+version+"/"+target.archiveName(version), func(w http.ResponseWriter, _ *http.Request) {
+		if archiveHits.Inc() < 2 {
+			http.Error(w, "boom", http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(archive)
+	})
+	mux.HandleFunc("/"+version+"/SHASUMS256.txt", func(w http.ResponseWriter, _ *http.Request) {
+		if shaHits.Inc() < 2 {
+			http.Error(w, "boom", http.StatusBadGateway)
+			return
+		}
+		_, _ = w.Write([]byte(shaLine))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	prevURL := distBaseURL
+	distBaseURL = server.URL
+	t.Cleanup(func() { distBaseURL = prevURL })
+
+	prevRetry := defaultRetry
+	defaultRetry = config.Retry{Attempts: 4}
+	t.Cleanup(func() { defaultRetry = prevRetry })
+
+	hostPath, err := downloadHost(t.Context(), t.TempDir(), version, target)
+	require.NoError(t, err)
+	require.FileExists(t, hostPath)
+	require.GreaterOrEqual(t, int(archiveHits.Load()), 2)
+	require.GreaterOrEqual(t, int(shaHits.Load()), 2)
+}
+
+type atomicCounter struct{ v atomic.Int32 }
+
+func (c *atomicCounter) Inc() int32  { return c.v.Add(1) }
+func (c *atomicCounter) Load() int32 { return c.v.Load() }
