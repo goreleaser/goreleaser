@@ -113,6 +113,22 @@ particular will refuse to run an unsigned binary. Wire up the existing
 [`signs`](/customization/sign/) pipe (Apple `codesign`/`notarytool`,
 Microsoft `signtool`, etc.) to sign the binary after the build completes.
 
+## Trust model
+
+GoReleaser fetches Node.js host binaries from `https://nodejs.org/dist`
+over TLS and verifies the SHA-256 of every download against the
+matching entry in the per-release `SHASUMS256.txt`. Both the binary
+**and** `SHASUMS256.txt` are fetched over TLS only — GoReleaser does
+**not** GPG-verify `SHASUMS256.txt.sig` against the Node.js release
+team's keyring.
+
+In practice this means GoReleaser trusts the same things `npm`, `nvm`,
+and most other Node installers trust: the public PKI and the
+nodejs.org CDN. If you need defense against a CDN compromise, fetch
+the host binaries yourself (verify `SHASUMS256.txt.sig`) and point the
+cache at them, or run GoReleaser through a proxy that does the
+verification.
+
 ## Environment setup
 
 GoReleaser will not install Node.js for you. Make sure `node` (>= 22) is

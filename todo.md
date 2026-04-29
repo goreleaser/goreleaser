@@ -23,16 +23,13 @@ shrinking `__LINKEDIT`. `TestUnsignMachOBytes/strips trailing signature
 and updates linkedit vmsize` is the regression guard.
 
 ### File permissions are not preserved across inject/unsign/codesign
-**Files:**
-`internal/nodesea/inject_elf.go:208`,
-`internal/nodesea/inject_pe.go:213`,
-`internal/nodesea/unsign_pe.go:92`
-**Partial:** Mach-O paths now write through a single `BuildMachO` that
-controls perms end-to-end (always `0o755` to match the cached input).
-ELF and PE still rewrite with hardcoded `0o755`, dropping setuid /
-setgid / sticky bits.
-- `os.Stat` the input first, then pass `info.Mode().Perm()` (or the
-  full `Mode()` to keep setuid bits) to `os.WriteFile` / `os.Rename`.
+**Status:** ✅ Not applicable for the nodesea pipeline. After the
+public-API collapse, the only call path is
+`Build` → `downloadHost` (writes cache at `0o755`) → format-specific
+`build*` (rewrites at `0o755`). Every link in the chain is `0o755` by
+construction, matching every other goreleaser builder. The injectors
+are now package-private, so there is no library consumer whose perms
+could be dropped.
 
 ### Cache writes are not atomic on Linux/macOS
 **Status:** ✅ Fixed in `download.go:extractNodeFromTarGz`. Extracts to a
@@ -42,14 +39,12 @@ cache path. (Per-version lockfile for concurrent goroutines remains a P2
 nice-to-have.)
 
 ### No GPG verification of `SHASUMS256.txt`
-**File:** `internal/nodesea/download.go:174-204`
-Archives are checksum-verified against `SHASUMS256.txt`, but the
-`SHASUMS256.txt` itself is fetched over plain HTTPS with no signature
-check. Node.js publishes `SHASUMS256.txt.sig` for exactly this reason.
-A compromised CDN or upstream MITM defeats the whole verification.
-- Fetch `SHASUMS256.txt.sig`, embed the Node release-team public-key
-  ring, and verify before trusting the checksum file. Or document
-  prominently that we rely solely on TLS and accept that risk.
+**Status:** ✅ Documented as a deliberate trust-model choice. See
+`www/content/customization/builds/builders/node.md` ("Trust model"
+section). We trust TLS + nodejs.org CDN, the same anchors `npm`,
+`nvm`, and most Node installers trust. Adding GPG would require
+embedding and rotating the Node release-team keyring, which we judge
+not worth the maintenance cost.
 
 ### Tar extraction does not defend against path traversal
 **Status:** ✅ Not applicable. The extractor only matches one fully
