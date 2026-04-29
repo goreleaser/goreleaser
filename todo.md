@@ -35,15 +35,11 @@ setgid / sticky bits.
   full `Mode()` to keep setuid bits) to `os.WriteFile` / `os.Rename`.
 
 ### Cache writes are not atomic on Linux/macOS
-**File:** `internal/nodesea/download.go:101-147`
-`extractNodeFromTarGz` writes the extracted `node` binary directly to
-the final cache path. A second goroutine (or a Ctrl-C) can leave a
-truncated binary in the cache that subsequent runs happily reuse.
-- Extract to a sibling temp file under the same directory, `chmod`,
-  then `os.Rename` over the destination — same pattern the Windows zip
-  branch already uses.
-- Consider a per-`(version,target)` lockfile to serialise concurrent
-  goroutines.
+**Status:** ✅ Fixed in `download.go:extractNodeFromTarGz`. Extracts to a
+sibling tempfile and renames over `dst` on success; failed extracts now
+clean up the tempfile and never leave a partial binary at the canonical
+cache path. (Per-version lockfile for concurrent goroutines remains a P2
+nice-to-have.)
 
 ### No GPG verification of `SHASUMS256.txt`
 **File:** `internal/nodesea/download.go:174-204`
@@ -56,14 +52,11 @@ A compromised CDN or upstream MITM defeats the whole verification.
   prominently that we rely solely on TLS and accept that risk.
 
 ### Tar extraction does not defend against path traversal
-**File:** `internal/nodesea/download.go` (extractor) +
-`download_test.go`
-The current loop happens to work because it only matches the exact
-`node-vX.Y.Z-os-arch/bin/node` entry, but there is no explicit guard
-against `../` or absolute paths. If we ever loosen the matcher we have
-a zip-slip bug waiting.
-- Reject any header whose `filepath.Clean(h.Name)` starts with `..` or
-  is absolute. Add a regression test with a malicious tar fixture.
+**Status:** ✅ Not applicable. The extractor only matches one fully
+qualified entry name (`node-vX.Y.Z-os-arch/bin/node`) we built
+ourselves, and the destination path is the caller-controlled `dst`
+— `h.Name` is never joined onto a filesystem path, so there is no
+zip-slip surface to defend.
 
 ### `uint32` truncation in Mach-O linkedit shifts
 **Status:** ✅ Fixed in the Mach-O fuse refactor (`macho.go:injectMachOBytes`,

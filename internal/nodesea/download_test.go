@@ -2,6 +2,7 @@ package nodesea
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
@@ -169,4 +170,30 @@ func TestCacheDir(t *testing.T) {
 	dir, err := CacheDir()
 	require.NoError(t, err)
 	require.Equal(t, filepath.Join("/tmp/somewhere", "goreleaser", "node"), dir)
+}
+
+func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
+	const version = "v22.10.0"
+	target := Target("linux-x64")
+
+	// Build a valid tarball with a 4 KiB payload, then truncate the
+	// gzipped bytes so that io.Copy hits unexpected EOF mid-extract.
+	payload := bytes.Repeat([]byte{'A'}, 4096)
+	archive := fakeNode(t, version, target, payload)
+	truncated := archive[:len(archive)/2]
+
+	dir := t.TempDir()
+	archivePath := filepath.Join(dir, "truncated.tar.gz")
+	require.NoError(t, os.WriteFile(archivePath, truncated, 0o644))
+
+	dst := filepath.Join(dir, "node")
+	err := extractNodeFromTarGz(archivePath, version, target, dst)
+	require.Error(t, err)
+	// Failed extract must not leave a partial file at the canonical path
+	// (and no leftover sibling tempfiles).
+	_, statErr := os.Stat(dst)
+	require.ErrorIs(t, statErr, os.ErrNotExist)
+	leftovers, err := filepath.Glob(filepath.Join(dir, ".extract-*"))
+	require.NoError(t, err)
+	require.Empty(t, leftovers, "tempfile not cleaned up")
 }

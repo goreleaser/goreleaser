@@ -205,6 +205,14 @@ func fetchExpectedSHA(ctx context.Context, version, archiveName string) (string,
 
 // extractNodeFromTarGz finds the bin/node entry inside the released
 // nodejs tarball and writes it to dst.
+//
+// We never join tar entry names onto dst — only the single, fully
+// qualified entry we ask for is extracted, and the destination is the
+// caller-controlled dst — so there is no zip-slip surface.
+//
+// Extraction is atomic: data is streamed into a sibling tempfile and
+// renamed over dst on success, so an interrupted extract never leaves
+// a truncated file at the canonical cache path.
 func extractNodeFromTarGz(archivePath, version string, target Target, dst string) error {
 	f, err := os.Open(archivePath)
 	if err != nil {
@@ -231,15 +239,25 @@ func extractNodeFromTarGz(archivePath, version string, target Target, dst string
 		if h.Name != want {
 			continue
 		}
-		out, err := os.Create(dst)
+		tmp, err := os.CreateTemp(filepath.Dir(dst), ".extract-*")
 		if err != nil {
 			return err
 		}
-		if _, err := io.Copy(out, tr); err != nil {
-			_ = out.Close()
+		tmpName := tmp.Name()
+		if _, err := io.Copy(tmp, tr); err != nil {
+			_ = tmp.Close()
+			_ = os.Remove(tmpName)
 			return err
 		}
-		return out.Close()
+		if err := tmp.Close(); err != nil {
+			_ = os.Remove(tmpName)
+			return err
+		}
+		if err := os.Rename(tmpName, dst); err != nil {
+			_ = os.Remove(tmpName)
+			return err
+		}
+		return nil
 	}
 	return fmt.Errorf("nodesea: %s not found in %s", want, archivePath)
 }
