@@ -20,12 +20,16 @@ import (
 
 func TestTargetGoosGoarch(t *testing.T) {
 	cases := map[Target]struct{ os, arch string }{
-		"linux-x64":    {"linux", "amd64"},
-		"linux-arm64":  {"linux", "arm64"},
-		"darwin-x64":   {"darwin", "amd64"},
-		"darwin-arm64": {"darwin", "arm64"},
-		"win-x64":      {"windows", "amd64"},
-		"win-arm64":    {"windows", "arm64"},
+		"linux-x64":     {"linux", "amd64"},
+		"linux-arm64":   {"linux", "arm64"},
+		"linux-armv7l":  {"linux", "arm"},
+		"linux-ppc64le": {"linux", "ppc64le"},
+		"linux-s390x":   {"linux", "s390x"},
+		"darwin-x64":    {"darwin", "amd64"},
+		"darwin-arm64":  {"darwin", "arm64"},
+		"win-x64":       {"windows", "amd64"},
+		"win-arm64":     {"windows", "arm64"},
+		"aix-ppc64":     {"aix", "ppc64"},
 	}
 	for tgt, want := range cases {
 		t.Run(string(tgt), func(t *testing.T) {

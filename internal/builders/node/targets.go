@@ -60,6 +60,10 @@ func convertToGoarch(s string) string {
 	switch s {
 	case "x64":
 		return "amd64"
+	case "armv7l":
+		// Node ships a single 32-bit ARMv7 hard-float build under
+		// this name; map it to Go's GOARCH=arm with implicit GOARM=7.
+		return "arm"
 	default:
 		return s
 	}

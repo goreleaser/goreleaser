@@ -41,9 +41,13 @@ func TestParse(t *testing.T) {
 
 func TestIsValid(t *testing.T) {
 	for _, target := range []string{
+		"aix-ppc64",
 		"darwin-arm64",
 		"darwin-x64",
 		"linux-arm64",
+		"linux-armv7l",
+		"linux-ppc64le",
+		"linux-s390x",
 		"linux-x64",
 		"win-arm64",
 		"win-x64",
@@ -107,8 +111,13 @@ func TestCurrentTarget(t *testing.T) {
 func TestConvertHelpers(t *testing.T) {
 	require.Equal(t, "amd64", convertToGoarch("x64"))
 	require.Equal(t, "arm64", convertToGoarch("arm64"))
+	require.Equal(t, "arm", convertToGoarch("armv7l"))
+	require.Equal(t, "ppc64le", convertToGoarch("ppc64le"))
+	require.Equal(t, "s390x", convertToGoarch("s390x"))
+	require.Equal(t, "ppc64", convertToGoarch("ppc64"))
 	require.Equal(t, "windows", convertToGoos("win"))
 	require.Equal(t, "linux", convertToGoos("linux"))
+	require.Equal(t, "aix", convertToGoos("aix"))
 }
 
 func TestToNodeseaSEAConfig(t *testing.T) {
