@@ -504,6 +504,7 @@ type Build struct {
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NoMainCheck     bool            `yaml:"no_main_check,omitempty" json:"no_main_check,omitempty"`
+	NodeVersion     string          `yaml:"node_version,omitempty" json:"node_version,omitempty"`
 	SEAConfig       NodeSEAConfig   `yaml:"sea_config,omitempty" json:"sea_config,omitempty"`
 	UnproxiedMain   string          `yaml:"-" json:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy

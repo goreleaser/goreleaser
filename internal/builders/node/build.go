@@ -131,7 +131,11 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("path", nodePath).Debug("resolved build-tool node")
 
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	explicit, err := tmpl.New(ctx).Apply(build.NodeVersion)
+	if err != nil {
+		return fmt.Errorf("nodesea: template node_version: %w", err)
+	}
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve target node version: %w", err)
 	}
@@ -172,7 +176,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
+	if err := buildViaBuildSEA(ctx, build, target, options, tpl); err != nil {
 		return err
 	}
 
@@ -192,13 +196,18 @@ func buildViaBuildSEA(
 	build config.Build,
 	target nodesea.Target,
 	options api.Options,
+	tpl *tmpl.Template,
 ) error {
 	mainPath := filepath.Join(build.Dir, build.Main)
 	if _, err := os.Stat(mainPath); err != nil {
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
 	}
 
-	version, _, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	explicit, err := tpl.Apply(build.NodeVersion)
+	if err != nil {
+		return fmt.Errorf("nodesea: template node_version: %w", err)
+	}
+	version, _, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
