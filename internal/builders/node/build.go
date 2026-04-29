@@ -1,16 +1,18 @@
 // Package node builds Node.js Single Executable Application (SEA)
 // binaries.
 //
-// The pipeline is implemented entirely in pure Go through the
-// internal/nodesea package: it downloads the official Node.js host binary
-// for each requested target from https://nodejs.org/dist (verifying
-// SHA-256), strips its existing code signature where applicable, runs
-// `node --experimental-sea-config` to generate the SEA blob, injects the
-// blob, and flips the SEA fuse sentinel.
+// The pipeline shells out to a build-tool Node.js (≥ v25.5, downloaded
+// once per host into the user cache) and invokes `node --build-sea
+// sea-config.json` against the per-target Node binary GoReleaser
+// fetches from https://nodejs.org/dist (verifying SHA-256). On macOS
+// targets the produced Mach-O is ad-hoc signed via codesign(1); when
+// codesign is unavailable (cross-compile from non-darwin hosts) the
+// binary is left unsigned and must be re-signed via the `signs:` pipe
+// before it will execute on macOS.
 //
-// Code signing on macOS and Windows is intentionally left to GoReleaser's
-// existing `signs:` pipe — produced binaries are unsigned and must be
-// re-signed before distribution.
+// Concurrent builds are enabled — each target runs --build-sea against
+// its own scratch directory and outputs to its own path; nothing is
+// shared across targets.
 //
 // Co-authored-by: Vedant Mohan Goyal <83997633+vedantmgoyal9@users.noreply.github.com>
 //
@@ -19,7 +21,6 @@
 package node
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -59,14 +60,17 @@ func init() {
 // Builder is the Node.js SEA builder.
 type Builder struct{}
 
-// AllowConcurrentBuilds implements build.ConcurrentBuilder. We disable
-// concurrent builds because the SEA-config scratch file and the blob
-// output path are shared per build.
-func (b *Builder) AllowConcurrentBuilds() bool { return false }
+// AllowConcurrentBuilds implements build.ConcurrentBuilder. Each
+// per-target build runs `node --build-sea` against its own scratch
+// directory and writes to its own output path; nothing is shared, so
+// the builder is safe to run concurrently.
+func (b *Builder) AllowConcurrentBuilds() bool { return true }
 
-// Dependencies implements build.DependingBuilder. The only required
-// external tool is `node` itself (used to generate the SEA blob via
-// `--experimental-sea-config`).
+// Dependencies implements build.DependingBuilder. The new --build-sea
+// flow auto-downloads its build-tool Node when needed, so no system
+// `node` is strictly required. Returning "node" preserves the
+// preflight hint goreleaser surfaces for users who'd rather provide
+// their own.
 func (b *Builder) Dependencies() []string {
 	return []string{"node"}
 }
@@ -114,45 +118,13 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
-// blobCache memoizes per-build (id, dir) blob generation so we don't
-// invoke `node --experimental-sea-config` once per target.
-//
-//nolint:gochecknoglobals
-var (
-	blobMu    sync.Mutex
-	blobCache = map[string]blobResult{}
-)
-
-type blobResult struct {
-	bytes   []byte
-	version string
-}
-
-// FeatureFlagLegacyInjector restores the pre-v25.5 in-process binary
-// surgery code path that was the default before phase 3 of the
-// migration. It exists as a temporary escape hatch and will be removed
-// in a future release; new builds should use the default `--build-sea`
-// flow.
-const FeatureFlagLegacyInjector = "GORELEASER_NODE_LEGACY_INJECTOR"
-
-// useLegacyInjector reports whether the user opted out of the
-// `--build-sea` flow via the legacy-injector escape hatch.
-func useLegacyInjector() bool {
-	return os.Getenv(FeatureFlagLegacyInjector) == "1"
-}
-
 // Prepare implements build.PreparedBuilder. It runs once per build
-// configuration before any per-target Build call. For the default
-// `--build-sea` path we resolve and probe the build-tool Node up
-// front (downloading it if necessary) and validate that the resolved
-// target Node version is in the V2-blob-format supported range.
-//
-// The legacy injector path skips this preflight entirely.
+// configuration before any per-target Build call: resolves and probes
+// the build-tool Node up front (downloading it if necessary), and
+// validates that the resolved target Node version is in the
+// V2-blob-format supported range. Failing here is preferable to
+// failing partway through a multi-target build.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
-	if useLegacyInjector() {
-		return nil
-	}
-
 	nodePath, err := nodesea.BuildToolNode(ctx)
 	if err != nil {
 		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
@@ -166,10 +138,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	log.WithField("version", version).WithField("source", source).
 		Debug("resolved target node version")
 
-	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
-		return err
-	}
-	return nil
+	return nodesea.ValidateTargetNodeVersion(version)
 }
 
 // Build implements build.Builder.
@@ -203,19 +172,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	if useLegacyInjector() {
-		// Legacy path: generate or fetch cached blob, then inject.
-		res, err := ensureBlob(ctx, build, env)
-		if err != nil {
-			return err
-		}
-		if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-			return err
-		}
-		if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
-			return fmt.Errorf("nodesea: build %s: %w", target, err)
-		}
-	} else if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
+	if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
 		return err
 	}
 
@@ -227,7 +184,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	return nil
 }
 
-// buildViaBuildSEA dispatches to the new `node --build-sea` flow
+// buildViaBuildSEA dispatches to the `node --build-sea` flow
 // (nodesea.BuildViaBuildSEA), passing through the user-supplied
 // SEAConfig from build configuration.
 func buildViaBuildSEA(
@@ -241,12 +198,10 @@ func buildViaBuildSEA(
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
 	}
 
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	version, _, err := nodesea.ResolveVersion(ctx, build.Dir, "")
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
-	log.WithField("version", version).WithField("source", source).
-		Info("resolved node version")
 
 	buildToolNode, err := nodesea.BuildToolNode(ctx)
 	if err != nil {
@@ -281,64 +236,6 @@ func toNodeseaSEAConfig(c config.NodeSEAConfig) nodesea.SEAConfig {
 		DisableExperimentalSEAWarning: c.DisableExperimentalSEAWarning,
 		MainFormat:                    c.MainFormat,
 	}
-}
-
-func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobResult, error) {
-	key := build.ID + "\x00" + build.Dir
-	blobMu.Lock()
-	defer blobMu.Unlock()
-	if r, ok := blobCache[key]; ok {
-		return r, nil
-	}
-
-	if _, err := os.Stat(filepath.Join(build.Dir, build.Main)); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
-	}
-
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
-	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: resolve node version: %w", err)
-	}
-	log.WithField("version", version).WithField("source", source).
-		Info("resolved node version")
-
-	scratch, err := os.MkdirTemp(ctx.Config.Dist, "node-sea-*")
-	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: create scratch dir: %w", err)
-	}
-	defer os.RemoveAll(scratch)
-
-	cfgPath := filepath.Join(scratch, "sea-config.json")
-	blobPath := filepath.Join(scratch, "sea-prep.blob")
-	cfg := map[string]any{
-		"main":                          build.Main,
-		"output":                        blobPath,
-		"disableExperimentalSEAWarning": true,
-	}
-	cfgBytes, err := json.Marshal(cfg)
-	if err != nil {
-		return blobResult{}, err
-	}
-	if err := os.WriteFile(cfgPath, cfgBytes, 0o600); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: write sea-config: %w", err)
-	}
-
-	absCfg, err := filepath.Abs(cfgPath)
-	if err != nil {
-		absCfg = cfgPath
-	}
-	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", absCfg}, env, build.Dir); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: generate blob: %w", err)
-	}
-
-	bytes, err := os.ReadFile(blobPath)
-	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: read generated blob %s: %w", blobPath, err)
-	}
-
-	res := blobResult{bytes: bytes, version: version}
-	blobCache[key] = res
-	return res, nil
 }
 
 // CurrentTarget returns the nodejs.org/dist target identifier matching the

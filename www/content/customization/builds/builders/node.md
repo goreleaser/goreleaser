@@ -200,14 +200,6 @@ the host binaries yourself (verify `SHASUMS256.txt.sig`) and point the
 cache at them, or run GoReleaser through a proxy that does the
 verification.
 
-## Legacy injector (deprecated)
-
-The pre-`--build-sea` code path — pure-Go ELF/Mach-O/PE binary
-surgery driven by `node --experimental-sea-config` — is still
-available behind `GORELEASER_NODE_LEGACY_INJECTOR=1` for one release
-while the new path bakes in. It will be removed in a subsequent
-release. New configurations should use the default flow.
-
 ## Environment setup
 
 GoReleaser will not install Node.js for you, but it will auto-download

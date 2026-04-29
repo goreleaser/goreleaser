@@ -1,44 +1,16 @@
-// Package nodesea implements a pure-Go toolchain for building Node.js
-// Single Executable Applications (SEAs).
+// Package nodesea implements the Node.js Single Executable
+// Application (SEA) toolchain used by the experimental `node`
+// builder.
 //
-// It performs every step that traditionally requires the upstream
-// `postject` npm package and other helper tooling:
-//
-//  1. Downloading and SHA-256-verifying the official Node.js host binary
-//     for a given target from https://nodejs.org/dist.
-//  2. Stripping the existing code signature from Mach-O and PE binaries so
-//     a SEA blob can be injected without invalidating the binary.
-//  3. Injecting a SEA blob into ELF, Mach-O and PE binaries by adding a
-//     dedicated section / segment / resource and flipping the
-//     `NODE_SEA_FUSE_…` sentinel byte.
-//
-// The only external runtime requirement is `node` itself (>= 22), which
-// is still needed to generate the SEA blob from the user's
-// `sea-config.json` via `node --experimental-sea-config`.
+// The toolchain shells out to a host-platform Node.js (≥ v25.5.0,
+// LIEF-backed) once per build to invoke `node --build-sea
+// sea-config.json`. That command injects the SEA blob into a copy of
+// the per-target Node binary GoReleaser fetches from
+// https://nodejs.org/dist (verifying SHA-256). On macOS targets the
+// produced binary is ad-hoc signed via codesign(1) so the kernel
+// loader will accept it. The package owns the cache layout, the
+// download + verify path, and the `--build-sea` orchestration.
 package nodesea
-
-// Sentinel is the literal "fuse" string Node.js (and postject-compatible
-// hosts) embed in the host binary to advertise SEA support. In a stock
-// host the byte immediately following the sentinel is the ASCII colon
-// `:` followed by ASCII `0`; injecting a blob flips that trailing `0`
-// to `1` so Node.js knows a blob is attached.
-//
-// The full token in the binary therefore looks like:
-//
-//	NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2:0   (stock)
-//	NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2:1   (after injection)
-//
-// See https://nodejs.org/api/single-executable-applications.html and
-// https://github.com/nodejs/postject (search for "POSTJECT_SENTINEL").
-const Sentinel = "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2"
-
-// SentinelStock is the full sentinel token as it appears in an unmodified
-// host binary.
-const SentinelStock = Sentinel + ":0"
-
-// SentinelFused is the full sentinel token after a successful blob
-// injection.
-const SentinelFused = Sentinel + ":1"
 
 // Format identifies the container format of a Node.js host binary.
 type Format int
@@ -80,3 +52,4 @@ func FormatFor(goos string) Format {
 		return 0
 	}
 }
+

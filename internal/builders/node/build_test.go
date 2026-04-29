@@ -12,7 +12,7 @@ func TestDependencies(t *testing.T) {
 }
 
 func TestAllowConcurrentBuilds(t *testing.T) {
-	require.False(t, Default.AllowConcurrentBuilds())
+	require.True(t, Default.AllowConcurrentBuilds())
 }
 
 func TestParse(t *testing.T) {
