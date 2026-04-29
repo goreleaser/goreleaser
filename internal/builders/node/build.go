@@ -199,9 +199,13 @@ func buildViaBuildSEA(
 	options api.Options,
 	tpl *tmpl.Template,
 ) error {
-	mainPath := filepath.Join(build.Dir, build.Main)
+	main, err := tpl.Apply(build.Main)
+	if err != nil {
+		return fmt.Errorf("nodesea: template main: %w", err)
+	}
+	mainPath := filepath.Join(build.Dir, main)
 	if _, err := os.Stat(mainPath); err != nil {
-		return fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
+		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
 	explicit, err := tpl.Apply(build.NodeVersion)
