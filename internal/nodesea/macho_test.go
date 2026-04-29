@@ -126,20 +126,20 @@ func TestInjectMachOBytes(t *testing.T) {
 func TestFlipMachOSentinel(t *testing.T) {
 	t.Run("flips :0 to :1", func(t *testing.T) {
 		data := []byte("padding " + SentinelStock + " more")
-		got, err := flipSentinelBytes(data)
+		got, err := flipSentinel(data)
 		require.NoError(t, err)
 		require.Contains(t, string(got), SentinelFused)
 	})
 
 	t.Run("rejects already fused", func(t *testing.T) {
 		data := []byte("padding " + SentinelFused + " more")
-		_, err := flipSentinelBytes(data)
+		_, err := flipSentinel(data)
 		require.ErrorIs(t, err, ErrAlreadyFused)
 	})
 
 	t.Run("rejects missing sentinel", func(t *testing.T) {
 		data := []byte("nothing to see here")
-		_, err := flipSentinelBytes(data)
+		_, err := flipSentinel(data)
 		require.ErrorIs(t, err, ErrSentinelNotFound)
 	})
 }

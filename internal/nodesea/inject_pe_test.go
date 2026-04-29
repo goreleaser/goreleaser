@@ -3,8 +3,6 @@ package nodesea
 import (
 	"bytes"
 	"debug/pe"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,13 +14,9 @@ func TestInjectPE(t *testing.T) {
 		copy(text[16:], []byte(SentinelStock))
 		b := &peBuilder{rsrcSize: 0x200, textData: text}
 		raw := b.build()
-		path := filepath.Join(t.TempDir(), "host.exe")
-		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
 		blob := []byte("a sea blob payload!")
-		require.NoError(t, injectPE(path, blob))
-
-		got, err := os.ReadFile(path)
+		got, err := injectPEBytes(raw, blob)
 		require.NoError(t, err)
 
 		f, err := pe.NewFile(bytes.NewReader(got))
@@ -60,19 +54,16 @@ func TestInjectPE(t *testing.T) {
 		copy(text[16:], []byte(SentinelStock))
 		b := &peBuilder{rsrcSize: 0x200, textData: text}
 		raw := b.build()
-		path := filepath.Join(t.TempDir(), "host.exe")
-		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
-		require.NoError(t, injectPE(path, []byte("blob")))
-		err := injectPE(path, []byte("blob"))
+		out, err := injectPEBytes(raw, []byte("blob"))
+		require.NoError(t, err)
+		_, err = injectPEBytes(out, []byte("blob"))
 		require.ErrorIs(t, err, ErrAlreadyInjected)
 	})
 
 	t.Run("rejects no rsrc", func(t *testing.T) {
 		raw := (&peBuilder{}).build()
-		path := filepath.Join(t.TempDir(), "host.exe")
-		require.NoError(t, os.WriteFile(path, raw, 0o755))
-		err := injectPE(path, []byte("blob"))
+		_, err := injectPEBytes(raw, []byte("blob"))
 		require.ErrorIs(t, err, ErrNotSupported)
 	})
 }

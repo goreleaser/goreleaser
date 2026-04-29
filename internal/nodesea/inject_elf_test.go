@@ -3,8 +3,6 @@ package nodesea
 import (
 	"bytes"
 	"debug/elf"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,13 +11,9 @@ import (
 func TestInjectELF(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		raw := elfBuilder{}.build()
-		path := filepath.Join(t.TempDir(), "host")
-		require.NoError(t, os.WriteFile(path, raw, 0o755))
-
 		blob := []byte("hello sea blob")
-		require.NoError(t, injectELF(path, blob))
 
-		got, err := os.ReadFile(path)
+		got, err := injectELFBytes(raw, blob)
 		require.NoError(t, err)
 
 		// Reparse and verify a PT_NOTE phdr exists pointing at a SHT_NOTE
@@ -44,18 +38,15 @@ func TestInjectELF(t *testing.T) {
 
 	t.Run("rejects double injection", func(t *testing.T) {
 		raw := elfBuilder{}.build()
-		path := filepath.Join(t.TempDir(), "host")
-		require.NoError(t, os.WriteFile(path, raw, 0o755))
 
-		require.NoError(t, injectELF(path, []byte("blob")))
-		err := injectELF(path, []byte("blob"))
+		out, err := injectELFBytes(raw, []byte("blob"))
+		require.NoError(t, err)
+		_, err = injectELFBytes(out, []byte("blob"))
 		require.ErrorIs(t, err, ErrAlreadyInjected)
 	})
 
 	t.Run("rejects non-elf", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "notelf")
-		require.NoError(t, os.WriteFile(path, []byte("not an ELF file"), 0o755))
-		err := injectELF(path, []byte("blob"))
+		_, err := injectELFBytes([]byte("not an ELF file"), []byte("blob"))
 		require.ErrorIs(t, err, ErrNotSupported)
 	})
 }

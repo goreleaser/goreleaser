@@ -5,39 +5,33 @@ import (
 	"debug/pe"
 	"encoding/binary"
 	"fmt"
-	"os"
 )
 
-// unsignPE removes the Authenticode certificate table from a PE binary,
-// zeroes the corresponding data directory entry, and recomputes the
-// OptionalHeader checksum.
+// unsignPEBytes returns data with the Authenticode certificate table
+// removed, the corresponding data directory entry zeroed, and the
+// OptionalHeader checksum recomputed.
 //
 // Conservative: the certificate table must be the last thing in the
 // file. If anything follows it the function rejects the binary with
-// ErrNotSupported. If there is no certificate table the function is a
-// no-op.
-func unsignPE(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
+// ErrNotSupported. If there is no certificate table the function
+// returns data unchanged.
+func unsignPEBytes(data []byte) ([]byte, error) {
 	f, err := pe.NewFile(bytes.NewReader(data))
 	if err != nil {
-		return fmt.Errorf("nodesea: parse PE: %w", err)
+		return nil, fmt.Errorf("nodesea: parse PE: %w", err)
 	}
 	defer f.Close()
 
 	// Find e_lfanew (offset of the PE signature).
 	if len(data) < 0x40 {
-		return fmt.Errorf("%w: PE too small", ErrNotSupported)
+		return nil, fmt.Errorf("%w: PE too small", ErrNotSupported)
 	}
 	peOff := int(binary.LittleEndian.Uint32(data[0x3c:0x40]))
 	// "PE\0\0" + IMAGE_FILE_HEADER (20 bytes) → optional header begins
 	// at peOff + 4 + 20.
 	optStart := peOff + 24
 	if optStart >= len(data) {
-		return fmt.Errorf("%w: PE truncated", ErrNotSupported)
+		return nil, fmt.Errorf("%w: PE truncated", ErrNotSupported)
 	}
 
 	magic := binary.LittleEndian.Uint16(data[optStart : optStart+2])
@@ -53,14 +47,14 @@ func unsignPE(path string) error {
 		checksumOff = optStart + 64
 		dirOff = optStart + 112
 	default:
-		return fmt.Errorf("%w: unknown OptionalHeader magic %#x", ErrNotSupported, magic)
+		return nil, fmt.Errorf("%w: unknown OptionalHeader magic %#x", ErrNotSupported, magic)
 	}
 
 	// DataDirectory[4] is IMAGE_DIRECTORY_ENTRY_SECURITY.
 	const secIdx = 4
 	secEntryOff := dirOff + secIdx*8
 	if secEntryOff+8 > len(data) {
-		return fmt.Errorf("%w: PE truncated before DataDirectory[4]", ErrNotSupported)
+		return nil, fmt.Errorf("%w: PE truncated before DataDirectory[4]", ErrNotSupported)
 	}
 
 	va := binary.LittleEndian.Uint32(data[secEntryOff : secEntryOff+4])
@@ -68,32 +62,29 @@ func unsignPE(path string) error {
 
 	if va == 0 && size == 0 {
 		// No signature; nothing to do.
-		return nil
+		return data, nil
 	}
 
 	// va is a *file offset* (not RVA) for the security directory.
 	if uint64(va)+uint64(size) != uint64(len(data)) {
-		return fmt.Errorf("%w: certificate table is not at end of file", ErrNotSupported)
+		return nil, fmt.Errorf("%w: certificate table is not at end of file", ErrNotSupported)
 	}
 
-	// Zero the directory entry.
+	// Copy-on-write so callers never see the original mutated.
+	out := make([]byte, va)
+	copy(out, data[:va])
+
+	// Zero the directory entry in the copy.
 	for i := secEntryOff; i < secEntryOff+8; i++ {
-		data[i] = 0
+		out[i] = 0
 	}
-
-	// Truncate.
-	data = data[:va]
 
 	// Recompute checksum.
-	binary.LittleEndian.PutUint32(data[checksumOff:checksumOff+4], 0)
-	cks := peChecksum(data, checksumOff)
-	binary.LittleEndian.PutUint32(data[checksumOff:checksumOff+4], cks)
+	binary.LittleEndian.PutUint32(out[checksumOff:checksumOff+4], 0)
+	cks := peChecksum(out, checksumOff)
+	binary.LittleEndian.PutUint32(out[checksumOff:checksumOff+4], cks)
 
-	tmp := path + ".unsign.tmp"
-	if err := os.WriteFile(tmp, data, 0o755); err != nil {
-		return err
-	}
-	return os.Rename(tmp, path)
+	return out, nil
 }
 
 // peChecksum implements the PE OptionalHeader checksum algorithm:

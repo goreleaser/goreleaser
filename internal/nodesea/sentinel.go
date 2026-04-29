@@ -3,7 +3,6 @@ package nodesea
 import (
 	"bytes"
 	"errors"
-	"os"
 )
 
 // ErrSentinelNotFound is returned when the SEA fuse sentinel cannot be
@@ -19,8 +18,8 @@ var ErrSentinelAmbiguous = errors.New("nodesea: sentinel found more than once in
 // injected.
 var ErrAlreadyFused = errors.New("nodesea: binary already has fused sentinel")
 
-// FlipSentinel locates the SEA fuse sentinel inside the file at path and
-// flips its trailing `:0` marker to `:1`, signalling to Node.js that a
+// flipSentinel returns data with the SEA fuse sentinel's trailing
+// `:0` marker flipped to `:1` in place, signalling to Node.js that a
 // SEA blob is attached.
 //
 // It returns:
@@ -28,31 +27,7 @@ var ErrAlreadyFused = errors.New("nodesea: binary already has fused sentinel")
 //     means the supplied binary is not a Node.js host),
 //   - ErrSentinelAmbiguous when the sentinel appears more than once,
 //   - ErrAlreadyFused when the sentinel is already `:1`.
-func FlipSentinel(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	idx, err := findFuseMarker(data)
-	if err != nil {
-		return err
-	}
-	f, err := os.OpenFile(path, os.O_WRONLY, 0)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := f.WriteAt([]byte{'1'}, int64(idx)); err != nil {
-		return err
-	}
-	return f.Sync()
-}
-
-// flipSentinelBytes returns data with the SEA fuse sentinel's trailing
-// `:0` marker flipped to `:1` in place. Same semantics as
-// FlipSentinel, but byte-pure so it can be chained with other
-// in-memory passes.
-func flipSentinelBytes(data []byte) ([]byte, error) {
+func flipSentinel(data []byte) ([]byte, error) {
 	idx, err := findFuseMarker(data)
 	if err != nil {
 		return nil, err

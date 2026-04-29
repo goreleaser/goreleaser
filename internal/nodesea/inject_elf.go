@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"os"
 )
 
 // ErrAlreadyInjected is returned when injectELF / injectMachOBytes /
@@ -22,41 +21,37 @@ const noteName = "NODE_SEA_BLOB"
 // used to identify SEA notes.
 const noteType uint32 = 0x4F575354 // 'P' 'O' 'S' 'T'
 
-// injectELF injects blob as an ELF note (postject-style, reachable via
-// PT_NOTE) into the file at path, then flips the SEA fuse sentinel.
+// injectELFBytes returns data with blob spliced in as an ELF note
+// (postject-style, reachable via PT_NOTE), and the SEA fuse sentinel
+// flipped from `:0` to `:1`.
 //
 // The implementation appends a new SHT_NOTE section at the end of the
-// file, a corresponding section header, and a new PT_NOTE program header
-// pointing at it. It rewrites the ELF/section/program headers in place
-// to reflect the new layout.
+// file, a corresponding section header, and a new PT_NOTE program
+// header pointing at it. It rewrites the ELF/section/program headers
+// in place to reflect the new layout.
 //
 // Limitations: ELFCLASS64, little-endian only. Returns
 // ErrAlreadyInjected if a NODE_SEA_BLOB note is already present.
-func injectELF(path string, blob []byte) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
+func injectELFBytes(data, blob []byte) ([]byte, error) {
 	if len(data) < 0x40 || string(data[:4]) != "\x7fELF" {
-		return fmt.Errorf("%w: not an ELF file", ErrNotSupported)
+		return nil, fmt.Errorf("%w: not an ELF file", ErrNotSupported)
 	}
 	if data[elf.EI_CLASS] != byte(elf.ELFCLASS64) {
-		return fmt.Errorf("%w: only ELFCLASS64 is supported", ErrNotSupported)
+		return nil, fmt.Errorf("%w: only ELFCLASS64 is supported", ErrNotSupported)
 	}
 	if data[elf.EI_DATA] != byte(elf.ELFDATA2LSB) {
-		return fmt.Errorf("%w: only little-endian ELF is supported", ErrNotSupported)
+		return nil, fmt.Errorf("%w: only little-endian ELF is supported", ErrNotSupported)
 	}
 
 	f, err := elf.NewFile(bytes.NewReader(data))
 	if err != nil {
-		return fmt.Errorf("nodesea: parse ELF: %w", err)
+		return nil, fmt.Errorf("nodesea: parse ELF: %w", err)
 	}
 	defer f.Close()
 
 	// Idempotency: refuse to re-inject.
 	if findElfNote(f, data, noteName, noteType) {
-		return ErrAlreadyInjected
+		return nil, ErrAlreadyInjected
 	}
 
 	note := buildNote(noteName, noteType, blob)
@@ -87,7 +82,7 @@ func injectELF(path string, blob []byte) error {
 	rawShentSize := binary.LittleEndian.Uint16(data[eShentSizeOff:])
 
 	if rawShentSize != shentSize || rawPhentSize != phentSize {
-		return fmt.Errorf("%w: unexpected ELF header sizes", ErrNotSupported)
+		return nil, fmt.Errorf("%w: unexpected ELF header sizes", ErrNotSupported)
 	}
 
 	// Compute a new vaddr above the highest existing PT_LOAD's vmaddr
@@ -130,7 +125,7 @@ func injectELF(path string, blob []byte) error {
 	oldPhoff := int(rawPhoff)
 	oldPhnum := int(rawPhnum)
 	if oldPhoff+oldPhnum*phentSize > len(data) {
-		return fmt.Errorf("%w: program header table out of range", ErrNotSupported)
+		return nil, fmt.Errorf("%w: program header table out of range", ErrNotSupported)
 	}
 	out = append(out, data[oldPhoff:oldPhoff+oldPhnum*phentSize]...)
 
@@ -189,14 +184,7 @@ func injectELF(path string, blob []byte) error {
 	binary.LittleEndian.PutUint64(out[ePhoffOff:], newFileOff)
 	binary.LittleEndian.PutUint16(out[ePhnumOff:], newPhnum)
 
-	tmp := path + ".inject.tmp"
-	if err := os.WriteFile(tmp, out, 0o755); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		return err
-	}
-	return FlipSentinel(path)
+	return flipSentinel(out)
 }
 
 // buildNote serializes a single ELF note record.

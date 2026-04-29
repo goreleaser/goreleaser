@@ -75,7 +75,7 @@ func buildMachO(srcPath, outPath string, blob []byte, id string) error {
 	if err != nil {
 		return fmt.Errorf("nodesea: inject mach-o: %w", err)
 	}
-	out, err = flipSentinelBytes(out)
+	out, err = flipSentinel(out)
 	if err != nil {
 		return fmt.Errorf("nodesea: flip sentinel: %w", err)
 	}

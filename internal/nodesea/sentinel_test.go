@@ -3,8 +3,6 @@ package nodesea
 import (
 	"bytes"
 	"errors"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,15 +10,12 @@ import (
 
 func TestFlipSentinel(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "fake-node")
 		body := append([]byte("prefix\x00\x00"), []byte(SentinelStock)...)
 		body = append(body, 0xff, 0xee)
-		require.NoError(t, os.WriteFile(path, body, 0o644))
 
-		require.NoError(t, FlipSentinel(path))
-
-		got, err := os.ReadFile(path)
+		got, err := flipSentinel(body)
 		require.NoError(t, err)
+
 		require.Contains(t, string(got), SentinelFused)
 		require.NotContains(t, string(got), SentinelStock)
 		// trailing bytes preserved
@@ -29,34 +24,26 @@ func TestFlipSentinel(t *testing.T) {
 	})
 
 	t.Run("missing sentinel", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "not-node")
-		require.NoError(t, os.WriteFile(path, []byte("hello world"), 0o644))
-		err := FlipSentinel(path)
+		_, err := flipSentinel([]byte("hello world"))
 		require.Error(t, err)
 		require.True(t, errors.Is(err, ErrSentinelNotFound))
 	})
 
 	t.Run("already fused", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "fused")
 		body := append([]byte("prefix"), []byte(SentinelFused)...)
-		require.NoError(t, os.WriteFile(path, body, 0o644))
-		err := FlipSentinel(path)
+		_, err := flipSentinel(body)
 		require.ErrorIs(t, err, ErrAlreadyFused)
 	})
 
 	t.Run("ambiguous", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "dup")
 		body := append([]byte(SentinelStock), []byte(SentinelStock)...)
-		require.NoError(t, os.WriteFile(path, body, 0o644))
-		err := FlipSentinel(path)
+		_, err := flipSentinel(body)
 		require.ErrorIs(t, err, ErrSentinelAmbiguous)
 	})
 
 	t.Run("malformed marker", func(t *testing.T) {
-		path := filepath.Join(t.TempDir(), "malformed")
 		body := append([]byte(Sentinel), 'x', '0')
-		require.NoError(t, os.WriteFile(path, body, 0o644))
-		err := FlipSentinel(path)
+		_, err := flipSentinel(body)
 		require.ErrorIs(t, err, ErrSentinelNotFound)
 	})
 }

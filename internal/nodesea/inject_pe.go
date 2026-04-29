@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"strings"
 )
@@ -19,35 +18,38 @@ const PEResourceName = "NODE_SEA_BLOB"
 // rtRCData is the PE resource type ID for raw data.
 const rtRCData = 10
 
-// injectPE injects blob into the PE binary at path as a `NODE_SEA_BLOB`
-// (RT_RCDATA) resource, then flips the SEA fuse sentinel.
+// injectPEBytes returns data with blob spliced in as a `NODE_SEA_BLOB`
+// (RT_RCDATA) resource, and the SEA fuse sentinel flipped from `:0`
+// to `:1`.
 //
-// Strategy: parse the existing `.rsrc` tree (so we preserve version-info,
-// icon, etc.), add our `NODE_SEA_BLOB` entry, then write the fully
-// serialized tree as a brand-new section appended at end-of-file. The
-// resource data directory is repointed at the new section. The original
-// `.rsrc` bytes stay mapped but become unreferenced (the loader uses the
-// data-directory pointer for resource lookup).
+// The input is expected to be already unsigned (no Authenticode
+// certificate table). Pass it through unsignPEBytes first if it
+// might be signed — appending a section past the cert table would
+// invalidate any existing signature anyway.
 //
-// This approach handles real-world `node.exe`, where `.rsrc` is not the
-// last raw section (`.reloc` follows it). Returns ErrNotSupported when
-// the binary lacks a `.rsrc` section, or when there is not enough slack
-// in the section header table for one more entry. Returns
-// ErrAlreadyInjected when a `NODE_SEA_BLOB` resource is already present.
-func injectPE(path string, blob []byte) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
+// Strategy: parse the existing `.rsrc` tree (so we preserve
+// version-info, icon, etc.), add our `NODE_SEA_BLOB` entry, then write
+// the fully serialized tree as a brand-new section appended at
+// end-of-file. The resource data directory is repointed at the new
+// section. The original `.rsrc` bytes stay mapped but become
+// unreferenced (the loader uses the data-directory pointer for
+// resource lookup).
+//
+// This approach handles real-world `node.exe`, where `.rsrc` is not
+// the last raw section (`.reloc` follows it). Returns ErrNotSupported
+// when the binary lacks a `.rsrc` section, or when there is not
+// enough slack in the section header table for one more entry.
+// Returns ErrAlreadyInjected when a `NODE_SEA_BLOB` resource is
+// already present.
+func injectPEBytes(data, blob []byte) ([]byte, error) {
 	f, err := pe.NewFile(bytes.NewReader(data))
 	if err != nil {
-		return fmt.Errorf("nodesea: parse PE: %w", err)
+		return nil, fmt.Errorf("nodesea: parse PE: %w", err)
 	}
 	defer f.Close()
 
 	if len(data) < 0x40 {
-		return fmt.Errorf("%w: PE too small", ErrNotSupported)
+		return nil, fmt.Errorf("%w: PE too small", ErrNotSupported)
 	}
 	peOff := int(binary.LittleEndian.Uint32(data[0x3c:0x40]))
 	optStart := peOff + 24
@@ -65,7 +67,7 @@ func injectPE(path string, blob []byte) error {
 		checksumOff = optStart + 64
 		dirOff = optStart + 112
 	default:
-		return fmt.Errorf("%w: unknown OptionalHeader magic %#x", ErrNotSupported, magic)
+		return nil, fmt.Errorf("%w: unknown OptionalHeader magic %#x", ErrNotSupported, magic)
 	}
 
 	sectAlign := binary.LittleEndian.Uint32(data[optStart+32:])
@@ -104,24 +106,24 @@ func injectPE(path string, blob []byte) error {
 		}
 	}
 	if rsrc == nil {
-		return fmt.Errorf("%w: PE binary has no .rsrc section", ErrNotSupported)
+		return nil, fmt.Errorf("%w: PE binary has no .rsrc section", ErrNotSupported)
 	}
 
 	// Parse existing resource tree so we preserve existing resources
 	// (version info, icon, manifest, …).
 	resOffInSect := resVA - rsrc.VirtualAddress
 	if resOffInSect+resSize > rsrc.Size {
-		return fmt.Errorf("%w: resource directory exceeds section bounds", ErrNotSupported)
+		return nil, fmt.Errorf("%w: resource directory exceeds section bounds", ErrNotSupported)
 	}
 	rsrcRaw := data[rsrc.Offset+resOffInSect : rsrc.Offset+resOffInSect+resSize]
 	tree, err := parseResourceDir(rsrcRaw, 0, resVA)
 	if err != nil {
-		return fmt.Errorf("nodesea: parse .rsrc: %w", err)
+		return nil, fmt.Errorf("nodesea: parse .rsrc: %w", err)
 	}
 
 	// Idempotency.
 	if tree.find(rtRCData, PEResourceName) != nil {
-		return ErrAlreadyInjected
+		return nil, ErrAlreadyInjected
 	}
 
 	tree.add(rtRCData, PEResourceName, 0, blob)
@@ -140,7 +142,7 @@ func injectPE(path string, blob []byte) error {
 	// Serialize new resource tree at the new VA.
 	newRsrc, err := tree.serialize(newVA)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	newRsrcSize := uint32(len(newRsrc))
 
@@ -160,7 +162,7 @@ func injectPE(path string, blob []byte) error {
 		}
 	}
 	if uint32(newSectHeaderOff)+40 > firstRaw {
-		return fmt.Errorf("%w: no header slack for new section (need 40 bytes, have %d)",
+		return nil, fmt.Errorf("%w: no header slack for new section (need 40 bytes, have %d)",
 			ErrNotSupported, int(firstRaw)-newSectHeaderOff)
 	}
 
@@ -213,14 +215,7 @@ func injectPE(path string, blob []byte) error {
 	}
 	binary.LittleEndian.PutUint32(out[checksumOff:], peChecksum(out, checksumOff))
 
-	tmp := path + ".inject.tmp"
-	if err := os.WriteFile(tmp, out, 0o755); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		return err
-	}
-	return FlipSentinel(path)
+	return flipSentinel(out)
 }
 
 func alignUp(v, a uint32) uint32 {

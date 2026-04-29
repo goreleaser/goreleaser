@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 // Build produces a Node.js Single Executable Application at outPath for
@@ -40,37 +41,63 @@ func Build(ctx context.Context, version string, target Target, outPath string, b
 // buildELF reads cachedPath, injects blob, flips the sentinel, and
 // writes outPath atomically with executable permissions.
 func buildELF(cachedPath, outPath string, blob []byte) error {
-	if err := copyFile(cachedPath, outPath); err != nil {
+	data, err := os.ReadFile(cachedPath)
+	if err != nil {
 		return err
 	}
-	if err := injectELF(outPath, blob); err != nil {
+	out, err := injectELFBytes(data, blob)
+	if err != nil {
 		return fmt.Errorf("nodesea: inject elf: %w", err)
 	}
-	return nil
+	return writeFileAtomic(outPath, out, 0o755)
 }
 
 // buildPE reads cachedPath, strips its Authenticode signature, injects
 // blob as a NODE_SEA_BLOB resource, flips the sentinel, and writes
 // outPath atomically with executable permissions.
 func buildPE(cachedPath, outPath string, blob []byte) error {
-	if err := copyFile(cachedPath, outPath); err != nil {
-		return err
-	}
-	if err := unsignPE(outPath); err != nil {
-		return fmt.Errorf("nodesea: unsign pe: %w", err)
-	}
-	if err := injectPE(outPath, blob); err != nil {
-		return fmt.Errorf("nodesea: inject pe: %w", err)
-	}
-	return nil
-}
-
-// copyFile copies src to dst with executable permissions, replacing
-// dst if it already exists.
-func copyFile(src, dst string) error {
-	data, err := os.ReadFile(src)
+	data, err := os.ReadFile(cachedPath)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, data, 0o755)
+	out, err := unsignPEBytes(data)
+	if err != nil {
+		return fmt.Errorf("nodesea: unsign pe: %w", err)
+	}
+	out, err = injectPEBytes(out, blob)
+	if err != nil {
+		return fmt.Errorf("nodesea: inject pe: %w", err)
+	}
+	return writeFileAtomic(outPath, out, 0o755)
+}
+
+// writeFileAtomic writes data to path via a temp file in the same
+// directory, then renames it into place. perm is applied to the temp
+// file before the rename so the on-disk file ends up with the
+// requested mode regardless of umask. On error the temp file is
+// removed and path is left untouched.
+func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".write-*")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	if _, err := tmp.Write(data); err != nil {
+		_ = tmp.Close()
+		_ = os.Remove(tmpName)
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		_ = os.Remove(tmpName)
+		return err
+	}
+	if err := os.Chmod(tmpName, perm); err != nil {
+		_ = os.Remove(tmpName)
+		return err
+	}
+	if err := os.Rename(tmpName, path); err != nil {
+		_ = os.Remove(tmpName)
+		return err
+	}
+	return nil
 }
