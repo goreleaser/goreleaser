@@ -110,3 +110,24 @@ func TestConvertHelpers(t *testing.T) {
 	require.Equal(t, "windows", convertToGoos("win"))
 	require.Equal(t, "linux", convertToGoos("linux"))
 }
+
+func TestToNodeseaSEAConfig(t *testing.T) {
+	disable := false
+	got := toNodeseaSEAConfig(config.NodeSEAConfig{
+		Assets:                        map[string]string{"icon": "./icon.png"},
+		ExecArgv:                      []string{"--max-old-space-size=4096"},
+		DisableExperimentalSEAWarning: &disable,
+		MainFormat:                    "module",
+	})
+	require.Equal(t, map[string]string{"icon": "./icon.png"}, got.Assets)
+	require.Equal(t, []string{"--max-old-space-size=4096"}, got.ExecArgv)
+	require.NotNil(t, got.DisableExperimentalSEAWarning)
+	require.False(t, *got.DisableExperimentalSEAWarning)
+	require.Equal(t, "module", got.MainFormat)
+
+	zero := toNodeseaSEAConfig(config.NodeSEAConfig{})
+	require.Nil(t, zero.Assets)
+	require.Nil(t, zero.ExecArgv)
+	require.Nil(t, zero.DisableExperimentalSEAWarning)
+	require.Empty(t, zero.MainFormat)
+}

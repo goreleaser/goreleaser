@@ -504,6 +504,7 @@ type Build struct {
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NoMainCheck     bool            `yaml:"no_main_check,omitempty" json:"no_main_check,omitempty"`
+	SEAConfig       NodeSEAConfig   `yaml:"sea_config,omitempty" json:"sea_config,omitempty"`
 	UnproxiedMain   string          `yaml:"-" json:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
 
@@ -525,6 +526,33 @@ type BuildInternalDefaults struct {
 	// whether the pipe set the current ID.
 	// this is true when the user didn't set an ID.
 	ID bool
+}
+
+// NodeSEAConfig carries the user-supplied subset of sea-config.json
+// fields accepted by the experimental Node.js SEA builder. Goreleaser
+// owns the `output`, `executable`, `useCodeCache` and `useSnapshot`
+// fields; they intentionally cannot be set here.
+//
+// See https://nodejs.org/api/single-executable-applications.html
+// for the meaning of each field.
+type NodeSEAConfig struct {
+	// Assets is a map of asset name → file path (relative to build.Dir
+	// or absolute) baked into the SEA blob. Available at runtime via
+	// `sea.getAsset(name)`.
+	Assets map[string]string `yaml:"assets,omitempty" json:"assets,omitempty"`
+
+	// ExecArgv is a list of Node CLI flags hard-coded into the binary
+	// (e.g. ["--max-old-space-size=4096"]).
+	ExecArgv []string `yaml:"exec_argv,omitempty" json:"exec_argv,omitempty"`
+
+	// DisableExperimentalSEAWarning controls whether Node's runtime
+	// "experimental feature" warning is silenced. Defaults to true.
+	// Set to false to surface the warning.
+	DisableExperimentalSEAWarning *bool `yaml:"disable_experimental_sea_warning,omitempty" json:"disable_experimental_sea_warning,omitempty"`
+
+	// MainFormat selects the module system used to evaluate the main
+	// entrypoint: "commonjs" (default) or "module".
+	MainFormat string `yaml:"main_format,omitempty" json:"main_format,omitempty" jsonschema:"enum=commonjs,enum=module,enum="`
 }
 
 type BuildDetailsOverride struct {

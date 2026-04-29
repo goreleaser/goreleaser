@@ -127,6 +127,13 @@ type blobResult struct {
 	version string
 }
 
+// FeatureFlagBuildSEA gates the new `node --build-sea` code path
+// during phase 2 of the migration to Node ≥ v25.5 LIEF-backed SEA
+// generation. Setting GORELEASER_NODE_BUILD_SEA=1 dispatches builds
+// to nodesea.BuildViaBuildSEA; unset (or any other value) preserves
+// the legacy in-process injector path.
+const FeatureFlagBuildSEA = "GORELEASER_NODE_BUILD_SEA"
+
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	t := options.Target.(Target)
@@ -158,19 +165,22 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	// Generate or fetch cached blob.
-	res, err := ensureBlob(ctx, build, env)
-	if err != nil {
-		return err
-	}
-
-	// Prepare host (download), unsign, inject blob, flip sentinel,
-	// and ad-hoc sign — all in one pass per format.
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
-	if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
-		return fmt.Errorf("nodesea: build %s: %w", target, err)
+	if os.Getenv(FeatureFlagBuildSEA) == "1" {
+		if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
+			return err
+		}
+	} else {
+		// Legacy path: generate or fetch cached blob, then inject.
+		res, err := ensureBlob(ctx, build, env)
+		if err != nil {
+			return err
+		}
+		if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+			return err
+		}
+		if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
+			return fmt.Errorf("nodesea: build %s: %w", target, err)
+		}
 	}
 
 	if err := base.ChTimes(build, tpl, a); err != nil {
@@ -179,6 +189,62 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	ctx.Artifacts.Add(a)
 	return nil
+}
+
+// buildViaBuildSEA dispatches to the new `node --build-sea` flow
+// (nodesea.BuildViaBuildSEA), passing through the user-supplied
+// SEAConfig from build configuration.
+func buildViaBuildSEA(
+	ctx *context.Context,
+	build config.Build,
+	target nodesea.Target,
+	options api.Options,
+) error {
+	mainPath := filepath.Join(build.Dir, build.Main)
+	if _, err := os.Stat(mainPath); err != nil {
+		return fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
+	}
+
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	if err != nil {
+		return fmt.Errorf("nodesea: resolve node version: %w", err)
+	}
+	log.WithField("version", version).WithField("source", source).
+		Info("resolved node version")
+
+	buildToolNode, err := nodesea.BuildToolNode(ctx)
+	if err != nil {
+		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
+	}
+
+	absMain, err := filepath.Abs(mainPath)
+	if err != nil {
+		absMain = mainPath
+	}
+	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+		return err
+	}
+	return nodesea.BuildViaBuildSEA(ctx, nodesea.BuildOptions{
+		BuildToolNode: buildToolNode,
+		Target:        target,
+		Version:       version,
+		MainJS:        absMain,
+		OutPath:       options.Path,
+		SEAConfig:     toNodeseaSEAConfig(build.SEAConfig),
+	})
+}
+
+// toNodeseaSEAConfig translates the user-facing config.NodeSEAConfig
+// into the internal nodesea.SEAConfig payload. Kept separate so the
+// public yaml schema and the internal call site can evolve
+// independently.
+func toNodeseaSEAConfig(c config.NodeSEAConfig) nodesea.SEAConfig {
+	return nodesea.SEAConfig{
+		Assets:                        c.Assets,
+		ExecArgv:                      c.ExecArgv,
+		DisableExperimentalSEAWarning: c.DisableExperimentalSEAWarning,
+		MainFormat:                    c.MainFormat,
+	}
 }
 
 func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobResult, error) {
