@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strings"
@@ -137,7 +138,10 @@ func injectPE(path string, blob []byte) error {
 	newVA := alignUp(maxVirtEnd, sectAlign)
 
 	// Serialize new resource tree at the new VA.
-	newRsrc := tree.serialize(newVA)
+	newRsrc, err := tree.serialize(newVA)
+	if err != nil {
+		return err
+	}
 	newRsrcSize := uint32(len(newRsrc))
 
 	// Pad raw size to FileAlignment.
@@ -372,8 +376,12 @@ func parseResourceDir(data []byte, dirOff uint32, va uint32) (*rsrcDir, error) {
 //
 //	[directories...] [data entries...] [name strings...] [data blobs...]
 //
-// va is the .rsrc section RVA (used to compute data RVAs).
-func (d *rsrcDir) serialize(va uint32) []byte {
+// va is the .rsrc section RVA (used to compute data RVAs). Returns
+// ErrNotSupported when any computed offset would overflow uint32 or
+// when a resource name would exceed the 16-bit length encoded in the
+// IMAGE_RESOURCE_DIR_STRING_U header — both are silent-truncation
+// hazards otherwise.
+func (d *rsrcDir) serialize(va uint32) ([]byte, error) {
 	// First pass: collect every directory, name string, data entry, and
 	// data blob to compute layout offsets.
 	type dirInfo struct {
@@ -409,32 +417,71 @@ func (d *rsrcDir) serialize(va uint32) []byte {
 		}
 	}
 
+	// Compute and bounds-check every offset in uint64 first; the .rsrc
+	// section RVA + offset must fit in 32 bits because that's what the
+	// IMAGE_RESOURCE_DATA_ENTRY.OffsetToData field stores.
+	off := uint64(0)
+	bumpOff := func(by uint64) error {
+		off += by
+		if off > math.MaxUint32 {
+			return fmt.Errorf("%w: .rsrc serialized layout exceeds 4 GiB", ErrNotSupported)
+		}
+		return nil
+	}
+
 	// Allocate dir struct offsets.
-	off := uint32(0)
 	for _, di := range dirs {
-		di.offset = off
-		off += 16 + uint32(len(di.dir.entries))*8
+		di.offset = uint32(off)
+		if err := bumpOff(16 + uint64(len(di.dir.entries))*8); err != nil {
+			return nil, err
+		}
 	}
 	// Allocate data-entry offsets.
+	var collectLeavesErr error
 	var collectLeaves func(dir *rsrcDir)
 	collectLeaves = func(dir *rsrcDir) {
+		if collectLeavesErr != nil {
+			return
+		}
 		for _, e := range dir.entries {
 			if e.dir != nil {
 				collectLeaves(e.dir)
 				continue
 			}
-			leaves = append(leaves, &leafInfo{entry: e, entryOff: off})
-			off += 16
+			leaves = append(leaves, &leafInfo{entry: e, entryOff: uint32(off)})
+			if err := bumpOff(16); err != nil {
+				collectLeavesErr = err
+				return
+			}
 		}
 	}
 	collectLeaves(d)
-	// Allocate name string offsets.
+	if collectLeavesErr != nil {
+		return nil, collectLeavesErr
+	}
+	// Allocate name string offsets. PE encodes the name length as a
+	// uint16 right before the UTF-16 code units, so names longer than
+	// 0xFFFF would silently wrap.
+	var collectNamesErr error
 	var collectNames func(dir *rsrcDir)
 	collectNames = func(dir *rsrcDir) {
+		if collectNamesErr != nil {
+			return
+		}
 		for _, e := range dir.entries {
 			if e.name != "" {
-				names = append(names, &nameInfo{entry: e, off: off})
-				off += 2 + uint32(len([]rune(e.name)))*2
+				runes := []rune(e.name)
+				if len(runes) > math.MaxUint16 {
+					collectNamesErr = fmt.Errorf(
+						"%w: resource name %q has %d code points (PE limit is %d)",
+						ErrNotSupported, e.name, len(runes), math.MaxUint16)
+					return
+				}
+				names = append(names, &nameInfo{entry: e, off: uint32(off)})
+				if err := bumpOff(2 + uint64(len(runes))*2); err != nil {
+					collectNamesErr = err
+					return
+				}
 			}
 			if e.dir != nil {
 				collectNames(e.dir)
@@ -442,13 +489,23 @@ func (d *rsrcDir) serialize(va uint32) []byte {
 		}
 	}
 	collectNames(d)
+	if collectNamesErr != nil {
+		return nil, collectNamesErr
+	}
 	// Pad name section to 4-byte boundary before data.
 	off = (off + 3) &^ 3
 	// Allocate data blob offsets.
 	for _, lf := range leaves {
-		lf.dataOff = off
-		off += uint32(len(lf.entry.data))
+		lf.dataOff = uint32(off)
+		if err := bumpOff(uint64(len(lf.entry.data))); err != nil {
+			return nil, err
+		}
 		off = (off + 3) &^ 3
+	}
+	// And finally check that va + the highest data-entry offset still
+	// fits in 32 bits (DataRVA is uint32).
+	if uint64(va)+off > math.MaxUint32 {
+		return nil, fmt.Errorf("%w: .rsrc RVA + offset would exceed 4 GiB", ErrNotSupported)
 	}
 	totalSize := off
 
@@ -534,5 +591,5 @@ func (d *rsrcDir) serialize(va uint32) []byte {
 		copy(out[lf.dataOff:], lf.entry.data)
 	}
 
-	return out
+	return out, nil
 }

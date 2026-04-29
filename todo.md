@@ -73,12 +73,10 @@ shift loop) now compute in `uint64` and return `ErrNotSupported` if the
 result would exceed `math.MaxUint32`.
 
 ### `uint32` truncation in PE resource RVA / name length
-**File:** `internal/nodesea/inject_pe.go:517, 526`
-Same class of bug on the PE side: `va + lf.dataOff` overflows for huge
-resource trees, and `uint16(len(runes))` will silently wrap on a
-pathological resource name.
-- Validate the sums in `uint64`; return an error when the resource
-  name length exceeds `0xFFFF`.
+**Status:** ✅ Fixed in `inject_pe.go:serialize`. Layout offsets and
+`va + dataOff` are now computed in `uint64` and validated against
+`math.MaxUint32`; resource names exceeding `0xFFFF` runes are rejected
+with `ErrNotSupported`.
 
 ---
 
