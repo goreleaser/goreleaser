@@ -48,6 +48,7 @@ var (
 	_ api.Builder           = &Builder{}
 	_ api.DependingBuilder  = &Builder{}
 	_ api.ConcurrentBuilder = &Builder{}
+	_ api.PreparedBuilder   = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -127,12 +128,49 @@ type blobResult struct {
 	version string
 }
 
-// FeatureFlagBuildSEA gates the new `node --build-sea` code path
-// during phase 2 of the migration to Node ≥ v25.5 LIEF-backed SEA
-// generation. Setting GORELEASER_NODE_BUILD_SEA=1 dispatches builds
-// to nodesea.BuildViaBuildSEA; unset (or any other value) preserves
-// the legacy in-process injector path.
-const FeatureFlagBuildSEA = "GORELEASER_NODE_BUILD_SEA"
+// FeatureFlagLegacyInjector restores the pre-v25.5 in-process binary
+// surgery code path that was the default before phase 3 of the
+// migration. It exists as a temporary escape hatch and will be removed
+// in a future release; new builds should use the default `--build-sea`
+// flow.
+const FeatureFlagLegacyInjector = "GORELEASER_NODE_LEGACY_INJECTOR"
+
+// useLegacyInjector reports whether the user opted out of the
+// `--build-sea` flow via the legacy-injector escape hatch.
+func useLegacyInjector() bool {
+	return os.Getenv(FeatureFlagLegacyInjector) == "1"
+}
+
+// Prepare implements build.PreparedBuilder. It runs once per build
+// configuration before any per-target Build call. For the default
+// `--build-sea` path we resolve and probe the build-tool Node up
+// front (downloading it if necessary) and validate that the resolved
+// target Node version is in the V2-blob-format supported range.
+//
+// The legacy injector path skips this preflight entirely.
+func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
+	if useLegacyInjector() {
+		return nil
+	}
+
+	nodePath, err := nodesea.BuildToolNode(ctx)
+	if err != nil {
+		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
+	}
+	log.WithField("path", nodePath).Debug("resolved build-tool node")
+
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+	if err != nil {
+		return fmt.Errorf("nodesea: resolve target node version: %w", err)
+	}
+	log.WithField("version", version).WithField("source", source).
+		Debug("resolved target node version")
+
+	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
+		return err
+	}
+	return nil
+}
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
@@ -165,11 +203,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	if os.Getenv(FeatureFlagBuildSEA) == "1" {
-		if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
-			return err
-		}
-	} else {
+	if useLegacyInjector() {
 		// Legacy path: generate or fetch cached blob, then inject.
 		res, err := ensureBlob(ctx, build, env)
 		if err != nil {
@@ -181,6 +215,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
 			return fmt.Errorf("nodesea: build %s: %w", target, err)
 		}
+	} else if err := buildViaBuildSEA(ctx, build, target, options); err != nil {
+		return err
 	}
 
 	if err := base.ChTimes(build, tpl, a); err != nil {
