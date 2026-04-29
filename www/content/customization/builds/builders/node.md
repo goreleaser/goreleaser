@@ -57,23 +57,49 @@ For each requested target, GoReleaser:
 
 ## Bundling your app
 
-GoReleaser does **not** run `npm install` and does **not** bundle your
-`node_modules/` for you. The script pointed at by `main` must already
-be a single self-contained file: anything it `require`s/`import`s at
-runtime must be inlined into that file.
+GoReleaser does **not** bundle your `node_modules/` for you, but it
+does run `npm run build` automatically when your `package.json`
+declares a `scripts.build` entry — so the file referenced by
+[`main`](#configuration) is the freshly bundled output.
 
-Use a JS bundler in a `pre` hook to produce that single file:
+```json {filename="package.json"}
+{
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --platform=node --outfile=dist/bundle.js"
+  }
+}
+```
 
 ```yaml {filename=".goreleaser.yaml"}
 builds:
   - builder: node
     main: dist/bundle.js
-    hooks:
-      pre: npx esbuild src/index.js --bundle --platform=node --outfile=dist/bundle.js
 ```
 
-Drop-in replacements include `npx ncc build`, `rolldown`, or any
-bundler that emits a single-file CommonJS or ESM module.
+That's it — no GoReleaser config needed. When `scripts.build` is
+absent, the step is skipped silently and GoReleaser uses
+[`main`](#configuration) as-is.
+
+Dependency installation (`npm ci`, `pnpm install --frozen-lockfile`,
+…) is **not** run for you — drive it from the global
+[`before`](/customization/global_hooks/) hook so it executes once per
+release rather than once per build:
+
+```yaml {filename=".goreleaser.yaml"}
+before:
+  hooks:
+    - npm ci
+
+builds:
+  - builder: node
+    main: dist/bundle.js
+```
+
+If you need per-target bundling (e.g. different output for darwin
+vs. linux), bypass the auto-step by giving your `package.json` no
+`scripts.build` entry and drive the bundling from a per-target
+[`hooks.pre`](/customization/build/) instead.
+
 
 ## Configuration
 
@@ -147,6 +173,13 @@ builds:
       # Module system used to evaluate the entrypoint:
       # "commonjs" (default) or "module".
       main_format: commonjs
+
+    # Auto-bundle step. Runs `npm run build` in `dir` before invoking
+    # `node --build-sea`, when `package.json` declares a non-empty
+    # `scripts.build` entry. Silent skip otherwise. See "Bundling your
+    # app" above for details. Dependency installation (`npm ci` and
+    # friends) is intentionally not performed — drive it from the
+    # global `before` hook.
 
     # Hooks can be used to customize the final binary, for example to
     # bundle the entrypoint or sign the produced executable.

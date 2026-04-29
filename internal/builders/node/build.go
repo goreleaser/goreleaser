@@ -32,6 +32,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -120,10 +121,11 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Prepare implements build.PreparedBuilder. It runs once per build
 // configuration before any per-target Build call: resolves and probes
-// the build-tool Node up front (downloading it if necessary), and
+// the build-tool Node up front (downloading it if necessary),
 // validates that the resolved target Node version is in the
-// V2-blob-format supported range. Failing here is preferable to
-// failing partway through a multi-target build.
+// V2-blob-format supported range, and runs `npm run build` when the
+// project's `package.json` declares a `scripts.build` entry. Failing
+// here is preferable to failing partway through a multi-target build.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	nodePath, err := nodesea.BuildToolNode(ctx)
 	if err != nil {
@@ -142,7 +144,28 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	log.WithField("version", version).WithField("source", source).
 		Debug("resolved target node version")
 
-	return nodesea.ValidateTargetNodeVersion(version)
+	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
+		return err
+	}
+
+	return runNPMBuildScript(ctx, build)
+}
+
+// runNPMBuildScript runs `npm run build` in build.Dir when the
+// project's `package.json` declares a non-empty `scripts.build` entry,
+// so the file referenced by `build.Main` is the freshly bundled
+// output. Skipped silently when no such script is declared.
+//
+// Dependency installation (`npm ci` and friends) is intentionally not
+// performed here — drive it from the `before:` hook instead.
+func runNPMBuildScript(ctx *context.Context, build config.Build) error {
+	env := append(os.Environ(), ctx.Env.Strings()...)
+	tenv, err := base.TemplateEnv(build.Env, tmpl.New(ctx))
+	if err != nil {
+		return fmt.Errorf("nodesea: template env: %w", err)
+	}
+	env = append(env, tenv...)
+	return nodesea.RunNPMBuild(ctx, build.Dir, env, logext.NewWriter(), logext.NewWriter())
 }
 
 // Build implements build.Builder.
