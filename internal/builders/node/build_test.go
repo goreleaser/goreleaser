@@ -102,29 +102,10 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestCurrentTarget(t *testing.T) {
-	got := CurrentTarget()
+	got := currentTarget()
 	require.NotEmpty(t, got)
 	// Must always parse cleanly under our own rules.
 	require.True(t, isValid(got), "%s should be a valid target", got)
-}
-
-func TestGoarmFor(t *testing.T) {
-	require.Equal(t, "7", goarmFor("armv7l"))
-	require.Empty(t, goarmFor("arm64"))
-	require.Empty(t, goarmFor("x64"))
-	require.Empty(t, goarmFor("ppc64"))
-}
-
-func TestConvertHelpers(t *testing.T) {
-	require.Equal(t, "amd64", convertToGoarch("x64"))
-	require.Equal(t, "arm64", convertToGoarch("arm64"))
-	require.Equal(t, "arm", convertToGoarch("armv7l"))
-	require.Equal(t, "ppc64le", convertToGoarch("ppc64le"))
-	require.Equal(t, "s390x", convertToGoarch("s390x"))
-	require.Equal(t, "ppc64", convertToGoarch("ppc64"))
-	require.Equal(t, "windows", convertToGoos("win"))
-	require.Equal(t, "linux", convertToGoos("linux"))
-	require.Equal(t, "aix", convertToGoos("aix"))
 }
 
 // TestRunNPMBuildScript covers the per-build npm wire-up: silent skip

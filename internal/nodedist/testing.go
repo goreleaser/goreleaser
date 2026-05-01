@@ -2,6 +2,7 @@ package nodedist
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
@@ -34,7 +35,7 @@ func FakeArchive(t *testing.T, version string, target Target, payload []byte) []
 	if target.IsWindows() {
 		return payload
 	}
-	var buf writeBuffer
+	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
 	tw := tar.NewWriter(gz)
 
@@ -48,7 +49,7 @@ func FakeArchive(t *testing.T, version string, target Target, payload []byte) []
 	require.NoError(t, err)
 	require.NoError(t, tw.Close())
 	require.NoError(t, gz.Close())
-	return buf.b
+	return buf.Bytes()
 }
 
 // NewServer stands up an httptest.Server that serves the given
@@ -89,14 +90,4 @@ func StubRelease(t *testing.T, version, archiveName string, payload []byte) {
 			delete(files, archiveName)
 		}
 	})
-}
-
-// writeBuffer is a minimal io.Writer-backed bytes buffer; using an
-// inline definition avoids dragging in bytes.Buffer just to keep the
-// helper self-contained.
-type writeBuffer struct{ b []byte }
-
-func (w *writeBuffer) Write(p []byte) (int, error) {
-	w.b = append(w.b, p...)
-	return len(p), nil
 }

@@ -12,11 +12,11 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
-// UserSEAConfigFile is the filename goreleaser looks up in the build
+// userSEAConfigFile is the filename goreleaser looks up in the build
 // directory for user-supplied sea-config.json fields. Goreleaser owns
 // `output`, `executable`, `main`, `useCodeCache`, and `useSnapshot` —
 // any user-set values for those keys are overridden.
-const UserSEAConfigFile = "sea-config.json"
+const userSEAConfigFile = "sea-config.json"
 
 // BuildOptions configures BuildViaBuildSEA. Every field except
 // BuildDir and CodeSignID is required.
@@ -116,7 +116,7 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 		return err
 	}
 
-	if FormatFor(opts.Target.Goos()) == FormatMachO {
+	if opts.Target.Goos() == "darwin" {
 		id := opts.CodeSignID
 		if id == "" {
 			base := filepath.Base(opts.OutPath)
@@ -165,7 +165,7 @@ func validateBuildOptions(opts BuildOptions) error {
 	if opts.OutPath == "" {
 		errs = append(errs, "OutPath is required")
 	}
-	if FormatFor(opts.Target.Goos()) == 0 {
+	if !supportedGoos(opts.Target.Goos()) {
 		errs = append(errs, fmt.Sprintf("target %q has no SEA injector", opts.Target))
 	}
 	if len(errs) > 0 {
@@ -206,7 +206,7 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 	if buildDir == "" {
 		return map[string]any{}, nil
 	}
-	path := filepath.Join(buildDir, UserSEAConfigFile)
+	path := filepath.Join(buildDir, userSEAConfigFile)
 	bts, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {

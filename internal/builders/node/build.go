@@ -133,12 +133,11 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("path", nodePath).Debug("resolved build-tool node")
 
-	version, source, err := nodesea.ResolveVersion(build.Dir)
+	version, err := nodesea.ResolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve target node version: %w", err)
 	}
-	log.WithField("version", version).WithField("source", source).
-		Debug("resolved target node version")
+	log.WithField("version", version).Debug("resolved target node version")
 
 	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
 		return err
@@ -172,9 +171,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
-		Goos:   convertToGoos(t.Os),
-		Goarch: convertToGoarch(t.Arch),
-		Goarm:  goarmFor(t.Arch),
+		Goos:   target.Goos(),
+		Goarch: target.Goarch(),
 		Target: t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
@@ -227,7 +225,7 @@ func buildViaBuildSEA(
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
-	version, _, err := nodesea.ResolveVersion(build.Dir)
+	version, err := nodesea.ResolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
@@ -258,11 +256,9 @@ func buildViaBuildSEA(
 	})
 }
 
-// CurrentTarget returns the nodejs.org/dist target identifier matching the
-// machine running goreleaser, e.g. "linux-x64" or "darwin-arm64". It is
-// used by the SEA pipeline to decide whether a build is "host" (native)
-// or cross-platform.
-func CurrentTarget() string {
+// currentTarget returns the nodejs.org/dist target identifier matching the
+// machine running goreleaser, e.g. "linux-x64" or "darwin-arm64".
+func currentTarget() string {
 	os := runtime.GOOS
 	if os == "windows" {
 		os = "win"

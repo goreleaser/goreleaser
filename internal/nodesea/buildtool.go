@@ -13,20 +13,20 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
-// BuildToolEnv is the environment variable that overrides the Node.js
+// buildToolEnv is the environment variable that overrides the Node.js
 // binary used to drive `node --build-sea`. When set, it is consulted
 // first by BuildToolNode and must satisfy probeBuildSEACapable.
-const BuildToolEnv = "GORELEASER_NODE_BUILD_TOOL"
+const buildToolEnv = "GORELEASER_NODE_BUILD_TOOL"
 
-// BuildToolNodeVersion is the host-platform Node release auto-downloaded
+// buildToolNodeVersion is the host-platform Node release auto-downloaded
 // when neither the env override nor the host `node` on PATH satisfies
 // the build-sea capability probe. Bumped per goreleaser release.
-const BuildToolNodeVersion = "v25.9.0"
+const buildToolNodeVersion = "v25.9.0"
 
-// ErrBuildSEAUnsupported is wrapped by probeBuildSEACapable when a Node
+// errBuildSEAUnsupported is wrapped by probeBuildSEACapable when a Node
 // binary cannot drive `--build-sea` (either the option does not exist
 // or `process.config.variables.node_use_lief` is not true).
-var ErrBuildSEAUnsupported = errors.New("nodesea: node binary lacks --build-sea LIEF support")
+var errBuildSEAUnsupported = errors.New("nodesea: node binary lacks --build-sea LIEF support")
 
 // runProbe executes the build-sea capability probe against nodePath. It
 // is a package-level variable so tests can stub it without requiring a
@@ -45,17 +45,17 @@ var runProbe = func(ctx context.Context, nodePath string) ([]byte, error) {
 //     satisfy the probe; otherwise BuildToolNode returns an error.
 //  2. The first `node` on PATH — used iff it satisfies the probe; an
 //     unsuitable PATH binary is silently skipped.
-//  3. Auto-download into <CacheDir>/buildtool/<BuildToolNodeVersion>/.
+//  3. Auto-download into <CacheDir>/buildtool/<buildToolNodeVersion>/.
 //
 // The returned path is guaranteed to satisfy probeBuildSEACapable.
 func BuildToolNode(ctx context.Context) (string, error) {
-	if envPath := os.Getenv(BuildToolEnv); envPath != "" {
+	if envPath := os.Getenv(buildToolEnv); envPath != "" {
 		resolved, err := exec.LookPath(envPath)
 		if err != nil {
-			return "", fmt.Errorf("nodesea: %s=%q: %w", BuildToolEnv, envPath, err)
+			return "", fmt.Errorf("nodesea: %s=%q: %w", buildToolEnv, envPath, err)
 		}
 		if err := probeBuildSEACapable(ctx, resolved); err != nil {
-			return "", fmt.Errorf("nodesea: %s=%q: %w", BuildToolEnv, envPath, err)
+			return "", fmt.Errorf("nodesea: %s=%q: %w", buildToolEnv, envPath, err)
 		}
 		return resolved, nil
 	}
@@ -72,23 +72,23 @@ func BuildToolNode(ctx context.Context) (string, error) {
 // uses (see test/common/sea.js#skipIfBuildSEAIsNotSupported): we read
 // process.config.variables.node_use_lief and require the literal value
 // `true`. Anything else (`false`, `undefined`, exec failure) reports
-// ErrBuildSEAUnsupported.
+// errBuildSEAUnsupported.
 func probeBuildSEACapable(ctx context.Context, nodePath string) error {
 	out, err := runProbe(ctx, nodePath)
 	got := strings.TrimSpace(string(out))
 	if err != nil {
 		return fmt.Errorf("%w: probe %s: %w (output: %q)",
-			ErrBuildSEAUnsupported, nodePath, err, got)
+			errBuildSEAUnsupported, nodePath, err, got)
 	}
 	if got != "true" {
 		return fmt.Errorf("%w: %s reported node_use_lief=%q (want %q)",
-			ErrBuildSEAUnsupported, nodePath, got, "true")
+			errBuildSEAUnsupported, nodePath, got, "true")
 	}
 	return nil
 }
 
 // downloadBuildToolNode fetches the host-platform Node release at
-// BuildToolNodeVersion into <cache>/buildtool/<version>/<target>/ and
+// buildToolNodeVersion into <cache>/buildtool/<version>/<target>/ and
 // confirms it satisfies the capability probe before returning.
 func downloadBuildToolNode(ctx context.Context) (string, error) {
 	cacheDir, err := nodedist.CacheDir()
@@ -97,9 +97,9 @@ func downloadBuildToolNode(ctx context.Context) (string, error) {
 	}
 	target := nodedist.Target(currentTarget())
 	btDir := filepath.Join(cacheDir, "buildtool")
-	nodePath, err := nodedist.Download(ctx, btDir, BuildToolNodeVersion, target)
+	nodePath, err := nodedist.Download(ctx, btDir, buildToolNodeVersion, target)
 	if err != nil {
-		return "", fmt.Errorf("nodesea: download build-tool node %s: %w", BuildToolNodeVersion, err)
+		return "", fmt.Errorf("nodesea: download build-tool node %s: %w", buildToolNodeVersion, err)
 	}
 	if err := probeBuildSEACapable(ctx, nodePath); err != nil {
 		return "", err

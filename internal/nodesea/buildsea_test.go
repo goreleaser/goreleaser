@@ -254,7 +254,7 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	}
 
 	target := nodedist.Target(currentTarget())
-	if FormatFor(target.Goos()) == 0 {
+	if !supportedGoos(target.Goos()) {
 		t.Skipf("integration: no SEA injector for host target %s", target)
 	}
 

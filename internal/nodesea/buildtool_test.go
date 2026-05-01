@@ -63,7 +63,7 @@ func TestProbeBuildSEACapable(t *testing.T) {
 			err := probeBuildSEACapable(t.Context(), "/dummy/node")
 			if tc.wantErr {
 				require.Error(t, err)
-				require.ErrorIs(t, err, ErrBuildSEAUnsupported)
+				require.ErrorIs(t, err, errBuildSEAUnsupported)
 				return
 			}
 			require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestBuildToolNode_FromEnvOverride(t *testing.T) {
 	stub := writeStubBinary(t)
 
 	t.Run("probe passes", func(t *testing.T) {
-		t.Setenv(BuildToolEnv, stub)
+		t.Setenv(buildToolEnv, stub)
 		stubProbe(t, "true\n", nil)
 		got, err := BuildToolNode(t.Context())
 		require.NoError(t, err)
@@ -83,20 +83,20 @@ func TestBuildToolNode_FromEnvOverride(t *testing.T) {
 	})
 
 	t.Run("probe fails", func(t *testing.T) {
-		t.Setenv(BuildToolEnv, stub)
+		t.Setenv(buildToolEnv, stub)
 		stubProbe(t, "false\n", nil)
 		_, err := BuildToolNode(t.Context())
 		require.Error(t, err)
-		require.ErrorIs(t, err, ErrBuildSEAUnsupported)
-		require.Contains(t, err.Error(), BuildToolEnv)
+		require.ErrorIs(t, err, errBuildSEAUnsupported)
+		require.Contains(t, err.Error(), buildToolEnv)
 	})
 
 	t.Run("env path missing", func(t *testing.T) {
-		t.Setenv(BuildToolEnv, filepath.Join(t.TempDir(), "does-not-exist"))
+		t.Setenv(buildToolEnv, filepath.Join(t.TempDir(), "does-not-exist"))
 		stubProbe(t, "true\n", nil)
 		_, err := BuildToolNode(t.Context())
 		require.Error(t, err)
-		require.Contains(t, err.Error(), BuildToolEnv)
+		require.Contains(t, err.Error(), buildToolEnv)
 	})
 }
 
@@ -109,7 +109,7 @@ func TestBuildToolNode_FromPath(t *testing.T) {
 	path := filepath.Join(dir, name)
 	require.NoError(t, os.WriteFile(path, []byte{}, 0o755))
 	t.Setenv("PATH", dir)
-	t.Setenv(BuildToolEnv, "")
+	t.Setenv(buildToolEnv, "")
 
 	t.Run("probe passes", func(t *testing.T) {
 		stubProbe(t, "true\n", nil)
@@ -129,7 +129,7 @@ func TestBuildToolNode_FromPath(t *testing.T) {
 		nodedist.SetBaseURL(t, srv.URL)
 		_, err := BuildToolNode(t.Context())
 		require.Error(t, err)
-		require.NotErrorIs(t, err, ErrBuildSEAUnsupported,
+		require.NotErrorIs(t, err, errBuildSEAUnsupported,
 			"PATH probe failure should not surface as the final error; download error should")
 	})
 }
@@ -138,11 +138,11 @@ func TestBuildToolNode_AutoDownload(t *testing.T) {
 	// Drive the auto-download branch by clearing every higher-priority
 	// candidate (env unset, PATH empty) and pointing distBaseURL at a
 	// stub nodejs.org/dist that serves a fake host binary.
-	t.Setenv(BuildToolEnv, "")
+	t.Setenv(buildToolEnv, "")
 	t.Setenv("PATH", "")
 
 	target := nodedist.Target(currentTarget())
-	version := BuildToolNodeVersion
+	version := buildToolNodeVersion
 
 	var payload []byte
 	if target.IsWindows() {
@@ -172,11 +172,11 @@ func TestBuildToolNode_AutoDownload_ProbeFails(t *testing.T) {
 	// Even after a successful download, a binary that fails the probe
 	// must not be returned as usable. Confirms the post-download probe
 	// gate.
-	t.Setenv(BuildToolEnv, "")
+	t.Setenv(buildToolEnv, "")
 	t.Setenv("PATH", "")
 
 	target := nodedist.Target(currentTarget())
-	version := BuildToolNodeVersion
+	version := buildToolNodeVersion
 
 	var payload []byte
 	if target.IsWindows() {
@@ -198,7 +198,7 @@ func TestBuildToolNode_AutoDownload_ProbeFails(t *testing.T) {
 
 	_, err := BuildToolNode(t.Context())
 	require.Error(t, err)
-	require.ErrorIs(t, err, ErrBuildSEAUnsupported)
+	require.ErrorIs(t, err, errBuildSEAUnsupported)
 }
 
 func TestCurrentTarget(t *testing.T) {

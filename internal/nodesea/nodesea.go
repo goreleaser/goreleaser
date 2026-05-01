@@ -13,44 +13,11 @@
 // orchestration.
 package nodesea
 
-// Format identifies the container format of a Node.js host binary.
-type Format int
-
-const (
-	// FormatELF is the Linux/BSD ELF container.
-	FormatELF Format = iota + 1
-	// FormatMachO is the Apple Mach-O container.
-	FormatMachO
-	// FormatPE is the Windows Portable Executable container.
-	FormatPE
-)
-
-// String implements fmt.Stringer.
-func (f Format) String() string {
-	switch f {
-	case FormatELF:
-		return "elf"
-	case FormatMachO:
-		return "macho"
-	case FormatPE:
-		return "pe"
-	default:
-		return "unknown"
-	}
-}
-
-// FormatFor returns the container format for a given GOOS string. It
-// returns 0 (zero Format) for unsupported operating systems.
-func FormatFor(goos string) Format {
+// supportedGoos reports whether the given GOOS has a SEA injector.
+func supportedGoos(goos string) bool {
 	switch goos {
-	case "linux":
-		return FormatELF
-	case "darwin":
-		return FormatMachO
-	case "windows":
-		return FormatPE
-	default:
-		return 0
+	case "linux", "darwin", "windows":
+		return true
 	}
+	return false
 }
-
