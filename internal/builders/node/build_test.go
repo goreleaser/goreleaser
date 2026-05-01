@@ -45,13 +45,9 @@ func TestParse(t *testing.T) {
 
 func TestIsValid(t *testing.T) {
 	for _, target := range []string{
-		"aix-ppc64",
 		"darwin-arm64",
 		"darwin-x64",
 		"linux-arm64",
-		"linux-armv7l",
-		"linux-ppc64le",
-		"linux-s390x",
 		"linux-x64",
 		"win-arm64",
 		"win-x64",

@@ -111,8 +111,6 @@ builds:
     # Targets, in nodejs.org/dist format.
     # Default: all of: darwin-arm64, darwin-x64, linux-arm64, linux-x64,
     #                  win-arm64, win-x64.
-    # Other published targets that you can list explicitly:
-    #   aix-ppc64, linux-armv7l, linux-ppc64le, linux-s390x.
     targets:
       - linux-x64
       - darwin-arm64

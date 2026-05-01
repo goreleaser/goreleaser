@@ -39,16 +39,10 @@ func (t Target) Goos() string {
 // Goarch returns the Go GOARCH value matching the target.
 func (t Target) Goarch() string {
 	_, arch, _ := strings.Cut(string(t), "-")
-	switch arch {
-	case "x64":
+	if arch == "x64" {
 		return "amd64"
-	case "armv7l":
-		// Node ships a single ARMv7 hard-float linux build under
-		// this name; map it to GOARCH=arm with implicit GOARM=7.
-		return "arm"
-	default:
-		return arch
 	}
+	return arch
 }
 
 // IsWindows reports whether the target is a windows distribution.

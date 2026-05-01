@@ -21,7 +21,6 @@ func TestTarget(t *testing.T) {
 	require.Equal(t, "linux", Target("linux-x64").Goos())
 	require.Equal(t, "windows", Target("win-x64").Goos())
 	require.Equal(t, "amd64", Target("linux-x64").Goarch())
-	require.Equal(t, "arm", Target("linux-armv7l").Goarch())
 	require.True(t, Target("win-x64").IsWindows())
 	require.False(t, Target("linux-x64").IsWindows())
 }
