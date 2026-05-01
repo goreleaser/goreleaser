@@ -37,10 +37,10 @@ For each requested target, GoReleaser:
 2. Resolves the target Node.js version (see
    [Version resolution](#version-resolution)).
 3. Downloads the official Node.js binary for that target from
-   <https://nodejs.org/dist>, verifying its SHA-256 against the matching
-   `SHASUMS256.txt` entry, and caches it under
-   `${XDG_CACHE_HOME:-$HOME/.cache}/goreleaser/node/` so subsequent
-   builds are offline.
+   <https://nodejs.org/dist>, verifying its SHA-256 against the
+   release index embedded in the GoReleaser binary, and caches it
+   under `${TMPDIR:-/tmp}/goreleaser/node/` so subsequent builds in
+   the same temp dir lifecycle are offline.
 4. Reads the user's `sea-config.json` from the build directory (if
    present), then writes a merged copy in a scratch directory with
    `main` pointing at the entrypoint script and `executable` at the
@@ -218,7 +218,7 @@ with LIEF). GoReleaser resolves the build-tool Node in this order:
    manage. Must satisfy the `--build-sea` capability probe.
 2. `node` on `PATH`, if it satisfies the probe.
 3. Auto-download a known-good release into
-   `${XDG_CACHE_HOME:-$HOME/.cache}/goreleaser/node/buildtool/<version>/`
+   `${TMPDIR:-/tmp}/goreleaser/node/buildtool/<version>/`
    for the host platform. The download (~30 MB) happens once and is
    reused across all subsequent builds.
 
@@ -360,10 +360,15 @@ a build-tool Node.js (≥ v25.5) the first time you build, into its own
 cache. Pre-staging that download on a CI runner is optional but speeds
 up the first build of a job.
 
-The cache lives at `${XDG_CACHE_HOME:-$HOME/.cache}/goreleaser/node/`
-and contains both the build-tool Node and every per-target binary
-GoReleaser has fetched. Mount or restore this directory between CI
-runs to keep builds offline-friendly.
+The cache lives at `${TMPDIR:-/tmp}/goreleaser/node/` and contains
+both the build-tool Node and every per-target binary GoReleaser has
+fetched. Mount or restore this directory between CI runs to keep
+builds offline-friendly.
+
+The list of acceptable Node.js releases (and their SHA-256 sums) is
+embedded in the GoReleaser binary and refreshed daily by a cron in
+this repository — versions released after your installed GoReleaser
+build are not downloadable until you upgrade.
 
 Transient HTTP failures (5xx, 429, network errors) are retried
 automatically with exponential backoff — a single nodejs.org hiccup

@@ -100,17 +100,10 @@ var defaultRetry = config.Retry{
 }
 
 // CacheDir returns the directory used to cache downloaded Node.js
-// host binaries. It honours XDG_CACHE_HOME and falls back to
-// ~/.cache. When the user cache directory cannot be determined (very
-// unusual), it returns an empty string and an error, leaving the
-// caller to pick a fallback.
+// host binaries. It lives under the system temp dir so that downloads
+// don't pollute the user's cache home; entries persist for the
+// process and are subject to whatever cleanup policy the OS applies
+// to its temp directory.
 func CacheDir() (string, error) {
-	if x := os.Getenv("XDG_CACHE_HOME"); x != "" {
-		return filepath.Join(x, "goreleaser", "node"), nil
-	}
-	dir, err := os.UserCacheDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(dir, "goreleaser", "node"), nil
+	return filepath.Join(os.TempDir(), "goreleaser", "node"), nil
 }

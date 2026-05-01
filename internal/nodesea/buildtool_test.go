@@ -123,7 +123,7 @@ func TestBuildToolNode_FromPath(t *testing.T) {
 		// at a closed server: we just want to confirm that an unsuitable
 		// PATH node does NOT short-circuit BuildToolNode with success.
 		stubProbe(t, "false\n", nil)
-		t.Setenv("XDG_CACHE_HOME", t.TempDir())
+		t.Setenv("TMPDIR", t.TempDir())
 		srv := httptest.NewServer(http.NotFoundHandler())
 		srv.Close()
 		nodedist.SetBaseURL(t, srv.URL)
@@ -159,7 +159,7 @@ func TestBuildToolNode_AutoDownload(t *testing.T) {
 	})
 	nodedist.SetBaseURL(t, server.URL)
 
-	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	t.Setenv("TMPDIR", t.TempDir())
 	stubProbe(t, "true\n", nil)
 
 	got, err := BuildToolNode(t.Context())
@@ -193,7 +193,7 @@ func TestBuildToolNode_AutoDownload_ProbeFails(t *testing.T) {
 	})
 	nodedist.SetBaseURL(t, server.URL)
 
-	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	t.Setenv("TMPDIR", t.TempDir())
 	stubProbe(t, "false\n", nil)
 
 	_, err := BuildToolNode(t.Context())

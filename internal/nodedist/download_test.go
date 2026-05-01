@@ -37,7 +37,7 @@ func TestDownload_Linux(t *testing.T) {
 	server := NewServer(t, map[string][]byte{
 		"/" + version + "/" + archName: archive,
 	})
-	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	t.Setenv("TMPDIR", t.TempDir())
 	SetBaseURL(t, server.URL)
 
 	cache := t.TempDir()
@@ -102,7 +102,7 @@ func TestDownload_UnknownVersion(t *testing.T) {
 }
 
 func TestCacheDir(t *testing.T) {
-	t.Setenv("XDG_CACHE_HOME", "/tmp/somewhere")
+	t.Setenv("TMPDIR", "/tmp/somewhere")
 	dir, err := CacheDir()
 	require.NoError(t, err)
 	require.Equal(t, filepath.Join("/tmp/somewhere", "goreleaser", "node"), dir)

@@ -53,7 +53,7 @@ func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut s
 func stageTargetNode(t *testing.T, version string, target nodedist.Target) string {
 	t.Helper()
 	cache := t.TempDir()
-	t.Setenv("XDG_CACHE_HOME", cache)
+	t.Setenv("TMPDIR", cache)
 	cacheDir, err := nodedist.CacheDir()
 	require.NoError(t, err)
 	hostDir := filepath.Join(cacheDir, version, string(target))

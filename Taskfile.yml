@@ -99,6 +99,13 @@ tasks:
     generates:
       - ./internal/pipe/nix/licenses.go
 
+  nodedist:releases:generate:
+    desc: Refresh internal/nodedist/releases.json
+    cmds:
+      - ./scripts/gen-node-releases.sh
+    generates:
+      - ./internal/nodedist/releases.json
+
   schema:generate:
     desc: Generate JSONSchema
     cmds:
