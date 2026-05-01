@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -78,14 +79,7 @@ func fakeNPMOnPath(t *testing.T, logDir string, exitCode int) {
 	bin := filepath.Join(t.TempDir(), "npm")
 	script := "#!/bin/sh\n" +
 		"echo \"$@\" >> \"" + logDir + "/calls.log\"\n" +
-		"exit " + itoa(exitCode) + "\n"
+		"exit " + strconv.Itoa(exitCode) + "\n"
 	require.NoError(t, os.WriteFile(bin, []byte(script), 0o755))
 	t.Setenv("PATH", filepath.Dir(bin)+string(os.PathListSeparator)+os.Getenv("PATH"))
-}
-
-func itoa(i int) string {
-	if i == 0 {
-		return "0"
-	}
-	return string(rune('0' + i))
 }

@@ -1,3 +1,16 @@
+// Package nodesea implements the Node.js Single Executable
+// Application (SEA) toolchain used by the experimental `node`
+// builder.
+//
+// The toolchain shells out to whatever `node` is on `PATH` (must be
+// ≥ v25.5.0, LIEF-built) once per build to invoke `node --build-sea
+// sea-config.json`. That command injects the SEA blob into a copy of
+// the per-target Node binary GoReleaser fetches from
+// https://nodejs.org/dist (verifying SHA-256). On macOS targets the
+// produced binary is ad-hoc signed via quill (pure-Go, host-OS
+// independent) so the kernel loader will accept it. The package owns
+// the cache layout, the download + verify path, and the `--build-sea`
+// orchestration.
 package nodesea
 
 import (
@@ -12,6 +25,15 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
+// supportedGoos reports whether the given GOOS has a SEA injector.
+func supportedGoos(goos string) bool {
+	switch goos {
+	case "linux", "darwin", "windows":
+		return true
+	}
+	return false
+}
+
 // userSEAConfigFile is the filename goreleaser looks up in the build
 // directory for user-supplied sea-config.json fields. Goreleaser owns
 // `output`, `executable`, `main`, `useCodeCache`, and `useSnapshot` —
@@ -19,7 +41,7 @@ import (
 const userSEAConfigFile = "sea-config.json"
 
 // BuildOptions configures BuildViaBuildSEA. Every field except
-// BuildDir and CodeSignID is required.
+// BuildDir is required.
 type BuildOptions struct {
 	// Target identifies the per-target Node release this SEA is built
 	// for (e.g. "linux-x64"). Determines container format and whether
@@ -43,10 +65,6 @@ type BuildOptions struct {
 	// sea-config.json file, that file is merged with goreleaser-owned
 	// fields before being passed to `node --build-sea`. Optional.
 	BuildDir string
-
-	// CodeSignID is the ad-hoc CMS signing identifier applied to
-	// darwin outputs by quill. Empty → derived from filepath.Base(OutPath).
-	CodeSignID string
 }
 
 // BuildViaBuildSEA produces a Single Executable Application at
@@ -77,10 +95,7 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 		return err
 	}
 
-	cacheDir, err := nodedist.CacheDir()
-	if err != nil {
-		return err
-	}
+	cacheDir := nodedist.CacheDir()
 	targetNode, err := nodedist.Download(ctx, cacheDir, opts.Version, opts.Target)
 	if err != nil {
 		return err
@@ -115,11 +130,8 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 	}
 
 	if opts.Target.Goos() == "darwin" {
-		id := opts.CodeSignID
-		if id == "" {
-			base := filepath.Base(opts.OutPath)
-			id = strings.TrimSuffix(base, filepath.Ext(base))
-		}
+		base := filepath.Base(opts.OutPath)
+		id := strings.TrimSuffix(base, filepath.Ext(base))
 		if err := signMachO(tmpOut, id); err != nil {
 			return err
 		}

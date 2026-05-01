@@ -53,8 +53,7 @@ func stageTargetNode(t *testing.T, version string, target nodedist.Target) strin
 	t.Helper()
 	cache := t.TempDir()
 	t.Setenv("TMPDIR", cache)
-	cacheDir, err := nodedist.CacheDir()
-	require.NoError(t, err)
+	cacheDir := nodedist.CacheDir()
 	hostDir := filepath.Join(cacheDir, version, string(target))
 	require.NoError(t, os.MkdirAll(hostDir, 0o755))
 	hostPath := filepath.Join(hostDir, target.HostBinaryName())
@@ -88,11 +87,11 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	rec := stubRunBuildSEA(t, nil)
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		Target:        target,
-		Version:       version,
-		MainJS:        mainPath,
-		OutPath:       outPath,
-		BuildDir:      buildDir,
+		Target:   target,
+		Version:  version,
+		MainJS:   mainPath,
+		OutPath:  outPath,
+		BuildDir: buildDir,
 	})
 	require.NoError(t, err)
 
@@ -138,11 +137,11 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	rec := stubRunBuildSEA(t, nil)
 
 	require.NoError(t, BuildViaBuildSEA(t.Context(), BuildOptions{
-		Target:        target,
-		Version:       version,
-		MainJS:        mainPath,
-		OutPath:       outPath,
-		BuildDir:      buildDir,
+		Target:   target,
+		Version:  version,
+		MainJS:   mainPath,
+		OutPath:  outPath,
+		BuildDir: buildDir,
 	}))
 
 	_, hasWarning := rec.Cfg["disableExperimentalSEAWarning"]
@@ -170,11 +169,11 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	stubRunBuildSEA(t, nil)
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		Target:        target,
-		Version:       version,
-		MainJS:        mainPath,
-		OutPath:       outPath,
-		BuildDir:      buildDir,
+		Target:   target,
+		Version:  version,
+		MainJS:   mainPath,
+		OutPath:  outPath,
+		BuildDir: buildDir,
 	})
 	require.ErrorContains(t, err, "parse")
 }
@@ -196,10 +195,10 @@ func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 	})
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		Target:        target,
-		Version:       version,
-		MainJS:        mainPath,
-		OutPath:       outPath,
+		Target:  target,
+		Version: version,
+		MainJS:  mainPath,
+		OutPath: outPath,
 	})
 	require.Error(t, err)
 

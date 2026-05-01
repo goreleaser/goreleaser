@@ -102,10 +102,15 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestCurrentTarget(t *testing.T) {
-	got := currentTarget()
-	require.NotEmpty(t, got)
-	// Must always parse cleanly under our own rules.
-	require.True(t, isValid(got), "%s should be a valid target", got)
+	osName := runtime.GOOS
+	if osName == "windows" {
+		osName = "win"
+	}
+	arch := runtime.GOARCH
+	if arch == "amd64" {
+		arch = "x64"
+	}
+	require.True(t, isValid(osName+"-"+arch), "host should be a valid build target")
 }
 
 // TestRunNPMBuildScript covers the per-build npm wire-up: silent skip

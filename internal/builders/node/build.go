@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 
@@ -235,18 +234,4 @@ func buildViaBuildSEA(
 		OutPath:  options.Path,
 		BuildDir: absBuildDir,
 	})
-}
-
-// currentTarget returns the nodejs.org/dist target identifier matching the
-// machine running goreleaser, e.g. "linux-x64" or "darwin-arm64".
-func currentTarget() string {
-	os := runtime.GOOS
-	if os == "windows" {
-		os = "win"
-	}
-	arch := runtime.GOARCH
-	if arch == "amd64" {
-		arch = "x64"
-	}
-	return os + "-" + arch
 }

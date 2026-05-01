@@ -102,9 +102,7 @@ func TestDownload_UnknownVersion(t *testing.T) {
 
 func TestCacheDir(t *testing.T) {
 	t.Setenv("TMPDIR", "/tmp/somewhere")
-	dir, err := CacheDir()
-	require.NoError(t, err)
-	require.Equal(t, filepath.Join("/tmp/somewhere", "goreleaser", "node"), dir)
+	require.Equal(t, filepath.Join("/tmp/somewhere", "goreleaser", "node"), CacheDir())
 }
 
 func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
