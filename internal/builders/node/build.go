@@ -216,11 +216,11 @@ func buildViaBuildSEA(
 
 	absMain, err := filepath.Abs(mainPath)
 	if err != nil {
-		absMain = mainPath
+		return fmt.Errorf("nodesea: abs main %q: %w", mainPath, err)
 	}
 	absBuildDir, err := filepath.Abs(build.Dir)
 	if err != nil {
-		absBuildDir = build.Dir
+		return fmt.Errorf("nodesea: abs build dir %q: %w", build.Dir, err)
 	}
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
