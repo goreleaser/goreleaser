@@ -3,7 +3,6 @@ package nodesea
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -65,7 +64,7 @@ type BuildOptions struct {
 	SEAConfig SEAConfig
 
 	// CodeSignID is the ad-hoc CMS signing identifier applied to
-	// darwin outputs. Empty → derived from filepath.Base(OutPath).
+	// darwin outputs by quill. Empty → derived from filepath.Base(OutPath).
 	CodeSignID string
 }
 
@@ -75,11 +74,11 @@ type BuildOptions struct {
 // cached per-target Node binary downloaded for opts.Version+opts.Target.
 //
 // On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
-// codesign(1) before it lands at OutPath. When codesign(1) is not on
-// PATH (typical when cross-compiling for darwin from non-darwin hosts),
-// the binary is left unsigned: it is well-formed but the macOS kernel
-// will refuse to exec it until it is re-signed (e.g. via goreleaser's
-// signs: pipe on a darwin runner).
+// quill (pure-Go) before it lands at OutPath, so the macOS kernel will
+// exec the binary on Apple Silicon without further action. Real
+// Developer ID signing and notarization are layered on top via the
+// signs: and notarize: pipes — quill strips the ad-hoc signature
+// before re-signing.
 //
 // OutPath is written atomically: --build-sea generates into a sibling
 // tempfile, signing happens in place on the temp, then a rename
@@ -129,8 +128,8 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 			base := filepath.Base(opts.OutPath)
 			id = strings.TrimSuffix(base, filepath.Ext(base))
 		}
-		if err := adHocSignMachO(ctx, tmpOut, id); err != nil && !errors.Is(err, ErrCodeSignUnavailable) {
-			return fmt.Errorf("nodesea: ad-hoc sign: %w", err)
+		if err := signMachO(tmpOut, id); err != nil {
+			return err
 		}
 	}
 

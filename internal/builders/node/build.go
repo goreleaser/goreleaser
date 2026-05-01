@@ -5,10 +5,9 @@
 // once per host into the user cache) and invokes `node --build-sea
 // sea-config.json` against the per-target Node binary GoReleaser
 // fetches from https://nodejs.org/dist (verifying SHA-256). On macOS
-// targets the produced Mach-O is ad-hoc signed via codesign(1); when
-// codesign is unavailable (cross-compile from non-darwin hosts) the
-// binary is left unsigned and must be re-signed via the `signs:` pipe
-// before it will execute on macOS.
+// targets the produced Mach-O is ad-hoc signed via quill (pure-Go) so
+// it loads on Apple Silicon out of the box; users with a Developer ID
+// can layer real signing on top via the signs: pipe.
 //
 // Concurrent builds are enabled — each target runs --build-sea against
 // its own scratch directory and outputs to its own path; nothing is

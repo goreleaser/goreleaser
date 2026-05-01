@@ -7,9 +7,10 @@
 // sea-config.json`. That command injects the SEA blob into a copy of
 // the per-target Node binary GoReleaser fetches from
 // https://nodejs.org/dist (verifying SHA-256). On macOS targets the
-// produced binary is ad-hoc signed via codesign(1) so the kernel
-// loader will accept it. The package owns the cache layout, the
-// download + verify path, and the `--build-sea` orchestration.
+// produced binary is ad-hoc signed via quill (pure-Go, host-OS
+// independent) so the kernel loader will accept it. The package owns
+// the cache layout, the download + verify path, and the `--build-sea`
+// orchestration.
 package nodesea
 
 // Format identifies the container format of a Node.js host binary.
