@@ -32,32 +32,16 @@ For an existing project, copy the snippet under
 
 For each requested target, GoReleaser:
 
-1. Resolves the build-tool Node.js used to drive `--build-sea` (see
-   [Build-tool Node.js](#build-tool-nodejs)).
-2. Resolves the target Node.js version (see
-   [Version resolution](#version-resolution)).
-3. Downloads the official Node.js binary for that target from
-   <https://nodejs.org/dist>, verifying its SHA-256 against the
-   release index embedded in the GoReleaser binary, and caches it
-   under `${TMPDIR:-/tmp}/goreleaser/node/` so subsequent builds in
-   the same temp dir lifecycle are offline.
-4. Reads the user's `sea-config.json` from the build directory (if
-   present), then writes a merged copy in a scratch directory with
-   `main` pointing at the entrypoint script and `executable` at the
-   cached target Node binary. The `output`, `executable`, `main`,
-   `useCodeCache` and `useSnapshot` fields are always overwritten;
-   relative `assets` paths are anchored at the build directory so
-   they keep working from the scratch dir.
-5. Invokes `<build-tool-node> --build-sea sea-config.json`. Node.js
-   (LIEF-backed since v25.5) injects the SEA blob into a copy of the
-   target Node binary and writes the result into the scratch directory.
-6. On macOS targets only: applies an ad-hoc signature with
-   `codesign --sign - --force` so the kernel loader will accept the
-   binary. If `codesign(1)` is not on `PATH` (typical when
-   cross-compiling for macOS from a non-darwin host) the binary is
-   left unsigned and the [`signs`](/customization/sign/) pipe must
-   re-sign it on a darwin runner before distribution.
-7. Renames the result into the configured output path.
+1. Resolves the build-tool Node.js (≥ v25.5.0) used to invoke
+   `--build-sea` (see [Build-tool Node.js](#build-tool-nodejs)).
+2. Resolves the target Node.js version from `engines.node` in
+   `package.json` (see [Version resolution](#version-resolution)).
+3. Downloads the official Node.js binary for that target, verifying
+   its SHA-256 against the release index embedded in GoReleaser.
+4. Merges your `sea-config.json` (if present) with the
+   goreleaser-owned fields and runs
+   `<build-tool-node> --build-sea sea-config.json` to produce the
+   final binary.
 
 ## Bundling your app
 
@@ -227,151 +211,27 @@ and requires it to print `true`; this is the same check the Node.js test
 suite uses. Custom Node builds compiled `--without-lief` will not pass
 the probe even if their `--version` reports v25.5+.
 
+
 ## Version resolution
 
-The target Node.js version (the binary that becomes the SEA executable)
-is resolved in this order, all from the build directory:
+The target Node.js version (the binary that becomes the SEA
+executable) is resolved exclusively from the `engines.node` field of
+the build directory's `package.json`. Either an exact version
+(`v22.20.0`, `22.20.0`) or a semver range (`>=22 <23`, `^22`) is
+accepted; ranges resolve to the highest matching release in the
+embedded nodedist index. Pin to an exact version for reproducible
+release artifacts.
 
-1. The `engines.node` field in `package.json` (recommended).
-2. A `.nvmrc` file.
-3. A `.node-version` file.
-
-Either an exact version (`v22.10.0`, `22.10.0`) or a semver range
-(`>=22 <23`, `^22`) is accepted. Ranges are resolved against the
-nodejs.org release index — the highest matching release wins. Pin to
-an exact version for reproducible release artifacts.
-
-The resolved version must be in the V2-blob-format range understood by
-LIEF-emitted SEAs:
+The resolved version must be in the V2-blob-format range understood
+by LIEF-emitted SEAs:
 
 - `>= v22.20.0` (back-ported to the v22 LTS line)
 - `>= v24.6.0`
 - `>= v25.0.0`
 
-Older releases (v18, v20, v22.0–v22.19, v23, v24.0–v24.5) only read the
-legacy V1 blob format and will reject the produced binary at runtime.
-GoReleaser fails fast in this case with an error pointing at the floor
-above.
-
-## Code signing
-
-On macOS, the produced binary is ad-hoc signed in place by the build
-when `codesign(1)` is available, which is sufficient for the kernel
-loader to accept it locally. **For real distribution you want a real
-Developer ID signature plus notarization** — Gatekeeper blocks ad-hoc
-signed binaries on user machines. Wire up the
-[`signs`](/customization/sign/) and
-[`notarize`](/customization/notarize/) pipes to do this on a darwin
-runner:
-
-```yaml {filename=".goreleaser.yaml"}
-signs:
-  - id: macos
-    cmd: codesign
-    artifacts: binary
-    ids: [my-build]
-    args: ["--sign", "Developer ID Application: Acme (TEAMID)", "--options=runtime", "--timestamp", "{{ .Path }}"]
-
-notarize:
-  macos:
-    - ids: [my-build]
-      sign:
-        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
-        password:    "{{ .Env.MACOS_SIGN_PASSWORD }}"
-      notarize:
-        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
-        key_id:    "{{ .Env.MACOS_NOTARY_KEY_ID }}"
-        key:       "{{ .Env.MACOS_NOTARY_KEY }}"
-        wait: true
-```
-
-When `codesign(1)` is not available — for example, when cross-compiling
-for macOS from a Linux build host — the binary is left unsigned. It is
-otherwise well-formed but the macOS kernel will refuse to exec it until
-it is signed by the `signs` pipe on a darwin runner.
-
-Windows binaries are also unsigned. SmartScreen and most corporate
-allow-listing will block them. Wire up the `signs` pipe with
-`signtool.exe` (or your CA's tooling) to sign them after the build
-completes:
-
-```yaml {filename=".goreleaser.yaml"}
-signs:
-  - id: windows
-    cmd: signtool
-    artifacts: binary
-    ids: [my-build]
-    args: ["sign", "/fd", "SHA256", "/tr", "http://timestamp.digicert.com", "/td", "SHA256", "/f", "{{ .Env.WIN_CERT_PFX }}", "/p", "{{ .Env.WIN_CERT_PASSWORD }}", "{{ .Path }}"]
-```
-
-## License compliance
-
-A SEA binary statically embeds the entire Node.js runtime, which is
-distributed under the [MIT license][node-license]. You must include
-the Node.js `LICENSE` text alongside your distribution to comply.
-
-The simplest approach is to add it to your archives via the
-[`files`](/customization/archive/#packaging) section:
-
-```yaml {filename=".goreleaser.yaml"}
-archives:
-  - id: my-build
-    files:
-      - LICENSE
-      - src: third_party/NODE_LICENSE
-        dst: LICENSE.node
-```
-
-Drop a copy of <https://github.com/nodejs/node/blob/main/LICENSE> into
-`third_party/NODE_LICENSE` (or wherever) ahead of time. Your own MIT
-notice is **not** sufficient — Node's license requires its full text
-to ship with the binary.
-
-[node-license]: https://github.com/nodejs/node/blob/main/LICENSE
-
-## Binary size
-
-A SEA binary is the entire Node.js runtime plus your bundled
-JavaScript: typically **60–80 MB per platform**, dwarfing the few MB
-you would get from a Go binary. This is unavoidable — Node ships V8,
-libuv, OpenSSL, ICU, and a full standard library inside every
-executable. Plan archive sizes and CDN budgets accordingly.
-
-## Trust model
-
-GoReleaser fetches Node.js binaries from `https://nodejs.org/dist`
-over TLS and verifies the SHA-256 of every download against the
-matching entry in the per-release `SHASUMS256.txt`. Both the binary
-**and** `SHASUMS256.txt` are fetched over TLS only — GoReleaser does
-**not** GPG-verify `SHASUMS256.txt.sig` against the Node.js release
-team's keyring.
-
-In practice this means GoReleaser trusts the same things `npm`, `nvm`,
-and most other Node installers trust: the public PKI and the
-nodejs.org CDN. If you need defense against a CDN compromise, fetch
-the host binaries yourself (verify `SHASUMS256.txt.sig`) and point the
-cache at them, or run GoReleaser through a proxy that does the
-verification.
-
-## Environment setup
-
-GoReleaser will not install Node.js for you, but it will auto-download
-a build-tool Node.js (≥ v25.5) the first time you build, into its own
-cache. Pre-staging that download on a CI runner is optional but speeds
-up the first build of a job.
-
-The cache lives at `${TMPDIR:-/tmp}/goreleaser/node/` and contains
-both the build-tool Node and every per-target binary GoReleaser has
-fetched. Mount or restore this directory between CI runs to keep
-builds offline-friendly.
-
-The list of acceptable Node.js releases (and their SHA-256 sums) is
-embedded in the GoReleaser binary and refreshed daily by a cron in
-this repository — versions released after your installed GoReleaser
-build are not downloadable until you upgrade.
-
-Transient HTTP failures (5xx, 429, network errors) are retried
-automatically with exponential backoff — a single nodejs.org hiccup
-will not fail your build.
+Older releases (v18, v20, v22.0–v22.19, v23, v24.0–v24.5) only read
+the legacy V1 blob format and will reject the produced binary at
+runtime. GoReleaser fails fast in this case with an error pointing
+at the floor above.
 
 {{< g_templates >}}
