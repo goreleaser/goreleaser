@@ -1,27 +1,27 @@
 package node
 
 import (
-	_ "embed"
 	"fmt"
 	"slices"
 	"strings"
-	"sync"
 
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 )
 
-// Supported nodejs.org/dist target identifiers. Kept in lockstep with the
-// targets actually published under https://nodejs.org/dist/<version>/.
+// supportedTargets is the canonical list of nodejs.org/dist target
+// identifiers the builder accepts. Kept in lockstep with the targets
+// actually published under https://nodejs.org/dist/<version>/.
 //
-//go:embed targets.txt
-var allTargetsBts []byte
-
 //nolint:gochecknoglobals
-var (
-	allTargets  []string
-	targetsOnce sync.Once
-)
+var supportedTargets = []string{
+	"darwin-arm64",
+	"darwin-x64",
+	"linux-arm64",
+	"linux-x64",
+	"win-arm64",
+	"win-x64",
+}
 
 // Target represents a build target.
 type Target struct {
@@ -57,23 +57,9 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 }
 
 func isValid(target string) bool {
-	targetsOnce.Do(func() {
-		for t := range strings.SplitSeq(string(allTargetsBts), "\n") {
-			if t = strings.TrimSpace(t); t != "" {
-				allTargets = append(allTargets, t)
-			}
-		}
-	})
-	return slices.Contains(allTargets, target)
+	return slices.Contains(supportedTargets, target)
 }
 
 func defaultTargets() []string {
-	return []string{
-		"darwin-arm64",
-		"darwin-x64",
-		"linux-arm64",
-		"linux-x64",
-		"win-arm64",
-		"win-x64",
-	}
+	return slices.Clone(supportedTargets)
 }
