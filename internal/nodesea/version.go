@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -52,20 +50,8 @@ type indexEntry struct {
 var indexFetcher = fetchNodeIndex
 
 func fetchNodeIndex(ctx context.Context) ([]indexEntry, error) {
-	const u = "https://nodejs.org/dist/index.json"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("nodesea: fetch %s: %w", u, err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("nodesea: fetch %s: unexpected status %s", u, resp.Status)
-	}
-	body, err := io.ReadAll(resp.Body)
+	u := mirrorBaseURL() + "/index.json"
+	body, err := getBody(ctx, u)
 	if err != nil {
 		return nil, err
 	}

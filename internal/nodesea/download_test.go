@@ -11,19 +11,25 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTargetGoosGoarch(t *testing.T) {
 	cases := map[Target]struct{ os, arch string }{
-		"linux-x64":    {"linux", "amd64"},
-		"linux-arm64":  {"linux", "arm64"},
-		"darwin-x64":   {"darwin", "amd64"},
-		"darwin-arm64": {"darwin", "arm64"},
-		"win-x64":      {"windows", "amd64"},
-		"win-arm64":    {"windows", "arm64"},
+		"linux-x64":     {"linux", "amd64"},
+		"linux-arm64":   {"linux", "arm64"},
+		"linux-armv7l":  {"linux", "arm"},
+		"linux-ppc64le": {"linux", "ppc64le"},
+		"linux-s390x":   {"linux", "s390x"},
+		"darwin-x64":    {"darwin", "amd64"},
+		"darwin-arm64":  {"darwin", "arm64"},
+		"win-x64":       {"windows", "amd64"},
+		"win-arm64":     {"windows", "arm64"},
+		"aix-ppc64":     {"aix", "ppc64"},
 	}
 	for tgt, want := range cases {
 		t.Run(string(tgt), func(t *testing.T) {
@@ -196,4 +202,92 @@ func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
 	leftovers, err := filepath.Glob(filepath.Join(dir, ".extract-*"))
 	require.NoError(t, err)
 	require.Empty(t, leftovers, "tempfile not cleaned up")
+}
+
+func TestDownloadHost_RetriesOn5xx(t *testing.T) {
+	const version = "v22.10.0"
+	target := Target("linux-x64")
+	payload := []byte("fake node binary contents")
+	archive := fakeNode(t, version, target, payload)
+	sum := sha256.Sum256(archive)
+	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), target.archiveName(version))
+
+	var archiveHits, shaHits atomicCounter
+	mux := http.NewServeMux()
+	mux.HandleFunc("/"+version+"/"+target.archiveName(version), func(w http.ResponseWriter, _ *http.Request) {
+		if archiveHits.Inc() < 2 {
+			http.Error(w, "boom", http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(archive)
+	})
+	mux.HandleFunc("/"+version+"/SHASUMS256.txt", func(w http.ResponseWriter, _ *http.Request) {
+		if shaHits.Inc() < 2 {
+			http.Error(w, "boom", http.StatusBadGateway)
+			return
+		}
+		_, _ = w.Write([]byte(shaLine))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	prevURL := distBaseURL
+	distBaseURL = server.URL
+	t.Cleanup(func() { distBaseURL = prevURL })
+
+	prevRetry := defaultRetry
+	defaultRetry = config.Retry{Attempts: 4}
+	t.Cleanup(func() { defaultRetry = prevRetry })
+
+	hostPath, err := downloadHost(t.Context(), t.TempDir(), version, target)
+	require.NoError(t, err)
+	require.FileExists(t, hostPath)
+	require.GreaterOrEqual(t, int(archiveHits.Load()), 2)
+	require.GreaterOrEqual(t, int(shaHits.Load()), 2)
+}
+
+type atomicCounter struct{ v atomic.Int32 }
+
+func (c *atomicCounter) Inc() int32  { return c.v.Add(1) }
+func (c *atomicCounter) Load() int32 { return c.v.Load() }
+
+func TestMirrorBaseURL(t *testing.T) {
+	t.Run("default", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "")
+		require.Equal(t, defaultDistBaseURL, mirrorBaseURL())
+	})
+	t.Run("env override", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "https://npmmirror.com/mirrors/node")
+		require.Equal(t, "https://npmmirror.com/mirrors/node", mirrorBaseURL())
+	})
+	t.Run("trailing slash trimmed", func(t *testing.T) {
+		t.Setenv(MirrorEnv, "https://npmmirror.com/mirrors/node/")
+		require.Equal(t, "https://npmmirror.com/mirrors/node", mirrorBaseURL())
+	})
+}
+
+func TestDownloadHost_HonoursMirrorEnv(t *testing.T) {
+	const version = "v22.10.0"
+	target := Target("linux-x64")
+	payload := []byte("fake node binary contents")
+	archive := fakeNode(t, version, target, payload)
+	sum := sha256.Sum256(archive)
+	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), target.archiveName(version))
+
+	server := newDistServer(t, map[string][]byte{
+		"/" + version + "/" + target.archiveName(version): archive,
+		"/" + version + "/SHASUMS256.txt":                 []byte(shaLine),
+	})
+	defer server.Close()
+
+	// Leave distBaseURL pointed at a *different* host so the test fails
+	// loudly if the env override does not take effect.
+	prev := distBaseURL
+	distBaseURL = "https://nowhere.invalid/dist"
+	t.Cleanup(func() { distBaseURL = prev })
+	t.Setenv(MirrorEnv, server.URL)
+
+	hostPath, err := downloadHost(t.Context(), t.TempDir(), version, target)
+	require.NoError(t, err)
+	require.FileExists(t, hostPath)
 }

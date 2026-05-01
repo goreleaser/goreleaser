@@ -14,6 +14,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 // Target represents a Node.js distribution target as named by
@@ -37,6 +41,10 @@ func (t Target) Goarch() string {
 	switch arch {
 	case "x64":
 		return "amd64"
+	case "armv7l":
+		// Node ships a single ARMv7 hard-float linux build under
+		// this name; map it to GOARCH=arm with implicit GOARM=7.
+		return "arm"
 	default:
 		return arch
 	}
@@ -63,17 +71,52 @@ func (t Target) hostBinaryName() string {
 	return "node"
 }
 
+// MirrorEnv is the environment variable read by the nodesea downloader
+// to override the default https://nodejs.org/dist mirror. Mirrors the
+// same name nvm uses (NODEJS_MIRROR) so users with an existing CN /
+// corporate-proxy setup can reuse it.
+const MirrorEnv = "NODEJS_MIRROR"
+
+// defaultDistBaseURL is the upstream nodejs.org distribution URL prefix.
+const defaultDistBaseURL = "https://nodejs.org/dist"
+
 // distBaseURL is the prefix every nodejs.org/dist URL uses. It is a
-// package-level variable so tests can point it at a stub server.
+// package-level variable so tests can point it at a stub server. In
+// production it is consulted via mirrorBaseURL, which lets the
+// NODEJS_MIRROR env var override the default at call time.
 //
 //nolint:gochecknoglobals
-var distBaseURL = "https://nodejs.org/dist"
+var distBaseURL = defaultDistBaseURL
+
+// mirrorBaseURL returns the effective dist URL: $NODEJS_MIRROR when
+// set, distBaseURL otherwise. Trailing slashes are stripped so callers
+// can append "/<version>/<file>" without duplicating the separator.
+func mirrorBaseURL() string {
+	if u := strings.TrimRight(os.Getenv(MirrorEnv), "/"); u != "" {
+		return u
+	}
+	return strings.TrimRight(distBaseURL, "/")
+}
 
 // httpClient is the HTTP client used for nodejs.org downloads. Tests may
 // override it; production uses http.DefaultClient.
 //
 //nolint:gochecknoglobals
 var httpClient = http.DefaultClient
+
+// defaultRetry is the retry policy applied to every nodejs.org HTTP
+// fetch (release index, archive, SHASUMS). It mirrors what the rest of
+// goreleaser uses for transient server errors but is fixed at package
+// scope rather than threaded from ctx.Config.Retry to avoid leaking a
+// goreleaser context dependency into nodesea — these downloads happen
+// behind the cache, so per-project tuning is rarely interesting.
+//
+//nolint:gochecknoglobals
+var defaultRetry = config.Retry{
+	Attempts: 4,
+	Delay:    time.Second,
+	MaxDelay: 30 * time.Second,
+}
 
 // CacheDir returns the directory used to cache downloaded Node.js host
 // binaries. It honours XDG_CACHE_HOME and falls back to ~/.cache. When
@@ -110,7 +153,7 @@ func downloadHost(ctx context.Context, cacheDir, version string, target Target) 
 		return "", err
 	}
 
-	archiveURL := fmt.Sprintf("%s/%s/%s", distBaseURL, version, target.archiveName(version))
+	archiveURL := fmt.Sprintf("%s/%s/%s", mirrorBaseURL(), version, target.archiveName(version))
 	tmp, err := os.CreateTemp(hostDir, "download-*")
 	if err != nil {
 		return "", err
@@ -147,45 +190,47 @@ func downloadHost(ctx context.Context, cacheDir, version string, target Target) 
 }
 
 // downloadTo streams an HTTP GET into dst, returning the SHA-256 of the
-// downloaded bytes as a lower-case hex string.
-func downloadTo(ctx context.Context, url string, dst io.Writer) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("nodesea: download %s: %w", url, err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("nodesea: download %s: unexpected status %s", url, resp.Status)
-	}
-
-	h := sha256.New()
-	if _, err := io.Copy(io.MultiWriter(dst, h), resp.Body); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+// downloaded bytes as a lower-case hex string. Transient failures (5xx,
+// 429, network errors) are retried per defaultRetry; on each attempt
+// dst is rewound and truncated so a partially downloaded body from a
+// failed attempt does not pollute the next one.
+func downloadTo(ctx context.Context, url string, dst *os.File) (string, error) {
+	var hash string
+	err := retryx.Do(ctx, defaultRetry, func() error {
+		if _, err := dst.Seek(0, io.SeekStart); err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		if err := dst.Truncate(0); err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(fmt.Errorf("nodesea: download %s: %w", url, err), resp)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return retryx.HTTP(fmt.Errorf("nodesea: download %s: unexpected status %s", url, resp.Status), resp)
+		}
+		h := sha256.New()
+		if _, err := io.Copy(io.MultiWriter(dst, h), resp.Body); err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		hash = hex.EncodeToString(h.Sum(nil))
+		return nil
+	}, retryx.IsRetriable)
+	return hash, err
 }
 
 // fetchExpectedSHA fetches SHASUMS256.txt for the release and returns the
-// SHA-256 line matching the supplied archive file name.
+// SHA-256 line matching the supplied archive file name. Transient
+// failures are retried per defaultRetry.
 func fetchExpectedSHA(ctx context.Context, version, archiveName string) (string, error) {
-	url := fmt.Sprintf("%s/%s/SHASUMS256.txt", distBaseURL, version)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("nodesea: download %s: %w", url, err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("nodesea: download %s: unexpected status %s", url, resp.Status)
-	}
-	body, err := io.ReadAll(resp.Body)
+	url := fmt.Sprintf("%s/%s/SHASUMS256.txt", mirrorBaseURL(), version)
+	body, err := getBody(ctx, url)
 	if err != nil {
 		return "", err
 	}
@@ -201,6 +246,33 @@ func fetchExpectedSHA(ctx context.Context, version, archiveName string) (string,
 		}
 	}
 	return "", fmt.Errorf("nodesea: %s not present in %s", archiveName, url)
+}
+
+// getBody fetches a small HTTP body with retries, returning the bytes.
+// It is a helper for the JSON / SHASUMS endpoints — anything large
+// enough to need streaming should use downloadTo.
+func getBody(ctx context.Context, url string) ([]byte, error) {
+	var body []byte
+	err := retryx.Do(ctx, defaultRetry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(fmt.Errorf("nodesea: download %s: %w", url, err), resp)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return retryx.HTTP(fmt.Errorf("nodesea: download %s: unexpected status %s", url, resp.Status), resp)
+		}
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		return nil
+	}, retryx.IsRetriable)
+	return body, err
 }
 
 // extractNodeFromTarGz finds the bin/node entry inside the released

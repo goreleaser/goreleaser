@@ -60,6 +60,10 @@ func convertToGoarch(s string) string {
 	switch s {
 	case "x64":
 		return "amd64"
+	case "armv7l":
+		// Node ships a single 32-bit ARMv7 hard-float build under
+		// this name; map it to Go's GOARCH=arm with implicit GOARM=7.
+		return "arm"
 	default:
 		return s
 	}
@@ -72,6 +76,16 @@ func convertToGoos(s string) string {
 	default:
 		return s
 	}
+}
+
+// goarmFor returns the GOARM value implied by the nodejs.org arch
+// component, or "" when no GOARM applies. Node's only 32-bit ARM
+// publication is the ARMv7 hard-float build, so armv7l implies "7".
+func goarmFor(arch string) string {
+	if arch == "armv7l" {
+		return "7"
+	}
+	return ""
 }
 
 func isValid(target string) bool {

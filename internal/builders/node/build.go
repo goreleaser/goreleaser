@@ -1,16 +1,17 @@
 // Package node builds Node.js Single Executable Application (SEA)
 // binaries.
 //
-// The pipeline is implemented entirely in pure Go through the
-// internal/nodesea package: it downloads the official Node.js host binary
-// for each requested target from https://nodejs.org/dist (verifying
-// SHA-256), strips its existing code signature where applicable, runs
-// `node --experimental-sea-config` to generate the SEA blob, injects the
-// blob, and flips the SEA fuse sentinel.
+// The pipeline shells out to a build-tool Node.js (≥ v25.5, downloaded
+// once per host into the user cache) and invokes `node --build-sea
+// sea-config.json` against the per-target Node binary GoReleaser
+// fetches from https://nodejs.org/dist (verifying SHA-256). On macOS
+// targets the produced Mach-O is ad-hoc signed via quill (pure-Go) so
+// it loads on Apple Silicon out of the box; users with a Developer ID
+// can layer real signing on top via the signs: pipe.
 //
-// Code signing on macOS and Windows is intentionally left to GoReleaser's
-// existing `signs:` pipe — produced binaries are unsigned and must be
-// re-signed before distribution.
+// Concurrent builds are enabled — each target runs --build-sea against
+// its own scratch directory and outputs to its own path; nothing is
+// shared across targets.
 //
 // Co-authored-by: Vedant Mohan Goyal <83997633+vedantmgoyal9@users.noreply.github.com>
 //
@@ -19,7 +20,6 @@
 package node
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -31,6 +31,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -48,6 +49,7 @@ var (
 	_ api.Builder           = &Builder{}
 	_ api.DependingBuilder  = &Builder{}
 	_ api.ConcurrentBuilder = &Builder{}
+	_ api.PreparedBuilder   = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -58,14 +60,17 @@ func init() {
 // Builder is the Node.js SEA builder.
 type Builder struct{}
 
-// AllowConcurrentBuilds implements build.ConcurrentBuilder. We disable
-// concurrent builds because the SEA-config scratch file and the blob
-// output path are shared per build.
-func (b *Builder) AllowConcurrentBuilds() bool { return false }
+// AllowConcurrentBuilds implements build.ConcurrentBuilder. Each
+// per-target build runs `node --build-sea` against its own scratch
+// directory and writes to its own output path; nothing is shared, so
+// the builder is safe to run concurrently.
+func (b *Builder) AllowConcurrentBuilds() bool { return true }
 
-// Dependencies implements build.DependingBuilder. The only required
-// external tool is `node` itself (used to generate the SEA blob via
-// `--experimental-sea-config`).
+// Dependencies implements build.DependingBuilder. The new --build-sea
+// flow auto-downloads its build-tool Node when needed, so no system
+// `node` is strictly required. Returning "node" preserves the
+// preflight hint goreleaser surfaces for users who'd rather provide
+// their own.
 func (b *Builder) Dependencies() []string {
 	return []string{"node"}
 }
@@ -113,18 +118,53 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
-// blobCache memoizes per-build (id, dir) blob generation so we don't
-// invoke `node --experimental-sea-config` once per target.
-//
-//nolint:gochecknoglobals
-var (
-	blobMu    sync.Mutex
-	blobCache = map[string]blobResult{}
-)
+// Prepare implements build.PreparedBuilder. It runs once per build
+// configuration before any per-target Build call: resolves and probes
+// the build-tool Node up front (downloading it if necessary),
+// validates that the resolved target Node version is in the
+// V2-blob-format supported range, and runs `npm run build` when the
+// project's `package.json` declares a `scripts.build` entry. Failing
+// here is preferable to failing partway through a multi-target build.
+func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
+	nodePath, err := nodesea.BuildToolNode(ctx)
+	if err != nil {
+		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
+	}
+	log.WithField("path", nodePath).Debug("resolved build-tool node")
 
-type blobResult struct {
-	bytes   []byte
-	version string
+	explicit, err := tmpl.New(ctx).Apply(build.NodeVersion)
+	if err != nil {
+		return fmt.Errorf("nodesea: template node_version: %w", err)
+	}
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
+	if err != nil {
+		return fmt.Errorf("nodesea: resolve target node version: %w", err)
+	}
+	log.WithField("version", version).WithField("source", source).
+		Debug("resolved target node version")
+
+	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
+		return err
+	}
+
+	return runNPMBuildScript(ctx, build)
+}
+
+// runNPMBuildScript runs `npm run build` in build.Dir when the
+// project's `package.json` declares a non-empty `scripts.build` entry,
+// so the file referenced by `build.Main` is the freshly bundled
+// output. Skipped silently when no such script is declared.
+//
+// Dependency installation (`npm ci` and friends) is intentionally not
+// performed here — drive it from the `before:` hook instead.
+func runNPMBuildScript(ctx *context.Context, build config.Build) error {
+	env := append(os.Environ(), ctx.Env.Strings()...)
+	tenv, err := base.TemplateEnv(build.Env, tmpl.New(ctx))
+	if err != nil {
+		return fmt.Errorf("nodesea: template env: %w", err)
+	}
+	env = append(env, tenv...)
+	return nodesea.RunNPMBuild(ctx, build.Dir, env, logext.NewWriter(), logext.NewWriter())
 }
 
 // Build implements build.Builder.
@@ -137,6 +177,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Name:   options.Name,
 		Goos:   convertToGoos(t.Os),
 		Goarch: convertToGoarch(t.Arch),
+		Goarm:  goarmFor(t.Arch),
 		Target: t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
@@ -158,19 +199,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	// Generate or fetch cached blob.
-	res, err := ensureBlob(ctx, build, env)
-	if err != nil {
+	if err := buildViaBuildSEA(ctx, build, target, options, tpl); err != nil {
 		return err
-	}
-
-	// Prepare host (download), unsign, inject blob, flip sentinel,
-	// and ad-hoc sign — all in one pass per format.
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
-	if err := nodesea.Build(ctx, res.version, target, options.Path, res.bytes); err != nil {
-		return fmt.Errorf("nodesea: build %s: %w", target, err)
 	}
 
 	if err := base.ChTimes(build, tpl, a); err != nil {
@@ -181,62 +211,67 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	return nil
 }
 
-func ensureBlob(ctx *context.Context, build config.Build, env []string) (blobResult, error) {
-	key := build.ID + "\x00" + build.Dir
-	blobMu.Lock()
-	defer blobMu.Unlock()
-	if r, ok := blobCache[key]; ok {
-		return r, nil
-	}
-
-	if _, err := os.Stat(filepath.Join(build.Dir, build.Main)); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: main %q not found in %q: %w", build.Main, build.Dir, err)
-	}
-
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, "")
+// buildViaBuildSEA dispatches to the `node --build-sea` flow
+// (nodesea.BuildViaBuildSEA), passing through the user-supplied
+// SEAConfig from build configuration.
+func buildViaBuildSEA(
+	ctx *context.Context,
+	build config.Build,
+	target nodesea.Target,
+	options api.Options,
+	tpl *tmpl.Template,
+) error {
+	main, err := tpl.Apply(build.Main)
 	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: resolve node version: %w", err)
+		return fmt.Errorf("nodesea: template main: %w", err)
 	}
-	log.WithField("version", version).WithField("source", source).
-		Info("resolved node version")
+	mainPath := filepath.Join(build.Dir, main)
+	if _, err := os.Stat(mainPath); err != nil {
+		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
+	}
 
-	scratch, err := os.MkdirTemp(ctx.Config.Dist, "node-sea-*")
+	explicit, err := tpl.Apply(build.NodeVersion)
 	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: create scratch dir: %w", err)
+		return fmt.Errorf("nodesea: template node_version: %w", err)
 	}
-	defer os.RemoveAll(scratch)
-
-	cfgPath := filepath.Join(scratch, "sea-config.json")
-	blobPath := filepath.Join(scratch, "sea-prep.blob")
-	cfg := map[string]any{
-		"main":                          build.Main,
-		"output":                        blobPath,
-		"disableExperimentalSEAWarning": true,
-	}
-	cfgBytes, err := json.Marshal(cfg)
+	version, _, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
 	if err != nil {
-		return blobResult{}, err
-	}
-	if err := os.WriteFile(cfgPath, cfgBytes, 0o600); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: write sea-config: %w", err)
+		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
 
-	absCfg, err := filepath.Abs(cfgPath)
+	buildToolNode, err := nodesea.BuildToolNode(ctx)
 	if err != nil {
-		absCfg = cfgPath
-	}
-	if err := base.Exec(ctx, []string{"node", "--experimental-sea-config", absCfg}, env, build.Dir); err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: generate blob: %w", err)
+		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
 	}
 
-	bytes, err := os.ReadFile(blobPath)
+	absMain, err := filepath.Abs(mainPath)
 	if err != nil {
-		return blobResult{}, fmt.Errorf("nodesea: read generated blob %s: %w", blobPath, err)
+		absMain = mainPath
 	}
+	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+		return err
+	}
+	return nodesea.BuildViaBuildSEA(ctx, nodesea.BuildOptions{
+		BuildToolNode: buildToolNode,
+		Target:        target,
+		Version:       version,
+		MainJS:        absMain,
+		OutPath:       options.Path,
+		SEAConfig:     toNodeseaSEAConfig(build.SEAConfig),
+	})
+}
 
-	res := blobResult{bytes: bytes, version: version}
-	blobCache[key] = res
-	return res, nil
+// toNodeseaSEAConfig translates the user-facing config.NodeSEAConfig
+// into the internal nodesea.SEAConfig payload. Kept separate so the
+// public yaml schema and the internal call site can evolve
+// independently.
+func toNodeseaSEAConfig(c config.NodeSEAConfig) nodesea.SEAConfig {
+	return nodesea.SEAConfig{
+		Assets:                        c.Assets,
+		ExecArgv:                      c.ExecArgv,
+		DisableExperimentalSEAWarning: c.DisableExperimentalSEAWarning,
+		MainFormat:                    c.MainFormat,
+	}
 }
 
 // CurrentTarget returns the nodejs.org/dist target identifier matching the
