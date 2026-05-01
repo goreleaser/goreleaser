@@ -10,51 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHasPackageJSONBuildScript(t *testing.T) {
-	t.Run("missing package.json", func(t *testing.T) {
-		ok, err := hasPackageJSONBuildScript(t.TempDir())
-		require.NoError(t, err)
-		require.False(t, ok)
-	})
-
-	t.Run("missing scripts", func(t *testing.T) {
-		dir := t.TempDir()
-		require.NoError(t, os.WriteFile(
-			filepath.Join(dir, "package.json"),
-			[]byte(`{"name":"x"}`), 0o644))
-		ok, err := hasPackageJSONBuildScript(dir)
-		require.NoError(t, err)
-		require.False(t, ok)
-	})
-
-	t.Run("script declared", func(t *testing.T) {
-		dir := t.TempDir()
-		require.NoError(t, os.WriteFile(
-			filepath.Join(dir, "package.json"),
-			[]byte(`{"scripts":{"build":"esbuild ..."}}`), 0o644))
-		ok, err := hasPackageJSONBuildScript(dir)
-		require.NoError(t, err)
-		require.True(t, ok)
-	})
-
-	t.Run("script declared but empty", func(t *testing.T) {
-		dir := t.TempDir()
-		require.NoError(t, os.WriteFile(
-			filepath.Join(dir, "package.json"),
-			[]byte(`{"scripts":{"build":""}}`), 0o644))
-		ok, err := hasPackageJSONBuildScript(dir)
-		require.NoError(t, err)
-		require.False(t, ok)
-	})
-
-	t.Run("malformed json", func(t *testing.T) {
-		dir := t.TempDir()
-		require.NoError(t, os.WriteFile(
-			filepath.Join(dir, "package.json"),
-			[]byte(`{not json`), 0o644))
-		_, err := hasPackageJSONBuildScript(dir)
-		require.Error(t, err)
-	})
+func TestRunNPMBuild_BadPackageJSON(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "package.json"),
+		[]byte(`{not json`), 0o644))
+	err := RunNPMBuild(t.Context(), dir, nil, nil, nil)
+	require.Error(t, err)
 }
 
 // TestRunNPMBuild exercises the auto-bundle entrypoint against a fake

@@ -19,16 +19,14 @@ package nodesea
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 )
 
 // RunNPMBuild runs `npm run build` in dir when the project's
@@ -40,11 +38,11 @@ import (
 // env, stdout and stderr are passed straight to the spawned process.
 // When env is nil, os.Environ() is inherited.
 func RunNPMBuild(ctx context.Context, dir string, env []string, stdout, stderr io.Writer) error {
-	has, err := hasPackageJSONBuildScript(dir)
+	pkg, err := packagejson.OpenOrEmpty(filepath.Join(dir, "package.json"))
 	if err != nil {
 		return fmt.Errorf("nodesea: scan package.json: %w", err)
 	}
-	if !has {
+	if !pkg.Scripts.HasBuild() {
 		log.WithField("dir", dir).
 			Debug("no scripts.build in package.json; skipping auto-bundle")
 		return nil
@@ -62,24 +60,4 @@ func RunNPMBuild(ctx context.Context, dir string, env []string, stdout, stderr i
 		return fmt.Errorf("nodesea: npm run build: %w", err)
 	}
 	return nil
-}
-
-// hasPackageJSONBuildScript reports whether `package.json` in dir
-// declares a non-empty `scripts.build` entry. A missing package.json
-// or scripts section is not an error: returns false.
-func hasPackageJSONBuildScript(dir string) (bool, error) {
-	bts, err := os.ReadFile(filepath.Join(dir, "package.json"))
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return false, nil
-		}
-		return false, err
-	}
-	var pkg struct {
-		Scripts map[string]string `json:"scripts"`
-	}
-	if err := json.Unmarshal(bts, &pkg); err != nil {
-		return false, fmt.Errorf("parse package.json: %w", err)
-	}
-	return strings.TrimSpace(pkg.Scripts["build"]) != "", nil
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -166,7 +167,7 @@ func runNPMBuildScript(ctx *context.Context, build config.Build) error {
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	t := options.Target.(Target)
-	target := nodesea.Target(t.Target)
+	target := nodedist.Target(t.Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
@@ -213,7 +214,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 func buildViaBuildSEA(
 	ctx *context.Context,
 	build config.Build,
-	target nodesea.Target,
+	target nodedist.Target,
 	options api.Options,
 	tpl *tmpl.Template,
 ) error {

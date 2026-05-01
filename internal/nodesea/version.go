@@ -2,7 +2,6 @@ package nodesea
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 )
 
 // VersionSource describes where a Node.js version came from. It is purely
@@ -32,33 +33,6 @@ const (
 // determined from any of the supported sources.
 var ErrNoVersion = errors.New("nodesea: could not resolve a Node.js version; add engines.node to package.json (or .nvmrc / .node-version)")
 
-// indexEntry mirrors one record in https://nodejs.org/dist/index.json,
-// which lists every published Node.js release.
-type indexEntry struct {
-	Version string `json:"version"`
-	LTS     any    `json:"lts"`
-}
-
-// indexFetcher returns the parsed nodejs.org release index. It is a
-// package-level variable so tests can stub it without hitting the
-// network.
-//
-//nolint:gochecknoglobals
-var indexFetcher = fetchNodeIndex
-
-func fetchNodeIndex(ctx context.Context) ([]indexEntry, error) {
-	u := mirrorBaseURL() + "/index.json"
-	body, err := getBody(ctx, u)
-	if err != nil {
-		return nil, err
-	}
-	var entries []indexEntry
-	if err := json.Unmarshal(body, &entries); err != nil {
-		return nil, fmt.Errorf("nodesea: decode index.json: %w", err)
-	}
-	return entries, nil
-}
-
 // ResolveVersion picks a Node.js version from the user's project
 // directory, in order:
 //
@@ -76,11 +50,15 @@ func ResolveVersion(ctx context.Context, dir string) (string, VersionSource, err
 		source VersionSource
 	}
 
-	if pkgRange, err := readEnginesNode(filepath.Join(dir, "package.json")); err == nil && pkgRange != "" {
+	pkg, err := packagejson.OpenOrEmpty(filepath.Join(dir, "package.json"))
+	if err != nil {
+		return "", "", fmt.Errorf("nodesea: read package.json: %w", err)
+	}
+	if r := pkg.Engines.NodeRange(); r != "" {
 		candidates = append(candidates, struct {
 			raw    string
 			source VersionSource
-		}{pkgRange, VersionSourceEnginesNode})
+		}{r, VersionSourceEnginesNode})
 	}
 	for _, fname := range []string{".nvmrc", ".node-version"} {
 		raw, err := readVersionFile(filepath.Join(dir, fname))
@@ -125,7 +103,7 @@ func resolveVersionString(ctx context.Context, raw string) (string, error) {
 		return "", fmt.Errorf("invalid semver constraint: %w", err)
 	}
 
-	entries, err := indexFetcher(ctx)
+	entries, err := nodedist.Index(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -148,28 +126,6 @@ func resolveVersionString(ctx context.Context, raw string) (string, error) {
 	}
 	sort.Sort(semver.Collection(matched))
 	return "v" + matched[len(matched)-1].String(), nil
-}
-
-// readEnginesNode extracts the `engines.node` value from a package.json
-// file. It returns "" (and a nil error) when the file does not exist or
-// the field is missing.
-func readEnginesNode(path string) (string, error) {
-	bts, err := os.ReadFile(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return "", nil
-		}
-		return "", err
-	}
-	var pkg struct {
-		Engines struct {
-			Node string `json:"node"`
-		} `json:"engines"`
-	}
-	if err := json.Unmarshal(bts, &pkg); err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(pkg.Engines.Node), nil
 }
 
 // readVersionFile reads the first non-empty, non-comment line of a

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
 // BuildToolEnv is the environment variable that overrides the Node.js
@@ -89,13 +91,13 @@ func probeBuildSEACapable(ctx context.Context, nodePath string) error {
 // BuildToolNodeVersion into <cache>/buildtool/<version>/<target>/ and
 // confirms it satisfies the capability probe before returning.
 func downloadBuildToolNode(ctx context.Context) (string, error) {
-	cacheDir, err := CacheDir()
+	cacheDir, err := nodedist.CacheDir()
 	if err != nil {
 		return "", err
 	}
-	target := Target(currentTarget())
+	target := nodedist.Target(currentTarget())
 	btDir := filepath.Join(cacheDir, "buildtool")
-	nodePath, err := downloadHost(ctx, btDir, BuildToolNodeVersion, target)
+	nodePath, err := nodedist.Download(ctx, btDir, BuildToolNodeVersion, target)
 	if err != nil {
 		return "", fmt.Errorf("nodesea: download build-tool node %s: %w", BuildToolNodeVersion, err)
 	}

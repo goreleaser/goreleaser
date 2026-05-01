@@ -7,21 +7,22 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/stretchr/testify/require"
 )
 
-func withStubIndex(t *testing.T, entries []indexEntry) {
+func withStubIndex(t *testing.T, entries []nodedist.Release) {
 	t.Helper()
-	original := indexFetcher
-	indexFetcher = func(_ context.Context) ([]indexEntry, error) {
+	original := nodedist.IndexFetcher
+	nodedist.IndexFetcher = func(_ context.Context) ([]nodedist.Release, error) {
 		return entries, nil
 	}
-	t.Cleanup(func() { indexFetcher = original })
+	t.Cleanup(func() { nodedist.IndexFetcher = original })
 }
 
 func TestResolveVersion(t *testing.T) {
 	ctx := t.Context()
-	stub := []indexEntry{
+	stub := []nodedist.Release{
 		{Version: "v23.0.0"},
 		{Version: "v22.10.0"},
 		{Version: "v22.9.0"},

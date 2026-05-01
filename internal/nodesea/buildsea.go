@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
 // UserSEAConfigFile is the filename goreleaser looks up in the build
@@ -26,7 +28,7 @@ type BuildOptions struct {
 	// Target identifies the per-target Node release this SEA is built
 	// for (e.g. "linux-x64"). Determines container format and whether
 	// the result needs ad-hoc Mach-O signing.
-	Target Target
+	Target nodedist.Target
 
 	// Version is the per-target Node release version (e.g. "v22.20.0").
 	// Used to download the cached target Node binary that becomes the
@@ -77,11 +79,11 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 		return err
 	}
 
-	cacheDir, err := CacheDir()
+	cacheDir, err := nodedist.CacheDir()
 	if err != nil {
 		return err
 	}
-	targetNode, err := downloadHost(ctx, cacheDir, opts.Version, opts.Target)
+	targetNode, err := nodedist.Download(ctx, cacheDir, opts.Version, opts.Target)
 	if err != nil {
 		return err
 	}

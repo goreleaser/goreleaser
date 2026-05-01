@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,22 +50,22 @@ func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut s
 
 // stageTargetNode pre-populates the host cache so downloadHost returns
 // without hitting the network. Returns the cache root used.
-func stageTargetNode(t *testing.T, version string, target Target) string {
+func stageTargetNode(t *testing.T, version string, target nodedist.Target) string {
 	t.Helper()
 	cache := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", cache)
-	cacheDir, err := CacheDir()
+	cacheDir, err := nodedist.CacheDir()
 	require.NoError(t, err)
 	hostDir := filepath.Join(cacheDir, version, string(target))
 	require.NoError(t, os.MkdirAll(hostDir, 0o755))
-	hostPath := filepath.Join(hostDir, target.hostBinaryName())
+	hostPath := filepath.Join(hostDir, target.HostBinaryName())
 	require.NoError(t, os.WriteFile(hostPath, []byte("fake target node"), 0o755))
 	return cacheDir
 }
 
 func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	const version = "v22.20.0"
-	target := Target("linux-x64")
+	target := nodedist.Target("linux-x64")
 	cacheDir := stageTargetNode(t, version, target)
 
 	buildDir := t.TempDir()
@@ -106,7 +107,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	// must override whatever the user file said.
 	require.Equal(t, "/fake/build-tool/node", rec.NodePath)
 	require.Equal(t, mainPath, rec.Cfg["main"])
-	require.Equal(t, filepath.Join(cacheDir, version, string(target), target.hostBinaryName()), rec.Cfg["executable"])
+	require.Equal(t, filepath.Join(cacheDir, version, string(target), target.HostBinaryName()), rec.Cfg["executable"])
 	require.Equal(t, false, rec.Cfg["useCodeCache"])
 	require.Equal(t, false, rec.Cfg["useSnapshot"])
 	require.Equal(t, false, rec.Cfg["disableExperimentalSEAWarning"], "user-supplied false should be respected")
@@ -129,7 +130,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 
 func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	const version = "v22.20.0"
-	target := Target("linux-x64")
+	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
 	buildDir := t.TempDir()
@@ -160,7 +161,7 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 
 func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	const version = "v22.20.0"
-	target := Target("linux-x64")
+	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
 	buildDir := t.TempDir()
@@ -185,7 +186,7 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 
 func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 	const version = "v22.20.0"
-	target := Target("linux-x64")
+	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
 	mainPath := filepath.Join(t.TempDir(), "main.js")
@@ -252,7 +253,7 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 		t.Skipf("integration: host node lacks --build-sea: %v", err)
 	}
 
-	target := Target(currentTarget())
+	target := nodedist.Target(currentTarget())
 	if FormatFor(target.Goos()) == 0 {
 		t.Skipf("integration: no SEA injector for host target %s", target)
 	}

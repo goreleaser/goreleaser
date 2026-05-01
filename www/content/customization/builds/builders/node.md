@@ -365,17 +365,6 @@ and contains both the build-tool Node and every per-target binary
 GoReleaser has fetched. Mount or restore this directory between CI
 runs to keep builds offline-friendly.
 
-For users behind a corporate proxy or in a region where nodejs.org is
-slow/blocked, set `NODEJS_MIRROR` to point at a mirror (matches the
-nvm convention):
-
-```sh
-export NODEJS_MIRROR=https://npmmirror.com/mirrors/node
-```
-
-The release index, archives, and `SHASUMS256.txt` are all fetched
-through the mirror. Trailing slashes on the URL are tolerated.
-
 Transient HTTP failures (5xx, 429, network errors) are retried
 automatically with exponential backoff — a single nodejs.org hiccup
 will not fail your build.

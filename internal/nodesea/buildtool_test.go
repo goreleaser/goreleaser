@@ -2,10 +2,7 @@ package nodesea
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +11,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/stretchr/testify/require"
 )
 
@@ -128,9 +126,7 @@ func TestBuildToolNode_FromPath(t *testing.T) {
 		t.Setenv("XDG_CACHE_HOME", t.TempDir())
 		srv := httptest.NewServer(http.NotFoundHandler())
 		srv.Close()
-		prev := distBaseURL
-		distBaseURL = srv.URL
-		t.Cleanup(func() { distBaseURL = prev })
+		nodedist.SetBaseURL(t, srv.URL)
 		_, err := BuildToolNode(t.Context())
 		require.Error(t, err)
 		require.NotErrorIs(t, err, ErrBuildSEAUnsupported,
@@ -145,29 +141,24 @@ func TestBuildToolNode_AutoDownload(t *testing.T) {
 	t.Setenv(BuildToolEnv, "")
 	t.Setenv("PATH", "")
 
-	target := Target(currentTarget())
+	target := nodedist.Target(currentTarget())
 	version := BuildToolNodeVersion
 
-	var (
-		archive  []byte
-		archName = target.archiveName(version)
-	)
+	var payload []byte
 	if target.IsWindows() {
-		archive = []byte("fake node.exe contents")
+		payload = []byte("fake node.exe contents")
 	} else {
-		archive = fakeNode(t, version, target, []byte("fake node binary"))
+		payload = []byte("fake node binary")
 	}
-	sum := sha256.Sum256(archive)
-	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), archName)
+	archive := nodedist.FakeArchive(t, version, target, payload)
+	archName := target.ArchiveName(version)
+	shaLine := nodedist.SHALine(archive, archName)
 
-	server := newDistServer(t, map[string][]byte{
-		"/" + version + "/" + archName:   archive,
+	server := nodedist.NewServer(t, map[string][]byte{
+		"/" + version + "/" + archName:    archive,
 		"/" + version + "/SHASUMS256.txt": []byte(shaLine),
 	})
-	t.Cleanup(server.Close)
-	prev := distBaseURL
-	distBaseURL = server.URL
-	t.Cleanup(func() { distBaseURL = prev })
+	nodedist.SetBaseURL(t, server.URL)
 
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	stubProbe(t, "true\n", nil)
@@ -185,29 +176,24 @@ func TestBuildToolNode_AutoDownload_ProbeFails(t *testing.T) {
 	t.Setenv(BuildToolEnv, "")
 	t.Setenv("PATH", "")
 
-	target := Target(currentTarget())
+	target := nodedist.Target(currentTarget())
 	version := BuildToolNodeVersion
 
-	var (
-		archive  []byte
-		archName = target.archiveName(version)
-	)
+	var payload []byte
 	if target.IsWindows() {
-		archive = []byte("fake node.exe contents")
+		payload = []byte("fake node.exe contents")
 	} else {
-		archive = fakeNode(t, version, target, []byte("fake node binary"))
+		payload = []byte("fake node binary")
 	}
-	sum := sha256.Sum256(archive)
-	shaLine := fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), archName)
+	archive := nodedist.FakeArchive(t, version, target, payload)
+	archName := target.ArchiveName(version)
+	shaLine := nodedist.SHALine(archive, archName)
 
-	server := newDistServer(t, map[string][]byte{
-		"/" + version + "/" + archName:   archive,
+	server := nodedist.NewServer(t, map[string][]byte{
+		"/" + version + "/" + archName:    archive,
 		"/" + version + "/SHASUMS256.txt": []byte(shaLine),
 	})
-	t.Cleanup(server.Close)
-	prev := distBaseURL
-	distBaseURL = server.URL
-	t.Cleanup(func() { distBaseURL = prev })
+	nodedist.SetBaseURL(t, server.URL)
 
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	stubProbe(t, "false\n", nil)
