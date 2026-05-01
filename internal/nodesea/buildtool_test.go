@@ -152,11 +152,10 @@ func TestBuildToolNode_AutoDownload(t *testing.T) {
 	}
 	archive := nodedist.FakeArchive(t, version, target, payload)
 	archName := target.ArchiveName(version)
-	shaLine := nodedist.SHALine(archive, archName)
+	nodedist.StubRelease(t, version, archName, archive)
 
 	server := nodedist.NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName:    archive,
-		"/" + version + "/SHASUMS256.txt": []byte(shaLine),
+		"/" + version + "/" + archName: archive,
 	})
 	nodedist.SetBaseURL(t, server.URL)
 
@@ -187,11 +186,10 @@ func TestBuildToolNode_AutoDownload_ProbeFails(t *testing.T) {
 	}
 	archive := nodedist.FakeArchive(t, version, target, payload)
 	archName := target.ArchiveName(version)
-	shaLine := nodedist.SHALine(archive, archName)
+	nodedist.StubRelease(t, version, archName, archive)
 
 	server := nodedist.NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName:    archive,
-		"/" + version + "/SHASUMS256.txt": []byte(shaLine),
+		"/" + version + "/" + archName: archive,
 	})
 	nodedist.SetBaseURL(t, server.URL)
 

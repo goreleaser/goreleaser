@@ -51,13 +51,6 @@ func FakeArchive(t *testing.T, version string, target Target, payload []byte) []
 	return buf.b
 }
 
-// SHALine returns the SHASUMS256.txt entry for the given archive, in
-// the exact form nodejs.org publishes (`<hex>  <name>\n`).
-func SHALine(archive []byte, archiveName string) string {
-	sum := sha256.Sum256(archive)
-	return fmt.Sprintf("%s  %s\n", hex.EncodeToString(sum[:]), archiveName)
-}
-
 // NewServer stands up an httptest.Server that serves the given
 // path-to-body map, registered for cleanup on t.
 func NewServer(t *testing.T, files map[string][]byte) *httptest.Server {
@@ -71,6 +64,31 @@ func NewServer(t *testing.T, files map[string][]byte) *httptest.Server {
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return srv
+}
+
+// StubRelease registers a synthetic SHA for (version, archiveName) in
+// the embedded release map for the duration of t. The reported SHA is
+// the SHA-256 of payload, so callers can serve payload from a stub
+// http server and have Download accept it. Cleanup restores any
+// pre-existing value.
+func StubRelease(t *testing.T, version, archiveName string, payload []byte) {
+	t.Helper()
+	sum := sha256.Sum256(payload)
+	sha := hex.EncodeToString(sum[:])
+	files, ok := Releases()[version]
+	if !ok {
+		files = map[string]string{}
+		Releases()[version] = files
+	}
+	prev, hadFile := files[archiveName]
+	files[archiveName] = sha
+	t.Cleanup(func() {
+		if hadFile {
+			files[archiveName] = prev
+		} else {
+			delete(files, archiveName)
+		}
+	})
 }
 
 // writeBuffer is a minimal io.Writer-backed bytes buffer; using an

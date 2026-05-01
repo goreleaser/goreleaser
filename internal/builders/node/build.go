@@ -133,7 +133,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("path", nodePath).Debug("resolved build-tool node")
 
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir)
+	version, source, err := nodesea.ResolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve target node version: %w", err)
 	}
@@ -227,7 +227,7 @@ func buildViaBuildSEA(
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
-	version, _, err := nodesea.ResolveVersion(ctx, build.Dir)
+	version, _, err := nodesea.ResolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}

@@ -1,7 +1,6 @@
 package nodesea
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -44,7 +43,7 @@ var ErrNoVersion = errors.New("nodesea: could not resolve a Node.js version; add
 // `22.10.0`) or a semver range. Ranges are resolved to the highest
 // matching release published on nodejs.org/dist. The returned version
 // always carries a leading `v` to match nodejs.org URL paths.
-func ResolveVersion(ctx context.Context, dir string) (string, VersionSource, error) {
+func ResolveVersion(dir string) (string, VersionSource, error) {
 	var candidates []struct {
 		raw    string
 		source VersionSource
@@ -78,7 +77,7 @@ func ResolveVersion(ctx context.Context, dir string) (string, VersionSource, err
 		if c.raw == "" {
 			continue
 		}
-		ver, err := resolveVersionString(ctx, c.raw)
+		ver, err := resolveVersionString(c.raw)
 		if err != nil {
 			return "", c.source, fmt.Errorf("nodesea: resolve %s value %q: %w", c.source, c.raw, err)
 		}
@@ -88,8 +87,8 @@ func ResolveVersion(ctx context.Context, dir string) (string, VersionSource, err
 }
 
 // resolveVersionString turns a user-supplied version specifier into a
-// concrete `vX.Y.Z` release that exists on nodejs.org.
-func resolveVersionString(ctx context.Context, raw string) (string, error) {
+// concrete `vX.Y.Z` release present in the embedded nodedist index.
+func resolveVersionString(raw string) (string, error) {
 	raw = strings.TrimSpace(raw)
 	raw = strings.TrimPrefix(raw, "v")
 
@@ -103,14 +102,10 @@ func resolveVersionString(ctx context.Context, raw string) (string, error) {
 		return "", fmt.Errorf("invalid semver constraint: %w", err)
 	}
 
-	entries, err := nodedist.Index(ctx)
-	if err != nil {
-		return "", err
-	}
-
+	entries := nodedist.Releases()
 	matched := make([]*semver.Version, 0, len(entries))
-	for _, e := range entries {
-		v, err := semver.NewVersion(strings.TrimPrefix(e.Version, "v"))
+	for verStr := range entries {
+		v, err := semver.NewVersion(strings.TrimPrefix(verStr, "v"))
 		if err != nil {
 			continue
 		}

@@ -32,10 +32,10 @@ func TestDownload_Linux(t *testing.T) {
 	payload := []byte("fake node binary contents")
 	archive := FakeArchive(t, version, target, payload)
 	archName := target.ArchiveName(version)
+	StubRelease(t, version, archName, archive)
 
 	server := NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName:    archive,
-		"/" + version + "/SHASUMS256.txt": []byte(SHALine(archive, archName)),
+		"/" + version + "/" + archName: archive,
 	})
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	SetBaseURL(t, server.URL)
@@ -60,10 +60,10 @@ func TestDownload_Windows(t *testing.T) {
 	target := Target("win-x64")
 	payload := []byte("fake node.exe contents")
 	archName := target.ArchiveName(version)
+	StubRelease(t, version, archName, payload)
 
 	server := NewServer(t, map[string][]byte{
 		"/" + version + "/win-x64/node.exe": payload,
-		"/" + version + "/SHASUMS256.txt":   []byte(SHALine(payload, archName)),
 	})
 	SetBaseURL(t, server.URL)
 
@@ -82,17 +82,23 @@ func TestDownload_BadSHA(t *testing.T) {
 	target := Target("linux-x64")
 	archive := FakeArchive(t, version, target, []byte("payload"))
 	archName := target.ArchiveName(version)
-	shaLine := "deadbeef  " + archName + "\n"
+	// Stub with the wrong SHA so Download sees a mismatch.
+	StubRelease(t, version, archName, []byte("not the archive"))
 
 	server := NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName:    archive,
-		"/" + version + "/SHASUMS256.txt": []byte(shaLine),
+		"/" + version + "/" + archName: archive,
 	})
 	SetBaseURL(t, server.URL)
 
 	_, err := Download(t.Context(), t.TempDir(), version, target)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "SHA-256 mismatch")
+}
+
+func TestDownload_UnknownVersion(t *testing.T) {
+	_, err := Download(t.Context(), t.TempDir(), "v0.0.999", Target("linux-x64"))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "no embedded entry")
 }
 
 func TestCacheDir(t *testing.T) {
@@ -134,9 +140,9 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 	payload := []byte("fake node binary contents")
 	archive := FakeArchive(t, version, target, payload)
 	archName := target.ArchiveName(version)
-	shaLine := SHALine(archive, archName)
+	StubRelease(t, version, archName, archive)
 
-	var archiveHits, shaHits atomicCounter
+	var archiveHits atomicCounter
 	mux := http.NewServeMux()
 	mux.HandleFunc("/"+version+"/"+archName, func(w http.ResponseWriter, _ *http.Request) {
 		if archiveHits.Inc() < 2 {
@@ -144,13 +150,6 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 			return
 		}
 		_, _ = w.Write(archive)
-	})
-	mux.HandleFunc("/"+version+"/SHASUMS256.txt", func(w http.ResponseWriter, _ *http.Request) {
-		if shaHits.Inc() < 2 {
-			http.Error(w, "boom", http.StatusBadGateway)
-			return
-		}
-		_, _ = w.Write([]byte(shaLine))
 	})
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
@@ -164,7 +163,6 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 	require.NoError(t, err)
 	require.FileExists(t, hostPath)
 	require.GreaterOrEqual(t, int(archiveHits.Load()), 2)
-	require.GreaterOrEqual(t, int(shaHits.Load()), 2)
 }
 
 type atomicCounter struct{ v atomic.Int32 }

@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 )
@@ -21,6 +20,9 @@ import (
 // target and version into cacheDir. The returned path points at the
 // extracted host binary. If a cached copy already exists it is
 // returned without touching the network.
+//
+// The expected SHA-256 is read from the embedded release index
+// (releases.json); only versions present there can be downloaded.
 //
 // The caller is responsible for any further mutation (e.g. stripping
 // a code signature) before injecting a SEA blob.
@@ -32,11 +34,16 @@ func Download(ctx context.Context, cacheDir, version string, target Target) (str
 		return hostPath, nil
 	}
 
+	archiveName := target.ArchiveName(version)
+	expected, err := LookupSHA(version, archiveName)
+	if err != nil {
+		return "", err
+	}
+
 	if err := os.MkdirAll(hostDir, 0o755); err != nil {
 		return "", err
 	}
 
-	archiveName := target.ArchiveName(version)
 	archiveURL := fmt.Sprintf("%s/%s/%s", distBaseURL, version, archiveName)
 	tmp, err := os.CreateTemp(hostDir, "download-*")
 	if err != nil {
@@ -51,10 +58,6 @@ func Download(ctx context.Context, cacheDir, version string, target Target) (str
 		return "", err
 	}
 
-	expected, err := fetchExpectedSHA(ctx, version, archiveName)
-	if err != nil {
-		return "", err
-	}
 	if expected != hash {
 		return "", fmt.Errorf("nodedist: SHA-256 mismatch for %s: expected %s, got %s", archiveURL, expected, hash)
 	}
@@ -107,56 +110,6 @@ func downloadTo(ctx context.Context, url string, dst *os.File) (string, error) {
 		return nil
 	}, retryx.IsRetriable)
 	return hash, err
-}
-
-// fetchExpectedSHA fetches SHASUMS256.txt for the release and returns
-// the SHA-256 line matching the supplied archive file name. Transient
-// failures are retried per defaultRetry.
-func fetchExpectedSHA(ctx context.Context, version, archiveName string) (string, error) {
-	url := fmt.Sprintf("%s/%s/SHASUMS256.txt", distBaseURL, version)
-	body, err := getBody(ctx, url)
-	if err != nil {
-		return "", err
-	}
-	for line := range strings.SplitSeq(string(body), "\n") {
-		fields := strings.Fields(line)
-		if len(fields) != 2 {
-			continue
-		}
-		// fields[1] is "node-vX.Y.Z-linux-x64.tar.gz" or
-		// "win-x64/node.exe".
-		if fields[1] == archiveName {
-			return strings.ToLower(fields[0]), nil
-		}
-	}
-	return "", fmt.Errorf("nodedist: %s not present in %s", archiveName, url)
-}
-
-// getBody fetches a small HTTP body with retries, returning the bytes.
-// It is a helper for the JSON / SHASUMS endpoints — anything large
-// enough to need streaming should use downloadTo.
-func getBody(ctx context.Context, url string) ([]byte, error) {
-	var body []byte
-	err := retryx.Do(ctx, defaultRetry, func() error {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-		if err != nil {
-			return retryx.Unrecoverable(err)
-		}
-		resp, err := httpClient.Do(req)
-		if err != nil {
-			return retryx.HTTP(fmt.Errorf("nodedist: download %s: %w", url, err), resp)
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			return retryx.HTTP(fmt.Errorf("nodedist: download %s: unexpected status %s", url, resp.Status), resp)
-		}
-		body, err = io.ReadAll(resp.Body)
-		if err != nil {
-			return retryx.HTTP(err, resp)
-		}
-		return nil
-	}, retryx.IsRetriable)
-	return body, err
 }
 
 // extractNodeFromTarGz finds the bin/node entry inside the released
