@@ -13,8 +13,6 @@
 // its own scratch directory and outputs to its own path; nothing is
 // shared across targets.
 //
-// Co-authored-by: Vedant Mohan Goyal <83997633+vedantmgoyal9@users.noreply.github.com>
-//
 // Builder skeleton and target list are derived from PR
 // https://github.com/goreleaser/goreleaser/pull/6136 by @vedantmgoyal9.
 package node
