@@ -226,11 +226,7 @@ func buildViaBuildSEA(
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
-	explicit, err := tpl.Apply(build.NodeVersion)
-	if err != nil {
-		return fmt.Errorf("nodesea: template node_version: %w", err)
-	}
-	version, _, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
+	version, _, err := nodesea.ResolveVersion(ctx, build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}

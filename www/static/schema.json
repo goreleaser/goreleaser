@@ -684,9 +684,6 @@
 					"no_main_check": {
 						"type": "boolean"
 					},
-					"node_version": {
-						"type": "string"
-					},
 					"buildmode": {
 						"type": "string",
 						"enum": [

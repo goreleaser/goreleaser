@@ -148,8 +148,8 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 		BuildDir:      buildDir,
 	}))
 
-	require.Equal(t, true, rec.Cfg["disableExperimentalSEAWarning"],
-		"goreleaser default must silence the SEA warning")
+	_, hasWarning := rec.Cfg["disableExperimentalSEAWarning"]
+	require.False(t, hasWarning, "no user file → goreleaser must not inject disableExperimentalSEAWarning")
 	_, hasAssets := rec.Cfg["assets"]
 	require.False(t, hasAssets, "no user file → no assets")
 	_, hasExec := rec.Cfg["execArgv"]

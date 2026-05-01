@@ -29,36 +29,22 @@ func TestResolveVersion(t *testing.T) {
 		{Version: "v18.20.4"},
 	}
 
-	t.Run("explicit pinned", func(t *testing.T) {
+	t.Run("from package.json engines.node pinned", func(t *testing.T) {
 		dir := t.TempDir()
-		v, src, err := ResolveVersion(ctx, dir, "22.10.0")
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
+			[]byte(`{"engines":{"node":"22.10.0"}}`), 0o644))
+		v, src, err := ResolveVersion(ctx, dir)
 		require.NoError(t, err)
 		require.Equal(t, "v22.10.0", v)
-		require.Equal(t, VersionSourceExplicit, src)
+		require.Equal(t, VersionSourceEnginesNode, src)
 	})
 
-	t.Run("explicit with v prefix", func(t *testing.T) {
-		dir := t.TempDir()
-		v, _, err := ResolveVersion(ctx, dir, "v22.10.0")
-		require.NoError(t, err)
-		require.Equal(t, "v22.10.0", v)
-	})
-
-	t.Run("explicit semver range", func(t *testing.T) {
-		withStubIndex(t, stub)
-		dir := t.TempDir()
-		v, src, err := ResolveVersion(ctx, dir, "^22")
-		require.NoError(t, err)
-		require.Equal(t, "v22.10.0", v)
-		require.Equal(t, VersionSourceExplicit, src)
-	})
-
-	t.Run("from package.json engines.node", func(t *testing.T) {
+	t.Run("from package.json engines.node range", func(t *testing.T) {
 		withStubIndex(t, stub)
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
 			[]byte(`{"engines":{"node":">=22 <23"}}`), 0o644))
-		v, src, err := ResolveVersion(ctx, dir, "")
+		v, src, err := ResolveVersion(ctx, dir)
 		require.NoError(t, err)
 		require.Equal(t, "v22.10.0", v)
 		require.Equal(t, VersionSourceEnginesNode, src)
@@ -67,7 +53,7 @@ func TestResolveVersion(t *testing.T) {
 	t.Run("from .nvmrc", func(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, ".nvmrc"), []byte("v22.10.0\n"), 0o644))
-		v, src, err := ResolveVersion(ctx, dir, "")
+		v, src, err := ResolveVersion(ctx, dir)
 		require.NoError(t, err)
 		require.Equal(t, "v22.10.0", v)
 		require.Equal(t, VersionSourceNvmrc, src)
@@ -76,32 +62,36 @@ func TestResolveVersion(t *testing.T) {
 	t.Run("from .node-version", func(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, ".node-version"), []byte("22.10.0\n"), 0o644))
-		v, src, err := ResolveVersion(ctx, dir, "")
+		v, src, err := ResolveVersion(ctx, dir)
 		require.NoError(t, err)
 		require.Equal(t, "v22.10.0", v)
 		require.Equal(t, VersionSourceNodeVersion, src)
 	})
 
-	t.Run("nothing set", func(t *testing.T) {
+	t.Run("engines.node takes precedence over .nvmrc", func(t *testing.T) {
 		dir := t.TempDir()
-		_, _, err := ResolveVersion(ctx, dir, "")
-		require.Error(t, err)
-		require.True(t, errors.Is(err, ErrNoVersion))
-	})
-
-	t.Run("explicit takes precedence over files", func(t *testing.T) {
-		dir := t.TempDir()
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
+			[]byte(`{"engines":{"node":"22.10.0"}}`), 0o644))
 		require.NoError(t, os.WriteFile(filepath.Join(dir, ".nvmrc"), []byte("18.0.0\n"), 0o644))
-		v, src, err := ResolveVersion(ctx, dir, "22.10.0")
+		v, src, err := ResolveVersion(ctx, dir)
 		require.NoError(t, err)
 		require.Equal(t, "v22.10.0", v)
-		require.Equal(t, VersionSourceExplicit, src)
+		require.Equal(t, VersionSourceEnginesNode, src)
+	})
+
+	t.Run("nothing set", func(t *testing.T) {
+		dir := t.TempDir()
+		_, _, err := ResolveVersion(ctx, dir)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, ErrNoVersion))
 	})
 
 	t.Run("range with no match", func(t *testing.T) {
 		withStubIndex(t, stub)
 		dir := t.TempDir()
-		_, _, err := ResolveVersion(ctx, dir, "^99")
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
+			[]byte(`{"engines":{"node":"^99"}}`), 0o644))
+		_, _, err := ResolveVersion(ctx, dir)
 		require.Error(t, err)
 	})
 }

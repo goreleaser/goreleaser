@@ -60,9 +60,7 @@ type BuildOptions struct {
 // fields are merged into the rendered config (relative `assets` paths
 // are resolved against opts.BuildDir so they keep working from the
 // scratch directory). Goreleaser-owned fields (`output`, `executable`,
-// `main`, `useCodeCache`, `useSnapshot`) always win. When no user file
-// is present, a minimal config is generated and the experimental SEA
-// warning is silenced by default.
+// `main`, `useCodeCache`, `useSnapshot`) always win.
 //
 // On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
 // quill (pure-Go) before it lands at OutPath, so the macOS kernel will
@@ -184,13 +182,6 @@ func buildSEAConfigJSON(opts BuildOptions, targetNode, output string) (map[strin
 	cfg, err := loadUserSEAConfig(opts.BuildDir)
 	if err != nil {
 		return nil, err
-	}
-
-	// Default the experimental warning off when the user did not
-	// express an opinion. Matches Node's recommendation for shipped
-	// SEAs and the historical goreleaser behaviour.
-	if _, set := cfg["disableExperimentalSEAWarning"]; !set {
-		cfg["disableExperimentalSEAWarning"] = true
 	}
 
 	// Goreleaser-owned fields — always overwrite whatever the user

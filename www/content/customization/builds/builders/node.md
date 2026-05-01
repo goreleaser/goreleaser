@@ -47,8 +47,7 @@ For each requested target, GoReleaser:
    cached target Node binary. The `output`, `executable`, `main`,
    `useCodeCache` and `useSnapshot` fields are always overwritten;
    relative `assets` paths are anchored at the build directory so
-   they keep working from the scratch dir. When the file is missing
-   the experimental-SEA runtime warning is silenced by default.
+   they keep working from the scratch dir.
 5. Invokes `<build-tool-node> --build-sea sea-config.json`. Node.js
    (LIEF-backed since v25.5) injects the SEA blob into a copy of the
    target Node binary and writes the result into the scratch directory.
@@ -125,14 +124,6 @@ builds:
     # Templates: allowed.
     main: index.js
 
-    # Pin the target Node.js version. Either an exact version
-    # (`v22.20.0`, `22.20.0`) or a semver range (`>=22.20 <23`,
-    # `^24.6`). Recommended for reproducible release artifacts.
-    # When unset, falls back to engines.node / .nvmrc / .node-version.
-    #
-    # Templates: allowed.
-    node_version: "22.20.0"
-
     # Targets, in nodejs.org/dist format.
     # Default: all of: darwin-arm64, darwin-x64, linux-arm64, linux-x64,
     #                  win-arm64, win-x64.
@@ -183,7 +174,7 @@ by the `node` builder:
 
 The following template variables are available in the per-target build
 context: `.Os`, `.Arch`, `.Goos`, `.Goarch`, `.Target`, `.Name`,
-`.Path`, `.Ext`, `.Env.*`. Use them in `main`, `node_version`, `env`,
+`.Path`, `.Ext`, `.Env.*`. Use them in `main`, `env`,
 and the `hooks` recipes.
 
 ## Tuning the SEA blob (`sea-config.json`)
@@ -213,8 +204,7 @@ they keep resolving after GoReleaser moves the merged config into a
 scratch directory.
 
 When no `sea-config.json` is present, GoReleaser generates the
-minimum config needed and silences Node's experimental-SEA runtime
-warning by default.
+minimum config needed to drive `node --build-sea`.
 
 See Node's [Single Executable Applications docs][sea] for the full
 list of accepted fields.
@@ -240,18 +230,16 @@ the probe even if their `--version` reports v25.5+.
 ## Version resolution
 
 The target Node.js version (the binary that becomes the SEA executable)
-is resolved in this order:
+is resolved in this order, all from the build directory:
 
-1. The `node_version` field on the build (recommended for
-   reproducible releases).
-2. The `engines.node` field in `package.json` (highest matching
-   official release).
-3. A `.nvmrc` file in the build directory.
-4. A `.node-version` file in the build directory.
+1. The `engines.node` field in `package.json` (recommended).
+2. A `.nvmrc` file.
+3. A `.node-version` file.
 
 Either an exact version (`v22.10.0`, `22.10.0`) or a semver range
 (`>=22 <23`, `^22`) is accepted. Ranges are resolved against the
-nodejs.org release index.
+nodejs.org release index — the highest matching release wins. Pin to
+an exact version for reproducible release artifacts.
 
 The resolved version must be in the V2-blob-format range understood by
 LIEF-emitted SEAs:
