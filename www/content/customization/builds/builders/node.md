@@ -41,9 +41,14 @@ For each requested target, GoReleaser:
    `SHASUMS256.txt` entry, and caches it under
    `${XDG_CACHE_HOME:-$HOME/.cache}/goreleaser/node/` so subsequent
    builds are offline.
-4. Writes a `sea-config.json` in a scratch directory pointing `main`
-   at the entrypoint script and `executable` at the cached target Node
-   binary.
+4. Reads the user's `sea-config.json` from the build directory (if
+   present), then writes a merged copy in a scratch directory with
+   `main` pointing at the entrypoint script and `executable` at the
+   cached target Node binary. The `output`, `executable`, `main`,
+   `useCodeCache` and `useSnapshot` fields are always overwritten;
+   relative `assets` paths are anchored at the build directory so
+   they keep working from the scratch dir. When the file is missing
+   the experimental-SEA runtime warning is silenced by default.
 5. Invokes `<build-tool-node> --build-sea sea-config.json`. Node.js
    (LIEF-backed since v25.5) injects the SEA blob into a copy of the
    target Node binary and writes the result into the scratch directory.
@@ -151,29 +156,6 @@ builds:
     env:
       - FOO=bar
 
-    # User-tunable subset of the sea-config.json passed to
-    # `node --build-sea`. The `output`, `executable`, `useCodeCache`
-    # and `useSnapshot` fields are owned by GoReleaser and cannot be
-    # set here.
-    sea_config:
-      # Files baked into the SEA blob and accessible at runtime via
-      # sea.getAsset(name).
-      assets:
-        "icon.png": "./assets/icon.png"
-        "schema.json": "./schema.json"
-
-      # Node CLI flags hard-coded into the binary.
-      exec_argv:
-        - "--max-old-space-size=4096"
-
-      # Whether to silence Node's "experimental SEA" runtime warning.
-      # Default: true.
-      disable_experimental_sea_warning: true
-
-      # Module system used to evaluate the entrypoint:
-      # "commonjs" (default) or "module".
-      main_format: commonjs
-
     # Auto-bundle step. Runs `npm run build` in `dir` before invoking
     # `node --build-sea`, when `package.json` declares a non-empty
     # `scripts.build` entry. Silent skip otherwise. See "Bundling your
@@ -203,6 +185,39 @@ The following template variables are available in the per-target build
 context: `.Os`, `.Arch`, `.Goos`, `.Goarch`, `.Target`, `.Name`,
 `.Path`, `.Ext`, `.Env.*`. Use them in `main`, `node_version`, `env`,
 and the `hooks` recipes.
+
+## Tuning the SEA blob (`sea-config.json`)
+
+GoReleaser does not expose `sea-config.json` knobs in `.goreleaser.yaml`.
+Drop a `sea-config.json` file alongside your `package.json` (i.e. in
+the build's `dir`) and GoReleaser will merge it with its own
+goreleaser-owned fields before invoking `node --build-sea`:
+
+```json {filename="sea-config.json"}
+{
+  "assets": {
+    "icon.png": "./assets/icon.png",
+    "schema.json": "./schema.json"
+  },
+  "execArgv": ["--max-old-space-size=4096"],
+  "disableExperimentalSEAWarning": true,
+  "mainFormat": "commonjs"
+}
+```
+
+GoReleaser always overwrites `output`, `executable`, `main`,
+`useCodeCache`, and `useSnapshot` — these point at internal cache
+paths and scratch tempfiles, so any user-supplied values are ignored.
+Relative paths under `assets` are anchored at the build directory so
+they keep resolving after GoReleaser moves the merged config into a
+scratch directory.
+
+When no `sea-config.json` is present, GoReleaser generates the
+minimum config needed and silences Node's experimental-SEA runtime
+warning by default.
+
+See Node's [Single Executable Applications docs][sea] for the full
+list of accepted fields.
 
 ## Build-tool Node.js
 

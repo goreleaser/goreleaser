@@ -18,9 +18,6 @@ import (
 type VersionSource string
 
 const (
-	// VersionSourceExplicit means the version was passed in directly by the
-	// caller (e.g. via the build configuration).
-	VersionSourceExplicit VersionSource = "explicit"
 	// VersionSourceEnginesNode means the version was resolved from
 	// `package.json`'s `engines.node` field.
 	VersionSourceEnginesNode VersionSource = "package.json engines.node"
@@ -33,7 +30,7 @@ const (
 
 // ErrNoVersion is returned by ResolveVersion when no version can be
 // determined from any of the supported sources.
-var ErrNoVersion = errors.New("nodesea: could not resolve a Node.js version; set node_version in the build, or add engines.node to package.json, .nvmrc or .node-version")
+var ErrNoVersion = errors.New("nodesea: could not resolve a Node.js version; add engines.node to package.json (or .nvmrc / .node-version)")
 
 // indexEntry mirrors one record in https://nodejs.org/dist/index.json,
 // which lists every published Node.js release.
@@ -62,23 +59,21 @@ func fetchNodeIndex(ctx context.Context) ([]indexEntry, error) {
 	return entries, nil
 }
 
-// ResolveVersion picks a Node.js version, in order:
+// ResolveVersion picks a Node.js version from the user's project
+// directory, in order:
 //
-//  1. explicit (caller-supplied string, e.g. from the build config);
-//  2. `engines.node` in package.json;
-//  3. `.nvmrc`;
-//  4. `.node-version`.
+//  1. `engines.node` in package.json;
+//  2. `.nvmrc`;
+//  3. `.node-version`.
 //
-// Explicit and file-based values may be either an exact version
-// (`v22.10.0`, `22.10.0`) or a semver range. Ranges are resolved to the
-// highest matching release published on nodejs.org/dist. The returned
-// version always carries a leading `v` to match nodejs.org URL paths.
-func ResolveVersion(ctx context.Context, dir, explicit string) (string, VersionSource, error) {
-	candidates := []struct {
+// File-based values may be either an exact version (`v22.10.0`,
+// `22.10.0`) or a semver range. Ranges are resolved to the highest
+// matching release published on nodejs.org/dist. The returned version
+// always carries a leading `v` to match nodejs.org URL paths.
+func ResolveVersion(ctx context.Context, dir string) (string, VersionSource, error) {
+	var candidates []struct {
 		raw    string
 		source VersionSource
-	}{
-		{explicit, VersionSourceExplicit},
 	}
 
 	if pkgRange, err := readEnginesNode(filepath.Join(dir, "package.json")); err == nil && pkgRange != "" {

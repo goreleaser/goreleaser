@@ -131,27 +131,6 @@ func TestConvertHelpers(t *testing.T) {
 	require.Equal(t, "aix", convertToGoos("aix"))
 }
 
-func TestToNodeseaSEAConfig(t *testing.T) {
-	disable := false
-	got := toNodeseaSEAConfig(config.NodeSEAConfig{
-		Assets:                        map[string]string{"icon": "./icon.png"},
-		ExecArgv:                      []string{"--max-old-space-size=4096"},
-		DisableExperimentalSEAWarning: &disable,
-		MainFormat:                    "module",
-	})
-	require.Equal(t, map[string]string{"icon": "./icon.png"}, got.Assets)
-	require.Equal(t, []string{"--max-old-space-size=4096"}, got.ExecArgv)
-	require.NotNil(t, got.DisableExperimentalSEAWarning)
-	require.False(t, *got.DisableExperimentalSEAWarning)
-	require.Equal(t, "module", got.MainFormat)
-
-	zero := toNodeseaSEAConfig(config.NodeSEAConfig{})
-	require.Nil(t, zero.Assets)
-	require.Nil(t, zero.ExecArgv)
-	require.Nil(t, zero.DisableExperimentalSEAWarning)
-	require.Empty(t, zero.MainFormat)
-}
-
 // TestRunNPMBuildScript covers the per-build npm wire-up: silent skip
 // paths, error propagation, and that build.Env templating reaches the
 // spawned `npm` process. The end-to-end behaviour of `npm run build`

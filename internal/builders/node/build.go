@@ -132,11 +132,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("path", nodePath).Debug("resolved build-tool node")
 
-	explicit, err := tmpl.New(ctx).Apply(build.NodeVersion)
-	if err != nil {
-		return fmt.Errorf("nodesea: template node_version: %w", err)
-	}
-	version, source, err := nodesea.ResolveVersion(ctx, build.Dir, explicit)
+	version, source, err := nodesea.ResolveVersion(ctx, build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve target node version: %w", err)
 	}
@@ -212,8 +208,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 }
 
 // buildViaBuildSEA dispatches to the `node --build-sea` flow
-// (nodesea.BuildViaBuildSEA), passing through the user-supplied
-// SEAConfig from build configuration.
+// (nodesea.BuildViaBuildSEA). The user's sea-config.json (if any) is
+// read by the nodesea package directly from build.Dir.
 func buildViaBuildSEA(
 	ctx *context.Context,
 	build config.Build,
@@ -248,6 +244,10 @@ func buildViaBuildSEA(
 	if err != nil {
 		absMain = mainPath
 	}
+	absBuildDir, err := filepath.Abs(build.Dir)
+	if err != nil {
+		absBuildDir = build.Dir
+	}
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
 	}
@@ -257,21 +257,8 @@ func buildViaBuildSEA(
 		Version:       version,
 		MainJS:        absMain,
 		OutPath:       options.Path,
-		SEAConfig:     toNodeseaSEAConfig(build.SEAConfig),
+		BuildDir:      absBuildDir,
 	})
-}
-
-// toNodeseaSEAConfig translates the user-facing config.NodeSEAConfig
-// into the internal nodesea.SEAConfig payload. Kept separate so the
-// public yaml schema and the internal call site can evolve
-// independently.
-func toNodeseaSEAConfig(c config.NodeSEAConfig) nodesea.SEAConfig {
-	return nodesea.SEAConfig{
-		Assets:                        c.Assets,
-		ExecArgv:                      c.ExecArgv,
-		DisableExperimentalSEAWarning: c.DisableExperimentalSEAWarning,
-		MainFormat:                    c.MainFormat,
-	}
 }
 
 // CurrentTarget returns the nodejs.org/dist target identifier matching the

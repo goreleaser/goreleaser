@@ -10,32 +10,14 @@ import (
 	"strings"
 )
 
-// SEAConfig is the user-supplied subset of sea-config.json fields
-// accepted by goreleaser. The fields goreleaser owns semantically —
-// `output`, `executable`, `useCodeCache`, `useSnapshot` — are not
-// representable here on purpose. See Node's documentation:
-// https://nodejs.org/api/single-executable-applications.html#generating-single-executable-preparation-blobs
-type SEAConfig struct {
-	// Assets is a map of asset name → file path, baked into the SEA
-	// blob and accessible at runtime via sea.getAsset().
-	Assets map[string]string
-
-	// ExecArgv is a list of Node CLI flags baked into the binary
-	// (e.g. ["--max-old-space-size=4096"]).
-	ExecArgv []string
-
-	// DisableExperimentalSEAWarning controls Node's runtime warning
-	// about SEA being experimental. nil → goreleaser default (true).
-	// Set explicitly to surface the warning.
-	DisableExperimentalSEAWarning *bool
-
-	// MainFormat selects the module system used to evaluate the main
-	// entrypoint: "commonjs" (default) or "module".
-	MainFormat string
-}
+// UserSEAConfigFile is the filename goreleaser looks up in the build
+// directory for user-supplied sea-config.json fields. Goreleaser owns
+// `output`, `executable`, `main`, `useCodeCache`, and `useSnapshot` —
+// any user-set values for those keys are overridden.
+const UserSEAConfigFile = "sea-config.json"
 
 // BuildOptions configures BuildViaBuildSEA. Every field except
-// SEAConfig and CodeSignID is required.
+// BuildDir and CodeSignID is required.
 type BuildOptions struct {
 	// BuildToolNode is the absolute path to a Node binary that can
 	// drive `--build-sea`, as returned by BuildToolNode.
@@ -59,9 +41,10 @@ type BuildOptions struct {
 	// atomically with executable permissions.
 	OutPath string
 
-	// SEAConfig carries user-tunable sea-config.json fields. See
-	// SEAConfig for the whitelisted set.
-	SEAConfig SEAConfig
+	// BuildDir is the user's project directory. If it contains a
+	// sea-config.json file, that file is merged with goreleaser-owned
+	// fields before being passed to `node --build-sea`. Optional.
+	BuildDir string
 
 	// CodeSignID is the ad-hoc CMS signing identifier applied to
 	// darwin outputs by quill. Empty → derived from filepath.Base(OutPath).
@@ -72,6 +55,14 @@ type BuildOptions struct {
 // opts.OutPath by invoking `<opts.BuildToolNode> --build-sea
 // sea-config.json`, where sea-config.json points `executable` at the
 // cached per-target Node binary downloaded for opts.Version+opts.Target.
+//
+// If a sea-config.json exists in opts.BuildDir, its user-tunable
+// fields are merged into the rendered config (relative `assets` paths
+// are resolved against opts.BuildDir so they keep working from the
+// scratch directory). Goreleaser-owned fields (`output`, `executable`,
+// `main`, `useCodeCache`, `useSnapshot`) always win. When no user file
+// is present, a minimal config is generated and the experimental SEA
+// warning is silenced by default.
 //
 // On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
 // quill (pure-Go) before it lands at OutPath, so the macOS kernel will
@@ -109,7 +100,10 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 
 	tmpOut := filepath.Join(scratch, filepath.Base(opts.OutPath)+".tmp")
 	cfgPath := filepath.Join(scratch, "sea-config.json")
-	cfg := buildSEAConfigJSON(opts, targetNode, tmpOut)
+	cfg, err := buildSEAConfigJSON(opts, targetNode, tmpOut)
+	if err != nil {
+		return err
+	}
 	cfgBytes, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
@@ -181,32 +175,77 @@ func validateBuildOptions(opts BuildOptions) error {
 }
 
 // buildSEAConfigJSON renders the sea-config.json contents goreleaser
-// will hand to `node --build-sea`. Goreleaser-owned fields (output,
-// executable, useCodeCache, useSnapshot) are always set explicitly.
-// User-provided whitelisted fields are appended only when non-zero.
-func buildSEAConfigJSON(opts BuildOptions, targetNode, output string) map[string]any {
-	cfg := map[string]any{
-		"main":         opts.MainJS,
-		"output":       output,
-		"executable":   targetNode,
-		"useCodeCache": false,
-		"useSnapshot":  false,
+// will hand to `node --build-sea`. Starts from the user's
+// sea-config.json in opts.BuildDir (if any), then forces the
+// goreleaser-owned fields and rewrites relative `assets` paths to be
+// absolute relative to opts.BuildDir so they survive the move into
+// the scratch directory.
+func buildSEAConfigJSON(opts BuildOptions, targetNode, output string) (map[string]any, error) {
+	cfg, err := loadUserSEAConfig(opts.BuildDir)
+	if err != nil {
+		return nil, err
 	}
 
-	disable := true
-	if opts.SEAConfig.DisableExperimentalSEAWarning != nil {
-		disable = *opts.SEAConfig.DisableExperimentalSEAWarning
+	// Default the experimental warning off when the user did not
+	// express an opinion. Matches Node's recommendation for shipped
+	// SEAs and the historical goreleaser behaviour.
+	if _, set := cfg["disableExperimentalSEAWarning"]; !set {
+		cfg["disableExperimentalSEAWarning"] = true
 	}
-	cfg["disableExperimentalSEAWarning"] = disable
 
-	if len(opts.SEAConfig.Assets) > 0 {
-		cfg["assets"] = opts.SEAConfig.Assets
+	// Goreleaser-owned fields — always overwrite whatever the user
+	// might have set, since these point at internals (cache paths,
+	// scratch tempfiles, etc.).
+	cfg["main"] = opts.MainJS
+	cfg["output"] = output
+	cfg["executable"] = targetNode
+	cfg["useCodeCache"] = false
+	cfg["useSnapshot"] = false
+
+	rewriteAssetPaths(cfg, opts.BuildDir)
+	return cfg, nil
+}
+
+// loadUserSEAConfig reads <buildDir>/sea-config.json into a generic
+// map. Returns an empty (non-nil) map when buildDir is empty or the
+// file does not exist.
+func loadUserSEAConfig(buildDir string) (map[string]any, error) {
+	if buildDir == "" {
+		return map[string]any{}, nil
 	}
-	if len(opts.SEAConfig.ExecArgv) > 0 {
-		cfg["execArgv"] = opts.SEAConfig.ExecArgv
+	path := filepath.Join(buildDir, UserSEAConfigFile)
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return map[string]any{}, nil
+		}
+		return nil, fmt.Errorf("nodesea: read %s: %w", path, err)
 	}
-	if opts.SEAConfig.MainFormat != "" {
-		cfg["mainFormat"] = opts.SEAConfig.MainFormat
+	var cfg map[string]any
+	if err := json.Unmarshal(bts, &cfg); err != nil {
+		return nil, fmt.Errorf("nodesea: parse %s: %w", path, err)
 	}
-	return cfg
+	if cfg == nil {
+		cfg = map[string]any{}
+	}
+	return cfg, nil
+}
+
+// rewriteAssetPaths converts relative asset values in cfg["assets"]
+// into absolute paths anchored at buildDir. Node resolves `assets`
+// paths relative to the directory containing sea-config.json, but
+// goreleaser writes the merged config into a scratch dir, so relative
+// user paths would otherwise break.
+func rewriteAssetPaths(cfg map[string]any, buildDir string) {
+	assets, ok := cfg["assets"].(map[string]any)
+	if !ok || len(assets) == 0 || buildDir == "" {
+		return
+	}
+	for name, v := range assets {
+		p, ok := v.(string)
+		if !ok || filepath.IsAbs(p) {
+			continue
+		}
+		assets[name] = filepath.Join(buildDir, p)
+	}
 }

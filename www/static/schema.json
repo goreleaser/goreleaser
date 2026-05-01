@@ -687,9 +687,6 @@
 					"node_version": {
 						"type": "string"
 					},
-					"sea_config": {
-						"$ref": "#/$defs/NodeSEAConfig"
-					},
 					"buildmode": {
 						"type": "string",
 						"enum": [
@@ -3544,35 +3541,6 @@
 						]
 					}
 				]
-			},
-			"NodeSEAConfig": {
-				"properties": {
-					"assets": {
-						"additionalProperties": {
-							"type": "string"
-						},
-						"type": "object"
-					},
-					"exec_argv": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"disable_experimental_sea_warning": {
-						"type": "boolean"
-					},
-					"main_format": {
-						"type": "string",
-						"enum": [
-							"commonjs",
-							"module",
-							""
-						]
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
 			},
 			"Notarize": {
 				"properties": {

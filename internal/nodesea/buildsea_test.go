@@ -67,25 +67,33 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	target := Target("linux-x64")
 	cacheDir := stageTargetNode(t, version, target)
 
-	mainPath := filepath.Join(t.TempDir(), "main.js")
+	buildDir := t.TempDir()
+	mainPath := filepath.Join(buildDir, "main.js")
 	require.NoError(t, os.WriteFile(mainPath, []byte(`console.log("ok");`), 0o644))
+
+	// User-provided sea-config.json sitting in their project dir.
+	require.NoError(t, os.WriteFile(filepath.Join(buildDir, "sea-config.json"), []byte(`{
+  "assets": {"icon": "assets/icon.png", "abs": "/abs/icon.png"},
+  "execArgv": ["--max-old-space-size=4096"],
+  "disableExperimentalSEAWarning": false,
+  "mainFormat": "module",
+  "main": "ignored.js",
+  "output": "ignored",
+  "executable": "ignored",
+  "useCodeCache": true,
+  "useSnapshot": true
+}`), 0o644))
 
 	outPath := filepath.Join(t.TempDir(), "out", "myapp")
 	rec := stubRunBuildSEA(t, nil)
 
-	disable := false
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
 		BuildToolNode: "/fake/build-tool/node",
 		Target:        target,
 		Version:       version,
 		MainJS:        mainPath,
 		OutPath:       outPath,
-		SEAConfig: SEAConfig{
-			Assets:                        map[string]string{"icon": "/abs/icon.png"},
-			ExecArgv:                      []string{"--max-old-space-size=4096"},
-			DisableExperimentalSEAWarning: &disable,
-			MainFormat:                    "module",
-		},
+		BuildDir:      buildDir,
 	})
 	require.NoError(t, err)
 
@@ -94,16 +102,23 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, info.Mode().Perm()&0o111, "output not executable: %v", info.Mode())
 
-	// Recorded sea-config.json round-trip
+	// Recorded sea-config.json round-trip — goreleaser-owned fields
+	// must override whatever the user file said.
 	require.Equal(t, "/fake/build-tool/node", rec.NodePath)
 	require.Equal(t, mainPath, rec.Cfg["main"])
 	require.Equal(t, filepath.Join(cacheDir, version, string(target), target.hostBinaryName()), rec.Cfg["executable"])
 	require.Equal(t, false, rec.Cfg["useCodeCache"])
 	require.Equal(t, false, rec.Cfg["useSnapshot"])
 	require.Equal(t, false, rec.Cfg["disableExperimentalSEAWarning"], "user-supplied false should be respected")
-	require.Equal(t, map[string]any{"icon": "/abs/icon.png"}, rec.Cfg["assets"])
 	require.Equal(t, []any{"--max-old-space-size=4096"}, rec.Cfg["execArgv"])
 	require.Equal(t, "module", rec.Cfg["mainFormat"])
+
+	// Relative asset path should be rewritten to absolute (anchored at
+	// build dir); absolute path should pass through untouched.
+	assets, ok := rec.Cfg["assets"].(map[string]any)
+	require.True(t, ok, "assets should be a map: %T", rec.Cfg["assets"])
+	require.Equal(t, filepath.Join(buildDir, "assets/icon.png"), assets["icon"])
+	require.Equal(t, "/abs/icon.png", assets["abs"])
 
 	// `output` field should point to a sibling tempfile, not the final outPath.
 	out, _ := rec.Cfg["output"].(string)
@@ -112,12 +127,13 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 		"tempfile %s should live in a scratch dir under %s", out, filepath.Dir(outPath))
 }
 
-func TestBuildViaBuildSEA_DisableSEAWarningDefault(t *testing.T) {
+func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	const version = "v22.20.0"
 	target := Target("linux-x64")
 	stageTargetNode(t, version, target)
 
-	mainPath := filepath.Join(t.TempDir(), "main.js")
+	buildDir := t.TempDir()
+	mainPath := filepath.Join(buildDir, "main.js")
 	require.NoError(t, os.WriteFile(mainPath, []byte(`console.log("ok");`), 0o644))
 
 	outPath := filepath.Join(t.TempDir(), "out", "myapp")
@@ -129,16 +145,42 @@ func TestBuildViaBuildSEA_DisableSEAWarningDefault(t *testing.T) {
 		Version:       version,
 		MainJS:        mainPath,
 		OutPath:       outPath,
+		BuildDir:      buildDir,
 	}))
 
 	require.Equal(t, true, rec.Cfg["disableExperimentalSEAWarning"],
 		"goreleaser default must silence the SEA warning")
 	_, hasAssets := rec.Cfg["assets"]
-	require.False(t, hasAssets, "empty assets must be omitted from sea-config.json")
+	require.False(t, hasAssets, "no user file → no assets")
 	_, hasExec := rec.Cfg["execArgv"]
-	require.False(t, hasExec, "empty execArgv must be omitted")
+	require.False(t, hasExec, "no user file → no execArgv")
 	_, hasFmt := rec.Cfg["mainFormat"]
-	require.False(t, hasFmt, "empty mainFormat must be omitted")
+	require.False(t, hasFmt, "no user file → no mainFormat")
+}
+
+func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
+	const version = "v22.20.0"
+	target := Target("linux-x64")
+	stageTargetNode(t, version, target)
+
+	buildDir := t.TempDir()
+	mainPath := filepath.Join(buildDir, "main.js")
+	require.NoError(t, os.WriteFile(mainPath, []byte(`console.log("ok");`), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(buildDir, "sea-config.json"),
+		[]byte("{not json"), 0o644))
+
+	outPath := filepath.Join(t.TempDir(), "out", "myapp")
+	stubRunBuildSEA(t, nil)
+
+	err := BuildViaBuildSEA(t.Context(), BuildOptions{
+		BuildToolNode: "/fake/build-tool/node",
+		Target:        target,
+		Version:       version,
+		MainJS:        mainPath,
+		OutPath:       outPath,
+		BuildDir:      buildDir,
+	})
+	require.ErrorContains(t, err, "parse")
 }
 
 func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
