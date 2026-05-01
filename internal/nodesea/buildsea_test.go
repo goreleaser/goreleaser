@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
@@ -17,9 +18,8 @@ import (
 // returns a pointer to the recorded calls so tests can assert on argv
 // + the rendered sea-config.json.
 type recordedBuildSEA struct {
-	NodePath string
-	CfgPath  string
-	Cfg      map[string]any
+	CfgPath string
+	Cfg     map[string]any
 }
 
 func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut string) error) *recordedBuildSEA {
@@ -27,8 +27,7 @@ func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut s
 	rec := &recordedBuildSEA{}
 	prev := runBuildSEA
 	t.Cleanup(func() { runBuildSEA = prev })
-	runBuildSEA = func(_ context.Context, nodePath, cfgPath string) error {
-		rec.NodePath = nodePath
+	runBuildSEA = func(_ context.Context, cfgPath string) error {
 		rec.CfgPath = cfgPath
 		bts, err := os.ReadFile(cfgPath)
 		if err != nil {
@@ -64,7 +63,7 @@ func stageTargetNode(t *testing.T, version string, target nodedist.Target) strin
 }
 
 func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
-	const version = "v22.20.0"
+	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
 	cacheDir := stageTargetNode(t, version, target)
 
@@ -89,7 +88,6 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	rec := stubRunBuildSEA(t, nil)
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		BuildToolNode: "/fake/build-tool/node",
 		Target:        target,
 		Version:       version,
 		MainJS:        mainPath,
@@ -105,7 +103,6 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 
 	// Recorded sea-config.json round-trip — goreleaser-owned fields
 	// must override whatever the user file said.
-	require.Equal(t, "/fake/build-tool/node", rec.NodePath)
 	require.Equal(t, mainPath, rec.Cfg["main"])
 	require.Equal(t, filepath.Join(cacheDir, version, string(target), target.HostBinaryName()), rec.Cfg["executable"])
 	require.Equal(t, false, rec.Cfg["useCodeCache"])
@@ -129,7 +126,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 }
 
 func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
-	const version = "v22.20.0"
+	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
@@ -141,7 +138,6 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	rec := stubRunBuildSEA(t, nil)
 
 	require.NoError(t, BuildViaBuildSEA(t.Context(), BuildOptions{
-		BuildToolNode: "/fake/build-tool/node",
 		Target:        target,
 		Version:       version,
 		MainJS:        mainPath,
@@ -160,7 +156,7 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 }
 
 func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
-	const version = "v22.20.0"
+	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
@@ -174,7 +170,6 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	stubRunBuildSEA(t, nil)
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		BuildToolNode: "/fake/build-tool/node",
 		Target:        target,
 		Version:       version,
 		MainJS:        mainPath,
@@ -185,7 +180,7 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 }
 
 func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
-	const version = "v22.20.0"
+	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
 	stageTargetNode(t, version, target)
 
@@ -201,7 +196,6 @@ func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 	})
 
 	err := BuildViaBuildSEA(t.Context(), BuildOptions{
-		BuildToolNode: "/fake/node",
 		Target:        target,
 		Version:       version,
 		MainJS:        mainPath,
@@ -222,11 +216,10 @@ func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 
 func TestBuildViaBuildSEA_Validation(t *testing.T) {
 	cases := map[string]BuildOptions{
-		"missing BuildToolNode": {Target: "linux-x64", Version: "v22.20.0", MainJS: "/m.js", OutPath: "/o"},
-		"missing Version":       {BuildToolNode: "/n", Target: "linux-x64", MainJS: "/m.js", OutPath: "/o"},
-		"missing MainJS":        {BuildToolNode: "/n", Target: "linux-x64", Version: "v22.20.0", OutPath: "/o"},
-		"missing OutPath":       {BuildToolNode: "/n", Target: "linux-x64", Version: "v22.20.0", MainJS: "/m.js"},
-		"unsupported target":    {BuildToolNode: "/n", Target: "freebsd-x64", Version: "v22.20.0", MainJS: "/m.js", OutPath: "/o"},
+		"missing Version":    {Target: "linux-x64", MainJS: "/m.js", OutPath: "/o"},
+		"missing MainJS":     {Target: "linux-x64", Version: "v25.5.0", OutPath: "/o"},
+		"missing OutPath":    {Target: "linux-x64", Version: "v25.5.0", MainJS: "/m.js"},
+		"unsupported target": {Target: "freebsd-x64", Version: "v25.5.0", MainJS: "/m.js", OutPath: "/o"},
 	}
 	for name, opts := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -238,9 +231,8 @@ func TestBuildViaBuildSEA_Validation(t *testing.T) {
 }
 
 // TestBuildViaBuildSEA_RealNode is the end-to-end smoke test: it runs
-// BuildViaBuildSEA against a real Node ≥ v25.5 and execs the produced
-// SEA binary on the host. Skipped in -short mode and when the host
-// lacks a capable Node.
+// BuildViaBuildSEA against the host's `node` and execs the produced
+// SEA binary. Skipped in -short mode and when no `node` is on PATH.
 func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	if testing.Short() {
 		t.Skip("integration: skipping in -short mode")
@@ -249,11 +241,8 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	if err != nil {
 		t.Skip("integration: no `node` in PATH")
 	}
-	if err := probeBuildSEACapable(t.Context(), hostNode); err != nil {
-		t.Skipf("integration: host node lacks --build-sea: %v", err)
-	}
 
-	target := nodedist.Target(currentTarget())
+	target := nodedist.Target(hostTarget())
 	if !supportedGoos(target.Goos()) {
 		t.Skipf("integration: no SEA injector for host target %s", target)
 	}
@@ -271,11 +260,10 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	outPath := filepath.Join(tmp, "myapp")
 
 	require.NoError(t, BuildViaBuildSEA(t.Context(), BuildOptions{
-		BuildToolNode: hostNode,
-		Target:        target,
-		Version:       hostVersion,
-		MainJS:        mainPath,
-		OutPath:       outPath,
+		Target:  target,
+		Version: hostVersion,
+		MainJS:  mainPath,
+		OutPath: outPath,
 	}))
 
 	require.FileExists(t, outPath)
@@ -288,4 +276,16 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	require.Equal(t, "buildsea-ok\n", string(got))
 }
 
-// stageTargetNodeWithSHA helper was placeholder-only; removed.
+// hostTarget returns the nodejs.org/dist target identifier matching the
+// machine running the test.
+func hostTarget() string {
+	osName := runtime.GOOS
+	if osName == "windows" {
+		osName = "win"
+	}
+	arch := runtime.GOARCH
+	if arch == "amd64" {
+		arch = "x64"
+	}
+	return osName + "-" + arch
+}

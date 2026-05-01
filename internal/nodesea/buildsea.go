@@ -21,16 +21,12 @@ const userSEAConfigFile = "sea-config.json"
 // BuildOptions configures BuildViaBuildSEA. Every field except
 // BuildDir and CodeSignID is required.
 type BuildOptions struct {
-	// BuildToolNode is the absolute path to a Node binary that can
-	// drive `--build-sea`, as returned by BuildToolNode.
-	BuildToolNode string
-
 	// Target identifies the per-target Node release this SEA is built
 	// for (e.g. "linux-x64"). Determines container format and whether
 	// the result needs ad-hoc Mach-O signing.
 	Target nodedist.Target
 
-	// Version is the per-target Node release version (e.g. "v22.20.0").
+	// Version is the per-target Node release version (e.g. "v25.5.0").
 	// Used to download the cached target Node binary that becomes the
 	// SEA `executable`.
 	Version string
@@ -54,9 +50,11 @@ type BuildOptions struct {
 }
 
 // BuildViaBuildSEA produces a Single Executable Application at
-// opts.OutPath by invoking `<opts.BuildToolNode> --build-sea
-// sea-config.json`, where sea-config.json points `executable` at the
-// cached per-target Node binary downloaded for opts.Version+opts.Target.
+// opts.OutPath by invoking `node --build-sea sea-config.json`, where
+// sea-config.json points `executable` at the cached per-target Node
+// binary downloaded for opts.Version+opts.Target. The `node` binary on
+// PATH is used as-is; if it cannot drive `--build-sea` the underlying
+// command failure is returned to the caller.
 //
 // If a sea-config.json exists in opts.BuildDir, its user-tunable
 // fields are merged into the rendered config (relative `assets` paths
@@ -112,7 +110,7 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 		return fmt.Errorf("nodesea: write sea-config.json: %w", err)
 	}
 
-	if err := runBuildSEA(ctx, opts.BuildToolNode, cfgPath); err != nil {
+	if err := runBuildSEA(ctx, cfgPath); err != nil {
 		return err
 	}
 
@@ -136,26 +134,24 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 	return nil
 }
 
-// runBuildSEA is the executor for `<node> --build-sea <config>`. It is
-// a package-level variable so tests can record argv and stub out the
-// real subprocess.
+// runBuildSEA is the executor for `node --build-sea <config>`. It is a
+// package-level variable so tests can record argv and stub out the real
+// subprocess. Uses whatever `node` is on PATH; surfaces the underlying
+// failure (including missing binary or unsupported flag) verbatim.
 //
 //nolint:gochecknoglobals
-var runBuildSEA = func(ctx context.Context, nodePath, cfgPath string) error {
-	cmd := exec.CommandContext(ctx, nodePath, "--build-sea", cfgPath)
+var runBuildSEA = func(ctx context.Context, cfgPath string) error {
+	cmd := exec.CommandContext(ctx, "node", "--build-sea", cfgPath)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("nodesea: %s --build-sea %s: %w (output: %s)",
-			nodePath, cfgPath, err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("nodesea: node --build-sea %s: %w (output: %s)",
+			cfgPath, err, strings.TrimSpace(string(out)))
 	}
 	return nil
 }
 
 func validateBuildOptions(opts BuildOptions) error {
 	var errs []string
-	if opts.BuildToolNode == "" {
-		errs = append(errs, "BuildToolNode is required")
-	}
 	if opts.Version == "" {
 		errs = append(errs, "Version is required")
 	}

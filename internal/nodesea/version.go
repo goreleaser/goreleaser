@@ -17,8 +17,8 @@ import (
 var errNoVersion = errors.New("nodesea: could not resolve a Node.js version; add engines.node to package.json")
 
 // ResolveVersion picks a Node.js version from `engines.node` in the
-// project's package.json. Either an exact version (`v22.20.0`,
-// `22.20.0`) or a semver range (`>=22 <23`, `^22`) is accepted.
+// project's package.json. Either an exact version (`v25.5.0`,
+// `25.5.0`) or a semver range (`>=25.5 <26`, `^25`) is accepted.
 // Ranges are resolved to the highest matching release in the embedded
 // nodedist index. The returned version always carries a leading `v`
 // to match nodejs.org URL paths.

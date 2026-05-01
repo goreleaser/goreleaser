@@ -19,14 +19,13 @@ while IFS= read -r line; do
 done < "$TARGETS_FILE"
 targets_json=$(printf '%s\n' "${targets[@]}" | jq -R . | jq -s .)
 
-# Pull the upstream index, keep only releases the SEA builder will
-# accept (mirrors minTargetConstraint in internal/nodesea).
+# Pull the upstream index, keep only Node releases that ship `--build-sea`
+# (v25.5.0+ where LIEF is bundled into the official builds).
 versions=$(curl -fsSL https://nodejs.org/dist/index.json | jq -r '
   map(select(
     (.version | ltrimstr("v") | split(".") | map(tonumber)) as $v |
-      ($v[0] == 22 and $v[1] >= 20)
-      or ($v[0] == 24 and $v[1] >= 6)
-      or ($v[0] >= 25)
+      ($v[0] > 25)
+      or ($v[0] == 25 and $v[1] >= 5)
   ))
   | .[] | .version
 ')

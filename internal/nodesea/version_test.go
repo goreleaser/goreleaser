@@ -14,21 +14,21 @@ func TestResolveVersion(t *testing.T) {
 	t.Run("from package.json engines.node pinned", func(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
-			[]byte(`{"engines":{"node":"22.20.0"}}`), 0o644))
+			[]byte(`{"engines":{"node":"25.5.0"}}`), 0o644))
 		v, err := ResolveVersion(dir)
 		require.NoError(t, err)
-		require.Equal(t, "v22.20.0", v)
+		require.Equal(t, "v25.5.0", v)
 	})
 
 	t.Run("from package.json engines.node range", func(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
-			[]byte(`{"engines":{"node":">=22 <23"}}`), 0o644))
+			[]byte(`{"engines":{"node":">=25 <26"}}`), 0o644))
 		v, err := ResolveVersion(dir)
 		require.NoError(t, err)
 		// Resolved version comes from the embedded release index; just
-		// assert it is a v22.x release.
-		require.True(t, strings.HasPrefix(v, "v22."), "got %q", v)
+		// assert it is a v25.x release.
+		require.True(t, strings.HasPrefix(v, "v25."), "got %q", v)
 	})
 
 	t.Run("nothing set", func(t *testing.T) {

@@ -1,13 +1,13 @@
 // Package node builds Node.js Single Executable Application (SEA)
 // binaries.
 //
-// The pipeline shells out to a build-tool Node.js (≥ v25.5, downloaded
-// once per host into the user cache) and invokes `node --build-sea
-// sea-config.json` against the per-target Node binary GoReleaser
-// fetches from https://nodejs.org/dist (verifying SHA-256). On macOS
-// targets the produced Mach-O is ad-hoc signed via quill (pure-Go) so
-// it loads on Apple Silicon out of the box; users with a Developer ID
-// can layer real signing on top via the signs: pipe.
+// The pipeline shells out to whatever `node` is on `PATH` (must be
+// ≥ v25.5 with LIEF) and invokes `node --build-sea sea-config.json`
+// against the per-target Node binary GoReleaser fetches from
+// https://nodejs.org/dist (verifying SHA-256). On macOS targets the
+// produced Mach-O is ad-hoc signed via quill (pure-Go) so it loads on
+// Apple Silicon out of the box; users with a Developer ID can layer
+// real signing on top via the signs: pipe.
 //
 // Concurrent builds are enabled — each target runs --build-sea against
 // its own scratch directory and outputs to its own path; nothing is
@@ -67,11 +67,9 @@ type Builder struct{}
 // the builder is safe to run concurrently.
 func (b *Builder) AllowConcurrentBuilds() bool { return true }
 
-// Dependencies implements build.DependingBuilder. The new --build-sea
-// flow auto-downloads its build-tool Node when needed, so no system
-// `node` is strictly required. Returning "node" preserves the
-// preflight hint goreleaser surfaces for users who'd rather provide
-// their own.
+// Dependencies implements build.DependingBuilder. The pipeline shells
+// out to `node --build-sea`, so the host must have a `node` ≥ v25.5
+// (LIEF-built) on PATH.
 func (b *Builder) Dependencies() []string {
 	return []string{"node"}
 }
@@ -120,28 +118,17 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 }
 
 // Prepare implements build.PreparedBuilder. It runs once per build
-// configuration before any per-target Build call: resolves and probes
-// the build-tool Node up front (downloading it if necessary),
-// validates that the resolved target Node version is in the
-// V2-blob-format supported range, and runs `npm run build` when the
-// project's `package.json` declares a `scripts.build` entry. Failing
-// here is preferable to failing partway through a multi-target build.
+// configuration before any per-target Build call: resolves the target
+// Node version (failing fast if unset) and runs `npm run build` when
+// the project's `package.json` declares a `scripts.build` entry. The
+// host `node` is invoked as-is at Build time; if it cannot drive
+// `--build-sea` the underlying error is surfaced to the user.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
-	nodePath, err := nodesea.BuildToolNode(ctx)
-	if err != nil {
-		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
-	}
-	log.WithField("path", nodePath).Debug("resolved build-tool node")
-
 	version, err := nodesea.ResolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("nodesea: resolve target node version: %w", err)
 	}
 	log.WithField("version", version).Debug("resolved target node version")
-
-	if err := nodesea.ValidateTargetNodeVersion(version); err != nil {
-		return err
-	}
 
 	return runNPMBuildScript(ctx, build)
 }
@@ -230,11 +217,6 @@ func buildViaBuildSEA(
 		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
 
-	buildToolNode, err := nodesea.BuildToolNode(ctx)
-	if err != nil {
-		return fmt.Errorf("nodesea: locate build-tool node: %w", err)
-	}
-
 	absMain, err := filepath.Abs(mainPath)
 	if err != nil {
 		absMain = mainPath
@@ -247,12 +229,11 @@ func buildViaBuildSEA(
 		return err
 	}
 	return nodesea.BuildViaBuildSEA(ctx, nodesea.BuildOptions{
-		BuildToolNode: buildToolNode,
-		Target:        target,
-		Version:       version,
-		MainJS:        absMain,
-		OutPath:       options.Path,
-		BuildDir:      absBuildDir,
+		Target:   target,
+		Version:  version,
+		MainJS:   absMain,
+		OutPath:  options.Path,
+		BuildDir: absBuildDir,
 	})
 }
 

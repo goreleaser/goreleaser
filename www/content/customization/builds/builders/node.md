@@ -9,9 +9,13 @@ weight: 25
 
 You can build Node.js [Single Executable Application][sea] (SEA) binaries
 with GoReleaser, in pure Go — no `postject` or any other npm tooling
-required. GoReleaser shells out to a host-platform Node.js (≥ v25.5.0,
-auto-downloaded) once per build to invoke `node --build-sea`, and
-downloads the per-target Node.js binary that becomes the SEA executable.
+required. GoReleaser shells out to whatever `node` is on your `PATH` to
+invoke `node --build-sea`, and downloads the per-target Node.js binary
+that becomes the SEA executable.
+
+The `--build-sea` subcommand exists only in Node.js ≥ v25.5.0 built with
+LIEF — make sure the `node` on your `PATH` is recent enough; if it is
+not, the underlying `node --build-sea` failure is surfaced.
 
 [sea]: https://nodejs.org/api/single-executable-applications.html
 
@@ -32,16 +36,13 @@ For an existing project, copy the snippet under
 
 For each requested target, GoReleaser:
 
-1. Resolves the build-tool Node.js (≥ v25.5.0) used to invoke
-   `--build-sea` (see [Build-tool Node.js](#build-tool-nodejs)).
-2. Resolves the target Node.js version from `engines.node` in
+1. Resolves the target Node.js version from `engines.node` in
    `package.json` (see [Version resolution](#version-resolution)).
-3. Downloads the official Node.js binary for that target, verifying
+2. Downloads the official Node.js binary for that target, verifying
    its SHA-256 against the release index embedded in GoReleaser.
-4. Merges your `sea-config.json` (if present) with the
+3. Merges your `sea-config.json` (if present) with the
    goreleaser-owned fields and runs
-   `<build-tool-node> --build-sea sea-config.json` to produce the
-   final binary.
+   `node --build-sea sea-config.json` to produce the final binary.
 
 ## Bundling your app
 
@@ -191,45 +192,18 @@ minimum config needed to drive `node --build-sea`.
 See Node's [Single Executable Applications docs][sea] for the full
 list of accepted fields.
 
-## Build-tool Node.js
-
-The `--build-sea` subcommand exists only in Node.js ≥ v25.5.0 (built
-with LIEF). GoReleaser resolves the build-tool Node in this order:
-
-1. `$GORELEASER_NODE_BUILD_TOOL` — absolute path to a Node binary you
-   manage. Must satisfy the `--build-sea` capability probe.
-2. `node` on `PATH`, if it satisfies the probe.
-3. Auto-download a known-good release into
-   `${TMPDIR:-/tmp}/goreleaser/node/buildtool/<version>/`
-   for the host platform. The download (~30 MB) happens once and is
-   reused across all subsequent builds.
-
-The capability probe runs `node -p "process.config.variables.node_use_lief"`
-and requires it to print `true`; this is the same check the Node.js test
-suite uses. Custom Node builds compiled `--without-lief` will not pass
-the probe even if their `--version` reports v25.5+.
-
-
 ## Version resolution
 
 The target Node.js version (the binary that becomes the SEA
 executable) is resolved exclusively from the `engines.node` field of
 the build directory's `package.json`. Either an exact version
-(`v22.20.0`, `22.20.0`) or a semver range (`>=22 <23`, `^22`) is
+(`v25.5.0`, `25.5.0`) or a semver range (`>=25.5 <26`, `^25`) is
 accepted; ranges resolve to the highest matching release in the
 embedded nodedist index. Pin to an exact version for reproducible
 release artifacts.
 
-The resolved version must be in the V2-blob-format range understood
-by LIEF-emitted SEAs:
-
-- `>= v22.20.0` (back-ported to the v22 LTS line)
-- `>= v24.6.0`
-- `>= v25.0.0`
-
-Older releases (v18, v20, v22.0–v22.19, v23, v24.0–v24.5) only read
-the legacy V1 blob format and will reject the produced binary at
-runtime. GoReleaser fails fast in this case with an error pointing
-at the floor above.
+Only Node ≥ v25.5.0 is supported — that is the floor where the
+official Node.js builds ship `--build-sea` (LIEF-backed). Older
+releases are rejected at resolve time.
 
 {{< g_templates >}}
