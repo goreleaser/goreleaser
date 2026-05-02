@@ -132,7 +132,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	if err != nil {
 		return fmt.Errorf("node: scan package.json: %w", err)
 	}
-	if strings.TrimSpace(pkg.Scripts["build"]) == "" {
+	if _, ok := pkg.Scripts["build"]; ok {
 		log.WithField("dir", build.Dir).
 			Debug("no scripts.build in package.json; skipping auto-bundle")
 		return nil
@@ -147,6 +147,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 		return err
 	}
 	env = append(env, tenv...)
+
 	command := []string{"npm", "run", "build"}
 	log.WithField("dir", build.Dir).
 		Info("running npm run build")
@@ -171,40 +172,17 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		},
 	}
 
-	env := append([]string{}, ctx.Env.Strings()...)
+	env := []string{}
+	env = append(env, ctx.Env.Strings()...)
 	tpl := tmpl.New(ctx).
 		WithBuildOptions(options).
-		WithEnvS(env).WithArtifact(a)
-
+		WithArtifact(a).
+		WithEnvS(env)
 	tenv, err := base.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}
 	env = append(env, tenv...)
-
-	log.WithField("binary", options.Name).
-		WithField("target", options.Target.String()).
-		Info("building")
-
-	main, err := tpl.Apply(build.Main)
-	if err != nil {
-		return fmt.Errorf("node: template main: %w", err)
-	}
-	mainPath := filepath.Join(build.Dir, main)
-	if _, err := os.Stat(mainPath); err != nil {
-		return fmt.Errorf("node: main %q not found in %q: %w", main, build.Dir, err)
-	}
-
-	// XXX: do we need these to be abs paths
-	absMain, err := filepath.Abs(mainPath)
-	if err != nil {
-		return fmt.Errorf("node: abs main %q: %w", mainPath, err)
-	}
-
-	absBuildDir, err := filepath.Abs(build.Dir)
-	if err != nil {
-		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
-	}
 
 	targetNode, err := ensureNode(ctx, build.Dir, target.Target)
 	if err != nil {
@@ -216,9 +194,13 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 
 	cfgPath := filepath.Join(filepath.Dir(options.Path), "sea-config.json")
-	if err := createSEAConfig(cfgPath, absBuildDir, absMain, targetNode, options.Path); err != nil {
+	if err := createSEAConfig(tpl, build, cfgPath, targetNode, options.Path); err != nil {
 		return err
 	}
+
+	log.WithField("binary", options.Name).
+		WithField("target", options.Target.String()).
+		Info("building")
 
 	command := []string{build.Tool, "--build-sea", cfgPath}
 	if err := base.Exec(ctx, command, env, ""); err != nil {

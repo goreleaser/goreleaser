@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 )
@@ -93,6 +94,10 @@ func resolveVersionString(raw string) (string, error) {
 // are extracted; bare windows .exe archives are used as-is. The
 // returned path lives under a fresh temp directory.
 func downloadHostBinary(ctx context.Context, version, target string) (string, error) {
+	log.WithField("version", version).
+		WithField("target", target).
+		Info("downloading")
+
 	isWin := strings.HasPrefix(target, "win-")
 	archiveFile := fmt.Sprintf("node-%s-%s.tar.gz", version, target)
 	binName := "node"

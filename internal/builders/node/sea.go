@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/quill/quill"
 )
 
@@ -33,10 +35,28 @@ import (
 // signs: and notarize: pipes — quill strips the ad-hoc signature
 // before re-signing.
 
-func createSEAConfig(name, buildDir, mainPath, targetNode, output string) error {
+func createSEAConfig(tpl *tmpl.Template, build config.Build, name, targetNode, output string) error {
+	main, err := tpl.Apply(build.Main)
+	if err != nil {
+		return fmt.Errorf("node: template main: %w", err)
+	}
+	mainPath := filepath.Join(build.Dir, main)
+	if _, err := os.Stat(mainPath); err != nil {
+		return fmt.Errorf("node: main %q not found in %q: %w", main, build.Dir, err)
+	}
+	absMainPath, err := filepath.Abs(mainPath)
+	if err != nil {
+		return fmt.Errorf("node: abs main %q: %w", mainPath, err)
+	}
+
+	absBuildDir, err := filepath.Abs(build.Dir)
+	if err != nil {
+		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
+	}
+
 	cfg, err := buildSEAConfigJSON(
-		buildDir,
-		mainPath,
+		absBuildDir,
+		absMainPath,
 		targetNode,
 		output,
 	)
