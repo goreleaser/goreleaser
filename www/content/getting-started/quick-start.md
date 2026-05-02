@@ -49,7 +49,7 @@ npm install
 Then create an `index.js` file:
 
 ```js {filename="index.js"}
-console.log("Ba dum, tss!")
+console.log("Ba dum, tss!");
 ```
 
 {{< /tab >}}
