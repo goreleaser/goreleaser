@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"fmt"
@@ -26,11 +26,11 @@ import (
 var signMachO = func(path, id string) error {
 	cfg, err := quill.NewSigningConfigFromPEMs(path, "", "", "", false)
 	if err != nil {
-		return fmt.Errorf("nodesea: quill config for %s: %w", path, err)
+		return fmt.Errorf("node: quill config for %s: %w", path, err)
 	}
 	cfg.WithIdentity(id)
 	if err := quill.Sign(*cfg); err != nil {
-		return fmt.Errorf("nodesea: ad-hoc sign %s: %w", path, err)
+		return fmt.Errorf("node: ad-hoc sign %s: %w", path, err)
 	}
 	return nil
 }

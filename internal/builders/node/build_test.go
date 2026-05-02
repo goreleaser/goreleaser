@@ -53,11 +53,14 @@ func TestIsValid(t *testing.T) {
 		"win-x64",
 	} {
 		t.Run(target, func(t *testing.T) {
-			require.True(t, isValid(target))
+			tt, ok := parseTarget(target)
+			require.True(t, ok)
+			require.True(t, tt.IsSupported())
 		})
 	}
 	t.Run("invalid", func(t *testing.T) {
-		require.False(t, isValid("plan9-amd64"))
+		_, ok := parseTarget("plan9-amd64")
+		require.False(t, ok)
 	})
 }
 
@@ -110,13 +113,14 @@ func TestCurrentTarget(t *testing.T) {
 	if arch == "amd64" {
 		arch = "x64"
 	}
-	require.True(t, isValid(osName+"-"+arch), "host should be a valid build target")
+	_, ok := parseTarget(osName + "-" + arch)
+	require.True(t, ok, "host should be a valid build target")
 }
 
 // TestRunNPMBuildScript covers the per-build npm wire-up: silent skip
 // paths, error propagation, and that build.Env templating reaches the
 // spawned `npm` process. The end-to-end behaviour of `npm run build`
-// itself is exercised by the unit tests in `internal/nodesea`; here we
+// itself is exercised by sea_test.go; here we
 // validate the glue that turns a build config into a RunNPMBuild call.
 func TestRunNPMBuildScript(t *testing.T) {
 	if runtime.GOOS == "windows" {

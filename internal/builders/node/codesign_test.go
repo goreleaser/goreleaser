@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"errors"

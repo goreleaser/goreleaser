@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ func TestRunNPMBuild_BadPackageJSON(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(dir, "package.json"),
 		[]byte(`{not json`), 0o644))
-	err := RunNPMBuild(t.Context(), dir, nil, nil, nil)
+	err := runNPMBuild(t.Context(), dir, nil, nil, nil)
 	require.Error(t, err)
 }
 
@@ -36,7 +36,7 @@ func TestRunNPMBuild(t *testing.T) {
 		fakeNPMOnPath(t, dir, 0)
 
 		var stdout, stderr bytes.Buffer
-		require.NoError(t, RunNPMBuild(t.Context(), dir, nil, &stdout, &stderr))
+		require.NoError(t, runNPMBuild(t.Context(), dir, nil, &stdout, &stderr))
 
 		got, err := os.ReadFile(filepath.Join(dir, "calls.log"))
 		require.NoError(t, err)
@@ -44,7 +44,7 @@ func TestRunNPMBuild(t *testing.T) {
 	})
 
 	t.Run("silent skip when no package.json", func(t *testing.T) {
-		require.NoError(t, RunNPMBuild(t.Context(), t.TempDir(), nil, nil, nil))
+		require.NoError(t, runNPMBuild(t.Context(), t.TempDir(), nil, nil, nil))
 	})
 
 	t.Run("silent skip when scripts.build missing", func(t *testing.T) {
@@ -52,11 +52,11 @@ func TestRunNPMBuild(t *testing.T) {
 		require.NoError(t, os.WriteFile(
 			filepath.Join(dir, "package.json"),
 			[]byte(`{"scripts":{"test":"vitest"}}`), 0o644))
-		// no fake npm on PATH; if RunNPMBuild attempted to spawn npm
+		// no fake npm on PATH; if runNPMBuild attempted to spawn npm
 		// the test would either fail loudly or shell out to the host
 		// npm — both undesirable. Empty env keeps PATH unset so any
 		// spawn attempt fails fast.
-		require.NoError(t, RunNPMBuild(t.Context(), dir, []string{}, nil, nil))
+		require.NoError(t, runNPMBuild(t.Context(), dir, []string{}, nil, nil))
 	})
 
 	t.Run("propagates non-zero exit", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestRunNPMBuild(t *testing.T) {
 			[]byte(`{"scripts":{"build":"x"}}`), 0o644))
 		fakeNPMOnPath(t, dir, 1)
 
-		err := RunNPMBuild(t.Context(), dir, nil, nil, nil)
+		err := runNPMBuild(t.Context(), dir, nil, nil, nil)
 		require.Error(t, err)
 	})
 }

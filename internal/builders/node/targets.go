@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"path"
 	"slices"
 	"strings"
 
@@ -23,7 +24,8 @@ var supportedTargets = []string{
 	"win-x64",
 }
 
-// Target represents a build target.
+// Target represents a build target (a nodejs.org/dist identifier such
+// as "linux-x64" plus the parsed Os/Arch components).
 type Target struct {
 	Target string
 	Os     string
@@ -39,27 +41,73 @@ func (t Target) Fields() map[string]string {
 }
 
 // String implements fmt.Stringer.
-func (t Target) String() string {
-	return t.Target
+func (t Target) String() string { return t.Target }
+
+// Goos returns the Go GOOS value matching the target.
+func (t Target) Goos() string {
+	if t.Os == "win" {
+		return "windows"
+	}
+	return t.Os
+}
+
+// Goarch returns the Go GOARCH value matching the target.
+func (t Target) Goarch() string {
+	if t.Arch == "x64" {
+		return "amd64"
+	}
+	return t.Arch
+}
+
+// IsWindows reports whether the target is a windows distribution.
+func (t Target) IsWindows() bool { return t.Os == "win" }
+
+// IsSupported reports whether t is in the canonical supportedTargets
+// set.
+func (t Target) IsSupported() bool { return slices.Contains(supportedTargets, t.Target) }
+
+// archiveName returns the file name nodejs.org publishes for this
+// target under https://nodejs.org/dist/<version>/.
+func (t Target) archiveName(version string) string {
+	if t.IsWindows() {
+		return path.Join(t.Target, "node.exe")
+	}
+	return fmt.Sprintf("node-%s-%s.tar.gz", version, t.Target)
+}
+
+// hostBinaryName returns the basename of the Node.js executable for
+// this target ("node" or "node.exe").
+func (t Target) hostBinaryName() string {
+	if t.IsWindows() {
+		return "node.exe"
+	}
+	return "node"
+}
+
+// tarEntry returns the path of the node binary inside the published
+// tar.gz archive for the given version. Only meaningful for non-windows
+// targets.
+func (t Target) tarEntry(version string) string {
+	return fmt.Sprintf("node-%s-%s/bin/node", version, t.Target)
 }
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
-	if !isValid(target) {
+	t, ok := parseTarget(target)
+	if !ok {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
 	}
-	parts := strings.Split(target, "-")
-	return Target{
-		Target: target,
-		Os:     parts[0],
-		Arch:   parts[1],
-	}, nil
+	return t, nil
 }
 
-func isValid(target string) bool {
-	return slices.Contains(supportedTargets, target)
+// parseTarget splits a nodejs.org/dist identifier and reports whether
+// it's in the supported set.
+func parseTarget(target string) (Target, bool) {
+	if !slices.Contains(supportedTargets, target) {
+		return Target{}, false
+	}
+	os, arch, _ := strings.Cut(target, "-")
+	return Target{Target: target, Os: os, Arch: arch}, true
 }
 
-func defaultTargets() []string {
-	return slices.Clone(supportedTargets)
-}
+func defaultTargets() []string { return slices.Clone(supportedTargets) }

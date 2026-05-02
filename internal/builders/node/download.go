@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"archive/tar"
@@ -18,7 +18,7 @@ import (
 // are extracted; bare windows .exe archives are used as-is. The
 // returned path lives under a fresh temp directory.
 func downloadHostBinary(ctx context.Context, version string, target Target) (string, error) {
-	archive, err := nodedist.Download(ctx, version, target.ArchiveName(version))
+	archive, err := nodedist.Download(ctx, version, target.archiveName(version))
 	if err != nil {
 		return "", err
 	}
@@ -27,7 +27,7 @@ func downloadHostBinary(ctx context.Context, version string, target Target) (str
 	if err != nil {
 		return "", err
 	}
-	bin := filepath.Join(dir, target.HostBinaryName())
+	bin := filepath.Join(dir, target.hostBinaryName())
 
 	if target.IsWindows() {
 		if err := os.Rename(archive, bin); err != nil {
@@ -94,5 +94,5 @@ func extractFromTarGz(archivePath, entry, dst string) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("nodesea: %s not found in %s", entry, archivePath)
+	return fmt.Errorf("node: %s not found in %s", entry, archivePath)
 }

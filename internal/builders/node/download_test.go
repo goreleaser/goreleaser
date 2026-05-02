@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"archive/tar"
@@ -13,7 +13,7 @@ import (
 
 func TestExtractFromTarGz_AtomicOnFailure(t *testing.T) {
 	const version = "v22.10.0"
-	target := Target("linux-x64")
+	target := mustParseTarget(t, "linux-x64")
 
 	// Build a valid tarball with a 4 KiB payload, then truncate the
 	// gzipped bytes so io.Copy hits unexpected EOF mid-extract.
@@ -36,7 +36,7 @@ func TestExtractFromTarGz_AtomicOnFailure(t *testing.T) {
 }
 
 func TestExtractFromTarGz_HappyPath(t *testing.T) {
-	target := Target("linux-x64")
+	target := mustParseTarget(t, "linux-x64")
 	payload := []byte("fake node binary")
 	archive := tarGz(t, target.tarEntry("v22.10.0"), payload)
 
@@ -52,15 +52,17 @@ func TestExtractFromTarGz_HappyPath(t *testing.T) {
 }
 
 func TestTarget(t *testing.T) {
-	require.Equal(t, "node-v22.10.0-linux-x64.tar.gz", Target("linux-x64").ArchiveName("v22.10.0"))
-	require.Equal(t, "win-x64/node.exe", Target("win-x64").ArchiveName("v22.10.0"))
-	require.Equal(t, "node", Target("linux-x64").HostBinaryName())
-	require.Equal(t, "node.exe", Target("win-x64").HostBinaryName())
-	require.Equal(t, "linux", Target("linux-x64").Goos())
-	require.Equal(t, "windows", Target("win-x64").Goos())
-	require.Equal(t, "amd64", Target("linux-x64").Goarch())
-	require.True(t, Target("win-x64").IsWindows())
-	require.False(t, Target("linux-x64").IsWindows())
+	linux := mustParseTarget(t, "linux-x64")
+	win := mustParseTarget(t, "win-x64")
+	require.Equal(t, "node-v22.10.0-linux-x64.tar.gz", linux.archiveName("v22.10.0"))
+	require.Equal(t, "win-x64/node.exe", win.archiveName("v22.10.0"))
+	require.Equal(t, "node", linux.hostBinaryName())
+	require.Equal(t, "node.exe", win.hostBinaryName())
+	require.Equal(t, "linux", linux.Goos())
+	require.Equal(t, "windows", win.Goos())
+	require.Equal(t, "amd64", linux.Goarch())
+	require.True(t, win.IsWindows())
+	require.False(t, linux.IsWindows())
 }
 
 // tarGz builds a single-entry gzipped tarball for tests.

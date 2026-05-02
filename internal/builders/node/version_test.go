@@ -1,4 +1,4 @@
-package nodesea
+package node
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ func TestResolveVersion(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
 			[]byte(`{"engines":{"node":"25.5.0"}}`), 0o644))
-		v, err := ResolveVersion(dir)
+		v, err := resolveVersion(dir)
 		require.NoError(t, err)
 		require.Equal(t, "v25.5.0", v)
 	})
@@ -24,7 +24,7 @@ func TestResolveVersion(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
 			[]byte(`{"engines":{"node":">=25 <26"}}`), 0o644))
-		v, err := ResolveVersion(dir)
+		v, err := resolveVersion(dir)
 		require.NoError(t, err)
 		// Resolved version comes from the embedded release index; just
 		// assert it is a v25.x release.
@@ -33,7 +33,7 @@ func TestResolveVersion(t *testing.T) {
 
 	t.Run("nothing set", func(t *testing.T) {
 		dir := t.TempDir()
-		_, err := ResolveVersion(dir)
+		_, err := resolveVersion(dir)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, errNoVersion))
 	})
@@ -42,7 +42,7 @@ func TestResolveVersion(t *testing.T) {
 		dir := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
 			[]byte(`{"engines":{"node":"^99"}}`), 0o644))
-		_, err := ResolveVersion(dir)
+		_, err := resolveVersion(dir)
 		require.Error(t, err)
 	})
 }

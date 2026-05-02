@@ -29,7 +29,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
-	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -105,7 +104,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	for _, t := range build.Targets {
-		if !isValid(t) {
+		if _, ok := parseTarget(t); !ok {
 			return build, fmt.Errorf("invalid target: %s", t)
 		}
 	}
@@ -120,9 +119,9 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 // host `node` is invoked as-is at Build time; if it cannot drive
 // `--build-sea` the underlying error is surfaced to the user.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
-	version, err := nodesea.ResolveVersion(build.Dir)
+	version, err := resolveVersion(build.Dir)
 	if err != nil {
-		return fmt.Errorf("nodesea: resolve target node version: %w", err)
+		return fmt.Errorf("node: resolve target node version: %w", err)
 	}
 	log.WithField("version", version).Debug("resolved target node version")
 
@@ -140,23 +139,22 @@ func runNPMBuildScript(ctx *context.Context, build config.Build) error {
 	env := append(os.Environ(), ctx.Env.Strings()...)
 	tenv, err := base.TemplateEnv(build.Env, tmpl.New(ctx))
 	if err != nil {
-		return fmt.Errorf("nodesea: template env: %w", err)
+		return fmt.Errorf("node: template env: %w", err)
 	}
 	env = append(env, tenv...)
-	return nodesea.RunNPMBuild(ctx, build.Dir, env, logext.NewWriter(), logext.NewWriter())
+	return runNPMBuild(ctx, build.Dir, env, logext.NewWriter(), logext.NewWriter())
 }
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	t := options.Target.(Target)
-	target := nodesea.Target(t.Target)
+	target := options.Target.(Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
 		Goos:   target.Goos(),
 		Goarch: target.Goarch(),
-		Target: t.Target,
+		Target: target.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
@@ -189,35 +187,34 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	return nil
 }
 
-// buildViaBuildSEA dispatches to nodesea.Build. The user's
-// sea-config.json (if any) is read by the nodesea package directly
-// from build.Dir.
+// buildViaBuildSEA dispatches to buildSEA. The user's sea-config.json
+// (if any) is read directly from build.Dir.
 func buildViaBuildSEA(
 	ctx *context.Context,
 	build config.Build,
-	target nodesea.Target,
+	target Target,
 	options api.Options,
 	tpl *tmpl.Template,
 ) error {
 	main, err := tpl.Apply(build.Main)
 	if err != nil {
-		return fmt.Errorf("nodesea: template main: %w", err)
+		return fmt.Errorf("node: template main: %w", err)
 	}
 	mainPath := filepath.Join(build.Dir, main)
 	if _, err := os.Stat(mainPath); err != nil {
-		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
+		return fmt.Errorf("node: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
 	absMain, err := filepath.Abs(mainPath)
 	if err != nil {
-		return fmt.Errorf("nodesea: abs main %q: %w", mainPath, err)
+		return fmt.Errorf("node: abs main %q: %w", mainPath, err)
 	}
 	absBuildDir, err := filepath.Abs(build.Dir)
 	if err != nil {
-		return fmt.Errorf("nodesea: abs build dir %q: %w", build.Dir, err)
+		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
 	}
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
 	}
-	return nodesea.Build(ctx, target, absBuildDir, absMain, options.Path)
+	return buildSEA(ctx, target, absBuildDir, absMain, options.Path)
 }
