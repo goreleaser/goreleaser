@@ -85,11 +85,6 @@ func TestBuildSEAConfigJSON_InvalidUserFile(t *testing.T) {
 	require.ErrorContains(t, err, "parse")
 }
 
-func TestBuildSEA_UnsupportedTarget(t *testing.T) {
-	err := buildSEA(t.Context(), Target{Target: "freebsd-x64", Os: "freebsd", Arch: "x64"}, t.TempDir(), "/m.js", "/o")
-	require.ErrorContains(t, err, "unsupported target")
-}
-
 // TestBuildSEA_RealNode is the end-to-end smoke test: it runs buildSEA
 // against the host's `node` and execs the produced SEA binary.
 // Skipped in -short mode and when no `node` is on PATH.

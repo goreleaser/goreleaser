@@ -43,27 +43,6 @@ func TestParse(t *testing.T) {
 	})
 }
 
-func TestIsValid(t *testing.T) {
-	for _, target := range []string{
-		"darwin-arm64",
-		"darwin-x64",
-		"linux-arm64",
-		"linux-x64",
-		"win-arm64",
-		"win-x64",
-	} {
-		t.Run(target, func(t *testing.T) {
-			tt, ok := parseTarget(target)
-			require.True(t, ok)
-			require.True(t, tt.IsSupported())
-		})
-	}
-	t.Run("invalid", func(t *testing.T) {
-		_, ok := parseTarget("plan9-amd64")
-		require.False(t, ok)
-	})
-}
-
 func TestWithDefaults(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})

@@ -32,10 +32,6 @@ import (
 // signs: and notarize: pipes — quill strips the ad-hoc signature
 // before re-signing.
 func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath string) error {
-	if !target.IsSupported() {
-		return fmt.Errorf("node: unsupported target %q", target)
-	}
-
 	version, err := resolveVersion(buildDir)
 	if err != nil {
 		return fmt.Errorf("node: resolve node version: %w", err)

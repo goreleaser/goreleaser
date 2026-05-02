@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
@@ -18,7 +19,14 @@ import (
 // are extracted; bare windows .exe archives are used as-is. The
 // returned path lives under a fresh temp directory.
 func downloadHostBinary(ctx context.Context, version string, target Target) (string, error) {
-	archive, err := nodedist.Download(ctx, version, target.archiveName(version))
+	archiveFile := fmt.Sprintf("node-%s-%s.tar.gz", version, target.Target)
+	binName := "node"
+	if target.IsWindows() {
+		archiveFile = path.Join(target.Target, "node.exe")
+		binName = "node.exe"
+	}
+
+	archive, err := nodedist.Download(ctx, version, archiveFile)
 	if err != nil {
 		return "", err
 	}
@@ -27,7 +35,7 @@ func downloadHostBinary(ctx context.Context, version string, target Target) (str
 	if err != nil {
 		return "", err
 	}
-	bin := filepath.Join(dir, target.hostBinaryName())
+	bin := filepath.Join(dir, binName)
 
 	if target.IsWindows() {
 		if err := os.Rename(archive, bin); err != nil {

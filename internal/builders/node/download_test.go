@@ -54,10 +54,6 @@ func TestExtractFromTarGz_HappyPath(t *testing.T) {
 func TestTarget(t *testing.T) {
 	linux := mustParseTarget(t, "linux-x64")
 	win := mustParseTarget(t, "win-x64")
-	require.Equal(t, "node-v22.10.0-linux-x64.tar.gz", linux.archiveName("v22.10.0"))
-	require.Equal(t, "win-x64/node.exe", win.archiveName("v22.10.0"))
-	require.Equal(t, "node", linux.hostBinaryName())
-	require.Equal(t, "node.exe", win.hostBinaryName())
 	require.Equal(t, "linux", linux.Goos())
 	require.Equal(t, "windows", win.Goos())
 	require.Equal(t, "amd64", linux.Goarch())

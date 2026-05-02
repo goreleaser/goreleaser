@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"path"
 	"slices"
 	"strings"
 
@@ -61,28 +60,6 @@ func (t Target) Goarch() string {
 
 // IsWindows reports whether the target is a windows distribution.
 func (t Target) IsWindows() bool { return t.Os == "win" }
-
-// IsSupported reports whether t is in the canonical supportedTargets
-// set.
-func (t Target) IsSupported() bool { return slices.Contains(supportedTargets, t.Target) }
-
-// archiveName returns the file name nodejs.org publishes for this
-// target under https://nodejs.org/dist/<version>/.
-func (t Target) archiveName(version string) string {
-	if t.IsWindows() {
-		return path.Join(t.Target, "node.exe")
-	}
-	return fmt.Sprintf("node-%s-%s.tar.gz", version, t.Target)
-}
-
-// hostBinaryName returns the basename of the Node.js executable for
-// this target ("node" or "node.exe").
-func (t Target) hostBinaryName() string {
-	if t.IsWindows() {
-		return "node.exe"
-	}
-	return "node"
-}
 
 // tarEntry returns the path of the node binary inside the published
 // tar.gz archive for the given version. Only meaningful for non-windows
