@@ -8,6 +8,10 @@
 
 version: 2
 
+before:
+  hooks:
+    - npm ci
+
 builds:
   - builder: node
     targets:
