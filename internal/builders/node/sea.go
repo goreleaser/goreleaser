@@ -10,12 +10,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 )
 
-// userSEAConfigFile is the filename goreleaser looks up in the build
-// directory for user-supplied sea-config.json fields. Goreleaser owns
-// `output`, `executable`, `main`, `useCodeCache`, and `useSnapshot` —
-// any user-set values for those keys are overridden.
-const userSEAConfigFile = "sea-config.json"
-
 // buildSEA produces a Single Executable Application at outPath for
 // target by invoking `node --build-sea sea-config.json`, where
 // sea-config.json points `executable` at the per-target Node binary
@@ -107,7 +101,7 @@ func buildSEAConfigJSON(buildDir, mainPath, targetNode, output string) (map[stri
 // loadUserSEAConfig reads <buildDir>/sea-config.json into a generic
 // map. Returns an empty (non-nil) map when the file does not exist.
 func loadUserSEAConfig(buildDir string) (map[string]any, error) {
-	path := filepath.Join(buildDir, userSEAConfigFile)
+	path := filepath.Join(buildDir, "sea-config.json")
 	bts, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
