@@ -111,7 +111,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "bun", "deno", "node", "rust", "zig"},
+			[]string{"go", "bun", "deno", "node", "rust", "zig", "uv", "poetry"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)

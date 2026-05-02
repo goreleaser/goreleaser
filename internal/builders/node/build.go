@@ -28,7 +28,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
-	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -114,44 +113,17 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Prepare implements build.PreparedBuilder. It runs once per build
 // configuration before any per-target Build call: resolves the target
-// Node version (failing fast if unset) and runs `npm run build` when
-// the project's `package.json` declares a `scripts.build` entry. The
-// host `node` is invoked as-is at Build time; if it cannot drive
-// `--build-sea` the underlying error is surfaced to the user.
+// Node version, failing fast if unset.
 //
 // Dependency installation (`npm ci` and friends) is intentionally not
 // performed here — drive it from the `before:` hook instead.
-func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
+func (b *Builder) Prepare(_ *context.Context, build config.Build) error {
 	version, err := resolveVersion(build.Dir)
 	if err != nil {
 		return fmt.Errorf("node: resolve target node version: %w", err)
 	}
 	log.WithField("version", version).Debug("resolved target node version")
-
-	pkg, err := packagejson.Open(filepath.Join(build.Dir, "package.json"))
-	if err != nil {
-		return fmt.Errorf("node: scan package.json: %w", err)
-	}
-	if _, ok := pkg.Scripts["build"]; ok {
-		log.WithField("dir", build.Dir).
-			Debug("no scripts.build in package.json; skipping auto-bundle")
-		return nil
-	}
-
-	env := []string{}
-	env = append(env, ctx.Env.Strings()...)
-	tpl := tmpl.New(ctx).
-		WithEnvS(env)
-	tenv, err := base.TemplateEnv(build.Env, tpl)
-	if err != nil {
-		return err
-	}
-	env = append(env, tenv...)
-
-	command := []string{"npm", "run", "build"}
-	log.WithField("dir", build.Dir).
-		Info("running npm run build")
-	return base.Exec(ctx, command, env, build.Dir)
+	return nil
 }
 
 // Build implements build.Builder.
@@ -184,6 +156,14 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	env = append(env, tenv...)
 
+	tool, err := tpl.Apply(build.Tool)
+	if err != nil {
+		return fmt.Errorf("node: template tool: %w", err)
+	}
+	if err := checkHostNodeVersion(ctx, tool, env); err != nil {
+		return err
+	}
+
 	targetNode, err := ensureNode(ctx, build.Dir, target.Target)
 	if err != nil {
 		return err
@@ -202,7 +182,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	command := []string{build.Tool, "--build-sea", cfgPath}
+	command := []string{tool, "--build-sea", cfgPath}
 	if err := base.Exec(ctx, command, env, ""); err != nil {
 		return err
 	}

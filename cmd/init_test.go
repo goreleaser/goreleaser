@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,6 +26,17 @@ func TestInitSpecifyLanguage(t *testing.T) {
 	bts, err := os.ReadFile(config)
 	require.NoError(t, err)
 	require.Equal(t, string(static.ZigExampleConfig), string(bts))
+}
+
+func TestInitLanguageCompletion(t *testing.T) {
+	cmd := newInitCmd().cmd
+	complete, ok := cmd.GetFlagCompletionFunc("language")
+	require.True(t, ok)
+
+	got, directive := complete(cmd, nil, "")
+
+	require.ElementsMatch(t, []string{"go", "bun", "deno", "node", "rust", "zig", "uv", "poetry"}, got)
+	require.Equal(t, cobra.ShellCompDirectiveDefault, directive)
 }
 
 func TestDetectLanguage(t *testing.T) {

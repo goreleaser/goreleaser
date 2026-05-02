@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"sort"
@@ -22,6 +23,8 @@ import (
 // errNoVersion is returned by resolveVersion when no version can be
 // determined from package.json.
 var errNoVersion = errors.New("node: could not resolve a Node.js version; add engines.node to package.json")
+
+const minNodeSEAVersion = "25.5.0"
 
 // ensureNode resolves the node version, downloads it, and returns its path.
 func ensureNode(ctx context.Context, dir, target string) (string, error) {
@@ -63,6 +66,9 @@ func resolveVersionString(raw string) (string, error) {
 
 	// Exact pinned version: don't touch the network.
 	if v, err := semver.StrictNewVersion(raw); err == nil {
+		if err := validateNodeSEAVersion(v); err != nil {
+			return "", err
+		}
 		return "v" + v.String(), nil
 	}
 
@@ -86,7 +92,40 @@ func resolveVersionString(raw string) (string, error) {
 		return "", fmt.Errorf("no published Node.js release satisfies %q", raw)
 	}
 	sort.Sort(semver.Collection(matched))
-	return "v" + matched[len(matched)-1].String(), nil
+	v := matched[len(matched)-1]
+	if err := validateNodeSEAVersion(v); err != nil {
+		return "", err
+	}
+	return "v" + v.String(), nil
+}
+
+func validateNodeSEAVersion(v *semver.Version) error {
+	min := semver.MustParse(minNodeSEAVersion)
+	if v.LessThan(min) {
+		return fmt.Errorf("Node.js SEA requires Node.js >= v%s, got v%s", min, v)
+	}
+	return nil
+}
+
+func checkHostNodeVersion(ctx context.Context, tool string, env []string) error {
+	cmd := exec.CommandContext(ctx, tool, "--version") //nolint:gosec
+	cmd.Env = env
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("node: check host node version: %w: %s", err, strings.TrimSpace(string(out)))
+	}
+	fields := strings.Fields(string(out))
+	if len(fields) == 0 {
+		return fmt.Errorf("node: check host node version: empty output from %s", tool)
+	}
+	v, err := semver.NewVersion(strings.TrimPrefix(fields[0], "v"))
+	if err != nil {
+		return fmt.Errorf("node: parse host node version %q: %w", strings.TrimSpace(string(out)), err)
+	}
+	if err := validateNodeSEAVersion(v); err != nil {
+		return fmt.Errorf("node: host node %s does not support SEA: %w", tool, err)
+	}
+	return nil
 }
 
 // downloadHostBinary fetches the per-target Node.js host binary for

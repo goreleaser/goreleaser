@@ -75,18 +75,21 @@ builds:
 
 ### Environment setup
 
-GoReleaser will not install Node.js or project dependencies for you.
-Install them before running GoReleaser, usually with a global
+GoReleaser will not install Node.js, project dependencies, or run your
+JavaScript build for you. Run them before GoReleaser, usually with a global
 [`before` hook](/customization/general/hooks/):
 
 ```yaml {filename=".goreleaser.yaml"}
 before:
   hooks:
     - npm ci
+    - npm run build
 ```
 
-GoReleaser runs `npm run build` automatically when `package.json`
-declares `scripts.build`; otherwise it uses `main` as-is.
+Do not write your JavaScript build output to the `dist` directory.
+GoReleaser requires that directory to be empty after
+`before` hooks run. Configure your bundler to write somewhere else, for
+example `build/`, and point `main` at the generated entrypoint.
 
 ## Caveats
 

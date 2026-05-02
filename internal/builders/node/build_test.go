@@ -90,6 +90,29 @@ func TestWithDefaults(t *testing.T) {
 	})
 }
 
+func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
+	_, err := resolveVersionString("20.0.0")
+	require.ErrorContains(t, err, ">= v25.5.0")
+}
+
+func TestPrepareDoesNotRunNPMBuild(t *testing.T) {
+	for name, pkg := range map[string]string{
+		"no build script": `{"engines":{"node":"25.5.0"}}`,
+		"build script":    `{"engines":{"node":"25.5.0"},"scripts":{"build":"echo nope"}}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			testlib.Mktmp(t)
+			require.NoError(t, os.WriteFile("package.json", []byte(pkg), 0o644))
+			createFakeNPM(t)
+
+			err := Default.Prepare(testctx.Wrap(t.Context()), config.Build{Dir: "."})
+
+			require.NoError(t, err)
+			require.NoFileExists(t, "npm-was-run")
+		})
+	}
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "node")
 
@@ -102,6 +125,7 @@ func TestBuild(t *testing.T) {
 		arch = "x64"
 	}
 	hostTarget := osName + "-" + arch
+	createFakeNodeAlias(t, "node-"+hostTarget)
 
 	out, err := exec.Command("node", "--version").Output()
 	require.NoError(t, err)
@@ -123,6 +147,7 @@ func TestBuild(t *testing.T) {
 			{
 				ID:           "default",
 				Dir:          ".",
+				Tool:         "node-{{ .Target }}",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 			},
 		},
@@ -152,4 +177,65 @@ func TestBuild(t *testing.T) {
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()))
+}
+
+func TestBuildRejectsUnsupportedHostNode(t *testing.T) {
+	testlib.Mktmp(t)
+	require.NoError(t, os.WriteFile("index.js", []byte(`process.stdout.write("nope\n");`), 0o644))
+	require.NoError(t, os.WriteFile("package.json", []byte(`{"engines":{"node":"0.0.1"}}`), 0o644))
+	createFakeNodeVersion(t, "node-v20", "v20.0.0")
+
+	target, err := Default.Parse("linux-x64")
+	require.NoError(t, err)
+
+	err = Default.Build(
+		testctx.Wrap(t.Context()),
+		config.Build{Dir: ".", Main: "index.js", Tool: "node-v20"},
+		api.Options{
+			Name:   "proj",
+			Path:   filepath.Join("dist", "proj"),
+			Target: target,
+		},
+	)
+
+	require.ErrorContains(t, err, "host node")
+	require.ErrorContains(t, err, ">= v25.5.0")
+}
+
+func createFakeNPM(tb testing.TB) {
+	tb.Helper()
+	createFakeExecutable(tb, "npm", `#!/bin/sh
+echo "$*" > npm-was-run
+`, `@echo off
+echo %* > npm-was-run
+`)
+}
+
+func createFakeNodeAlias(tb testing.TB, name string) {
+	tb.Helper()
+	node, err := exec.LookPath("node")
+	require.NoError(tb, err)
+	createFakeExecutable(tb, name,
+		fmt.Sprintf("#!/bin/sh\nexec %q \"$@\"\n", node),
+		fmt.Sprintf("@echo off\n%q %%*\n", node),
+	)
+}
+
+func createFakeNodeVersion(tb testing.TB, name, version string) {
+	tb.Helper()
+	createFakeExecutable(tb, name,
+		fmt.Sprintf("#!/bin/sh\necho %s\n", version),
+		fmt.Sprintf("@echo off\necho %s\n", version),
+	)
+}
+
+func createFakeExecutable(tb testing.TB, name, unix, windows string) {
+	tb.Helper()
+	dir := tb.TempDir()
+	if runtime.GOOS == "windows" {
+		name += ".bat"
+		unix = windows
+	}
+	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(unix), 0o755))
+	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
