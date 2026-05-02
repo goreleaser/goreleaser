@@ -60,21 +60,11 @@ func (t Target) Goarch() string {
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
-	t, ok := parseTarget(target)
-	if !ok {
+	if !slices.Contains(supportedTargets, target) {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
 	}
-	return t, nil
-}
-
-// parseTarget splits a nodejs.org/dist identifier and reports whether
-// it's in the supported set.
-func parseTarget(target string) (Target, bool) {
-	if !slices.Contains(supportedTargets, target) {
-		return Target{}, false
-	}
 	os, arch, _ := strings.Cut(target, "-")
-	return Target{Target: target, Os: os, Arch: arch}, true
+	return Target{Target: target, Os: os, Arch: arch}, nil
 }
 
 func defaultTargets() []string { return slices.Clone(supportedTargets) }

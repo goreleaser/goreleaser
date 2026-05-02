@@ -92,8 +92,8 @@ func TestCurrentTarget(t *testing.T) {
 	if arch == "amd64" {
 		arch = "x64"
 	}
-	_, ok := parseTarget(osName + "-" + arch)
-	require.True(t, ok, "host should be a valid build target")
+	_, err := Default.Parse(osName + "-" + arch)
+	require.NoError(t, err, "host should be a valid build target")
 }
 
 // TestPrepare covers the per-build npm wire-up driven through Prepare:

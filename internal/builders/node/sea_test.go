@@ -25,9 +25,9 @@ func stageBuildDir(t *testing.T, version string) (string, string) {
 
 func mustParseTarget(t *testing.T, s string) Target {
 	t.Helper()
-	tt, ok := parseTarget(s)
-	require.True(t, ok, "parseTarget(%q)", s)
-	return tt
+	tt, err := Default.Parse(s)
+	require.NoError(t, err, "Parse(%q)", s)
+	return tt.(Target)
 }
 
 func TestBuildSEAConfigJSON_MergesUserConfig(t *testing.T) {
@@ -97,8 +97,8 @@ func TestBuildSEA_RealNode(t *testing.T) {
 		t.Skip("integration: no `node` in PATH")
 	}
 
-	target, ok := parseTarget(hostTarget())
-	if !ok {
+	target, err := Default.Parse(hostTarget())
+	if err != nil {
 		t.Skipf("integration: no SEA injector for host target %s", hostTarget())
 	}
 
@@ -114,7 +114,7 @@ func TestBuildSEA_RealNode(t *testing.T) {
 		[]byte(`{"disableExperimentalSEAWarning": true}`), 0o644))
 
 	outPath := filepath.Join(t.TempDir(), "myapp")
-	require.NoError(t, buildSEA(t.Context(), target, buildDir, mainPath, outPath))
+	require.NoError(t, buildSEA(t.Context(), target.(Target), buildDir, mainPath, outPath))
 	require.FileExists(t, outPath)
 
 	cmd := exec.Command(outPath)

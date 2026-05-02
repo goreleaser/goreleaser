@@ -104,8 +104,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	for _, t := range build.Targets {
-		if _, ok := parseTarget(t); !ok {
-			return build, fmt.Errorf("invalid target: %s", t)
+		if _, err := b.Parse(t); err != nil {
+			return build, err
 		}
 	}
 
