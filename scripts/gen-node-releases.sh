@@ -5,18 +5,21 @@
 #   { "vX.Y.Z": { "<name>": "<sha256>" } }
 #
 # Only releases satisfying the SEA min-version constraint are kept,
-# and only file names matching internal/builders/node/targets.txt are
-# included for each release.
+# and only file names matching the supported targets list are included
+# for each release. Keep this list in sync with `supportedTargets` in
+# internal/builders/node/targets.go.
 set -euo pipefail
 
-readonly TARGETS_FILE="internal/builders/node/targets.txt"
 readonly OUT="internal/nodedist/releases.json"
 
-targets=()
-while IFS= read -r line; do
-	[[ -z "$line" ]] && continue
-	targets+=("$line")
-done < "$TARGETS_FILE"
+targets=(
+	darwin-arm64
+	darwin-x64
+	linux-arm64
+	linux-x64
+	win-arm64
+	win-x64
+)
 targets_json=$(printf '%s\n' "${targets[@]}" | jq -R . | jq -s .)
 
 # Pull the upstream index, keep only Node releases that ship `--build-sea`
