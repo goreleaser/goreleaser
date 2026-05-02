@@ -1,11 +1,9 @@
 package nodedist
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"sync/atomic"
 	"testing"
 
@@ -13,126 +11,60 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTarget(t *testing.T) {
-	require.Equal(t, "node-v22.10.0-linux-x64.tar.gz", Target("linux-x64").ArchiveName("v22.10.0"))
-	require.Equal(t, "win-x64/node.exe", Target("win-x64").ArchiveName("v22.10.0"))
-	require.Equal(t, "node", Target("linux-x64").HostBinaryName())
-	require.Equal(t, "node.exe", Target("win-x64").HostBinaryName())
-	require.Equal(t, "linux", Target("linux-x64").Goos())
-	require.Equal(t, "windows", Target("win-x64").Goos())
-	require.Equal(t, "amd64", Target("linux-x64").Goarch())
-	require.True(t, Target("win-x64").IsWindows())
-	require.False(t, Target("linux-x64").IsWindows())
-}
-
-func TestDownload_Linux(t *testing.T) {
+func TestDownload(t *testing.T) {
 	const version = "v22.10.0"
-	target := Target("linux-x64")
-	payload := []byte("fake node binary contents")
-	archive := FakeArchive(t, version, target, payload)
-	archName := target.ArchiveName(version)
-	StubRelease(t, version, archName, archive)
-
-	server := NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName: archive,
-	})
-	SetBaseURL(t, server.URL)
-
-	hostPath, err := Download(t.Context(), version, target)
-	require.NoError(t, err)
-	require.FileExists(t, hostPath)
-	got, err := os.ReadFile(hostPath)
-	require.NoError(t, err)
-	require.Equal(t, payload, got)
-}
-
-func TestDownload_Windows(t *testing.T) {
-	const version = "v22.10.0"
-	target := Target("win-x64")
-	payload := []byte("fake node.exe contents")
-	archName := target.ArchiveName(version)
+	const archName = "node-v22.10.0-linux-x64.tar.gz"
+	payload := []byte("fake archive bytes")
 	StubRelease(t, version, archName, payload)
 
 	server := NewServer(t, map[string][]byte{
-		"/" + version + "/win-x64/node.exe": payload,
+		"/" + version + "/" + archName: payload,
 	})
 	SetBaseURL(t, server.URL)
 
-	hostPath, err := Download(t.Context(), version, target)
+	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
-	require.FileExists(t, hostPath)
-	require.Equal(t, "node.exe", filepath.Base(hostPath))
-	got, err := os.ReadFile(hostPath)
+	require.FileExists(t, got)
+	bts, err := os.ReadFile(got)
 	require.NoError(t, err)
-	require.Equal(t, payload, got)
+	require.Equal(t, payload, bts)
 }
 
 func TestDownload_BadSHA(t *testing.T) {
 	const version = "v22.10.0"
-	target := Target("linux-x64")
-	archive := FakeArchive(t, version, target, []byte("payload"))
-	archName := target.ArchiveName(version)
-	// Stub with the wrong SHA so Download sees a mismatch.
-	StubRelease(t, version, archName, []byte("not the archive"))
+	const archName = "node-v22.10.0-linux-x64.tar.gz"
+	StubRelease(t, version, archName, []byte("expected"))
 
 	server := NewServer(t, map[string][]byte{
-		"/" + version + "/" + archName: archive,
+		"/" + version + "/" + archName: []byte("actual"),
 	})
 	SetBaseURL(t, server.URL)
 
-	_, err := Download(t.Context(), version, target)
+	_, err := Download(t.Context(), version, archName)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "SHA-256 mismatch")
 }
 
 func TestDownload_UnknownVersion(t *testing.T) {
-	_, err := Download(t.Context(), "v0.0.999", Target("linux-x64"))
+	_, err := Download(t.Context(), "v0.0.999", "whatever.tar.gz")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no embedded entry")
 }
 
-func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
-	const version = "v22.10.0"
-	target := Target("linux-x64")
-
-	// Build a valid tarball with a 4 KiB payload, then truncate the
-	// gzipped bytes so that io.Copy hits unexpected EOF mid-extract.
-	payload := bytes.Repeat([]byte{'A'}, 4096)
-	archive := FakeArchive(t, version, target, payload)
-	truncated := archive[:len(archive)/2]
-
-	dir := t.TempDir()
-	archivePath := filepath.Join(dir, "truncated.tar.gz")
-	require.NoError(t, os.WriteFile(archivePath, truncated, 0o644))
-
-	dst := filepath.Join(dir, "node")
-	err := extractNodeFromTarGz(archivePath, version, target, dst)
-	require.Error(t, err)
-	// Failed extract must not leave a partial file at the canonical path
-	// (and no leftover sibling tempfiles).
-	_, statErr := os.Stat(dst)
-	require.ErrorIs(t, statErr, os.ErrNotExist)
-	leftovers, err := filepath.Glob(filepath.Join(dir, ".extract-*"))
-	require.NoError(t, err)
-	require.Empty(t, leftovers, "tempfile not cleaned up")
-}
-
 func TestDownload_RetriesOn5xx(t *testing.T) {
 	const version = "v22.10.0"
-	target := Target("linux-x64")
-	payload := []byte("fake node binary contents")
-	archive := FakeArchive(t, version, target, payload)
-	archName := target.ArchiveName(version)
-	StubRelease(t, version, archName, archive)
+	const archName = "node-v22.10.0-linux-x64.tar.gz"
+	payload := []byte("fake archive bytes")
+	StubRelease(t, version, archName, payload)
 
-	var archiveHits atomicCounter
+	var hits atomic.Int32
 	mux := http.NewServeMux()
 	mux.HandleFunc("/"+version+"/"+archName, func(w http.ResponseWriter, _ *http.Request) {
-		if archiveHits.Inc() < 2 {
+		if hits.Add(1) < 2 {
 			http.Error(w, "boom", http.StatusServiceUnavailable)
 			return
 		}
-		_, _ = w.Write(archive)
+		_, _ = w.Write(payload)
 	})
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
@@ -142,13 +74,8 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 	defaultRetry = config.Retry{Attempts: 4}
 	t.Cleanup(func() { defaultRetry = prevRetry })
 
-	hostPath, err := Download(t.Context(), version, target)
+	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
-	require.FileExists(t, hostPath)
-	require.GreaterOrEqual(t, int(archiveHits.Load()), 2)
+	require.FileExists(t, got)
+	require.GreaterOrEqual(t, int(hits.Load()), 2)
 }
-
-type atomicCounter struct{ v atomic.Int32 }
-
-func (c *atomicCounter) Inc() int32  { return c.v.Add(1) }
-func (c *atomicCounter) Load() int32 { return c.v.Load() }

@@ -57,11 +57,8 @@ func resolveVersionString(raw string) (string, error) {
 	entries := nodedist.Releases()
 	matched := make([]*semver.Version, 0, len(entries))
 	for verStr := range entries {
-		v, err := semver.NewVersion(strings.TrimPrefix(verStr, "v"))
+		v, err := semver.NewVersion(verStr)
 		if err != nil {
-			continue
-		}
-		if v.Prerelease() != "" {
 			continue
 		}
 		if constraint.Check(v) {

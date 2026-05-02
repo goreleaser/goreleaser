@@ -29,7 +29,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
-	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/goreleaser/goreleaser/v2/internal/nodesea"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -150,7 +149,7 @@ func runNPMBuildScript(ctx *context.Context, build config.Build) error {
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	t := options.Target.(Target)
-	target := nodedist.Target(t.Target)
+	target := nodesea.Target(t.Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
@@ -190,13 +189,13 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	return nil
 }
 
-// buildViaBuildSEA dispatches to the `node --build-sea` flow
-// (nodesea.BuildViaBuildSEA). The user's sea-config.json (if any) is
-// read by the nodesea package directly from build.Dir.
+// buildViaBuildSEA dispatches to nodesea.Build. The user's
+// sea-config.json (if any) is read by the nodesea package directly
+// from build.Dir.
 func buildViaBuildSEA(
 	ctx *context.Context,
 	build config.Build,
-	target nodedist.Target,
+	target nodesea.Target,
 	options api.Options,
 	tpl *tmpl.Template,
 ) error {
@@ -207,11 +206,6 @@ func buildViaBuildSEA(
 	mainPath := filepath.Join(build.Dir, main)
 	if _, err := os.Stat(mainPath); err != nil {
 		return fmt.Errorf("nodesea: main %q not found in %q: %w", main, build.Dir, err)
-	}
-
-	version, err := nodesea.ResolveVersion(build.Dir)
-	if err != nil {
-		return fmt.Errorf("nodesea: resolve node version: %w", err)
 	}
 
 	absMain, err := filepath.Abs(mainPath)
@@ -225,11 +219,5 @@ func buildViaBuildSEA(
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
 	}
-	return nodesea.BuildViaBuildSEA(ctx, nodesea.BuildOptions{
-		Target:   target,
-		Version:  version,
-		MainJS:   absMain,
-		OutPath:  options.Path,
-		BuildDir: absBuildDir,
-	})
+	return nodesea.Build(ctx, target, absBuildDir, absMain, options.Path)
 }

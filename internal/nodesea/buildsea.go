@@ -1,16 +1,3 @@
-// Package nodesea implements the Node.js Single Executable
-// Application (SEA) toolchain used by the experimental `node`
-// builder.
-//
-// The toolchain shells out to whatever `node` is on `PATH` (must be
-// ≥ v25.5.0, LIEF-built) once per build to invoke `node --build-sea
-// sea-config.json`. That command injects the SEA blob into a copy of
-// the per-target Node binary GoReleaser fetches from
-// https://nodejs.org/dist (verifying SHA-256). On macOS targets the
-// produced binary is ad-hoc signed via quill (pure-Go, host-OS
-// independent) so the kernel loader will accept it. The package owns
-// the cache layout, the download + verify path, and the `--build-sea`
-// orchestration.
 package nodesea
 
 import (
@@ -21,8 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 )
 
 // supportedGoos reports whether the given GOOS has a SEA injector.
@@ -40,13 +25,12 @@ func supportedGoos(goos string) bool {
 // any user-set values for those keys are overridden.
 const userSEAConfigFile = "sea-config.json"
 
-// BuildOptions configures BuildViaBuildSEA. Every field except
-// BuildDir is required.
-type BuildOptions struct {
+// buildOptions configures buildViaBuildSEA. All fields are required.
+type buildOptions struct {
 	// Target identifies the per-target Node release this SEA is built
 	// for (e.g. "linux-x64"). Determines container format and whether
 	// the result needs ad-hoc Mach-O signing.
-	Target nodedist.Target
+	Target Target
 
 	// Version is the per-target Node release version (e.g. "v25.5.0").
 	// Used to download the cached target Node binary that becomes the
@@ -63,11 +47,28 @@ type BuildOptions struct {
 
 	// BuildDir is the user's project directory. If it contains a
 	// sea-config.json file, that file is merged with goreleaser-owned
-	// fields before being passed to `node --build-sea`. Optional.
+	// fields before being passed to `node --build-sea`.
 	BuildDir string
 }
 
-// BuildViaBuildSEA produces a Single Executable Application at
+// Build resolves the Node version declared by the project at buildDir
+// and produces a Single Executable Application at outPath for target.
+// mainPath is the absolute path to the user's entrypoint JS file.
+func Build(ctx context.Context, target Target, buildDir, mainPath, outPath string) error {
+	version, err := ResolveVersion(buildDir)
+	if err != nil {
+		return fmt.Errorf("nodesea: resolve node version: %w", err)
+	}
+	return buildViaBuildSEA(ctx, buildOptions{
+		Target:   target,
+		Version:  version,
+		MainJS:   mainPath,
+		OutPath:  outPath,
+		BuildDir: buildDir,
+	})
+}
+
+// buildViaBuildSEA produces a Single Executable Application at
 // opts.OutPath by invoking `node --build-sea sea-config.json`, where
 // sea-config.json points `executable` at the cached per-target Node
 // binary downloaded for opts.Version+opts.Target. The `node` binary on
@@ -90,7 +91,7 @@ type BuildOptions struct {
 // OutPath is written atomically: --build-sea generates into a sibling
 // tempfile, signing happens in place on the temp, then a rename
 // promotes the temp to OutPath.
-func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
+func buildViaBuildSEA(ctx context.Context, opts buildOptions) error {
 	if err := validateBuildOptions(opts); err != nil {
 		return err
 	}
@@ -161,13 +162,13 @@ var runBuildSEA = func(ctx context.Context, cfgPath string) error {
 	return nil
 }
 
-// downloadTargetNode resolves to nodedist.Download in production;
+// downloadTargetNode resolves to downloadHostBinary in production;
 // tests swap it to short-circuit the network.
 //
 //nolint:gochecknoglobals
-var downloadTargetNode = nodedist.Download
+var downloadTargetNode = downloadHostBinary
 
-func validateBuildOptions(opts BuildOptions) error {
+func validateBuildOptions(opts buildOptions) error {
 	var errs []string
 	if opts.Version == "" {
 		errs = append(errs, "Version is required")
@@ -182,7 +183,7 @@ func validateBuildOptions(opts BuildOptions) error {
 		errs = append(errs, fmt.Sprintf("target %q has no SEA injector", opts.Target))
 	}
 	if len(errs) > 0 {
-		return fmt.Errorf("nodesea: invalid BuildOptions: %s", strings.Join(errs, "; "))
+		return fmt.Errorf("nodesea: invalid buildOptions: %s", strings.Join(errs, "; "))
 	}
 	return nil
 }
@@ -193,7 +194,7 @@ func validateBuildOptions(opts BuildOptions) error {
 // goreleaser-owned fields and rewrites relative `assets` paths to be
 // absolute relative to opts.BuildDir so they survive the move into
 // the scratch directory.
-func buildSEAConfigJSON(opts BuildOptions, targetNode, output string) (map[string]any, error) {
+func buildSEAConfigJSON(opts buildOptions, targetNode, output string) (map[string]any, error) {
 	cfg, err := loadUserSEAConfig(opts.BuildDir)
 	if err != nil {
 		return nil, err
@@ -213,12 +214,8 @@ func buildSEAConfigJSON(opts BuildOptions, targetNode, output string) (map[strin
 }
 
 // loadUserSEAConfig reads <buildDir>/sea-config.json into a generic
-// map. Returns an empty (non-nil) map when buildDir is empty or the
-// file does not exist.
+// map. Returns an empty (non-nil) map when the file does not exist.
 func loadUserSEAConfig(buildDir string) (map[string]any, error) {
-	if buildDir == "" {
-		return map[string]any{}, nil
-	}
 	path := filepath.Join(buildDir, userSEAConfigFile)
 	bts, err := os.ReadFile(path)
 	if err != nil {
@@ -244,7 +241,7 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 // user paths would otherwise break.
 func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 	assets, ok := cfg["assets"].(map[string]any)
-	if !ok || len(assets) == 0 || buildDir == "" {
+	if !ok || len(assets) == 0 {
 		return
 	}
 	for name, v := range assets {

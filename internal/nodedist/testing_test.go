@@ -1,17 +1,11 @@
 package nodedist
 
 import (
-	"archive/tar"
-	"bytes"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 // SetBaseURL overrides the nodejs.org/dist base URL for the duration
@@ -23,33 +17,6 @@ func SetBaseURL(t *testing.T, url string) {
 	prev := distBaseURL
 	distBaseURL = url
 	t.Cleanup(func() { distBaseURL = prev })
-}
-
-// FakeArchive returns the bytes of a minimal nodejs tarball suitable
-// for testing Download against the given version+target. The archive
-// contains a single `node-<version>-<target>/bin/node` entry holding
-// payload. For windows targets, payload is returned unchanged because
-// the published windows distribution is the bare node.exe.
-func FakeArchive(t *testing.T, version string, target Target, payload []byte) []byte {
-	t.Helper()
-	if target.IsWindows() {
-		return payload
-	}
-	var buf bytes.Buffer
-	gz := gzip.NewWriter(&buf)
-	tw := tar.NewWriter(gz)
-
-	want := fmt.Sprintf("node-%s-%s/bin/node", version, target)
-	require.NoError(t, tw.WriteHeader(&tar.Header{
-		Name: want,
-		Mode: 0o755,
-		Size: int64(len(payload)),
-	}))
-	_, err := tw.Write(payload)
-	require.NoError(t, err)
-	require.NoError(t, tw.Close())
-	require.NoError(t, gz.Close())
-	return buf.Bytes()
 }
 
 // NewServer stands up an httptest.Server that serves the given

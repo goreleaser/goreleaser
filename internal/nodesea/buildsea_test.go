@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
+	
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,14 +51,14 @@ func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut s
 // and returns the path it will hand back. The returned path points at
 // a temp file containing fake host-binary contents, so tests can
 // assert against `executable` in the rendered sea-config.json.
-func stageTargetNode(t *testing.T, target nodedist.Target) string {
+func stageTargetNode(t *testing.T, target Target) string {
 	t.Helper()
 	dir := t.TempDir()
 	hostPath := filepath.Join(dir, target.HostBinaryName())
 	require.NoError(t, os.WriteFile(hostPath, []byte("fake target node"), 0o755))
 	prev := downloadTargetNode
 	t.Cleanup(func() { downloadTargetNode = prev })
-	downloadTargetNode = func(_ context.Context, _ string, _ nodedist.Target) (string, error) {
+	downloadTargetNode = func(_ context.Context, _ string, _ Target) (string, error) {
 		return hostPath, nil
 	}
 	return hostPath
@@ -66,7 +66,7 @@ func stageTargetNode(t *testing.T, target nodedist.Target) string {
 
 func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	const version = "v25.5.0"
-	target := nodedist.Target("linux-x64")
+	target := Target("linux-x64")
 	hostNode := stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
@@ -89,7 +89,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	outPath := filepath.Join(t.TempDir(), "out", "myapp")
 	rec := stubRunBuildSEA(t, nil)
 
-	err := BuildViaBuildSEA(t.Context(), BuildOptions{
+	err := buildViaBuildSEA(t.Context(), buildOptions{
 		Target:   target,
 		Version:  version,
 		MainJS:   mainPath,
@@ -129,7 +129,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 
 func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	const version = "v25.5.0"
-	target := nodedist.Target("linux-x64")
+	target := Target("linux-x64")
 	stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
@@ -139,7 +139,7 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	outPath := filepath.Join(t.TempDir(), "out", "myapp")
 	rec := stubRunBuildSEA(t, nil)
 
-	require.NoError(t, BuildViaBuildSEA(t.Context(), BuildOptions{
+	require.NoError(t, buildViaBuildSEA(t.Context(), buildOptions{
 		Target:   target,
 		Version:  version,
 		MainJS:   mainPath,
@@ -159,7 +159,7 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 
 func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	const version = "v25.5.0"
-	target := nodedist.Target("linux-x64")
+	target := Target("linux-x64")
 	stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
@@ -171,7 +171,7 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	outPath := filepath.Join(t.TempDir(), "out", "myapp")
 	stubRunBuildSEA(t, nil)
 
-	err := BuildViaBuildSEA(t.Context(), BuildOptions{
+	err := buildViaBuildSEA(t.Context(), buildOptions{
 		Target:   target,
 		Version:  version,
 		MainJS:   mainPath,
@@ -183,7 +183,7 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 
 func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 	const version = "v25.5.0"
-	target := nodedist.Target("linux-x64")
+	target := Target("linux-x64")
 	stageTargetNode(t, target)
 
 	mainPath := filepath.Join(t.TempDir(), "main.js")
@@ -197,7 +197,7 @@ func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 		return fmt.Errorf("simulated --build-sea failure")
 	})
 
-	err := BuildViaBuildSEA(t.Context(), BuildOptions{
+	err := buildViaBuildSEA(t.Context(), buildOptions{
 		Target:  target,
 		Version: version,
 		MainJS:  mainPath,
@@ -217,7 +217,7 @@ func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 }
 
 func TestBuildViaBuildSEA_Validation(t *testing.T) {
-	cases := map[string]BuildOptions{
+	cases := map[string]buildOptions{
 		"missing Version":    {Target: "linux-x64", MainJS: "/m.js", OutPath: "/o"},
 		"missing MainJS":     {Target: "linux-x64", Version: "v25.5.0", OutPath: "/o"},
 		"missing OutPath":    {Target: "linux-x64", Version: "v25.5.0", MainJS: "/m.js"},
@@ -225,15 +225,15 @@ func TestBuildViaBuildSEA_Validation(t *testing.T) {
 	}
 	for name, opts := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := BuildViaBuildSEA(t.Context(), opts)
+			err := buildViaBuildSEA(t.Context(), opts)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "invalid BuildOptions")
+			require.Contains(t, err.Error(), "invalid buildOptions")
 		})
 	}
 }
 
 // TestBuildViaBuildSEA_RealNode is the end-to-end smoke test: it runs
-// BuildViaBuildSEA against the host's `node` and execs the produced
+// buildViaBuildSEA against the host's `node` and execs the produced
 // SEA binary. Skipped in -short mode and when no `node` is on PATH.
 func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 	if testing.Short() {
@@ -244,7 +244,7 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 		t.Skip("integration: no `node` in PATH")
 	}
 
-	target := nodedist.Target(hostTarget())
+	target := Target(hostTarget())
 	if !supportedGoos(target.Goos()) {
 		t.Skipf("integration: no SEA injector for host target %s", target)
 	}
@@ -261,7 +261,7 @@ func TestBuildViaBuildSEA_RealNode(t *testing.T) {
 
 	outPath := filepath.Join(tmp, "myapp")
 
-	require.NoError(t, BuildViaBuildSEA(t.Context(), BuildOptions{
+	require.NoError(t, buildViaBuildSEA(t.Context(), buildOptions{
 		Target:  target,
 		Version: hostVersion,
 		MainJS:  mainPath,
