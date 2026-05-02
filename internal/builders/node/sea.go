@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
-	"github.com/goreleaser/goreleaser/v2/internal/gio"
 )
 
 // userSEAConfigFile is the filename goreleaser looks up in the build
@@ -29,20 +27,16 @@ const userSEAConfigFile = "sea-config.json"
 //
 // If a sea-config.json exists in buildDir, its user-tunable fields
 // are merged into the rendered config (relative `assets` paths are
-// resolved against buildDir so they keep working from the scratch
+// resolved against buildDir so they keep working from the dist
 // directory). Goreleaser-owned fields (`output`, `executable`,
 // `main`, `useCodeCache`, `useSnapshot`) always win.
 //
 // On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
-// quill (pure-Go) before it lands at outPath, so the macOS kernel
-// will exec the binary on Apple Silicon without further action. Real
+// quill (pure-Go) before goreleaser is done, so the macOS kernel will
+// exec the binary on Apple Silicon without further action. Real
 // Developer ID signing and notarization are layered on top via the
 // signs: and notarize: pipes — quill strips the ad-hoc signature
 // before re-signing.
-//
-// outPath is written atomically: --build-sea generates into a sibling
-// tempfile, signing happens in place on the temp, then a rename
-// promotes the temp to outPath.
 func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath string) error {
 	if !target.IsSupported() {
 		return fmt.Errorf("node: unsupported target %q", target)
@@ -62,15 +56,7 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 		return err
 	}
 
-	scratch, err := os.MkdirTemp(filepath.Dir(outPath), ".buildsea-*")
-	if err != nil {
-		return fmt.Errorf("node: scratch dir: %w", err)
-	}
-	defer os.RemoveAll(scratch)
-
-	scratchOut := filepath.Join(scratch, filepath.Base(outPath))
-	cfgPath := filepath.Join(scratch, "sea-config.json")
-	cfg, err := buildSEAConfigJSON(buildDir, mainPath, targetNode, scratchOut)
+	cfg, err := buildSEAConfigJSON(buildDir, mainPath, targetNode, outPath)
 	if err != nil {
 		return err
 	}
@@ -78,6 +64,7 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 	if err != nil {
 		return err
 	}
+	cfgPath := filepath.Join(filepath.Dir(outPath), "sea-config.json")
 	if err := os.WriteFile(cfgPath, cfgBytes, 0o600); err != nil {
 		return fmt.Errorf("node: write sea-config.json: %w", err)
 	}
@@ -87,14 +74,12 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 	}
 
 	if target.Goos() == "darwin" {
-		name := filepath.Base(outPath)
-		id := strings.TrimSuffix(name, filepath.Ext(name))
-		if err := signMachO(scratchOut, id); err != nil {
+		if err := signMachO(outPath, filepath.Base(outPath)); err != nil {
 			return err
 		}
 	}
 
-	return gio.CopyWithMode(scratchOut, outPath, 0o755)
+	return os.Chmod(outPath, 0o755)
 }
 
 // downloadTargetNode resolves to downloadHostBinary in production;
@@ -108,16 +93,13 @@ var downloadTargetNode = downloadHostBinary
 // sea-config.json in buildDir (if any), then forces the
 // goreleaser-owned fields and rewrites relative `assets` paths to be
 // absolute relative to buildDir so they survive the move into the
-// scratch directory.
+// dist directory.
 func buildSEAConfigJSON(buildDir, mainPath, targetNode, output string) (map[string]any, error) {
 	cfg, err := loadUserSEAConfig(buildDir)
 	if err != nil {
 		return nil, err
 	}
 
-	// Goreleaser-owned fields — always overwrite whatever the user
-	// might have set, since these point at internals (cache paths,
-	// scratch tempfiles, etc.).
 	cfg["main"] = mainPath
 	cfg["output"] = output
 	cfg["executable"] = targetNode
@@ -152,8 +134,8 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 // rewriteAssetPaths converts relative asset values in cfg["assets"]
 // into absolute paths anchored at buildDir. Node resolves `assets`
 // paths relative to the directory containing sea-config.json, but
-// goreleaser writes the merged config into a scratch dir, so relative
-// user paths would otherwise break.
+// goreleaser writes the merged config into the dist directory, so
+// relative user paths would otherwise break.
 func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 	assets, ok := cfg["assets"].(map[string]any)
 	if !ok || len(assets) == 0 {

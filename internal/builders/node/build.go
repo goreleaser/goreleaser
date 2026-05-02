@@ -216,8 +216,5 @@ func buildViaBuildSEA(
 	if err != nil {
 		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
 	}
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
 	return buildSEA(ctx, target, absBuildDir, absMain, options.Path)
 }
