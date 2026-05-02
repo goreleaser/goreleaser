@@ -17,19 +17,6 @@ not, the underlying `node --build-sea` failure is surfaced.
 
 [sea]: https://nodejs.org/api/single-executable-applications.html
 
-## Quick start
-
-For a brand-new project:
-
-```sh
-goreleaser init --language node
-```
-
-This drops a starter `.goreleaser.yaml` next to your `package.json`.
-For an existing project, copy the snippet under
-[Configuration](#configuration) into your config and adjust `binary`,
-`main`, and `targets`.
-
 ## How it works
 
 For each requested target, GoReleaser:
