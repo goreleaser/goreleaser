@@ -3,9 +3,7 @@ title: Node.js
 weight: 25
 ---
 
-<!-- markdownlint-disable MD025 -->
-
-{{< experimental >}}
+{{< g_experimental "https://github.com/goreleaser/goreleaser/pull/6579" >}}
 
 You can build Node.js [Single Executable Application][sea] (SEA) binaries
 with GoReleaser, in pure Go — no `postject` or any other npm tooling
@@ -88,7 +86,6 @@ If you need per-target bundling (e.g. different output for darwin
 vs. linux), bypass the auto-step by giving your `package.json` no
 `scripts.build` entry and drive the bundling from a per-target
 [`hooks.pre`](/customization/build/) instead.
-
 
 ## Configuration
 
