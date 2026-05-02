@@ -213,10 +213,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		}
 	}
 
-	if err := os.Chmod(options.Path, 0o755); err != nil {
-		return err
-	}
-
 	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
 	}
