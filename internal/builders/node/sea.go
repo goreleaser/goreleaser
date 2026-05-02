@@ -47,7 +47,7 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 		return fmt.Errorf("node: resolve node version: %w", err)
 	}
 
-	targetNode, err := downloadTargetNode(ctx, version, target)
+	targetNode, err := downloadHostBinary(ctx, version, target)
 	if err != nil {
 		return err
 	}
@@ -81,12 +81,6 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 
 	return os.Chmod(outPath, 0o755)
 }
-
-// downloadTargetNode resolves to downloadHostBinary in production;
-// tests swap it to short-circuit the network.
-//
-//nolint:gochecknoglobals
-var downloadTargetNode = downloadHostBinary
 
 // buildSEAConfigJSON renders the sea-config.json contents goreleaser
 // will hand to `node --build-sea`. Starts from the user's
