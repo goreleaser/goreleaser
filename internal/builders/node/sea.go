@@ -100,7 +100,7 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 // relative user paths would otherwise break.
 func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 	assets, ok := cfg["assets"].(map[string]any)
-	if !ok || len(assets) == 0 {
+	if !ok {
 		return
 	}
 	for name, v := range assets {

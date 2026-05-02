@@ -144,8 +144,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		},
 	}
 
-	env := []string{}
-	env = append(env, ctx.Env.Strings()...)
+	env := ctx.Env.Strings()
 	tpl := tmpl.New(ctx).
 		WithBuildOptions(options).
 		WithArtifact(a).
