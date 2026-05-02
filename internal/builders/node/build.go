@@ -28,7 +28,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
-	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -118,6 +118,9 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 // the project's `package.json` declares a `scripts.build` entry. The
 // host `node` is invoked as-is at Build time; if it cannot drive
 // `--build-sea` the underlying error is surfaced to the user.
+//
+// Dependency installation (`npm ci` and friends) is intentionally not
+// performed here — drive it from the `before:` hook instead.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	version, err := resolveVersion(build.Dir)
 	if err != nil {
@@ -125,24 +128,24 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("version", version).Debug("resolved target node version")
 
-	return runNPMBuildScript(ctx, build)
-}
+	pkg, err := packagejson.OpenOrEmpty(filepath.Join(build.Dir, "package.json"))
+	if err != nil {
+		return fmt.Errorf("node: scan package.json: %w", err)
+	}
+	if strings.TrimSpace(pkg.Scripts["build"]) == "" {
+		log.WithField("dir", build.Dir).
+			Debug("no scripts.build in package.json; skipping auto-bundle")
+		return nil
+	}
 
-// runNPMBuildScript runs `npm run build` in build.Dir when the
-// project's `package.json` declares a non-empty `scripts.build` entry,
-// so the file referenced by `build.Main` is the freshly bundled
-// output. Skipped silently when no such script is declared.
-//
-// Dependency installation (`npm ci` and friends) is intentionally not
-// performed here — drive it from the `before:` hook instead.
-func runNPMBuildScript(ctx *context.Context, build config.Build) error {
 	env := append(os.Environ(), ctx.Env.Strings()...)
 	tenv, err := base.TemplateEnv(build.Env, tmpl.New(ctx))
 	if err != nil {
 		return fmt.Errorf("node: template env: %w", err)
 	}
 	env = append(env, tenv...)
-	return runNPMBuild(ctx, build.Dir, env, logext.NewWriter(), logext.NewWriter())
+	log.WithField("dir", build.Dir).Info("running npm run build")
+	return base.Exec(ctx, []string{"npm", "run", "build"}, env, build.Dir)
 }
 
 // Build implements build.Builder.

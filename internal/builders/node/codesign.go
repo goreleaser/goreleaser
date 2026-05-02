@@ -19,11 +19,7 @@ import (
 // Ad-hoc only — no developer cert involved. Users with a Developer ID
 // can layer real signing on top via the signs: pipe; quill removes the
 // ad-hoc signature first there too.
-//
-// Variable so tests can stub without a real Mach-O fixture.
-//
-//nolint:gochecknoglobals
-var signMachO = func(path, id string) error {
+func signMachO(path, id string) error {
 	cfg, err := quill.NewSigningConfigFromPEMs(path, "", "", "", false)
 	if err != nil {
 		return fmt.Errorf("node: quill config for %s: %w", path, err)

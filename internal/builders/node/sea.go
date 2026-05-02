@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 )
 
 // userSEAConfigFile is the filename goreleaser looks up in the build
@@ -66,9 +68,9 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 	}
 	defer os.RemoveAll(scratch)
 
-	tmpOut := filepath.Join(scratch, filepath.Base(outPath)+".tmp")
+	scratchOut := filepath.Join(scratch, filepath.Base(outPath))
 	cfgPath := filepath.Join(scratch, "sea-config.json")
-	cfg, err := buildSEAConfigJSON(buildDir, mainPath, targetNode, tmpOut)
+	cfg, err := buildSEAConfigJSON(buildDir, mainPath, targetNode, scratchOut)
 	if err != nil {
 		return err
 	}
@@ -80,41 +82,19 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 		return fmt.Errorf("node: write sea-config.json: %w", err)
 	}
 
-	if err := runBuildSEA(ctx, cfgPath); err != nil {
+	if err := base.Exec(ctx, []string{"node", "--build-sea", cfgPath}, nil, ""); err != nil {
 		return err
 	}
 
 	if target.Goos() == "darwin" {
-		base := filepath.Base(outPath)
-		id := strings.TrimSuffix(base, filepath.Ext(base))
-		if err := signMachO(tmpOut, id); err != nil {
+		name := filepath.Base(outPath)
+		id := strings.TrimSuffix(name, filepath.Ext(name))
+		if err := signMachO(scratchOut, id); err != nil {
 			return err
 		}
 	}
 
-	if err := os.Chmod(tmpOut, 0o755); err != nil {
-		return err
-	}
-	if err := os.Rename(tmpOut, outPath); err != nil {
-		return fmt.Errorf("node: rename %s -> %s: %w", tmpOut, outPath, err)
-	}
-	return nil
-}
-
-// runBuildSEA is the executor for `node --build-sea <config>`. It is a
-// package-level variable so tests can record argv and stub out the real
-// subprocess. Uses whatever `node` is on PATH; surfaces the underlying
-// failure (including missing binary or unsupported flag) verbatim.
-//
-//nolint:gochecknoglobals
-var runBuildSEA = func(ctx context.Context, cfgPath string) error {
-	cmd := exec.CommandContext(ctx, "node", "--build-sea", cfgPath)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("node: node --build-sea %s: %w (output: %s)",
-			cfgPath, err, strings.TrimSpace(string(out)))
-	}
-	return nil
+	return gio.CopyWithMode(scratchOut, outPath, 0o755)
 }
 
 // downloadTargetNode resolves to downloadHostBinary in production;

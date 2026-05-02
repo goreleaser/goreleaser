@@ -27,7 +27,7 @@ func resolveVersion(dir string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("node: read package.json: %w", err)
 	}
-	raw := pkg.Engines.NodeRange()
+	raw := strings.TrimSpace(pkg.Engines["node"])
 	if raw == "" {
 		return "", errNoVersion
 	}

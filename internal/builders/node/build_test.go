@@ -117,12 +117,10 @@ func TestCurrentTarget(t *testing.T) {
 	require.True(t, ok, "host should be a valid build target")
 }
 
-// TestRunNPMBuildScript covers the per-build npm wire-up: silent skip
-// paths, error propagation, and that build.Env templating reaches the
-// spawned `npm` process. The end-to-end behaviour of `npm run build`
-// itself is exercised by sea_test.go; here we
-// validate the glue that turns a build config into a RunNPMBuild call.
-func TestRunNPMBuildScript(t *testing.T) {
+// TestPrepare covers the per-build npm wire-up driven through Prepare:
+// silent skip paths, error propagation, and that build.Env templating
+// reaches the spawned `npm` process.
+func TestPrepare(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("uses /bin/sh fake npm")
 	}
@@ -130,7 +128,7 @@ func TestRunNPMBuildScript(t *testing.T) {
 	writePackageJSON := func(t *testing.T, dir string, scripts map[string]string) {
 		t.Helper()
 		var sb []byte
-		sb = append(sb, `{"scripts":{`...)
+		sb = append(sb, `{"engines":{"node":"v25.5.0"},"scripts":{`...)
 		first := true
 		for k, v := range scripts {
 			if !first {
@@ -167,7 +165,7 @@ func TestRunNPMBuildScript(t *testing.T) {
 		fakeNPM(t, "echo \"$@\" >> \""+dir+"/calls.log\"\nexit 0")
 
 		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, runNPMBuildScript(ctx, config.Build{Dir: dir}))
+		require.NoError(t, Default.Prepare(ctx, config.Build{Dir: dir}))
 
 		got, err := os.ReadFile(filepath.Join(dir, "calls.log"))
 		require.NoError(t, err)
@@ -178,12 +176,13 @@ func TestRunNPMBuildScript(t *testing.T) {
 		dir := t.TempDir()
 		writePackageJSON(t, dir, map[string]string{"test": "vitest"})
 		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, runNPMBuildScript(ctx, config.Build{Dir: dir}))
+		require.NoError(t, Default.Prepare(ctx, config.Build{Dir: dir}))
 	})
 
-	t.Run("silent skip when no package.json", func(t *testing.T) {
+	t.Run("errors when engines.node is missing", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, runNPMBuildScript(ctx, config.Build{Dir: t.TempDir()}))
+		err := Default.Prepare(ctx, config.Build{Dir: t.TempDir()})
+		require.ErrorContains(t, err, "resolve target node version")
 	})
 
 	t.Run("templates build.env and forwards to npm", func(t *testing.T) {
@@ -193,7 +192,7 @@ func TestRunNPMBuildScript(t *testing.T) {
 
 		ctx := testctx.Wrap(t.Context())
 		ctx.Env = map[string]string{"WANTED_ENV": "production"}
-		require.NoError(t, runNPMBuildScript(ctx, config.Build{
+		require.NoError(t, Default.Prepare(ctx, config.Build{
 			Dir:          dir,
 			BuildDetails: config.BuildDetails{Env: []string{"NODE_ENV={{ .Env.WANTED_ENV }}"}},
 		}))
@@ -209,14 +208,14 @@ func TestRunNPMBuildScript(t *testing.T) {
 		fakeNPM(t, "exit 1")
 
 		ctx := testctx.Wrap(t.Context())
-		require.Error(t, runNPMBuildScript(ctx, config.Build{Dir: dir}))
+		require.Error(t, Default.Prepare(ctx, config.Build{Dir: dir}))
 	})
 
 	t.Run("invalid template surfaces error", func(t *testing.T) {
 		dir := t.TempDir()
 		writePackageJSON(t, dir, map[string]string{"build": "esbuild ..."})
 		ctx := testctx.Wrap(t.Context())
-		err := runNPMBuildScript(ctx, config.Build{
+		err := Default.Prepare(ctx, config.Build{
 			Dir:          dir,
 			BuildDetails: config.BuildDetails{Env: []string{"X={{ .NotARealField }}"}},
 		})
