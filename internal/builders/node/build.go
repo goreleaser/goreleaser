@@ -86,8 +86,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Dir = "."
 	}
 
-	if build.Tool != "" {
-		return build, errors.New("tool is not supported for the node builder; node is invoked directly")
+	if build.Tool == "" {
+		build.Tool = "node"
 	}
 	if build.Command != "" {
 		return build, errors.New("command is not supported for the node builder")
@@ -216,5 +216,5 @@ func buildViaBuildSEA(
 	if err != nil {
 		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
 	}
-	return buildSEA(ctx, target, absBuildDir, absMain, options.Path)
+	return buildSEA(ctx, target, build.Tool, absBuildDir, absMain, options.Path)
 }

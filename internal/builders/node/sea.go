@@ -32,7 +32,7 @@ import (
 // Developer ID signing and notarization are layered on top via the
 // signs: and notarize: pipes — quill strips the ad-hoc signature
 // before re-signing.
-func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath string) error {
+func buildSEA(ctx context.Context, target Target, tool, buildDir, mainPath, outPath string) error {
 	version, err := resolveVersion(buildDir)
 	if err != nil {
 		return fmt.Errorf("node: resolve node version: %w", err)
@@ -60,7 +60,7 @@ func buildSEA(ctx context.Context, target Target, buildDir, mainPath, outPath st
 		return fmt.Errorf("node: write sea-config.json: %w", err)
 	}
 
-	if err := base.Exec(ctx, []string{"node", "--build-sea", cfgPath}, nil, ""); err != nil {
+	if err := base.Exec(ctx, []string{tool, "--build-sea", cfgPath}, nil, ""); err != nil {
 		return err
 	}
 

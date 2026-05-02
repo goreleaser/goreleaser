@@ -49,6 +49,7 @@ func TestWithDefaults(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, ".", build.Dir)
 		require.Equal(t, "index.js", build.Main)
+		require.Equal(t, "node", build.Tool)
 		require.ElementsMatch(t, defaultTargets(), build.Targets)
 	})
 
@@ -58,16 +59,17 @@ func TestWithDefaults(t *testing.T) {
 		require.Equal(t, "src/cli.mjs", build.Main)
 	})
 
+	t.Run("respects tool override", func(t *testing.T) {
+		build, err := Default.WithDefaults(config.Build{Tool: "/opt/node/bin/node"})
+		require.NoError(t, err)
+		require.Equal(t, "/opt/node/bin/node", build.Tool)
+	})
+
 	t.Run("invalid target", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
 			Targets: []string{"plan9-amd64"},
 		})
 		require.Error(t, err)
-	})
-
-	t.Run("rejects tool", func(t *testing.T) {
-		_, err := Default.WithDefaults(config.Build{Tool: "node"})
-		require.ErrorContains(t, err, "tool is not supported")
 	})
 
 	t.Run("rejects command", func(t *testing.T) {

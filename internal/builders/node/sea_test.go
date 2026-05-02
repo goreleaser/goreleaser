@@ -114,7 +114,7 @@ func TestBuildSEA_RealNode(t *testing.T) {
 		[]byte(`{"disableExperimentalSEAWarning": true}`), 0o644))
 
 	outPath := filepath.Join(t.TempDir(), "myapp")
-	require.NoError(t, buildSEA(t.Context(), target.(Target), buildDir, mainPath, outPath))
+	require.NoError(t, buildSEA(t.Context(), target.(Target), "node", buildDir, mainPath, outPath))
 	require.FileExists(t, outPath)
 
 	cmd := exec.Command(outPath)
