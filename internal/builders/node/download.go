@@ -29,7 +29,7 @@ var errNoVersion = errors.New("node: could not resolve a Node.js version; add en
 // nodedist index. The returned version always carries a leading `v`
 // to match nodejs.org URL paths.
 func resolveVersion(dir string) (string, error) {
-	pkg, err := packagejson.OpenOrEmpty(filepath.Join(dir, "package.json"))
+	pkg, err := packagejson.Open(filepath.Join(dir, "package.json"))
 	if err != nil {
 		return "", fmt.Errorf("node: read package.json: %w", err)
 	}

@@ -128,7 +128,7 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	}
 	log.WithField("version", version).Debug("resolved target node version")
 
-	pkg, err := packagejson.OpenOrEmpty(filepath.Join(build.Dir, "package.json"))
+	pkg, err := packagejson.Open(filepath.Join(build.Dir, "package.json"))
 	if err != nil {
 		return fmt.Errorf("node: scan package.json: %w", err)
 	}

@@ -31,14 +31,3 @@ func Open(name string) (Package, error) {
 	err = json.Unmarshal(bts, &pkg)
 	return pkg, err
 }
-
-// OpenOrEmpty parses the file at name and returns the result, or a
-// zero Package when the file does not exist. Other errors (parse,
-// permission, etc.) are returned unchanged.
-func OpenOrEmpty(name string) (Package, error) {
-	pkg, err := Open(name)
-	if err != nil && os.IsNotExist(err) {
-		return Package{}, nil
-	}
-	return pkg, err
-}

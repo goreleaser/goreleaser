@@ -3,7 +3,9 @@ package node
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -99,7 +101,7 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 	path := filepath.Join(buildDir, "sea-config.json")
 	bts, err := os.ReadFile(path)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return map[string]any{}, nil
 		}
 		return nil, fmt.Errorf("node: read %s: %w", path, err)
@@ -147,13 +149,13 @@ func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 // can layer real signing on top via the signs: pipe; quill removes the
 // ad-hoc signature first there too.
 func signMachO(path, id string) error {
-cfg, err := quill.NewSigningConfigFromPEMs(path, "", "", "", false)
-if err != nil {
-return fmt.Errorf("node: quill config for %s: %w", path, err)
-}
-cfg.WithIdentity(id)
-if err := quill.Sign(*cfg); err != nil {
-return fmt.Errorf("node: ad-hoc sign %s: %w", path, err)
-}
-return nil
+	cfg, err := quill.NewSigningConfigFromPEMs(path, "", "", "", false)
+	if err != nil {
+		return fmt.Errorf("node: quill config for %s: %w", path, err)
+	}
+	cfg.WithIdentity(id)
+	if err := quill.Sign(*cfg); err != nil {
+		return fmt.Errorf("node: ad-hoc sign %s: %w", path, err)
+	}
+	return nil
 }
