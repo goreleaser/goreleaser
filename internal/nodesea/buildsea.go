@@ -95,8 +95,7 @@ func BuildViaBuildSEA(ctx context.Context, opts BuildOptions) error {
 		return err
 	}
 
-	cacheDir := nodedist.CacheDir()
-	targetNode, err := nodedist.Download(ctx, cacheDir, opts.Version, opts.Target)
+	targetNode, err := downloadTargetNode(ctx, opts.Version, opts.Target)
 	if err != nil {
 		return err
 	}
@@ -161,6 +160,12 @@ var runBuildSEA = func(ctx context.Context, cfgPath string) error {
 	}
 	return nil
 }
+
+// downloadTargetNode resolves to nodedist.Download in production;
+// tests swap it to short-circuit the network.
+//
+//nolint:gochecknoglobals
+var downloadTargetNode = nodedist.Download
 
 func validateBuildOptions(opts BuildOptions) error {
 	var errs []string

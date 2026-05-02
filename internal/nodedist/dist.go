@@ -12,9 +12,7 @@ package nodedist
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -91,13 +89,4 @@ var defaultRetry = config.Retry{
 	Attempts: 4,
 	Delay:    time.Second,
 	MaxDelay: 30 * time.Second,
-}
-
-// CacheDir returns the directory used to cache downloaded Node.js
-// host binaries. It lives under the system temp dir so that downloads
-// don't pollute the user's cache home; entries persist for the
-// process and are subject to whatever cleanup policy the OS applies
-// to its temp directory.
-func CacheDir() string {
-	return filepath.Join(os.TempDir(), "goreleaser", "node")
 }

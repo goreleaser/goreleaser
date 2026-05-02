@@ -36,22 +36,14 @@ func TestDownload_Linux(t *testing.T) {
 	server := NewServer(t, map[string][]byte{
 		"/" + version + "/" + archName: archive,
 	})
-	t.Setenv("TMPDIR", t.TempDir())
 	SetBaseURL(t, server.URL)
 
-	cache := t.TempDir()
-	hostPath, err := Download(t.Context(), cache, version, target)
+	hostPath, err := Download(t.Context(), version, target)
 	require.NoError(t, err)
 	require.FileExists(t, hostPath)
 	got, err := os.ReadFile(hostPath)
 	require.NoError(t, err)
 	require.Equal(t, payload, got)
-
-	// Second call hits cache, should not re-fetch.
-	server.Close()
-	hostPath2, err := Download(t.Context(), cache, version, target)
-	require.NoError(t, err)
-	require.Equal(t, hostPath, hostPath2)
 }
 
 func TestDownload_Windows(t *testing.T) {
@@ -66,8 +58,7 @@ func TestDownload_Windows(t *testing.T) {
 	})
 	SetBaseURL(t, server.URL)
 
-	cache := t.TempDir()
-	hostPath, err := Download(t.Context(), cache, version, target)
+	hostPath, err := Download(t.Context(), version, target)
 	require.NoError(t, err)
 	require.FileExists(t, hostPath)
 	require.Equal(t, "node.exe", filepath.Base(hostPath))
@@ -89,20 +80,15 @@ func TestDownload_BadSHA(t *testing.T) {
 	})
 	SetBaseURL(t, server.URL)
 
-	_, err := Download(t.Context(), t.TempDir(), version, target)
+	_, err := Download(t.Context(), version, target)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "SHA-256 mismatch")
 }
 
 func TestDownload_UnknownVersion(t *testing.T) {
-	_, err := Download(t.Context(), t.TempDir(), "v0.0.999", Target("linux-x64"))
+	_, err := Download(t.Context(), "v0.0.999", Target("linux-x64"))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no embedded entry")
-}
-
-func TestCacheDir(t *testing.T) {
-	t.Setenv("TMPDIR", "/tmp/somewhere")
-	require.Equal(t, filepath.Join("/tmp/somewhere", "goreleaser", "node"), CacheDir())
 }
 
 func TestExtractNodeFromTarGz_AtomicOnFailure(t *testing.T) {
@@ -156,7 +142,7 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 	defaultRetry = config.Retry{Attempts: 4}
 	t.Cleanup(func() { defaultRetry = prevRetry })
 
-	hostPath, err := Download(t.Context(), t.TempDir(), version, target)
+	hostPath, err := Download(t.Context(), version, target)
 	require.NoError(t, err)
 	require.FileExists(t, hostPath)
 	require.GreaterOrEqual(t, int(archiveHits.Load()), 2)

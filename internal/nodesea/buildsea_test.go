@@ -47,24 +47,27 @@ func stubRunBuildSEA(t *testing.T, behavior func(rec *recordedBuildSEA, tmpOut s
 	return rec
 }
 
-// stageTargetNode pre-populates the host cache so downloadHost returns
-// without hitting the network. Returns the cache root used.
-func stageTargetNode(t *testing.T, version string, target nodedist.Target) string {
+// stageTargetNode replaces downloadTargetNode for the duration of t
+// and returns the path it will hand back. The returned path points at
+// a temp file containing fake host-binary contents, so tests can
+// assert against `executable` in the rendered sea-config.json.
+func stageTargetNode(t *testing.T, target nodedist.Target) string {
 	t.Helper()
-	cache := t.TempDir()
-	t.Setenv("TMPDIR", cache)
-	cacheDir := nodedist.CacheDir()
-	hostDir := filepath.Join(cacheDir, version, string(target))
-	require.NoError(t, os.MkdirAll(hostDir, 0o755))
-	hostPath := filepath.Join(hostDir, target.HostBinaryName())
+	dir := t.TempDir()
+	hostPath := filepath.Join(dir, target.HostBinaryName())
 	require.NoError(t, os.WriteFile(hostPath, []byte("fake target node"), 0o755))
-	return cacheDir
+	prev := downloadTargetNode
+	t.Cleanup(func() { downloadTargetNode = prev })
+	downloadTargetNode = func(_ context.Context, _ string, _ nodedist.Target) (string, error) {
+		return hostPath, nil
+	}
+	return hostPath
 }
 
 func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
-	cacheDir := stageTargetNode(t, version, target)
+	hostNode := stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
 	mainPath := filepath.Join(buildDir, "main.js")
@@ -103,7 +106,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 	// Recorded sea-config.json round-trip — goreleaser-owned fields
 	// must override whatever the user file said.
 	require.Equal(t, mainPath, rec.Cfg["main"])
-	require.Equal(t, filepath.Join(cacheDir, version, string(target), target.HostBinaryName()), rec.Cfg["executable"])
+	require.Equal(t, hostNode, rec.Cfg["executable"])
 	require.Equal(t, false, rec.Cfg["useCodeCache"])
 	require.Equal(t, false, rec.Cfg["useSnapshot"])
 	require.Equal(t, false, rec.Cfg["disableExperimentalSEAWarning"], "user-supplied false should be respected")
@@ -127,7 +130,7 @@ func TestBuildViaBuildSEA_HappyPath_ELF(t *testing.T) {
 func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
-	stageTargetNode(t, version, target)
+	stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
 	mainPath := filepath.Join(buildDir, "main.js")
@@ -157,7 +160,7 @@ func TestBuildViaBuildSEA_NoUserSEAConfig(t *testing.T) {
 func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
-	stageTargetNode(t, version, target)
+	stageTargetNode(t, target)
 
 	buildDir := t.TempDir()
 	mainPath := filepath.Join(buildDir, "main.js")
@@ -181,7 +184,7 @@ func TestBuildViaBuildSEA_InvalidUserSEAConfig(t *testing.T) {
 func TestBuildViaBuildSEA_AtomicOutput(t *testing.T) {
 	const version = "v25.5.0"
 	target := nodedist.Target("linux-x64")
-	stageTargetNode(t, version, target)
+	stageTargetNode(t, target)
 
 	mainPath := filepath.Join(t.TempDir(), "main.js")
 	require.NoError(t, os.WriteFile(mainPath, []byte(`console.log("ok");`), 0o644))

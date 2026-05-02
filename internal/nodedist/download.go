@@ -17,32 +17,28 @@ import (
 )
 
 // Download fetches and extracts the Node.js host binary for the given
-// target and version into cacheDir. The returned path points at the
-// extracted host binary. If a cached copy already exists it is
-// returned without touching the network.
+// target and version into a fresh temp directory and returns the
+// absolute path to it. Each call hits the network — there is no
+// on-disk cache. The temp directory lives under os.TempDir() and is
+// reaped by the OS on its usual schedule.
 //
 // The expected SHA-256 is read from the embedded release index
 // (releases.json); only versions present there can be downloaded.
 //
 // The caller is responsible for any further mutation (e.g. stripping
 // a code signature) before injecting a SEA blob.
-func Download(ctx context.Context, cacheDir, version string, target Target) (string, error) {
-	hostDir := filepath.Join(cacheDir, version, string(target))
-	hostPath := filepath.Join(hostDir, target.HostBinaryName())
-
-	if _, err := os.Stat(hostPath); err == nil {
-		return hostPath, nil
-	}
-
+func Download(ctx context.Context, version string, target Target) (string, error) {
 	archiveName := target.ArchiveName(version)
 	expected, err := LookupSHA(version, archiveName)
 	if err != nil {
 		return "", err
 	}
 
-	if err := os.MkdirAll(hostDir, 0o755); err != nil {
+	hostDir, err := os.MkdirTemp("", "goreleaser-node-*")
+	if err != nil {
 		return "", err
 	}
+	hostPath := filepath.Join(hostDir, target.HostBinaryName())
 
 	archiveURL := fmt.Sprintf("%s/%s/%s", distBaseURL, version, archiveName)
 	tmp, err := os.CreateTemp(hostDir, "download-*")
