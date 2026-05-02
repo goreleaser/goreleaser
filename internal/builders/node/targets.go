@@ -58,16 +58,6 @@ func (t Target) Goarch() string {
 	return t.Arch
 }
 
-// IsWindows reports whether the target is a windows distribution.
-func (t Target) IsWindows() bool { return t.Os == "win" }
-
-// tarEntry returns the path of the node binary inside the published
-// tar.gz archive for the given version. Only meaningful for non-windows
-// targets.
-func (t Target) tarEntry(version string) string {
-	return fmt.Sprintf("node-%s-%s/bin/node", version, t.Target)
-}
-
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
 	t, ok := parseTarget(target)

@@ -19,9 +19,10 @@ import (
 // are extracted; bare windows .exe archives are used as-is. The
 // returned path lives under a fresh temp directory.
 func downloadHostBinary(ctx context.Context, version string, target Target) (string, error) {
+	isWin := target.Os == "win"
 	archiveFile := fmt.Sprintf("node-%s-%s.tar.gz", version, target.Target)
 	binName := "node"
-	if target.IsWindows() {
+	if isWin {
 		archiveFile = path.Join(target.Target, "node.exe")
 		binName = "node.exe"
 	}
@@ -37,12 +38,13 @@ func downloadHostBinary(ctx context.Context, version string, target Target) (str
 	}
 	bin := filepath.Join(dir, binName)
 
-	if target.IsWindows() {
+	if isWin {
 		if err := os.Rename(archive, bin); err != nil {
 			return "", err
 		}
 	} else {
-		if err := extractFromTarGz(archive, target.tarEntry(version), bin); err != nil {
+		entry := fmt.Sprintf("node-%s-%s/bin/node", version, target.Target)
+		if err := extractFromTarGz(archive, entry, bin); err != nil {
 			return "", err
 		}
 		_ = os.Remove(archive)

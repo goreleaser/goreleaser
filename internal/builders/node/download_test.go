@@ -12,13 +12,12 @@ import (
 )
 
 func TestExtractFromTarGz_AtomicOnFailure(t *testing.T) {
-	const version = "v22.10.0"
-	target := mustParseTarget(t, "linux-x64")
+	const entry = "node-v22.10.0-linux-x64/bin/node"
 
 	// Build a valid tarball with a 4 KiB payload, then truncate the
 	// gzipped bytes so io.Copy hits unexpected EOF mid-extract.
 	payload := bytes.Repeat([]byte{'A'}, 4096)
-	archive := tarGz(t, target.tarEntry(version), payload)
+	archive := tarGz(t, entry, payload)
 	truncated := archive[:len(archive)/2]
 
 	dir := t.TempDir()
@@ -26,7 +25,7 @@ func TestExtractFromTarGz_AtomicOnFailure(t *testing.T) {
 	require.NoError(t, os.WriteFile(archivePath, truncated, 0o644))
 
 	dst := filepath.Join(dir, "node")
-	err := extractFromTarGz(archivePath, target.tarEntry(version), dst)
+	err := extractFromTarGz(archivePath, entry, dst)
 	require.Error(t, err)
 	_, statErr := os.Stat(dst)
 	require.ErrorIs(t, statErr, os.ErrNotExist)
@@ -36,16 +35,16 @@ func TestExtractFromTarGz_AtomicOnFailure(t *testing.T) {
 }
 
 func TestExtractFromTarGz_HappyPath(t *testing.T) {
-	target := mustParseTarget(t, "linux-x64")
+	const entry = "node-v22.10.0-linux-x64/bin/node"
 	payload := []byte("fake node binary")
-	archive := tarGz(t, target.tarEntry("v22.10.0"), payload)
+	archive := tarGz(t, entry, payload)
 
 	dir := t.TempDir()
 	archivePath := filepath.Join(dir, "ok.tar.gz")
 	require.NoError(t, os.WriteFile(archivePath, archive, 0o644))
 
 	dst := filepath.Join(dir, "node")
-	require.NoError(t, extractFromTarGz(archivePath, target.tarEntry("v22.10.0"), dst))
+	require.NoError(t, extractFromTarGz(archivePath, entry, dst))
 	got, err := os.ReadFile(dst)
 	require.NoError(t, err)
 	require.Equal(t, payload, got)
@@ -57,8 +56,6 @@ func TestTarget(t *testing.T) {
 	require.Equal(t, "linux", linux.Goos())
 	require.Equal(t, "windows", win.Goos())
 	require.Equal(t, "amd64", linux.Goarch())
-	require.True(t, win.IsWindows())
-	require.False(t, linux.IsWindows())
 }
 
 // tarGz builds a single-entry gzipped tarball for tests.
