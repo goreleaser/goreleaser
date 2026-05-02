@@ -13,28 +13,6 @@ import (
 	"github.com/goreleaser/quill/quill"
 )
 
-// buildSEA produces a Single Executable Application at outPath for
-// target by invoking `node --build-sea sea-config.json`, where
-// sea-config.json points `executable` at the per-target Node binary
-// downloaded for the version declared in <buildDir>/package.json's
-// engines.node. mainPath is the absolute path to the user's
-// entrypoint JS file. The `node` binary on PATH is used as-is; if it
-// cannot drive `--build-sea` the underlying command failure is
-// returned to the caller.
-//
-// If a sea-config.json exists in buildDir, its user-tunable fields
-// are merged into the rendered config (relative `assets` paths are
-// resolved against buildDir so they keep working from the dist
-// directory). Goreleaser-owned fields (`output`, `executable`,
-// `main`) always win.
-//
-// On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
-// quill (pure-Go) before goreleaser is done, so the macOS kernel will
-// exec the binary on Apple Silicon without further action. Real
-// Developer ID signing and notarization are layered on top via the
-// signs: and notarize: pipes — quill strips the ad-hoc signature
-// before re-signing.
-
 func createSEAConfig(tpl *tmpl.Template, build config.Build, name, targetNode, output string) error {
 	main, err := tpl.Apply(build.Main)
 	if err != nil {
