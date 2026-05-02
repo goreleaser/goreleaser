@@ -138,14 +138,19 @@ func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 		return nil
 	}
 
-	env := append(os.Environ(), ctx.Env.Strings()...)
-	tenv, err := base.TemplateEnv(build.Env, tmpl.New(ctx))
+	env := []string{}
+	env = append(env, ctx.Env.Strings()...)
+	tpl := tmpl.New(ctx).
+		WithEnvS(env)
+	tenv, err := base.TemplateEnv(build.Env, tpl)
 	if err != nil {
-		return fmt.Errorf("node: template env: %w", err)
+		return err
 	}
 	env = append(env, tenv...)
-	log.WithField("dir", build.Dir).Info("running npm run build")
-	return base.Exec(ctx, []string{"npm", "run", "build"}, env, build.Dir)
+	command := []string{"npm", "run", "build"}
+	log.WithField("dir", build.Dir).
+		Info("running npm run build")
+	return base.Exec(ctx, command, env, build.Dir)
 }
 
 // Build implements build.Builder.
@@ -167,7 +172,10 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 
 	env := append([]string{}, ctx.Env.Strings()...)
-	tpl := tmpl.New(ctx).WithBuildOptions(options).WithEnvS(env).WithArtifact(a)
+	tpl := tmpl.New(ctx).
+		WithBuildOptions(options).
+		WithEnvS(env).WithArtifact(a)
+
 	tenv, err := base.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
@@ -178,27 +186,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithField("target", options.Target.String()).
 		Info("building")
 
-	if err := buildViaBuildSEA(ctx, build, target, options, tpl); err != nil {
-		return err
-	}
-
-	if err := base.ChTimes(build, tpl, a); err != nil {
-		return err
-	}
-
-	ctx.Artifacts.Add(a)
-	return nil
-}
-
-// buildViaBuildSEA dispatches to buildSEA. The user's sea-config.json
-// (if any) is read directly from build.Dir.
-func buildViaBuildSEA(
-	ctx *context.Context,
-	build config.Build,
-	target Target,
-	options api.Options,
-	tpl *tmpl.Template,
-) error {
 	main, err := tpl.Apply(build.Main)
 	if err != nil {
 		return fmt.Errorf("node: template main: %w", err)
@@ -208,13 +195,50 @@ func buildViaBuildSEA(
 		return fmt.Errorf("node: main %q not found in %q: %w", main, build.Dir, err)
 	}
 
+	// XXX: do we need these to be abs paths
 	absMain, err := filepath.Abs(mainPath)
 	if err != nil {
 		return fmt.Errorf("node: abs main %q: %w", mainPath, err)
 	}
+
 	absBuildDir, err := filepath.Abs(build.Dir)
 	if err != nil {
 		return fmt.Errorf("node: abs build dir %q: %w", build.Dir, err)
 	}
-	return buildSEA(ctx, target, build.Tool, absBuildDir, absMain, options.Path)
+
+	targetNode, err := ensureNode(ctx, build.Dir, target.Target)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+		return err
+	}
+
+	cfgPath := filepath.Join(filepath.Dir(options.Path), "sea-config.json")
+	if err := createSEAConfig(cfgPath, absBuildDir, absMain, targetNode, options.Path); err != nil {
+		return err
+	}
+
+	command := []string{build.Tool, "--build-sea", cfgPath}
+	if err := base.Exec(ctx, command, env, ""); err != nil {
+		return err
+	}
+
+	if target.Goos() == "darwin" {
+		if err := signMachO(options.Path, filepath.Base(options.Path)); err != nil {
+			return err
+		}
+	}
+
+	if err := os.Chmod(options.Path, 0o755); err != nil {
+		return err
+	}
+
+	if err := base.ChTimes(build, tpl, a); err != nil {
+		return err
+	}
+
+	ctx.Artifacts.Add(a)
+	return nil
 }

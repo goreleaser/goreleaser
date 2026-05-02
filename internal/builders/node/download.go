@@ -22,6 +22,16 @@ import (
 // determined from package.json.
 var errNoVersion = errors.New("node: could not resolve a Node.js version; add engines.node to package.json")
 
+// ensureNode resolves the node version, downloads it, and returns its path.
+func ensureNode(ctx context.Context, dir, target string) (string, error) {
+	version, err := resolveVersion(dir)
+	if err != nil {
+		return "", fmt.Errorf("node: resolve node version: %w", err)
+	}
+
+	return downloadHostBinary(ctx, version, target)
+}
+
 // resolveVersion picks a Node.js version from `engines.node` in the
 // project's package.json. Either an exact version (`v25.5.0`,
 // `25.5.0`) or a semver range (`>=25.5 <26`, `^25`) is accepted.
@@ -82,12 +92,12 @@ func resolveVersionString(raw string) (string, error) {
 // (version, target) and returns its absolute path. tar.gz archives
 // are extracted; bare windows .exe archives are used as-is. The
 // returned path lives under a fresh temp directory.
-func downloadHostBinary(ctx context.Context, version string, target Target) (string, error) {
-	isWin := target.Os == "win"
-	archiveFile := fmt.Sprintf("node-%s-%s.tar.gz", version, target.Target)
+func downloadHostBinary(ctx context.Context, version, target string) (string, error) {
+	isWin := strings.HasPrefix(target, "win-")
+	archiveFile := fmt.Sprintf("node-%s-%s.tar.gz", version, target)
 	binName := "node"
 	if isWin {
-		archiveFile = path.Join(target.Target, "node.exe")
+		archiveFile = path.Join(target, "node.exe")
 		binName = "node.exe"
 	}
 
@@ -107,7 +117,7 @@ func downloadHostBinary(ctx context.Context, version string, target Target) (str
 			return "", err
 		}
 	} else {
-		entry := fmt.Sprintf("node-%s-%s/bin/node", version, target.Target)
+		entry := fmt.Sprintf("node-%s-%s/bin/node", version, target)
 		if err := extractFromTarGz(archive, entry, bin); err != nil {
 			return "", err
 		}

@@ -1,7 +1,6 @@
 package node
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/quill/quill"
 )
 
@@ -34,22 +32,14 @@ import (
 // Developer ID signing and notarization are layered on top via the
 // signs: and notarize: pipes — quill strips the ad-hoc signature
 // before re-signing.
-func buildSEA(ctx context.Context, target Target, tool, buildDir, mainPath, outPath string) error {
-	version, err := resolveVersion(buildDir)
-	if err != nil {
-		return fmt.Errorf("node: resolve node version: %w", err)
-	}
 
-	targetNode, err := downloadHostBinary(ctx, version, target)
-	if err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
-		return err
-	}
-
-	cfg, err := buildSEAConfigJSON(buildDir, mainPath, targetNode, outPath)
+func createSEAConfig(name, buildDir, mainPath, targetNode, output string) error {
+	cfg, err := buildSEAConfigJSON(
+		buildDir,
+		mainPath,
+		targetNode,
+		output,
+	)
 	if err != nil {
 		return err
 	}
@@ -57,22 +47,11 @@ func buildSEA(ctx context.Context, target Target, tool, buildDir, mainPath, outP
 	if err != nil {
 		return err
 	}
-	cfgPath := filepath.Join(filepath.Dir(outPath), "sea-config.json")
-	if err := os.WriteFile(cfgPath, cfgBytes, 0o600); err != nil {
+
+	if err := os.WriteFile(name, cfgBytes, 0o600); err != nil {
 		return fmt.Errorf("node: write sea-config.json: %w", err)
 	}
-
-	if err := base.Exec(ctx, []string{tool, "--build-sea", cfgPath}, nil, ""); err != nil {
-		return err
-	}
-
-	if target.Goos() == "darwin" {
-		if err := signMachO(outPath, filepath.Base(outPath)); err != nil {
-			return err
-		}
-	}
-
-	return os.Chmod(outPath, 0o755)
+	return nil
 }
 
 // buildSEAConfigJSON renders the sea-config.json contents goreleaser
