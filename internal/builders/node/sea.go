@@ -24,7 +24,7 @@ import (
 // are merged into the rendered config (relative `assets` paths are
 // resolved against buildDir so they keep working from the dist
 // directory). Goreleaser-owned fields (`output`, `executable`,
-// `main`, `useCodeCache`, `useSnapshot`) always win.
+// `main`) always win.
 //
 // On darwin targets the resulting Mach-O is ad-hoc CMS-signed via
 // quill (pure-Go) before goreleaser is done, so the macOS kernel will
@@ -88,8 +88,6 @@ func buildSEAConfigJSON(buildDir, mainPath, targetNode, output string) (map[stri
 	cfg["main"] = mainPath
 	cfg["output"] = output
 	cfg["executable"] = targetNode
-	cfg["useCodeCache"] = false
-	cfg["useSnapshot"] = false
 
 	rewriteAssetPaths(cfg, buildDir)
 	return cfg, nil

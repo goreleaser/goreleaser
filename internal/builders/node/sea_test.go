@@ -51,10 +51,10 @@ func TestBuildSEAConfigJSON_MergesUserConfig(t *testing.T) {
 	require.Equal(t, "/abs/main.js", cfg["main"])
 	require.Equal(t, "/abs/node", cfg["executable"])
 	require.Equal(t, "/abs/out/myapp", cfg["output"])
-	require.Equal(t, false, cfg["useCodeCache"])
-	require.Equal(t, false, cfg["useSnapshot"])
 
 	// User-tunable fields pass through.
+	require.Equal(t, true, cfg["useCodeCache"])
+	require.Equal(t, true, cfg["useSnapshot"])
 	require.Equal(t, false, cfg["disableExperimentalSEAWarning"])
 	require.Equal(t, []any{"--max-old-space-size=4096"}, cfg["execArgv"])
 	require.Equal(t, "module", cfg["mainFormat"])
