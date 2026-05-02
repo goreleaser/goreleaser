@@ -41,7 +41,7 @@ func ensureNode(ctx context.Context, dir, target string) (string, error) {
 // to match nodejs.org URL paths.
 func resolveVersion(dir string) (string, error) {
 	pkg, err := packagejson.Open(filepath.Join(dir, "package.json"))
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return "", fmt.Errorf("node: read package.json: %w", err)
 	}
 	raw := strings.TrimSpace(pkg.Engines["node"])
