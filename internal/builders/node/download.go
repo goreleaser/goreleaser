@@ -100,9 +100,9 @@ func resolveVersionString(raw string) (string, error) {
 }
 
 func validateNodeSEAVersion(v *semver.Version) error {
-	min := semver.MustParse(minNodeSEAVersion)
-	if v.LessThan(min) {
-		return fmt.Errorf("Node.js SEA requires Node.js >= v%s, got v%s", min, v)
+	minV := semver.MustParse(minNodeSEAVersion)
+	if v.LessThan(minV) {
+		return fmt.Errorf("node.js SEA requires Node.js >= v%s, got v%s", minV, v)
 	}
 	return nil
 }
