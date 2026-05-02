@@ -1,12 +1,17 @@
 package node
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -85,7 +90,9 @@ func TestWithDefaults(t *testing.T) {
 	})
 }
 
-func TestCurrentTarget(t *testing.T) {
+func TestBuild(t *testing.T) {
+	testlib.CheckPath(t, "node")
+
 	osName := runtime.GOOS
 	if osName == "windows" {
 		osName = "win"
@@ -94,112 +101,55 @@ func TestCurrentTarget(t *testing.T) {
 	if arch == "amd64" {
 		arch = "x64"
 	}
-	_, err := Default.Parse(osName + "-" + arch)
-	require.NoError(t, err, "host should be a valid build target")
-}
+	hostTarget := osName + "-" + arch
 
-// TestPrepare covers the per-build npm wire-up driven through Prepare:
-// silent skip paths, error propagation, and that build.Env templating
-// reaches the spawned `npm` process.
-func TestPrepare(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("uses /bin/sh fake npm")
+	out, err := exec.Command("node", "--version").Output()
+	require.NoError(t, err)
+	hostVersion := string(out[:len(out)-1])
+
+	testlib.Mktmp(t)
+	require.NoError(t, os.WriteFile("index.js",
+		[]byte(`process.stdout.write("buildsea-ok\n");`), 0o644))
+	require.NoError(t, os.WriteFile("package.json",
+		[]byte(`{"engines":{"node":"`+hostVersion+`"}}`), 0o644))
+	require.NoError(t, os.WriteFile("sea-config.json",
+		[]byte(`{"disableExperimentalSEAWarning": true}`), 0o644))
+
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        "dist",
+		ProjectName: "proj",
+		Builds: []config.Build{
+			{
+				ID:           "default",
+				Dir:          ".",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+			},
+		},
+	})
+
+	build, err := Default.WithDefaults(ctx.Config.Builds[0])
+	require.NoError(t, err)
+
+	options := api.Options{
+		Name: "proj",
+		Path: filepath.Join("dist", "proj_"+hostTarget, "proj"),
 	}
+	options.Target, err = Default.Parse(hostTarget)
+	require.NoError(t, err)
 
-	writePackageJSON := func(t *testing.T, dir string, scripts map[string]string) {
-		t.Helper()
-		var sb []byte
-		sb = append(sb, `{"engines":{"node":"v25.5.0"},"scripts":{`...)
-		first := true
-		for k, v := range scripts {
-			if !first {
-				sb = append(sb, ',')
-			}
-			first = false
-			sb = append(sb, '"')
-			sb = append(sb, k...)
-			sb = append(sb, `":"`...)
-			sb = append(sb, v...)
-			sb = append(sb, '"')
-		}
-		sb = append(sb, `}}`...)
-		require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"), sb, 0o644))
-	}
+	require.NoError(t, Default.Build(ctx, build, options))
 
-	// fakeNPM drops a tiny shell script at <bindir>/npm, prepends
-	// bindir to PATH for the test, and writes the script body
-	// supplied by the caller (typically appending args to a log file).
-	fakeNPM := func(t *testing.T, body string) {
-		t.Helper()
-		bindir := t.TempDir()
-		require.NoError(t, os.WriteFile(
-			filepath.Join(bindir, "npm"),
-			[]byte("#!/bin/sh\n"+body+"\n"),
-			0o755,
-		))
-		t.Setenv("PATH", bindir+string(os.PathListSeparator)+os.Getenv("PATH"))
-	}
+	bins := ctx.Artifacts.List()
+	require.Len(t, bins, 1)
+	bin := bins[0]
+	require.Equal(t, options.Path, bin.Path)
 
-	t.Run("runs npm run build when scripts.build is declared", func(t *testing.T) {
-		dir := t.TempDir()
-		writePackageJSON(t, dir, map[string]string{"build": "esbuild ..."})
-		fakeNPM(t, "echo \"$@\" >> \""+dir+"/calls.log\"\nexit 0")
+	got, err := exec.Command(bin.Path).CombinedOutput()
+	require.NoError(t, err, "exec %s: %s", bin.Path, got)
+	require.Equal(t, "buildsea-ok\n", string(got))
 
-		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, Default.Prepare(ctx, config.Build{Dir: dir}))
-
-		got, err := os.ReadFile(filepath.Join(dir, "calls.log"))
-		require.NoError(t, err)
-		require.Equal(t, "run build\n", string(got))
-	})
-
-	t.Run("silent skip when scripts.build missing", func(t *testing.T) {
-		dir := t.TempDir()
-		writePackageJSON(t, dir, map[string]string{"test": "vitest"})
-		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, Default.Prepare(ctx, config.Build{Dir: dir}))
-	})
-
-	t.Run("errors when engines.node is missing", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
-		err := Default.Prepare(ctx, config.Build{Dir: t.TempDir()})
-		require.ErrorContains(t, err, "resolve target node version")
-	})
-
-	t.Run("templates build.env and forwards to npm", func(t *testing.T) {
-		dir := t.TempDir()
-		writePackageJSON(t, dir, map[string]string{"build": "esbuild ..."})
-		fakeNPM(t, "printf 'NODE_ENV=%s\\n' \"$NODE_ENV\" > \""+dir+"/env.log\"\nexit 0")
-
-		ctx := testctx.Wrap(t.Context())
-		ctx.Env = map[string]string{"WANTED_ENV": "production"}
-		require.NoError(t, Default.Prepare(ctx, config.Build{
-			Dir:          dir,
-			BuildDetails: config.BuildDetails{Env: []string{"NODE_ENV={{ .Env.WANTED_ENV }}"}},
-		}))
-
-		got, err := os.ReadFile(filepath.Join(dir, "env.log"))
-		require.NoError(t, err)
-		require.Equal(t, "NODE_ENV=production\n", string(got))
-	})
-
-	t.Run("non-zero exit propagates", func(t *testing.T) {
-		dir := t.TempDir()
-		writePackageJSON(t, dir, map[string]string{"build": "esbuild ..."})
-		fakeNPM(t, "exit 1")
-
-		ctx := testctx.Wrap(t.Context())
-		require.Error(t, Default.Prepare(ctx, config.Build{Dir: dir}))
-	})
-
-	t.Run("invalid template surfaces error", func(t *testing.T) {
-		dir := t.TempDir()
-		writePackageJSON(t, dir, map[string]string{"build": "esbuild ..."})
-		ctx := testctx.Wrap(t.Context())
-		err := Default.Prepare(ctx, config.Build{
-			Dir:          dir,
-			BuildDetails: config.BuildDetails{Env: []string{"X={{ .NotARealField }}"}},
-		})
-		require.Error(t, err)
-	})
+	fi, err := os.Stat(bin.Path)
+	require.NoError(t, err)
+	require.True(t, modTime.Equal(fi.ModTime()))
 }
