@@ -77,7 +77,7 @@ builds:
 
 GoReleaser will not install Node.js or project dependencies for you.
 Install them before running GoReleaser, usually with a global
-[`before` hook](/customization/global_hooks/):
+[`before` hook](/customization/general/hooks/):
 
 ```yaml {filename=".goreleaser.yaml"}
 before:
