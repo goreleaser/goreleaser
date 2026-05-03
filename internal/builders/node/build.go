@@ -44,7 +44,6 @@ var (
 	_ api.Builder           = &Builder{}
 	_ api.DependingBuilder  = &Builder{}
 	_ api.ConcurrentBuilder = &Builder{}
-	_ api.PreparedBuilder   = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -109,21 +108,6 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	return build, nil
-}
-
-// Prepare implements build.PreparedBuilder. It runs once per build
-// configuration before any per-target Build call: resolves the target
-// Node version, failing fast if unset.
-//
-// Dependency installation (`npm ci` and friends) is intentionally not
-// performed here — drive it from the `before:` hook instead.
-func (b *Builder) Prepare(_ *context.Context, build config.Build) error {
-	version, err := resolveVersion(build.Dir)
-	if err != nil {
-		return fmt.Errorf("node: resolve target node version: %w", err)
-	}
-	log.WithField("version", version).Debug("resolved target node version")
-	return nil
 }
 
 // Build implements build.Builder.

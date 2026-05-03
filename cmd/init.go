@@ -67,9 +67,6 @@ func newInitCmd() *initCmd {
 			case "node":
 				example = static.NodeExampleConfig
 				gitignoreLines = append(gitignoreLines, "node_modules/")
-				if err := writeIfMissing("sea-config.json", static.NodeSEAConfig); err != nil {
-					return err
-				}
 			case "uv":
 				example = static.UVExampleConfig
 				gitignoreLines = append(gitignoreLines, "build/")
@@ -155,20 +152,6 @@ const (
 	packageJSON   = "package.json"
 	pyprojectToml = "pyproject.toml"
 )
-
-// writeIfMissing writes content to path only when path does not yet
-// exist. Existing files are left untouched so a hand-tuned config is
-// never overwritten.
-func writeIfMissing(path string, content []byte) error {
-	if _, err := os.Stat(path); err == nil {
-		return nil
-	}
-	if err := os.WriteFile(path, content, 0o644); err != nil {
-		return err
-	}
-	log.Infof(boldStyle.Render("generating ") + codeStyle.Render(path))
-	return nil
-}
 
 func langDetect() string {
 	code := func(s string) string {

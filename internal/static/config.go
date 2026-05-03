@@ -28,15 +28,6 @@ var DenoExampleConfig []byte
 //go:embed config.node.yaml
 var NodeExampleConfig []byte
 
-// NodeSEAConfig is the starter sea-config.json dropped by
-// goreleaser init --lang node when the project does not already have
-// one. GoReleaser overwrites main / output / executable / useCodeCache
-// / useSnapshot at build time, so the user-facing surface is just the
-// few options that are theirs to customize.
-//
-//go:embed config.node.sea.json
-var NodeSEAConfig []byte
-
 // RustExampleConfig is the config used within goreleaser init --lang rust.
 //
 //go:embed config.rust.yaml

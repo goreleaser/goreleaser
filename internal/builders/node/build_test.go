@@ -96,24 +96,6 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 	require.ErrorContains(t, err, ">= v25.5.0")
 }
 
-func TestPrepareDoesNotRunNPMBuild(t *testing.T) {
-	for name, pkg := range map[string]string{
-		"no build script": `{"engines":{"node":"25.5.0"}}`,
-		"build script":    `{"engines":{"node":"25.5.0"},"scripts":{"build":"echo nope"}}`,
-	} {
-		t.Run(name, func(t *testing.T) {
-			testlib.Mktmp(t)
-			require.NoError(t, os.WriteFile("package.json", []byte(pkg), 0o644))
-			createFakeNPM(t)
-
-			err := Default.Prepare(testctx.Wrap(t.Context()), config.Build{Dir: "."})
-
-			require.NoError(t, err)
-			require.NoFileExists(t, "npm-was-run")
-		})
-	}
-}
-
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "node")
 
@@ -201,15 +183,6 @@ func TestBuildRejectsUnsupportedHostNode(t *testing.T) {
 
 	require.ErrorContains(t, err, "host node")
 	require.ErrorContains(t, err, ">= v25.5.0")
-}
-
-func createFakeNPM(tb testing.TB) {
-	tb.Helper()
-	createFakeExecutable(tb, "npm", `#!/bin/sh
-echo "$*" > npm-was-run
-`, `@echo off
-echo %* > npm-was-run
-`)
 }
 
 func createFakeNodeAlias(tb testing.TB, name string) {
