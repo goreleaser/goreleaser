@@ -516,8 +516,8 @@ github.com/goreleaser/go-shellwords v1.0.13 h1:ivvhC/RvUyud74c0urb1ZGYWPYGibY5Qi
 github.com/goreleaser/go-shellwords v1.0.13/go.mod h1:UtDFSSvW7wQL/4jmyzZbuP6HfI6R+oSm0v63cs61oDw=
 github.com/goreleaser/nfpm/v2 v2.46.3 h1:sMNcGjbVnABe33avsFo++WwKubY8msP5j9ieulX09VI=
 github.com/goreleaser/nfpm/v2 v2.46.3/go.mod h1:wYKICOnvMALZcoGM20TcP9QuIV+Fb9fmLH364HyTvDQ=
-github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05 h1:iillcQW89rysvFhPQKQEKfQNcQi+Yu+f2DH1ZF7i6kQ=
-github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05/go.mod h1:gDef5vWJO4JWWFeWCnJ+hQnJsAEQWazvzmh39qd5Ods=
+github.com/goreleaser/quill v0.0.0-20260503024558-dbc159c51d43 h1:bF/vbsaUX5FxLuV6Yv2r27kuzwePYJVAwtZfObt1evQ=
+github.com/goreleaser/quill v0.0.0-20260503024558-dbc159c51d43/go.mod h1:gDef5vWJO4JWWFeWCnJ+hQnJsAEQWazvzmh39qd5Ods=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=

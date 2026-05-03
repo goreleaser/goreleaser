@@ -29,7 +29,7 @@ require (
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
 	github.com/goreleaser/nfpm/v2 v2.46.3
-	github.com/goreleaser/quill v0.0.0-20260418030907-a259ef5caf05
+	github.com/goreleaser/quill v0.0.0-20260503024558-dbc159c51d43
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.14.0
 	github.com/jarcoal/httpmock v1.4.1
