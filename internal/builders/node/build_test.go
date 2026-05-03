@@ -99,7 +99,7 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "node")
 
-	target := "darwin-arm64"
+	target := "linux-arm64"
 	createFakeNodeAlias(t, "node-"+target)
 
 	out, err := exec.Command("node", "--version").Output()
