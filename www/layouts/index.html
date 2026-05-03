@@ -37,6 +37,8 @@
 
 	.goreleaser-hero-stars span {
 		--i: 0;
+		--goreleaser-star-x: 0px;
+		--goreleaser-star-y: 0px;
 		--size: calc(10px + 35px * (0.5 + 0.5 * sin(var(--i) * 53.5deg)));
 		position: absolute;
 		display: block;
@@ -45,10 +47,16 @@
 		top: calc(2% + 90% * (0.5 + 0.5 * sin(var(--i) * 137.508deg)));
 		left: calc(2% + 90% * (0.5 + 0.5 * cos(var(--i) * 97.5deg)));
 		opacity: calc(0.4 + 0.5 * (0.5 + 0.5 * cos(var(--i) * 71.3deg)));
-		transform: rotate(calc(var(--i) * 137.508deg));
+		transform: translate3d(
+				var(--goreleaser-star-x),
+				var(--goreleaser-star-y),
+				0
+			)
+			rotate(calc(var(--i) * 137.508deg));
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C12 4 20 12 24 12C20 12 12 20 12 24C12 20 4 12 0 12C4 12 12 4 12 0Z' fill='white'/%3E%3C/svg%3E");
 		background-size: contain;
 		background-repeat: no-repeat;
+		will-change: transform;
 	}
 
 	.goreleaser-hero-stars span:nth-child(1) {
@@ -111,10 +119,28 @@
 	.goreleaser-hero-stars span:nth-child(20) {
 		--i: 20;
 	}
+	.goreleaser-hero-stars span:nth-child(21) {
+		--i: 21;
+	}
+	.goreleaser-hero-stars span:nth-child(22) {
+		--i: 22;
+	}
+	.goreleaser-hero-stars span:nth-child(23) {
+		--i: 23;
+	}
+	.goreleaser-hero-stars span:nth-child(24) {
+		--i: 24;
+	}
 
 	@media (max-width: 768px) {
 		.goreleaser-hero-stars span:nth-child(n + 11) {
 			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.goreleaser-hero-stars span {
+			will-change: auto;
 		}
 	}
 
@@ -390,6 +416,10 @@
 
 <section id="content" class="goreleaser-hero-section">
 	<div class="goreleaser-hero-stars" aria-hidden="true">
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
 		<span></span>
 		<span></span>
 		<span></span>
@@ -870,4 +900,55 @@
 		></a>
 	</div>
 </section>
+<script>
+	(() => {
+		const hero = document.querySelector(".goreleaser-hero-section");
+		const stars = document.querySelectorAll(".goreleaser-hero-stars span");
+		const reducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		);
+
+		if (!hero || !stars.length || reducedMotion.matches) {
+			return;
+		}
+
+		let ticking = false;
+
+		const updateStars = () => {
+			ticking = false;
+
+			const rect = hero.getBoundingClientRect();
+			const offset = Math.min(Math.max(-rect.top, 0), rect.height);
+
+			stars.forEach((star, index) => {
+				const xDepth =
+					(index % 2 === 0 ? 1 : -1) *
+					(0.01 + ((index * 3) % 5) / 100);
+				const yDepth = 0.04 + ((index * 7) % 10) / 100;
+
+				star.style.setProperty(
+					"--goreleaser-star-x",
+					`${(offset * xDepth).toFixed(2)}px`,
+				);
+				star.style.setProperty(
+					"--goreleaser-star-y",
+					`${(offset * yDepth).toFixed(2)}px`,
+				);
+			});
+		};
+
+		const requestUpdate = () => {
+			if (ticking) {
+				return;
+			}
+
+			ticking = true;
+			requestAnimationFrame(updateStars);
+		};
+
+		updateStars();
+		window.addEventListener("scroll", requestUpdate, { passive: true });
+		window.addEventListener("resize", requestUpdate);
+	})();
+</script>
 {{ end }}
