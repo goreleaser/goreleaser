@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -129,7 +130,7 @@ func TestBuild(t *testing.T) {
 
 	out, err := exec.Command("node", "--version").Output()
 	require.NoError(t, err)
-	hostVersion := string(out[:len(out)-1])
+	hostVersion := strings.TrimSpace(string(out))
 
 	testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile("index.js",
