@@ -151,7 +151,7 @@ func TestBuild(t *testing.T) {
 	bins := ctx.Artifacts.List()
 	require.Len(t, bins, 1)
 	bin := bins[0]
-	require.Equal(t, options.Path, bin.Path)
+	require.Equal(t, filepath.ToSlash(options.Path), bin.Path)
 
 	got, err := exec.Command(bin.Path).CombinedOutput()
 	require.NoError(t, err, "exec %s: %s", bin.Path, got)
