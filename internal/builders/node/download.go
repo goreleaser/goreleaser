@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -77,26 +76,25 @@ func resolveVersionString(raw string) (string, error) {
 		return "", fmt.Errorf("invalid semver constraint: %w", err)
 	}
 
-	entries := nodedist.Releases()
-	matched := make([]*semver.Version, 0, len(entries))
-	for verStr := range entries {
+	var found *semver.Version
+	for verStr := range nodedist.Releases() {
 		v, err := semver.NewVersion(verStr)
 		if err != nil {
 			continue
 		}
 		if constraint.Check(v) {
-			matched = append(matched, v)
+			if found == nil || v.GreaterThan(found) {
+				found = v
+			}
 		}
 	}
-	if len(matched) == 0 {
+	if found == nil {
 		return "", fmt.Errorf("no published Node.js release satisfies %q", raw)
 	}
-	sort.Sort(semver.Collection(matched))
-	v := matched[len(matched)-1]
-	if err := validateNodeSEAVersion(v); err != nil {
+	if err := validateNodeSEAVersion(found); err != nil {
 		return "", err
 	}
-	return "v" + v.String(), nil
+	return "v" + found.String(), nil
 }
 
 func validateNodeSEAVersion(v *semver.Version) error {
