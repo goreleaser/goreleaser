@@ -311,8 +311,8 @@ github.com/digitorus/timestamp v0.0.0-20250524132541-c45532741eea h1:ALRwvjsSP53
 github.com/digitorus/timestamp v0.0.0-20250524132541-c45532741eea/go.mod h1:GvWntX9qiTlOud0WkQ6ewFm0LPy5JUR1Xo0Ngbd1w6Y=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
-github.com/distribution/distribution/v3 v3.1.0 h1:u1v788HreKTLGdNY6s7px8Exgrs9mZ9UrCDjSrpCM8g=
-github.com/distribution/distribution/v3 v3.1.0/go.mod h1:73BuF5/ziMHNVt7nnL1roYpH4Eg/FgUlKZm3WryIx/o=
+github.com/distribution/distribution/v3 v3.1.1 h1:KUbk7C8CfaLXy8kbf/hGq9cad/wCoLB6dbWH6DMbmX0=
+github.com/distribution/distribution/v3 v3.1.1/go.mod h1:d7lXwZpph0bVcOj4Aqn0nMrWHIwRQGdiV5TLeI+/w6Y=
 github.com/distribution/reference v0.6.0 h1:0IXCQ5g4/QMHHkarYzh5l+u8T3t73zM5QvfrDyIgxBk=
 github.com/distribution/reference v0.6.0/go.mod h1:BbU0aIcezP1/5jX/8MP0YiH4SdvB5Y4f/wlDRiLyi3E=
 github.com/docker/cli v29.4.0+incompatible h1:+IjXULMetlvWJiuSI0Nbor36lcJ5BTcVpUmB21KBoVM=

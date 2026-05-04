@@ -21,7 +21,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
-	github.com/distribution/distribution/v3 v3.1.0
+	github.com/distribution/distribution/v3 v3.1.1
 	github.com/google/go-containerregistry v0.21.5
 	github.com/google/go-github/v84 v84.0.0
 	github.com/google/ko v0.18.2-0.20260407063826-ae9c7272d7de
