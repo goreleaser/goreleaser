@@ -918,6 +918,54 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 	require.Contains(t, err.Error(), "sha must be provided")
 }
 
+func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
+	t.Parallel()
+	var compareCalls atomic.Int32
+	reset := time.Now().UTC().Add(time.Hour)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch r.URL.Path {
+		case "/api/v3/rate_limit":
+			w.WriteHeader(http.StatusOK)
+			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
+			fmt.Fprintf(w, `{"resources":{"core":{"remaining":5000,"reset":%s}}}`, string(resetstr))
+		case "/api/v3/repos/owner/repo/compare/v1...v2":
+			if compareCalls.Add(1) == 1 {
+				// Simulate the argo-cd failure: go-github maps a 403 with this
+				// documentation_url to *AbuseRateLimitError. Retry-After is in
+				// seconds; the SDK then short-circuits any request made before
+				// that window elapses, so MaxDelay below has to exceed it.
+				w.Header().Set("Retry-After", "1")
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprint(w, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+			http.Error(w, "unexpected", http.StatusTeapot)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{API: srv.URL},
+		Retry: config.Retry{
+			Attempts: 3,
+			Delay:    10 * time.Millisecond,
+			MaxDelay: 2 * time.Second, // must exceed the 1s Retry-After window
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+	require.NoError(t, err)
+	require.Empty(t, items)
+	require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
+}
+
 func TestGitHubCheckRateLimit(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()

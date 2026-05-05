@@ -26,6 +26,11 @@ import (
 
 const DefaultGitHubDownloadURL = "https://github.com"
 
+// maxSecondaryRateLimitWait caps how long the go-github SDK will report a
+// secondary rate-limit Retry-After. Without this, a pathological Retry-After
+// header could stall a release indefinitely.
+const maxSecondaryRateLimitWait = 5 * time.Minute
+
 var (
 	_ Client                = &githubClient{}
 	_ ReleaseNotesGenerator = &githubClient{}
@@ -45,12 +50,34 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		if err != nil {
-			return retryx.HTTP(err, must(resp).Response)
-		}
-		return nil
+		return githubError(err, resp)
 	}, retryx.IsRetriable)
 	return result, resp, err
+}
+
+// githubError wraps an error from the go-github SDK into a retryx.HTTPError,
+// translating the SDK's typed primary/secondary rate-limit errors into a
+// RetryAfter the retry layer can honor. Both kinds are returned with HTTP 403,
+// which would otherwise be classified as non-retriable.
+func githubError(err error, resp *github.Response) error {
+	if err == nil {
+		return nil
+	}
+	he := retryx.HTTPError{Err: err}
+	if r := must(resp).Response; r != nil {
+		he.Status = r.StatusCode
+	}
+	if rle, ok := errors.AsType[*github.RateLimitError](err); ok {
+		he.RetryAfter = max(time.Until(rle.Rate.Reset.Time), time.Second)
+	} else if arle, ok := errors.AsType[*github.AbuseRateLimitError](err); ok {
+		switch d := arle.RetryAfter; {
+		case d != nil && *d > 0:
+			he.RetryAfter = *d
+		default:
+			he.RetryAfter = time.Minute
+		}
+	}
+	return he
 }
 
 // NewGitHubReleaseNotesGenerator returns a GitHub client that can generate
@@ -88,13 +115,16 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	}
 
 	if baseURL == "" {
-		return &githubClient{client: github.NewClient(httpClient)}, nil
+		client := github.NewClient(httpClient)
+		client.MaxSecondaryRateLimitRetryAfterDuration = maxSecondaryRateLimitWait
+		return &githubClient{client: client}, nil
 	}
 
 	client, err := github.NewClient(httpClient).WithEnterpriseURLs(baseURL, uploadURL)
 	if err != nil {
 		return &githubClient{}, err
 	}
+	client.MaxSecondaryRateLimitRetryAfterDuration = maxSecondaryRateLimitWait
 	return &githubClient{client: client}, nil
 }
 
@@ -209,11 +239,19 @@ func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cac
 		res, _, err := githubDo(ctx, func() (*github.UsersSearchResult, *github.Response, error) {
 			return c.client.Search.Users(ctx, author.Email, nil)
 		})
-		if err == nil && len(res.Users) == 1 {
-			author.Username = res.Users[0].GetLogin()
-			cache[author.Email] = author.Username
+		if err != nil {
+			// transient/unknown failure: leave uncached so a later commit can retry
 			continue
 		}
+		// Cache hits AND misses: a successful search that returned 0 or >1 users
+		// is a permanent miss for this run, so don't burn another Search.Users
+		// call on the next commit with the same email.
+		var username string
+		if len(res.Users) == 1 {
+			username = res.Users[0].GetLogin()
+		}
+		author.Username = username
+		cache[author.Email] = username
 	}
 	return authors
 }
@@ -691,10 +729,7 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 				ctx.Config.Release.GitHub.Name,
 				asset.GetID(),
 			)
-			if err != nil {
-				return r, retryx.HTTP(err, must(r).Response)
-			}
-			return r, nil
+			return r, githubError(err, r)
 		}, retryx.IsRetriable)
 		if err != nil {
 			githubErrLogger(resp, err).
@@ -762,7 +797,7 @@ func (c *githubClient) Upload(
 			}
 			return retryx.Retriable(err)
 		}
-		return retryx.HTTP(err, must(resp).Response)
+		return githubError(err, resp)
 	}, retryx.IsRetriable)
 }
 
