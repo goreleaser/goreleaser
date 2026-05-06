@@ -37,6 +37,19 @@ type githubClient struct {
 	client *github.Client
 }
 
+// githubIsRetriable extends retryx.IsRetriable to treat HTTP 403 as retriable,
+// since GitHub uses 403 (not 429) for secondary rate limit responses.
+// See https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#exceeding-the-rate-limit
+func githubIsRetriable(err error) bool {
+	if retryx.IsRetriable(err) {
+		return true
+	}
+	if he, ok := errors.AsType[retryx.HTTPError](err); ok {
+		return he.Status == http.StatusForbidden
+	}
+	return false
+}
+
 // githubDo wraps a go-github SDK call with retry logic.
 // It captures the response for status-code-based retry decisions.
 func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error)) (T, *github.Response, error) {
@@ -49,7 +62,7 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 			return retryx.HTTP(err, must(resp).Response)
 		}
 		return nil
-	}, retryx.IsRetriable)
+	}, githubIsRetriable)
 	return result, resp, err
 }
 
@@ -695,7 +708,7 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 				return r, retryx.HTTP(err, must(r).Response)
 			}
 			return r, nil
-		}, retryx.IsRetriable)
+		}, githubIsRetriable)
 		if err != nil {
 			githubErrLogger(resp, err).
 				WithField("release-id", releaseID).
@@ -763,7 +776,7 @@ func (c *githubClient) Upload(
 			return retryx.Retriable(err)
 		}
 		return retryx.HTTP(err, must(resp).Response)
-	}, retryx.IsRetriable)
+	}, githubIsRetriable)
 }
 
 // getMilestoneByTitle returns a milestone by title.

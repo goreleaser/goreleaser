@@ -4,6 +4,7 @@ import (
 	stdctx "context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/google/go-github/v84/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -2569,4 +2571,28 @@ func githubTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	}))
 	t.Cleanup(srv.Close)
 	return srv
+}
+
+func TestGitHubIsRetriable(t *testing.T) {
+t.Parallel()
+t.Run("403 secondary rate limit", func(t *testing.T) {
+// GitHub returns 403 for secondary rate limit responses.
+err := retryx.HTTP(errors.New("secondary rate limit exceeded"), &http.Response{StatusCode: http.StatusForbidden})
+require.True(t, githubIsRetriable(err))
+})
+t.Run("500", func(t *testing.T) {
+err := retryx.HTTP(errors.New("internal"), &http.Response{StatusCode: http.StatusInternalServerError})
+require.True(t, githubIsRetriable(err))
+})
+t.Run("429", func(t *testing.T) {
+err := retryx.HTTP(errors.New("rate limited"), &http.Response{StatusCode: http.StatusTooManyRequests})
+require.True(t, githubIsRetriable(err))
+})
+t.Run("404 not retriable", func(t *testing.T) {
+err := retryx.HTTP(errors.New("not found"), &http.Response{StatusCode: http.StatusNotFound})
+require.False(t, githubIsRetriable(err))
+})
+t.Run("plain error not retriable", func(t *testing.T) {
+require.False(t, githubIsRetriable(errors.New("boom")))
+})
 }

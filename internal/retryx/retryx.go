@@ -57,9 +57,7 @@ func IsRetriable(err error) bool {
 		return true
 	}
 	if he, ok := errors.AsType[HTTPError](err); ok {
-		return he.Status >= 500 ||
-			he.Status == http.StatusTooManyRequests ||
-			he.Status == http.StatusForbidden
+		return he.Status >= 500 || he.Status == http.StatusTooManyRequests
 	}
 	return false
 }
