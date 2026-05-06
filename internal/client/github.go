@@ -184,16 +184,16 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 func (c *githubClient) authorsLookup(authors []Author) []Author {
 	for i := range authors {
 		author := &authors[i]
-		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
-			// GitHub noreply format: ID+USERNAME@users.noreply.github.com
-			if _, clean, ok := strings.Cut(before, "+"); ok {
-				author.Username = clean
-				continue
-			}
-			author.Username = before
+		before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com")
+		if !ok {
 			continue
 		}
-
+		// GitHub noreply format: ID+USERNAME@users.noreply.github.com
+		if _, clean, ok := strings.Cut(before, "+"); ok {
+			author.Username = clean
+			continue
+		}
+		author.Username = before
 	}
 	return authors
 }
