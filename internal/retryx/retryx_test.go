@@ -199,6 +199,10 @@ func TestHTTPError(t *testing.T) {
 		err := HTTP(errors.New("rate limited"), &http.Response{StatusCode: 429})
 		require.True(t, IsRetriable(err))
 	})
+	t.Run("403 secondary rate limit", func(t *testing.T) {
+		err := HTTP(errors.New("secondary rate limit exceeded"), &http.Response{StatusCode: 403})
+		require.True(t, IsRetriable(err))
+	})
 	t.Run("404 not retriable", func(t *testing.T) {
 		err := HTTP(errors.New("not found"), &http.Response{StatusCode: 404})
 		require.False(t, IsRetriable(err))
