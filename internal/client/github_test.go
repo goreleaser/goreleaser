@@ -1270,96 +1270,42 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 }
 
 func TestGitHubAuthorsLookup(t *testing.T) {
-	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-
-		if r.URL.Path == "/api/v3/search/users" {
-			q := r.URL.Query().Get("q")
-			switch q {
-			case "single@example.com", "cached@example.com":
-				fmt.Fprint(w, `{"total_count": 1, "items": [{"login": "singleuser"}]}`)
-			case "multiple@example.com":
-				fmt.Fprint(w, `{"total_count": 2, "items": [{"login": "user1"}, {"login": "user2"}]}`)
-			case "error@example.com":
-				w.WriteHeader(http.StatusInternalServerError)
-			default:
-				fmt.Fprint(w, `{"total_count": 0, "items": []}`)
-			}
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-	})
-
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitHubURLs: config.GitHubURLs{
-			API: srv.URL,
-		},
 		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
-	cache := map[string]string{}
 
 	t.Run("noreply email without numeric id", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Foo Bar", Email: "foobar@users.noreply.github.com"},
-		}, cache)
+		})
 		require.Equal(t, "foobar", result[0].Username)
 	})
 
 	t.Run("noreply email with numeric id", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Foo Bar", Email: "12345+foobar@users.noreply.github.com"},
-		}, cache)
+		})
 		require.Equal(t, "foobar", result[0].Username)
 	})
 
-	t.Run("api lookup single result", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Single User", Email: "single@example.com"},
-		}, cache)
-		require.Equal(t, "singleuser", result[0].Username)
-	})
-
-	t.Run("api lookup cache", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Cached User", Email: "cached@example.com"},
-			{Name: "Cached User 2", Email: "cached@example.com"},
-		}, cache)
-		require.Equal(t, "singleuser", result[0].Username)
-		require.Equal(t, "singleuser", result[1].Username)
-	})
-
-	t.Run("api lookup no results", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Unknown User", Email: "unknown@example.com"},
-		}, cache)
-		require.Empty(t, result[0].Username)
-	})
-
-	t.Run("api lookup multiple results", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Ambiguous User", Email: "multiple@example.com"},
-		}, cache)
-		require.Empty(t, result[0].Username)
-	})
-
-	t.Run("api lookup error", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Error User", Email: "error@example.com"},
-		}, cache)
+	t.Run("non-noreply email is left alone", func(t *testing.T) {
+		result := client.authorsLookup([]Author{
+			{Name: "Some User", Email: "someone@example.com"},
+		})
 		require.Empty(t, result[0].Username)
 	})
 
 	t.Run("mixed authors", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Noreply User", Email: "noreplyuser@users.noreply.github.com"},
 			{Name: "Noreply Plus", Email: "999+noreplyplus@users.noreply.github.com"},
-			{Name: "Single User", Email: "single@example.com"},
-		}, cache)
+			{Name: "Regular User", Email: "regular@example.com"},
+		})
 		require.Equal(t, "noreplyuser", result[0].Username)
 		require.Equal(t, "noreplyplus", result[1].Username)
-		require.Equal(t, "singleuser", result[2].Username)
+		require.Empty(t, result[2].Username)
 	})
 }
 

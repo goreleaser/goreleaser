@@ -104,13 +104,6 @@ func (c *githubClient) checkRateLimit(ctx *context.Context) {
 	})
 }
 
-func (c *githubClient) checkSearchRateLimit(ctx *context.Context) {
-	// 5 should be safe enough (search limit is 30/min)
-	c.rateLimitChecker(ctx, 5, func(limits *github.RateLimits) *github.Rate {
-		return limits.Search
-	})
-}
-
 func (c *githubClient) rateLimitChecker(
 	ctx *context.Context,
 	target int,
@@ -154,7 +147,6 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	c.checkRateLimit(ctx)
 	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
-	cache := map[string]string{}
 
 	for {
 		result, resp, err := githubDo(ctx, func() (*github.CommitsComparison, *github.Response, error) {
@@ -173,7 +165,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				})
 			}
 			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
-			authors = append(authors, c.authorsLookup(ctx, coauthors, cache)...)
+			authors = append(authors, c.authorsLookup(coauthors)...)
 			log = append(log, fillDeprecated(ChangelogItem{
 				SHA:     commit.GetSHA(),
 				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
@@ -189,7 +181,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return log, nil
 }
 
-func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cache map[string]string) []Author {
+func (c *githubClient) authorsLookup(authors []Author) []Author {
 	for i := range authors {
 		author := &authors[i]
 		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
@@ -201,19 +193,7 @@ func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cac
 			author.Username = before
 			continue
 		}
-		if username, ok := cache[author.Email]; ok {
-			author.Username = username
-			continue
-		}
-		c.checkSearchRateLimit(ctx)
-		res, _, err := githubDo(ctx, func() (*github.UsersSearchResult, *github.Response, error) {
-			return c.client.Search.Users(ctx, author.Email, nil)
-		})
-		if err == nil && len(res.Users) == 1 {
-			author.Username = res.Users[0].GetLogin()
-			cache[author.Email] = author.Username
-			continue
-		}
+
 	}
 	return authors
 }
