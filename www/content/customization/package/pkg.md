@@ -22,7 +22,7 @@ pkgs:
     #
     # Default: '{{.ProjectName}}_{{.Arch}}'.
     # Templates: allowed.
-    name: 'myproject{{ if neq .Arch "all" }}-{{.Arch}}{{ end }}'
+    name: 'myproject{{ if ne .Arch "all" }}-{{.Arch}}{{ end }}'
 
     # IDs of the builds to use.
     # Empty means all IDs.
