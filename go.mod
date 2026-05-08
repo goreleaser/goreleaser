@@ -12,7 +12,7 @@ require (
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.12.0
 	github.com/bluesky-social/indigo v0.0.0-20240813042137-4006c0eca043
-	github.com/caarlos0/env/v11 v11.4.0
+	github.com/caarlos0/env/v11 v11.4.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.6.0
@@ -36,7 +36,7 @@ require (
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-mastodon v0.0.11
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/modelcontextprotocol/registry v1.7.6
+	github.com/modelcontextprotocol/registry v1.7.7
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
@@ -138,7 +138,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.7.0 // indirect
-	cloud.google.com/go/kms v1.29.0 // indirect
+	cloud.google.com/go/kms v1.30.0 // indirect
 	cloud.google.com/go/longrunning v0.9.0 // indirect
 	cloud.google.com/go/storage v1.59.2 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
