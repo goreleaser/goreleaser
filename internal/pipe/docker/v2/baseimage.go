@@ -8,9 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
-	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -21,54 +18,27 @@ const (
 	keyBaseImageDigest = "BaseImageDigest"
 )
 
-// baseImageFields returns template fields for the base image of d.
-//
-// It always returns the BaseImage/BaseImageDigest keys (possibly empty) so
-// templates referencing them won't error. The digest is taken from the
-// FROM line when already pinned, otherwise resolved via
-// `docker buildx imagetools inspect`.
-func baseImageFields(ctx *context.Context, d config.DockerV2) (tmpl.Fields, error) {
-	fields := tmpl.Fields{
-		keyBaseImage:       "",
-		keyBaseImageDigest: "",
-	}
-
-	dockerfile, err := tmpl.New(ctx).Apply(d.Dockerfile)
-	if err != nil {
-		return nil, fmt.Errorf("invalid dockerfile: %w", err)
-	}
-	if strings.TrimSpace(dockerfile) == "" {
-		return fields, nil
-	}
-
+// baseImage returns the base image of dockerfile and its manifest digest.
+// Returns ("", "", nil) when there's no usable FROM (scratch, no FROM, parse miss).
+// Returns (base, "", err) on digest resolution failure, so callers can still
+// use the image name.
+func baseImage(ctx *context.Context, dockerfile string) (string, string, error) {
 	content, err := os.ReadFile(dockerfile)
 	if err != nil {
-		log.WithField("dockerfile", dockerfile).
-			WithError(err).
-			Debug("could not read dockerfile to resolve base image")
-		return fields, nil
+		return "", "", err
 	}
-
 	base := parseBaseImage(string(content))
 	if base == "" || strings.EqualFold(base, "scratch") {
-		return fields, nil
+		return "", "", nil
 	}
-	fields[keyBaseImage] = base
-
 	if _, digest, ok := strings.Cut(base, "@"); ok && strings.HasPrefix(digest, "sha256:") {
-		fields[keyBaseImageDigest] = digest
-		return fields, nil
+		return base, digest, nil
 	}
-
 	digest, err := resolveBaseImageDigest(ctx, base)
 	if err != nil {
-		log.WithField("base", base).
-			WithError(err).
-			Warn("could not resolve base image digest")
-		return fields, nil
+		return base, "", err
 	}
-	fields[keyBaseImageDigest] = digest
-	return fields, nil
+	return base, digest, nil
 }
 
 var (
@@ -88,8 +58,7 @@ func parseBaseImage(content string) string {
 
 	args := map[string]string{}
 	aliases := map[string]string{}
-	var froms []string
-	seenFrom := false
+	var base string
 
 	for line := range strings.SplitSeq(content, "\n") {
 		line = strings.TrimSpace(line)
@@ -97,27 +66,20 @@ func parseBaseImage(content string) string {
 			continue
 		}
 
-		if m := argRe.FindStringSubmatch(line); m != nil && !seenFrom {
+		if m := argRe.FindStringSubmatch(line); m != nil && base == "" {
 			// Only global ARGs (before any FROM) are usable in FROM lines.
 			args[m[1]] = strings.Trim(m[2], `"'`)
 			continue
 		}
 
 		if m := fromRe.FindStringSubmatch(line); m != nil {
-			seenFrom = true
-			image := substituteArgs(m[1], args)
-			froms = append(froms, image)
+			base = substituteArgs(m[1], args)
 			if alias := m[2]; alias != "" {
-				aliases[strings.ToLower(alias)] = image
+				aliases[strings.ToLower(alias)] = base
 			}
 		}
 	}
 
-	if len(froms) == 0 {
-		return ""
-	}
-
-	base := froms[len(froms)-1]
 	for range len(aliases) + 1 {
 		next, ok := aliases[strings.ToLower(base)]
 		if !ok || next == base {

@@ -41,58 +41,32 @@ func TestParseBaseImage(t *testing.T) {
 	}
 }
 
-func TestBaseImageFields(t *testing.T) {
-	t.Run("empty dockerfile", func(t *testing.T) {
-		fields, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{})
-		require.NoError(t, err)
-		require.Equal(t, tmpl.Fields{
-			keyBaseImage:       "",
-			keyBaseImageDigest: "",
-		}, fields)
-	})
-
-	t.Run("dockerfile template error", func(t *testing.T) {
-		_, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{ .Nope }}",
-		})
+func TestBaseImage(t *testing.T) {
+	t.Run("missing file", func(t *testing.T) {
+		_, _, err := baseImage(testctx.Wrap(t.Context()), "nope.Dockerfile")
 		require.Error(t, err)
 	})
 
-	t.Run("missing dockerfile is non-fatal", func(t *testing.T) {
-		fields, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "nope.Dockerfile",
-		})
+	t.Run("scratch", func(t *testing.T) {
+		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "scratch"))
 		require.NoError(t, err)
-		require.Equal(t, "", fields[keyBaseImage])
-		require.Equal(t, "", fields[keyBaseImageDigest])
-	})
-
-	t.Run("scratch base", func(t *testing.T) {
-		fields, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: filepath.Join("testdata", "dockerfiles", "scratch"),
-		})
-		require.NoError(t, err)
-		require.Equal(t, "", fields[keyBaseImage])
-		require.Equal(t, "", fields[keyBaseImageDigest])
+		require.Equal(t, "", base)
+		require.Equal(t, "", digest)
 	})
 
 	t.Run("digest pinned in FROM", func(t *testing.T) {
 		const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
-		fields, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: filepath.Join("testdata", "dockerfiles", "pinned-digest"),
-		})
+		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "pinned-digest"))
 		require.NoError(t, err)
-		require.Equal(t, ref, fields[keyBaseImage])
-		require.Equal(t, "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1", fields[keyBaseImageDigest])
+		require.Equal(t, ref, base)
+		require.Equal(t, "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1", digest)
 	})
 
-	t.Run("resolution error is non-fatal", func(t *testing.T) {
-		fields, err := baseImageFields(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: filepath.Join("testdata", "dockerfiles", "unknown-image"),
-		})
-		require.NoError(t, err)
-		require.Equal(t, "goreleaser-nonexistent-image:nope", fields[keyBaseImage])
-		require.Equal(t, "", fields[keyBaseImageDigest])
+	t.Run("digest resolution error returns base", func(t *testing.T) {
+		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"))
+		require.Error(t, err)
+		require.Equal(t, "goreleaser-nonexistent-image:nope", base)
+		require.Equal(t, "", digest)
 	})
 }
 

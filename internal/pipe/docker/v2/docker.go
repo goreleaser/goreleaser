@@ -182,12 +182,25 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return pipe.Skip("configuration is disabled")
 	}
 
-	baseFields, err := baseImageFields(ctx, d)
+	baseDockerfile, err := tmpl.New(ctx).Apply(d.Dockerfile)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid dockerfile: %w", err)
+	}
+	var baseImg, baseDigest string
+	if baseDockerfile != "" {
+		var berr error
+		baseImg, baseDigest, berr = baseImage(ctx, baseDockerfile)
+		if berr != nil {
+			log.WithField("dockerfile", baseDockerfile).
+				WithError(berr).
+				Debug("could not resolve base image")
+		}
 	}
 
-	arg, images, err := makeArgs(ctx, d, extraArgs, baseFields)
+	arg, images, err := makeArgs(ctx, d, extraArgs, tmpl.Fields{
+		keyBaseImage:       baseImg,
+		keyBaseImageDigest: baseDigest,
+	})
 	if err != nil {
 		return err
 	}
