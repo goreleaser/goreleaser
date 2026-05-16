@@ -242,6 +242,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		Type: artifact.SourceRPM,
 		Name: packageFilename,
 		Path: srpmPath,
+		Extra: map[string]any{
+			artifact.ExtraFormat: strings.TrimPrefix(extension, "."),
+			artifact.ExtraExt:    extension,
+		},
 	})
 	return nil
 }
