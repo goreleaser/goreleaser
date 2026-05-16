@@ -1,0 +1,4 @@
+FROM alpine:3.20 AS a
+FROM a AS b
+FROM b AS c
+FROM c

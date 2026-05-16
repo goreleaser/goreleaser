@@ -1,0 +1,2 @@
+ARG IMG="alpine:3.20"
+FROM ${IMG}

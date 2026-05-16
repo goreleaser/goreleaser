@@ -182,7 +182,12 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return pipe.Skip("configuration is disabled")
 	}
 
-	arg, images, err := makeArgs(ctx, d, extraArgs)
+	baseFields, err := baseImageFields(ctx, d)
+	if err != nil {
+		return err
+	}
+
+	arg, images, err := makeArgs(ctx, d, extraArgs, baseFields)
 	if err != nil {
 		return err
 	}
@@ -276,8 +281,8 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 	return string(digest), nil
 }
 
-func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]string, []string, error) {
-	tpl := tmpl.New(ctx)
+func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string, extraFields tmpl.Fields) ([]string, []string, error) {
+	tpl := tmpl.New(ctx).WithExtraFields(extraFields)
 	images, err := tpl.Slice(d.Images, tmpl.NonEmpty())
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid images: %w", err)

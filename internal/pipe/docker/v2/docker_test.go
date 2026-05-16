@@ -159,7 +159,7 @@ func TestMakeArgs(t *testing.T) {
 					Tags:       []string{"latest", "v{{.Version}}"},
 				}
 				mod(&d)
-				_, _, err := makeArgs(ctx, d, nil)
+				_, _, err := makeArgs(ctx, d, nil, nil)
 				testlib.RequireTemplateError(t, err)
 			})
 		}
@@ -167,14 +167,14 @@ func TestMakeArgs(t *testing.T) {
 	t.Run("no images", func(t *testing.T) {
 		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
-		}, nil)
+		}, nil, nil)
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no tags", func(t *testing.T) {
 		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 			Images:     []string{"ghcr.io/foo/bar"},
-		}, nil)
+		}, nil, nil)
 		require.Error(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
@@ -210,7 +210,7 @@ func TestMakeArgs(t *testing.T) {
 				"  ":      "also ignored",
 			},
 			Flags: []string{"--ulimit=1000"},
-		}, []string{"--push", "--attest=type=sbom"})
+		}, []string{"--push", "--attest=type=sbom"}, nil)
 		require.NoError(t, err)
 		require.Equal(
 			t,
