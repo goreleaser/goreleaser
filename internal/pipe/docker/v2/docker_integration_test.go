@@ -130,6 +130,7 @@ func TestRun(t *testing.T) {
 		}, names(images))
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			require.NotEmpty(t, artifact.ExtraOr(*img, ExtraPlatforms, []string(nil)))
 			rmi(t, img.Name)
 		}
 	})
@@ -155,6 +156,7 @@ func TestRun(t *testing.T) {
 		}, names(images))
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			require.NotEmpty(t, artifact.ExtraOr(*img, ExtraPlatforms, []string(nil)))
 			rmi(t, img.Name)
 		}
 	})
