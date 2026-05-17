@@ -575,8 +575,8 @@ func depNames(deps []config.NixDependency) []string {
 
 // mainProgram returns the value for meta.mainProgram. If the user set it
 // explicitly, that wins. Otherwise we auto-detect only when goreleaser
-// generates the install phase (nix.Install is empty) and the archive
-// ships a single binary — anything more ambiguous, the user must set.
+// generates the install phase (nix.Install is empty), falling back to the
+// first binary shipped by the archive.
 func mainProgram(nix config.Nix, art *artifact.Artifact) string {
 	if nix.MainProgram != "" {
 		return nix.MainProgram
@@ -585,7 +585,7 @@ func mainProgram(nix config.Nix, art *artifact.Artifact) string {
 		return ""
 	}
 	bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
-	if len(bins) != 1 {
+	if len(bins) == 0 {
 		return ""
 	}
 	return bins[0]

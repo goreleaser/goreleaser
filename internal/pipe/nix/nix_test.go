@@ -187,7 +187,7 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
-				MainProgram: "{{ .ProjectName }}",
+				MainProgram: "drumroll-{{ .Version }}",
 				Install: `
 					mkdir -p $out/bin
 					cp foo $out/bin/foo
