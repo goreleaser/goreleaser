@@ -326,6 +326,9 @@ type Nix struct {
 
 	// v2.14+
 	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
+
+	// v2.16+
+	MainProgram string `yaml:"main_program,omitempty" json:"main_program,omitempty"`
 }
 
 type NixDependency struct {

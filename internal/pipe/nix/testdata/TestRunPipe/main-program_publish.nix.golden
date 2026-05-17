@@ -9,13 +9,13 @@
 let
   inherit (stdenvNoCC.hostPlatform) system;
   shaMap = {
-    i686-linux = "0000000000000000000000000000000000000000000000000000";
-    x86_64-linux = "0000000000000000000000000000000000000000000000000000";
-    armv6l-linux = "0000000000000000000000000000000000000000000000000000";
-    armv7l-linux = "0000000000000000000000000000000000000000000000000000";
-    aarch64-linux = "0000000000000000000000000000000000000000000000000000";
-    x86_64-darwin = "0000000000000000000000000000000000000000000000000000";
-    aarch64-darwin = "0000000000000000000000000000000000000000000000000000";
+    i686-linux = "sha16";
+    x86_64-linux = "sha1";
+    armv6l-linux = "sha6";
+    armv7l-linux = "sha7";
+    aarch64-linux = "sha2";
+    x86_64-darwin = "sha3";
+    aarch64-darwin = "sha4";
   };
 
   urlMap = {
@@ -29,7 +29,7 @@ let
   };
 in
 stdenvNoCC.mkDerivation {
-  pname = "foo";
+  pname = "main-program";
   version = "1.2.1";
   src = fetchurl {
     url = urlMap.${system};
@@ -42,10 +42,13 @@ stdenvNoCC.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/bin
-    cp -vr ./foo $out/bin/foo
+    cp foo $out/bin/foo
   '';
 
   meta = {
+    description = "my test";
+    homepage = "https://goreleaser.com";
+    license = lib.licenses.mit;
     mainProgram = "foo";
 
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];

@@ -36,6 +36,7 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
+    mainProgram = "foo";
 
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
 

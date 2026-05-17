@@ -151,6 +151,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		&nix.Homepage,
 		&nix.Description,
 		&nix.Path,
+		&nix.MainProgram,
 	)
 	if err != nil {
 		return err
@@ -308,6 +309,7 @@ func preparePkg(
 		Description:       nix.Description,
 		Homepage:          nix.Homepage,
 		License:           nix.License,
+		MainProgram:       mainProgram(nix, archives[0]),
 		Inputs:            inputs,
 		Dependencies:      dependencies,
 		DynamicallyLinked: dynamicallyLinked,
@@ -569,6 +571,24 @@ func depNames(deps []config.NixDependency) []string {
 		result = append(result, dep.Name)
 	}
 	return result
+}
+
+// mainProgram returns the value for meta.mainProgram. If the user set it
+// explicitly, that wins. Otherwise we auto-detect only when goreleaser
+// generates the install phase (nix.Install is empty) and the archive
+// ships a single binary — anything more ambiguous, the user must set.
+func mainProgram(nix config.Nix, art *artifact.Artifact) string {
+	if nix.MainProgram != "" {
+		return nix.MainProgram
+	}
+	if nix.Install != "" {
+		return ""
+	}
+	bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
+	if len(bins) != 1 {
+		return ""
+	}
+	return bins[0]
 }
 
 type fileHasher interface {

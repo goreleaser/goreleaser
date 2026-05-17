@@ -20,6 +20,7 @@ type templateData struct {
 	Description       string
 	Homepage          string
 	License           string
+	MainProgram       string
 	Platforms         []string
 	Inputs            []string
 	Dependencies      []string

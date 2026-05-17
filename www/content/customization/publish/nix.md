@@ -64,6 +64,14 @@ nix:
     # Default: inferred from global metadata.
     license: "mit"
 
+    # The name of the binary inside the package, used for `meta.mainProgram`
+    # (which is what `nix run` invokes).
+    #
+    # Templates: allowed.
+    # Default: when goreleaser generates the install phase and the archive
+    # contains a single binary, that binary name is used; otherwise unset.
+    main_program: "drumroll"
+
     # Setting this will prevent goreleaser to actually try to commit the updated
     # package - instead, it will be stored on the dist directory only,
     # leaving the responsibility of publishing it to the user.

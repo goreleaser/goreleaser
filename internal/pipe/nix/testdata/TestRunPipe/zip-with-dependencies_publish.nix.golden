@@ -49,6 +49,7 @@ stdenvNoCC.mkDerivation {
     description = "my test";
     homepage = "https://goreleaser.com";
     license = lib.licenses.mit;
+    mainProgram = "foo";
 
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
 

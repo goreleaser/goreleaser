@@ -3506,6 +3506,9 @@
 							"alejandra",
 							"nixfmt"
 						]
+					},
+					"main_program": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

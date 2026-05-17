@@ -29,7 +29,7 @@ let
   };
 in
 stdenvNoCC.mkDerivation {
-  pname = "foo";
+  pname = "main-program";
   version = "1.2.1";
   src = fetchurl {
     url = urlMap.${system};
@@ -42,10 +42,13 @@ stdenvNoCC.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/bin
-    cp -vr ./foo $out/bin/foo
+    cp foo $out/bin/foo
   '';
 
   meta = {
+    description = "my test";
+    homepage = "https://goreleaser.com";
+    license = lib.licenses.mit;
     mainProgram = "foo";
 
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];

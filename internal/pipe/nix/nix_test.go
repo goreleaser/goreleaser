@@ -180,6 +180,37 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "main-program",
+			nix: config.Nix{
+				Name:        "main-program",
+				IDs:         []string{"foo"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				MainProgram: "{{ .ProjectName }}",
+				Install: `
+					mkdir -p $out/bin
+					cp foo $out/bin/foo
+				`,
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-main-program-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name:        "foo",
+				MainProgram: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name: "zip",
 			nix: config.Nix{
 				Name:        "foozip",
