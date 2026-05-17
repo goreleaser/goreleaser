@@ -105,7 +105,6 @@ func (Base) Default(ctx *context.Context) error {
 
 // Run implements pipeline.Piper.
 func (p Snapshot) Run(ctx *context.Context) error {
-	warnExperimental()
 	checkBuildxDriver(ctx)
 	log.Warn("snapshot build: will not push any images")
 
@@ -142,7 +141,6 @@ func (p Snapshot) Run(ctx *context.Context) error {
 
 // Publish implements publish.Publisher.
 func (p Publish) Publish(ctx *context.Context) error {
-	warnExperimental()
 	checkBuildxDriver(ctx)
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
@@ -578,12 +576,6 @@ func isRetriableManifestCreate(err error) bool {
 func isFileNotFoundError(out string) bool {
 	return strings.Contains(out, ">>> COPY") ||
 		strings.Contains(out, ">>> ADD")
-}
-
-func warnExperimental() {
-	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
-Please provide any feedback you might have at https://github.com/goreleaser/goreleaser/discussions/6005`).
-		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
 }
 
 // checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
