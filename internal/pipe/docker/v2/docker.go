@@ -33,6 +33,10 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// ExtraPlatforms is the artifact Extra key holding the list of platforms a v2
+// docker image was built for (e.g. ["linux/amd64", "linux/arm64"]).
+const ExtraPlatforms = "Platforms"
+
 // Base v2 docker pipe.
 type Base struct{}
 
@@ -215,6 +219,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 			Extra: map[string]any{
 				artifact.ExtraID:     d.ID,
 				artifact.ExtraDigest: digest,
+				ExtraPlatforms:       slices.Clone(d.Platforms),
 			},
 		})
 	}

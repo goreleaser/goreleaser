@@ -86,6 +86,7 @@ The most common fields are:
 | `Checksum`          | `string`   | The checksum in `algorithm:hash` format                    |
 | `Size`              | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
 | `Digest`            | `string`   | The Docker image digest                                    |
+| `Platforms`         | `[]string` | The platforms a Docker (v2) image was built for            |
 | `Replaces`          | `bool`     | Whether a universal binary replaces single-arch ones       |
 | `Files`             | `[]string` | Any extra files an archive might have                      |
 | `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
