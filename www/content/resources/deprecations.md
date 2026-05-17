@@ -443,7 +443,8 @@ homebrew_casks:
 
 ### brews
 
-> since v2.10
+> since v2.10 (soft)
+> since v2.16-unreleased
 
 Historically, GoReleaser would generate _hackyish_ formulas that would install
 the pre-compiled binaries.

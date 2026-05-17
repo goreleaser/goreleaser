@@ -12,15 +12,14 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"sync"
 	"text/template"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
-	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -57,20 +56,8 @@ func (Pipe) Skip(ctx *context.Context) bool {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	var warnOnce sync.Once
 	for i := range ctx.Config.Brews {
-		// TODO: add this back at some point:
-		// deprecate.Notice(ctx, "brews")
-		warnOnce.Do(func() {
-			log.Warn(
-				logext.Keyword("brews") +
-					logext.Warning(" is being phased out in favor of ") +
-					logext.Keyword("homebrew_casks") +
-					logext.Warning(", check ") +
-					logext.URL("https://goreleaser.com/deprecations#brews") +
-					logext.Warning(" for more info"),
-			)
-		})
+		deprecate.Notice(ctx, "brews")
 
 		brew := &ctx.Config.Brews[i]
 
