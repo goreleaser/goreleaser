@@ -70,6 +70,10 @@ func TestDefault(t *testing.T) {
 }
 
 func TestMakeContext(t *testing.T) {
+	t.Run("no dockerfile", func(t *testing.T) {
+		_, err := makeContext(config.DockerV2{}, nil, "  ")
+		testlib.AssertSkipped(t, err)
+	})
 	t.Run("simple", func(t *testing.T) {
 		dir, err := makeContext(config.DockerV2{
 			ExtraFiles: []string{"./testdata/foo.conf"},
@@ -165,15 +169,6 @@ func TestMakeArgs(t *testing.T) {
 		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Images: []string{"ghcr.io/foo/bar"},
 			Tags:   []string{"latest"},
-		}, nil)
-		require.NoError(t, err)
-		require.Empty(t, da.dockerfile)
-	})
-	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
-		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
-			Images:     []string{"ghcr.io/foo/bar"},
-			Tags:       []string{"latest"},
 		}, nil)
 		require.NoError(t, err)
 		require.Empty(t, da.dockerfile)
