@@ -38,6 +38,7 @@ const (
 	Archive        Key = "archive"
 	MCP            Key = "mcp"
 	SRPM           Key = "srpm"
+	APKBuild       Key = "apkbuild"
 )
 
 func String(ctx *context.Context) string {
@@ -126,6 +127,7 @@ var Release = Keys{
 	Nix,
 	AUR,
 	AURSource,
+	APKBuild,
 	NFPM,
 	Makeself,
 	Flatpak,
