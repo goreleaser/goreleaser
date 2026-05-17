@@ -1234,7 +1234,13 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"src.rpm"
+							]
 						},
 						"type": "array"
 					},
@@ -1942,7 +1948,13 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"src.rpm"
+							]
 						},
 						"type": "array"
 					},

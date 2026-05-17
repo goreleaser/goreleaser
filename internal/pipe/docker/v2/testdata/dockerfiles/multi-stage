@@ -1,0 +1,2 @@
+FROM golang:1.22 AS builder
+FROM alpine:3.20

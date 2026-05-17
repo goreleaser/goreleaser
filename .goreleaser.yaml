@@ -128,17 +128,18 @@ dockers_v2:
       - scripts/entrypoint.sh
     labels:
       "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      "io.artifacthub.package.logo-url": "https://goreleaser.com/static/avatar.png"
+      "io.artifacthub.package.logo-url": "https://goreleaser.com/favicon.svg"
       "io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
       "io.artifacthub.package.license": "MIT"
+    annotations:
       "org.opencontainers.image.description": "Release engineering, simplified"
       "org.opencontainers.image.created": "{{.Date}}"
       "org.opencontainers.image.name": "{{.ProjectName}}"
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
-    annotations:
-      "org.opencontainers.image.description": "Release engineering, simplified"
+      "org.opencontainers.image.base.name": "{{.BaseImage}}"
+      "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
 archives:
   - name_template: >-

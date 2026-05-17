@@ -71,24 +71,11 @@ func TestDefault(t *testing.T) {
 
 func TestMakeContext(t *testing.T) {
 	t.Run("no dockerfile", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{}, nil)
-		testlib.AssertSkipped(t, err)
-	})
-	t.Run("dockerfile tmpl error", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{.Nope}}",
-		}, nil)
-		testlib.RequireTemplateError(t, err)
-	})
-	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
-		}, nil)
+		_, err := makeContext(config.DockerV2{}, nil, "  ")
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
-		dir, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "./testdata/Dockerfile",
+		dir, err := makeContext(config.DockerV2{
 			ExtraFiles: []string{"./testdata/foo.conf"},
 		}, []*artifact.Artifact{
 			{
@@ -104,7 +91,7 @@ func TestMakeContext(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "amd64",
 			},
-		})
+		}, "./testdata/Dockerfile")
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			_ = os.RemoveAll(dir)
@@ -144,6 +131,7 @@ func TestPublishExtraArgs(t *testing.T) {
 func TestMakeArgs(t *testing.T) {
 	t.Run("tmpl error", func(t *testing.T) {
 		for name, mod := range map[string]func(d *config.DockerV2){
+			"dockerfile":  func(d *config.DockerV2) { d.Dockerfile = "{{.Nope}}" },
 			"images":      func(d *config.DockerV2) { d.Images = []string{"{{.Nope}}"} },
 			"tags":        func(d *config.DockerV2) { d.Tags = []string{"{{.Nope}}"} },
 			"labels":      func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
@@ -159,23 +147,31 @@ func TestMakeArgs(t *testing.T) {
 					Tags:       []string{"latest", "v{{.Version}}"},
 				}
 				mod(&d)
-				_, _, err := makeArgs(ctx, d, nil)
+				_, err := makeArgs(ctx, d, nil)
 				testlib.RequireTemplateError(t, err)
 			})
 		}
 	})
 	t.Run("no images", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 		}, nil)
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no tags", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 			Images:     []string{"ghcr.io/foo/bar"},
 		}, nil)
 		require.Error(t, err)
+	})
+	t.Run("no dockerfile", func(t *testing.T) {
+		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+			Images: []string{"ghcr.io/foo/bar"},
+			Tags:   []string{"latest"},
+		}, nil)
+		require.NoError(t, err)
+		require.Empty(t, da.dockerfile)
 	})
 	t.Run("simple", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(
@@ -186,7 +182,7 @@ func TestMakeArgs(t *testing.T) {
 			testctx.WithEnv(map[string]string{"FOO": "bar"}),
 			testctx.WithDate(time.Date(2025, 8, 19, 0, 0, 0, 0, time.UTC)),
 		)
-		args, images, err := makeArgs(ctx, config.DockerV2{
+		da, err := makeArgs(ctx, config.DockerV2{
 			ID:         "test",
 			IDs:        []string{"test"},
 			Dockerfile: "{{.Env.FOO}}.dockerfile",
@@ -233,7 +229,7 @@ func TestMakeArgs(t *testing.T) {
 				"--ulimit=1000",
 				".",
 			},
-			args,
+			da.args,
 		)
 		require.Equal(
 			t,
@@ -243,7 +239,7 @@ func TestMakeArgs(t *testing.T) {
 				"ghcr.io/foo/bar:latest",
 				"ghcr.io/foo/bar:v",
 			},
-			images,
+			da.images,
 		)
 	})
 }

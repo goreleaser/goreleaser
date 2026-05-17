@@ -478,12 +478,6 @@ type CommitSigning struct {
 	Format  string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
 }
 
-// BuildHooks define actions to run before and/or after something.
-type BuildHooks struct { // renamed on pro
-	Pre  string `yaml:"pre,omitempty" json:"pre,omitempty"`
-	Post string `yaml:"post,omitempty" json:"post,omitempty"`
-}
-
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
 	Goos      string `yaml:"goos,omitempty" json:"goos,omitempty"`

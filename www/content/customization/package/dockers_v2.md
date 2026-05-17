@@ -76,12 +76,8 @@ dockers_v2:
     #
     # Templates: allowed.
     labels:
-      "org.opencontainers.image.description": "My software"
-      "org.opencontainers.image.created": "{{.Date}}"
-      "org.opencontainers.image.name": "{{.ProjectName}}"
-      "org.opencontainers.image.revision": "{{.FullCommit}}"
-      "org.opencontainers.image.version": "{{.Version}}"
-      "org.opencontainers.image.source": "{{.GitURL}}"
+      "foo": "bar"
+      "project": "{{.ProjectName}}"
 
     # Annotations to be added to the image.
     #
@@ -89,8 +85,16 @@ dockers_v2:
     #
     # Templates: allowed.
     annotations:
-      "foo": "bar"
-      "project": "{{.ProjectName}}"
+      "org.opencontainers.image.description": "My software"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+
+      # You can also use `.BaseImage` and `.BaseImageDigest`. {{< g_inline_version "v2.16-unreleased" >}}
+      "org.opencontainers.image.base.name": "{{.BaseImage}}"
+      "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
     # Platforms to build.
     #

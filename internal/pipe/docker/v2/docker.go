@@ -182,32 +182,32 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return pipe.Skip("configuration is disabled")
 	}
 
-	arg, images, err := makeArgs(ctx, d, extraArgs)
+	da, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
 		return err
 	}
 
 	log.WithField("id", d.ID).
-		WithField("images", strings.Join(images, "\n")).
+		WithField("images", strings.Join(da.images, "\n")).
 		Info("creating images")
 
-	wd, err := makeContext(ctx, d, contextArtifacts(ctx, d))
+	wd, err := makeContext(d, contextArtifacts(ctx, d), da.dockerfile)
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(wd)
 
-	digest, err := doBuild(ctx, d, wd, arg)
+	digest, err := doBuild(ctx, d, wd, da.args)
 	if err != nil {
 		return err
 	}
 
 	log.WithField("id", d.ID).
-		WithField("images", strings.Join(images, "\n")).
+		WithField("images", strings.Join(da.images, "\n")).
 		WithField("digest", digest).
 		Info("created images")
 
-	for _, img := range images {
+	for _, img := range da.images {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: img,
 			Path: img,
@@ -276,21 +276,45 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 	return string(digest), nil
 }
 
-func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]string, []string, error) {
+type dockerArgs struct {
+	dockerfile string
+	args       []string
+	images     []string
+}
+
+func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dockerArgs, error) {
 	tpl := tmpl.New(ctx)
+
+	dockerfile, err := tpl.Apply(d.Dockerfile)
+	if err != nil {
+		return dockerArgs{}, fmt.Errorf("invalid dockerfile: %w", err)
+	}
+
+	baseImg, err := getBaseImage(ctx, dockerfile)
+	if err != nil && !errors.Is(err, errNoBaseImage) {
+		log.WithField("dockerfile", d.Dockerfile).
+			WithError(err).
+			Debug("could not resolve base image")
+	}
+
+	tpl = tpl.WithExtraFields(tmpl.Fields{
+		keyBaseImage:       baseImg.name,
+		keyBaseImageDigest: baseImg.digest,
+	})
+
 	images, err := tpl.Slice(d.Images, tmpl.NonEmpty())
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid images: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid images: %w", err)
 	}
 	if len(images) == 0 {
-		return nil, nil, pipe.Skip("no images")
+		return dockerArgs{}, pipe.Skip("no images")
 	}
 	tags, err := tpl.Slice(d.Tags, tmpl.NonEmpty())
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid tags: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid tags: %w", err)
 	}
 	if len(tags) == 0 {
-		return nil, nil, errors.New("no tags provided")
+		return dockerArgs{}, errors.New("no tags provided")
 	}
 	// Append the -platform bit to non-empty tags.
 	if len(d.Platforms) == 1 && ctx.Snapshot {
@@ -303,12 +327,12 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 
 	labelFlags, err := tplMapFlags(tpl, "--label", d.Labels)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid labels: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid labels: %w", err)
 	}
 
 	annotationFlags, err := tplMapFlags(tpl, "--annotation", d.Annotations)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid annotations: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid annotations: %w", err)
 	}
 	if len(d.Platforms) > 1 {
 		for i := 1; i < len(annotationFlags); i += 2 {
@@ -318,12 +342,12 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 
 	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid build args: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid build args: %w", err)
 	}
 
 	flags, err := tpl.Slice(d.Flags, tmpl.NonEmpty())
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid flags: %w", err)
+		return dockerArgs{}, fmt.Errorf("invalid flags: %w", err)
 	}
 
 	arg := []string{
@@ -341,7 +365,11 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	arg = append(arg, buildFlags...)
 	arg = append(arg, flags...)
 	arg = append(arg, ".")
-	return arg, allImages, nil
+	return dockerArgs{
+		dockerfile: dockerfile,
+		args:       arg,
+		images:     allImages,
+	}, nil
 }
 
 func makeImageList(imgs, tags []string) []string {
@@ -360,15 +388,11 @@ func makeImageList(imgs, tags []string) []string {
 // extra files, returning its path.
 //
 // The caller is responsible for removing the temporary directory.
-func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.Artifact) (string, error) {
+func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile string) (string, error) {
 	if len(artifacts) == 0 {
 		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
 	}
 
-	dockerfile, err := tmpl.New(ctx).Apply(d.Dockerfile)
-	if err != nil {
-		return "", fmt.Errorf("invalid dockerfile: %w", err)
-	}
 	if strings.TrimSpace(dockerfile) == "" {
 		return "", pipe.Skip("no dockerfile")
 	}

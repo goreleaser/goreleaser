@@ -1,0 +1,1 @@
+FROM --platform=$BUILDPLATFORM --foo=bar alpine:3.20 AS builder
