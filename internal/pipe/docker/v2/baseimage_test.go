@@ -40,7 +40,7 @@ func TestParseBaseImage(t *testing.T) {
 	}
 }
 
-func TestBaseImage(t *testing.T) {
+func TestGetBaseImage(t *testing.T) {
 	t.Run("missing file", func(t *testing.T) {
 		_, err := getBaseImage(testctx.Wrap(t.Context()), "nope.Dockerfile")
 		require.Error(t, err)

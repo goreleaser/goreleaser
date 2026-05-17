@@ -69,29 +69,6 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "true", d.SBOM)
 }
 
-func TestBuildImage(t *testing.T) {
-	t.Run("no dockerfile", func(t *testing.T) {
-		err := buildImage(testctx.Wrap(t.Context()), config.DockerV2{
-			Platforms: []string{"linux/amd64"},
-		})
-		testlib.AssertSkipped(t, err)
-	})
-	t.Run("dockerfile tmpl error", func(t *testing.T) {
-		err := buildImage(testctx.Wrap(t.Context()), config.DockerV2{
-			Platforms:  []string{"linux/amd64"},
-			Dockerfile: "{{.Nope}}",
-		})
-		testlib.RequireTemplateError(t, err)
-	})
-	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
-		err := buildImage(testctx.Wrap(t.Context()), config.DockerV2{
-			Platforms:  []string{"linux/amd64"},
-			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
-		})
-		testlib.AssertSkipped(t, err)
-	})
-}
-
 func TestMakeContext(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		dir, err := makeContext(config.DockerV2{
@@ -183,6 +160,23 @@ func TestMakeArgs(t *testing.T) {
 			Images:     []string{"ghcr.io/foo/bar"},
 		}, nil)
 		require.Error(t, err)
+	})
+	t.Run("no dockerfile", func(t *testing.T) {
+		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+			Images: []string{"ghcr.io/foo/bar"},
+			Tags:   []string{"latest"},
+		}, nil)
+		require.NoError(t, err)
+		require.Empty(t, da.dockerfile)
+	})
+	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
+		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
+			Images:     []string{"ghcr.io/foo/bar"},
+			Tags:       []string{"latest"},
+		}, nil)
+		require.NoError(t, err)
+		require.Empty(t, da.dockerfile)
 	})
 	t.Run("simple", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(),
