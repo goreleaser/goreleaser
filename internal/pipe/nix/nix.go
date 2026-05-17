@@ -573,10 +573,8 @@ func depNames(deps []config.NixDependency) []string {
 	return result
 }
 
-// mainProgram returns the value for meta.mainProgram. If the user set it
-// explicitly, that wins. Otherwise we auto-detect only when goreleaser
-// generates the install phase (nix.Install is empty), falling back to the
-// first binary shipped by the archive.
+// mainProgram bails out when nix.Install is set because a custom install
+// phase can put anything (or nothing) in $out/bin — we can't guess.
 func mainProgram(nix config.Nix, art *artifact.Artifact) string {
 	if nix.MainProgram != "" {
 		return nix.MainProgram
