@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -43,38 +42,40 @@ func TestParseBaseImage(t *testing.T) {
 
 func TestBaseImage(t *testing.T) {
 	t.Run("missing file", func(t *testing.T) {
-		_, _, err := baseImage(testctx.Wrap(t.Context()), "nope.Dockerfile")
+		_, err := getBaseImage(testctx.Wrap(t.Context()), "nope.Dockerfile")
 		require.Error(t, err)
 	})
 
 	t.Run("scratch", func(t *testing.T) {
-		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "scratch"))
-		require.NoError(t, err)
-		require.Equal(t, "", base)
-		require.Equal(t, "", digest)
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "scratch"))
+		require.ErrorIs(t, err, errNoBaseImage)
+		require.Empty(t, img.name)
+		require.Empty(t, img.digest)
 	})
 
 	t.Run("digest pinned in FROM", func(t *testing.T) {
 		const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
-		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "pinned-digest"))
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "pinned-digest"))
 		require.NoError(t, err)
-		require.Equal(t, ref, base)
-		require.Equal(t, "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1", digest)
+		require.Equal(t, ref, img.name)
+		require.Equal(t, "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1", img.digest)
 	})
 
 	t.Run("digest resolution error returns base", func(t *testing.T) {
-		base, digest, err := baseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"))
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"))
 		require.Error(t, err)
-		require.Equal(t, "goreleaser-nonexistent-image:nope", base)
-		require.Equal(t, "", digest)
+		require.Equal(t, "goreleaser-nonexistent-image:nope", img.name)
+		require.Empty(t, img.digest)
 	})
 }
 
 func TestMakeArgsWithBaseImage(t *testing.T) {
-	args, _, err := makeArgs(
+	const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	const digest = "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	da, err := makeArgs(
 		testctx.Wrap(t.Context()),
 		config.DockerV2{
-			Dockerfile: "Dockerfile",
+			Dockerfile: filepath.Join("testdata", "dockerfiles", "pinned-digest"),
 			Images:     []string{"ghcr.io/foo/bar"},
 			Tags:       []string{"latest"},
 			Platforms:  []string{"linux/amd64"},
@@ -84,13 +85,8 @@ func TestMakeArgsWithBaseImage(t *testing.T) {
 			},
 		},
 		nil,
-		tmpl.Fields{
-			keyBaseImage:       "alpine:3.20",
-			keyBaseImageDigest: "sha256:deadbeef",
-		},
 	)
 	require.NoError(t, err)
-	require.Contains(t, args, "org.opencontainers.image.base.name=alpine:3.20")
-	require.Contains(t, args, "org.opencontainers.image.base.digest=sha256:deadbeef")
+	require.Contains(t, da.args, "org.opencontainers.image.base.name="+ref)
+	require.Contains(t, da.args, "org.opencontainers.image.base.digest="+digest)
 }
-

@@ -2,6 +2,7 @@ package docker
 
 import (
 	stdctx "context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,27 +19,32 @@ const (
 	keyBaseImageDigest = "BaseImageDigest"
 )
 
-// baseImage returns the base image of dockerfile and its manifest digest.
-// Returns ("", "", nil) when there's no usable FROM (scratch, no FROM, parse miss).
-// Returns (base, "", err) on digest resolution failure, so callers can still
-// use the image name.
-func baseImage(ctx *context.Context, dockerfile string) (string, string, error) {
+// errNoBaseImage is returned when the Dockerfile has no resolvable base image
+// (scratch, no FROM, parse miss). Callers can silence this with errors.Is.
+var errNoBaseImage = errors.New("no base image")
+
+type dockerImage struct{ name, digest string }
+
+// getBaseImage returns the base image of dockerfile and its manifest digest.
+// Returns errNoBaseImage when there's no usable FROM. Returns (base, "", err)
+// on digest resolution failure, so callers can still use the image name.
+func getBaseImage(ctx *context.Context, dockerfile string) (dockerImage, error) {
 	content, err := os.ReadFile(dockerfile)
 	if err != nil {
-		return "", "", err
+		return dockerImage{}, err
 	}
 	base := parseBaseImage(string(content))
 	if base == "" || strings.EqualFold(base, "scratch") {
-		return "", "", nil
+		return dockerImage{}, errNoBaseImage
 	}
 	if _, digest, ok := strings.Cut(base, "@"); ok && strings.HasPrefix(digest, "sha256:") {
-		return base, digest, nil
+		return dockerImage{base, digest}, nil
 	}
 	digest, err := resolveBaseImageDigest(ctx, base)
 	if err != nil {
-		return base, "", err
+		return dockerImage{name: base}, err
 	}
-	return base, digest, nil
+	return dockerImage{base, digest}, nil
 }
 
 var (
