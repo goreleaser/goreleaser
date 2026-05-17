@@ -68,8 +68,6 @@ nix:
     # (which is what `nix run` invokes).
     #
     # Templates: allowed.
-    # Default: when goreleaser generates the install phase, the first binary
-    # shipped by the archive; otherwise unset.
     # {{< g_inline_version "v2.16-unreleased" >}}
     main_program: "drumroll"
 

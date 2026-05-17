@@ -309,7 +309,7 @@ func preparePkg(
 		Description:       nix.Description,
 		Homepage:          nix.Homepage,
 		License:           nix.License,
-		MainProgram:       mainProgram(nix, archives[0]),
+		MainProgram:       nix.MainProgram,
 		Inputs:            inputs,
 		Dependencies:      dependencies,
 		DynamicallyLinked: dynamicallyLinked,
@@ -571,22 +571,6 @@ func depNames(deps []config.NixDependency) []string {
 		result = append(result, dep.Name)
 	}
 	return result
-}
-
-// mainProgram bails out when nix.Install is set because a custom install
-// phase can put anything (or nothing) in $out/bin — we can't guess.
-func mainProgram(nix config.Nix, art *artifact.Artifact) string {
-	if nix.MainProgram != "" {
-		return nix.MainProgram
-	}
-	if nix.Install != "" {
-		return ""
-	}
-	bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
-	if len(bins) == 0 {
-		return ""
-	}
-	return bins[0]
 }
 
 type fileHasher interface {
