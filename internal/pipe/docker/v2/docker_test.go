@@ -178,7 +178,8 @@ func TestMakeArgs(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(),
+		ctx := testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				ProjectName: "dockerv2",
 			},

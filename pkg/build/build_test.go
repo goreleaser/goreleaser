@@ -38,10 +38,11 @@ func (*dummy) Build(_ *context.Context, _ config.Build, _ Options) error { retur
 
 type completeDummy struct{}
 
-func (*completeDummy) Dependencies() []string                                    { return []string{"fake"} }
-func (*completeDummy) AllowConcurrentBuilds() bool                               { return true }
-func (*completeDummy) Prepare(*context.Context, config.Build) error              { return nil }
-func (*completeDummy) Parse(string) (Target, error)                              { return dummyTarget{}, nil }
+func (*completeDummy) Dependencies() []string                       { return []string{"fake"} }
+func (*completeDummy) AllowConcurrentBuilds() bool                  { return true }
+func (*completeDummy) Prepare(*context.Context, config.Build) error { return nil }
+func (*completeDummy) Parse(string) (Target, error) { return dummyTarget{}, nil }
+
 func (*completeDummy) WithDefaults(build config.Build) (config.Build, error)     { return build, nil }
 func (*completeDummy) Build(_ *context.Context, _ config.Build, _ Options) error { return nil }
 

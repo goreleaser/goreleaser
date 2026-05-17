@@ -148,7 +148,8 @@ func TestBinarySign(t *testing.T) {
 			},
 		})
 		require.Len(t, sigs, 2)
-		require.Equal(t,
+		require.Equal(
+			t,
 			[]*artifact.Artifact{
 				{Name: "prefix_amd64_suffix", Path: "prefix_amd64_suffix", Type: 13, Extra: artifact.Extras{"ID": "default"}},
 				{Name: "prefix_arm64_suffix", Path: "prefix_arm64_suffix", Type: 13, Extra: artifact.Extras{"ID": "default"}},

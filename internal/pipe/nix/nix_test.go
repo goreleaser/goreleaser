@@ -702,7 +702,8 @@ func (alwaysZeroHasher) Available() bool                             { return tr
 
 func TestDynamicallyLinked(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",

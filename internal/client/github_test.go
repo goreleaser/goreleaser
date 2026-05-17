@@ -974,7 +974,8 @@ func TestGitHubCreateRelease(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1031,7 +1032,8 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1083,7 +1085,8 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1133,7 +1136,8 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1507,7 +1511,8 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
@@ -1530,7 +1535,8 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
@@ -1558,7 +1564,8 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename"},
 		)
@@ -1795,7 +1802,8 @@ func TestGitHubOpenPullRequestDefaultBranchError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(ctx,
+	err = client.OpenPullRequest(
+		ctx,
 		Repo{Owner: "someone", Name: "something"},
 		Repo{Branch: "foo"},
 		"some title", false,
@@ -1827,7 +1835,8 @@ func TestGitHubOpenPullRequest422(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(ctx,
+	err = client.OpenPullRequest(
+		ctx,
 		Repo{Owner: "someone", Name: "something", Branch: "main"},
 		Repo{Branch: "foo"},
 		"some title", false,
@@ -1854,7 +1863,8 @@ func TestGitHubSyncForkDefaultBranchError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.SyncFork(ctx,
+	err = client.SyncFork(
+		ctx,
 		Repo{Owner: "headowner", Name: "headname"},
 		Repo{Owner: "baseowner", Name: "basename"},
 	)
@@ -2020,7 +2030,8 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -2049,7 +2060,8 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 
 func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
 	t.Parallel()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Release: config.Release{
 				NameTemplate:    "v1.0.0",
@@ -2088,7 +2100,8 @@ func TestGitHubCreateReleaseCreateError(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -2131,7 +2144,8 @@ func TestGitHubCreateOrUpdateReleaseUpdate(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,

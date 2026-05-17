@@ -188,7 +188,8 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.Or(
 					artifact.And(filters...),
 					artifact.ByType(artifact.PyWheel),
-				))
+				),
+			)
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
 				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
 			}
@@ -287,7 +288,9 @@ Here's more information about the build context:
 dir: %q
 files in that dir:
  %s
-`, tmp, strings.Join(files, "\n "))))
+`, tmp, strings.Join(files, "\n ")),
+				),
+			)
 		}
 		if isBuildxContextError(err.Error()) {
 			return errors.New("docker buildx is not set to default context - please switch with 'docker context use default'")

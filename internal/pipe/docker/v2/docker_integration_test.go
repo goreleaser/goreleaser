@@ -188,7 +188,8 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
 	dist := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			ProjectName: "dockerv2",
 			Dist:        dist,

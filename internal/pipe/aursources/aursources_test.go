@@ -249,7 +249,8 @@ func TestFullPipe(t *testing.T) {
 			key := testlib.MakeNewSSHKey(t, "")
 
 			folder := t.TempDir()
-			ctx := testctx.WrapWithCfg(t.Context(),
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -354,7 +355,8 @@ func TestRunPipe(t *testing.T) {
 	key := testlib.MakeNewSSHKey(t, "")
 
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -428,7 +430,8 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	key := testlib.MakeNewSSHKey(t, "")
 
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -521,7 +524,8 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -566,7 +570,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -610,7 +615,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
 	testPublish := func(tb testing.TB, modifier func(ctx *context.Context)) {
 		tb.Helper()
-		ctx := testctx.WrapWithCfg(t.Context(),
+		ctx := testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				Dist:        folder,
 				ProjectName: "foo",
@@ -670,7 +676,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
