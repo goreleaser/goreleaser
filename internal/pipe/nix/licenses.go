@@ -85,6 +85,7 @@ var validLicenses = []string{
 	"cecill21",
 	"cecill-b",
 	"cecill-c",
+	"cfitsio",
 	"classpathException20",
 	"cockroachdb-community-license",
 	"cpal10",
