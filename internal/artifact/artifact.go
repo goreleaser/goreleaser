@@ -114,6 +114,8 @@ const (
 	Flatpak
 	// SourceRPM is a source RPM.
 	SourceRPM
+	// APKBuild is an Alpine Linux APKBUILD file.
+	APKBuild
 
 	// XXX: if it is an uploadable kind of artifact, add it to UploadableTypes
 	// below.
@@ -155,7 +157,8 @@ func (t Type) isUploadable() bool {
 		Snapcraft,              // See [PublishableSnapcraft].
 		Metadata,               // Local only.
 		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
-		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
+		PkgBuild, SourcePkgBuild, // It's always named `.PKGBUILD`
+		APKBuild: // It's always named `APKBUILD`
 		return false
 	default:
 		return true
@@ -226,6 +229,8 @@ func (t Type) String() string {
 		return "Flatpak"
 	case SourceRPM:
 		return "Source RPM"
+	case APKBuild:
+		return "APKBUILD"
 	default:
 		return "unknown"
 	}
