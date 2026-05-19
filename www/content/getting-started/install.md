@@ -1,12 +1,32 @@
 ---
 title: "Install"
 weight: 20
+description: "How to install GoReleaser OSS and Pro using your preferred package manager or method."
 ---
 
 There are two GoReleaser distributions: OSS and [Pro](/pro/), each have a
 multitude of installation options.
 
 You can see the instructions for each of them below.
+
+{{< tabs >}}
+{{< tab "OSS" >}}
+
+- **Stable:** [`__VERSION__`](https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__)
+- **Nightly:** <span data-nightly-tag data-repo="goreleaser/goreleaser">loading…</span>
+- See all releases on [GitHub](https://github.com/goreleaser/goreleaser/releases)
+
+{{< /tab >}}
+{{< tab "Pro" >}}
+
+- **Stable:** [`__VERSION__`](https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__)
+- **Nightly:** <span data-nightly-tag data-repo="goreleaser/goreleaser-pro">loading…</span>
+- See all releases on [GitHub](https://github.com/goreleaser/goreleaser-pro/releases)
+
+{{< /tab >}}
+{{< /tabs >}}
+
+{{< g_install_versions >}}
 
 ## Homebrew Tap
 
