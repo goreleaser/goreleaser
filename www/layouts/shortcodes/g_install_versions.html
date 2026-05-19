@@ -35,14 +35,9 @@
     }
     var date = new Date(nightly.date).toLocaleDateString(undefined, DATE_OPTS);
     el.innerHTML = '';
-    var a = document.createElement('a');
-    a.href = nightly.url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
     var code = document.createElement('code');
     code.textContent = nightly.tag;
-    a.appendChild(code);
-    el.appendChild(a);
+    el.appendChild(code);
     el.appendChild(document.createTextNode(' (' + date + ')'));
   }
 
