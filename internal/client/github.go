@@ -70,11 +70,9 @@ func githubError(err error, resp *github.Response) error {
 	if rle, ok := errors.AsType[*github.RateLimitError](err); ok {
 		he.RetryAfter = max(time.Until(rle.Rate.Reset.Time), time.Second)
 	} else if arle, ok := errors.AsType[*github.AbuseRateLimitError](err); ok {
-		switch d := arle.RetryAfter; {
-		case d != nil && *d > 0:
+		he.RetryAfter = time.Minute
+		if d := arle.RetryAfter; d != nil && *d > 0 {
 			he.RetryAfter = *d
-		default:
-			he.RetryAfter = time.Minute
 		}
 	}
 	return he
