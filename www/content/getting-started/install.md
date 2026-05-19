@@ -599,14 +599,10 @@ which is always the latest nightly build available.
 You may also use the [Bash Script method](#bash-script) by setting the `VERSION`
 environment variable to `nightly`.
 
-## Packaging status
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/goreleaser.svg)](https://repology.org/project/goreleaser/versions)
-
-[dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
-[cosign]: https://github.com/sigstore/cosign
-
 ## Community
 
 Install options with the "Community Owned" badge are maintained by the community
 and might not always be up to date.
+
+[dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
+[cosign]: https://github.com/sigstore/cosign
