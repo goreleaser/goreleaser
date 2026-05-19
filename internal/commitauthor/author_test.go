@@ -59,7 +59,8 @@ func TestGet(t *testing.T) {
 			config.CommitAuthor{
 				Name:  "{{.Env.NOPE}}",
 				Email: "a",
-			})
+			},
+		)
 		require.Error(t, err)
 	})
 
@@ -69,7 +70,8 @@ func TestGet(t *testing.T) {
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "{{.Env.NOPE}}",
-			})
+			},
+		)
 		require.Error(t, err)
 	})
 
@@ -83,7 +85,8 @@ func TestGet(t *testing.T) {
 					Enabled: true,
 					Key:     "{{.Env.NOPE}}",
 				},
-			})
+			},
+		)
 		require.Error(t, err)
 	})
 
@@ -97,7 +100,8 @@ func TestGet(t *testing.T) {
 					Enabled: true,
 					Program: "{{.Env.NOPE}}",
 				},
-			})
+			},
+		)
 		require.Error(t, err)
 	})
 

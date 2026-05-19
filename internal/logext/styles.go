@@ -22,8 +22,9 @@ var (
 
 	// Keyword should be used to highlight code.
 	Keyword = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#ED567A")).
-		Background(lipgloss.Color("#242424")).
+		Foreground(lipgloss.Color("12")).
+		Background(lipgloss.Color("234")).
+		Padding(0, 1).
 		Render
 
 	// Faint is fainted, italic, text.

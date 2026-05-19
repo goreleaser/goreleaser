@@ -68,7 +68,7 @@ cloudsmiths:
       - packages
 
     # Formats to upload.
-    # Available options are `apk`, `deb`, and `rpm`.
+    # Available options are `apk`, `deb`, `rpm`, and `src.rpm`.
     #
     # Default: ['apk', 'deb', 'rpm'].
     formats:

@@ -151,6 +151,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		&nix.Homepage,
 		&nix.Description,
 		&nix.Path,
+		&nix.MainProgram,
 	)
 	if err != nil {
 		return err
@@ -308,6 +309,7 @@ func preparePkg(
 		Description:       nix.Description,
 		Homepage:          nix.Homepage,
 		License:           nix.License,
+		MainProgram:       nix.MainProgram,
 		Inputs:            inputs,
 		Dependencies:      dependencies,
 		DynamicallyLinked: dynamicallyLinked,

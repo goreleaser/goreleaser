@@ -56,6 +56,19 @@ A big **thank you** to all current, past, and future sponsors!
           Mercedes-Benz Group
         </a>
         <a class="goreleaser-sponsor-item" 
+          href="https://resources.github.com/github-secure-open-source-fund/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
+          target="_blank" 
+          rel="noopener sponsored"
+        >
+          <img 
+            src="https://avatars.githubusercontent.com/u/199005812?s=96&v=4" 
+            alt="GitHub SecureOSS Fund " 
+            width="96" 
+            height="96"
+          />
+          GitHub SecureOSS Fund 
+        </a>
+        <a class="goreleaser-sponsor-item" 
           href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
           target="_blank" 
           rel="noopener sponsored"
@@ -177,7 +190,6 @@ A big **thank you** to all current, past, and future sponsors!
 
 - [Chatpong Voranartaksorn](https://github.com/psychv/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Automatio AI](https://automatio.ai/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
-- [Bruno Paz](https://brunopaz.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Calculators](https://calculator.now/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Feetpedia](https://feetpedia.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Jared Allard](https://git.rgst.io/jaredallard?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)

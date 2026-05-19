@@ -130,6 +130,7 @@ func TestRun(t *testing.T) {
 		}, names(images))
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			require.NotEmpty(t, artifact.ExtraOr(*img, ExtraPlatforms, []string(nil)))
 			rmi(t, img.Name)
 		}
 	})
@@ -155,6 +156,7 @@ func TestRun(t *testing.T) {
 		}, names(images))
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			require.NotEmpty(t, artifact.ExtraOr(*img, ExtraPlatforms, []string(nil)))
 			rmi(t, img.Name)
 		}
 	})
@@ -188,7 +190,8 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
 	dist := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			ProjectName: "dockerv2",
 			Dist:        dist,

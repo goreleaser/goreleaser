@@ -177,7 +177,8 @@ func createFakeNodeAlias(tb testing.TB, name string) {
 	tb.Helper()
 	node, err := exec.LookPath("node")
 	require.NoError(tb, err)
-	createFakeExecutable(tb, name,
+	createFakeExecutable(
+		tb, name,
 		fmt.Sprintf("#!/bin/sh\nexec %q \"$@\"\n", node),
 		fmt.Sprintf("@echo off\n%q %%*\n", node),
 	)
@@ -185,7 +186,8 @@ func createFakeNodeAlias(tb testing.TB, name string) {
 
 func createFakeNodeVersion(tb testing.TB, name, version string) {
 	tb.Helper()
-	createFakeExecutable(tb, name,
+	createFakeExecutable(
+		tb, name,
 		fmt.Sprintf("#!/bin/sh\necho %s\n", version),
 		fmt.Sprintf("@echo off\necho %s\n", version),
 	)

@@ -326,6 +326,9 @@ type Nix struct {
 
 	// v2.14+
 	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
+
+	// v2.16+
+	MainProgram string `yaml:"main_program,omitempty" json:"main_program,omitempty"`
 }
 
 type NixDependency struct {
@@ -452,12 +455,6 @@ type CommitSigning struct {
 	Key     string `yaml:"key,omitempty" json:"key,omitempty"`
 	Program string `yaml:"program,omitempty" json:"program,omitempty"`
 	Format  string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
-}
-
-// BuildHooks define actions to run before and/or after something.
-type BuildHooks struct { // renamed on pro
-	Pre  string `yaml:"pre,omitempty" json:"pre,omitempty"`
-	Post string `yaml:"post,omitempty" json:"post,omitempty"`
 }
 
 // IgnoredBuild represents a build ignored by the user.

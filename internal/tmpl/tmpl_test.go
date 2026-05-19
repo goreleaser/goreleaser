@@ -653,7 +653,8 @@ func TestMdv2Escape(t *testing.T) {
 	require.Equal(
 		t,
 		"aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!",
-		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"))
+		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"),
+	)
 }
 
 func TestInvalidMap(t *testing.T) {

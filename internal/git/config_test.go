@@ -26,7 +26,8 @@ func TestRelativeRemote(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
-	_, err := git.Run(ctx, "pull", "upstream", "main")
+	_, err := git.Run(ctx, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "pull", "upstream", "main")
+
 	require.NoError(t, err)
 	_, err = git.Run(ctx, "branch", "--set-upstream-to", "upstream/main")
 	require.NoError(t, err)
@@ -54,7 +55,7 @@ func TestRepoNameWithDifferentRemote(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
-	_, err := git.Run(ctx, "pull", "upstream", "main")
+	_, err := git.Run(ctx, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "pull", "upstream", "main")
 	require.NoError(t, err)
 	_, err = git.Run(ctx, "branch", "--set-upstream-to", "upstream/main")
 	require.NoError(t, err)

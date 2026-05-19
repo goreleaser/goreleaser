@@ -18,6 +18,7 @@ running it as part of the CI pipeline in mind.
 {{< card title="Drone" link="drone" >}}
 {{< card title="GitLab CI" link="gitlab" >}}
 {{< card title="Jenkins" link="jenkins" >}}
+{{< card title="RWX" link="rwx" >}}
 {{< card title="Semaphore" link="semaphore" >}}
 {{< card title="Travis CI" link="travis" >}}
 {{< card title="Woodpecker" link="woodpecker" >}}

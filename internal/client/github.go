@@ -134,13 +134,6 @@ func (c *githubClient) checkRateLimit(ctx *context.Context) {
 	})
 }
 
-func (c *githubClient) checkSearchRateLimit(ctx *context.Context) {
-	// 5 should be safe enough (search limit is 30/min)
-	c.rateLimitChecker(ctx, 5, func(limits *github.RateLimits) *github.Rate {
-		return limits.Search
-	})
-}
-
 func (c *githubClient) rateLimitChecker(
 	ctx *context.Context,
 	target int,
@@ -184,7 +177,6 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	c.checkRateLimit(ctx)
 	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
-	cache := map[string]string{}
 
 	for {
 		result, resp, err := githubDo(ctx, func() (*github.CommitsComparison, *github.Response, error) {
@@ -203,7 +195,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				})
 			}
 			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
-			authors = append(authors, c.authorsLookup(ctx, coauthors, cache)...)
+			authors = append(authors, c.authorsLookup(coauthors)...)
 			log = append(log, fillDeprecated(ChangelogItem{
 				SHA:     commit.GetSHA(),
 				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
@@ -219,39 +211,19 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return log, nil
 }
 
-func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cache map[string]string) []Author {
+func (c *githubClient) authorsLookup(authors []Author) []Author {
 	for i := range authors {
 		author := &authors[i]
-		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
-			// GitHub noreply format: ID+USERNAME@users.noreply.github.com
-			if _, clean, ok := strings.Cut(before, "+"); ok {
-				author.Username = clean
-				continue
-			}
-			author.Username = before
+		before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com")
+		if !ok {
 			continue
 		}
-		if username, ok := cache[author.Email]; ok {
-			author.Username = username
+		// GitHub noreply format: ID+USERNAME@users.noreply.github.com
+		if _, clean, ok := strings.Cut(before, "+"); ok {
+			author.Username = clean
 			continue
 		}
-		c.checkSearchRateLimit(ctx)
-		res, _, err := githubDo(ctx, func() (*github.UsersSearchResult, *github.Response, error) {
-			return c.client.Search.Users(ctx, author.Email, nil)
-		})
-		if err != nil {
-			// transient/unknown failure: leave uncached so a later commit can retry
-			continue
-		}
-		// Cache hits AND misses: a successful search that returned 0 or >1 users
-		// is a permanent miss for this run, so don't burn another Search.Users
-		// call on the next commit with the same email.
-		var username string
-		if len(res.Users) == 1 {
-			username = res.Users[0].GetLogin()
-		}
-		author.Username = username
-		cache[author.Email] = username
+		author.Username = before
 	}
 	return authors
 }
