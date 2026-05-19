@@ -27,9 +27,8 @@ import (
 const DefaultGitHubDownloadURL = "https://github.com"
 
 // maxSecondaryRateLimitWait caps how long the go-github SDK will report a
-// secondary rate-limit Retry-After. Without this, a pathological Retry-After
-// header could stall a release indefinitely.
-const maxSecondaryRateLimitWait = 5 * time.Minute
+// secondary rate-limit Retry-After.
+const maxSecondaryRateLimitWait = 10 * time.Minute
 
 var (
 	_ Client                = &githubClient{}
@@ -70,10 +69,7 @@ func githubError(err error, resp *github.Response) error {
 	if rle, ok := errors.AsType[*github.RateLimitError](err); ok {
 		he.RetryAfter = max(time.Until(rle.Rate.Reset.Time), time.Second)
 	} else if arle, ok := errors.AsType[*github.AbuseRateLimitError](err); ok {
-		he.RetryAfter = time.Minute
-		if d := arle.RetryAfter; d != nil && *d > 0 {
-			he.RetryAfter = *d
-		}
+		he.RetryAfter = max(*must(arle.RetryAfter), time.Minute)
 	}
 	return he
 }
