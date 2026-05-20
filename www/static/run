@@ -4,11 +4,13 @@ set -e
 if test "$DISTRIBUTION" = "pro"; then
 	echo "Using Pro distribution..."
 	RELEASES_URL="https://github.com/goreleaser/goreleaser-pro/releases"
+	RELEASES_API="https://api.github.com/repos/goreleaser/goreleaser-pro/releases"
 	FILE_BASENAME="goreleaser-pro"
 	LATEST="$(curl -sf https://goreleaser.com/static/latest-pro)"
 else
 	echo "Using the OSS distribution..."
 	RELEASES_URL="https://github.com/goreleaser/goreleaser/releases"
+	RELEASES_API="https://api.github.com/repos/goreleaser/goreleaser/releases"
 	FILE_BASENAME="goreleaser"
 	LATEST="$(curl -sf https://goreleaser.com/static/latest)"
 fi
@@ -19,6 +21,21 @@ test -z "$VERSION" && {
 	echo "Unable to get goreleaser version." >&2
 	exit 1
 }
+
+# Nightly releases are tagged as vX.Y.Z-shortcommit-nightly. Allow
+# `VERSION=nightly` as a convenience alias that resolves to the most
+# recently published nightly tag.
+if test "$VERSION" = "nightly"; then
+	echo "Resolving latest nightly tag..."
+	VERSION="$(curl -sf "$RELEASES_API?per_page=100" |
+		grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+-[a-f0-9]+-nightly' |
+		head -n1)"
+	test -z "$VERSION" && {
+		echo "Unable to resolve latest nightly tag." >&2
+		exit 1
+	}
+	echo "Using nightly $VERSION"
+fi
 
 TMP_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064 # intentionally expands here
@@ -38,9 +55,9 @@ TAR_FILE="${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 	sha256sum --ignore-missing --quiet --check checksums.txt
 	if command -v cosign >/dev/null 2>&1; then
 		REF="refs/tags/$VERSION"
-		if test "$VERSION" = "nightly"; then
-			REF="refs/heads/main"
-		fi
+		case "$VERSION" in
+		*-nightly) REF="refs/heads/main" ;;
+		esac
 		if curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.sigstore.json"; then
 			echo "Verifying signatures..."
 			cosign verify-blob \
