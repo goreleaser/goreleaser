@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/apkbuild"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
@@ -64,6 +65,7 @@ func New() Pipe {
 			cask.Pipe{},
 			aur.Pipe{},
 			aursources.Pipe{},
+			apkbuild.Pipe{},
 			krew.Pipe{},
 			scoop.Pipe{},
 			chocolatey.Pipe{},

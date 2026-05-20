@@ -1093,6 +1093,7 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 		UniversalBinary,
 		DockerImage,
 		Snapcraft,
+		APKBuild,
 	}
 	for i := range lastMarker - 1 {
 		up := i.isUploadable()
