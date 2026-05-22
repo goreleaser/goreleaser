@@ -1145,6 +1145,7 @@ type DockerV2 struct {
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Hooks       BuildHookConfig   `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 
 	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }

@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
@@ -27,6 +28,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -199,9 +201,22 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 	defer os.RemoveAll(wd)
 
+	hookFields := tmpl.Fields{
+		keyImages:     da.images,
+		keyDockerfile: da.dockerfile,
+	}
+	if err := runHook(ctx, hookFields, d.Hooks.Pre); err != nil {
+		return fmt.Errorf("pre hook failed: %w", err)
+	}
+
 	digest, err := doBuild(ctx, d, wd, da.args)
 	if err != nil {
 		return err
+	}
+
+	hookFields[keyDigest] = digest
+	if err := runHook(ctx, hookFields, d.Hooks.Post); err != nil {
+		return fmt.Errorf("post hook failed: %w", err)
 	}
 
 	log.WithField("id", d.ID).
@@ -630,4 +645,42 @@ func getBuildxDriver(ctx stdctx.Context) string {
 		}
 	}
 	return "unknown"
+}
+
+func runHook(ctx *context.Context, fields tmpl.Fields, hooks config.Hooks) error {
+	for _, hook := range hooks {
+		var envs []string
+		envs = append(envs, ctx.Env.Strings()...)
+
+		tpl := tmpl.New(ctx).WithExtraFields(fields)
+		for _, rawEnv := range hook.Env {
+			env, err := tpl.Apply(rawEnv)
+			if err != nil {
+				return err
+			}
+			envs = append(envs, env)
+		}
+
+		tpl = tpl.WithEnvS(envs)
+		dir, err := tpl.Apply(hook.Dir)
+		if err != nil {
+			return err
+		}
+
+		sh, err := tpl.Apply(hook.Cmd)
+		if err != nil {
+			return err
+		}
+
+		log.WithField("hook", sh).Info("running hook")
+		cmd, err := shellwords.Parse(sh)
+		if err != nil {
+			return err
+		}
+
+		if err := shell.Run(ctx, dir, cmd, envs, hook.Output); err != nil {
+			return err
+		}
+	}
+	return nil
 }
