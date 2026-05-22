@@ -23,7 +23,7 @@ require (
 	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.1.1
 	github.com/google/go-containerregistry v0.21.5
-	github.com/google/go-github/v87 v87.0.0
+	github.com/google/go-github/v88 v88.0.0
 	github.com/google/ko v0.18.2-0.20260407063826-ae9c7272d7de
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0

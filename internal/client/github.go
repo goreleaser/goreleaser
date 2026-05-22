@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v87/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
@@ -108,17 +108,21 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 		return nil, fmt.Errorf("templating GitHub upload URL: %w", err)
 	}
 
-	if baseURL == "" {
-		client := github.NewClient(httpClient)
-		client.MaxSecondaryRateLimitRetryAfterDuration = maxSecondaryRateLimitWait
-		return &githubClient{client: client}, nil
+	opts := []github.ClientOptionsFunc{
+		github.WithHTTPClient(httpClient),
+		github.WithMaxSecondaryRateLimitRetryAfterDuration(maxSecondaryRateLimitWait),
+	}
+	if baseURL != "" {
+		if uploadURL == "" {
+			uploadURL = baseURL
+		}
+		opts = append(opts, github.WithEnterpriseURLs(baseURL, uploadURL))
 	}
 
-	client, err := github.NewClient(httpClient).WithEnterpriseURLs(baseURL, uploadURL)
+	client, err := github.NewClient(opts...)
 	if err != nil {
 		return &githubClient{}, err
 	}
-	client.MaxSecondaryRateLimitRetryAfterDuration = maxSecondaryRateLimitWait
 	return &githubClient{client: client}, nil
 }
 

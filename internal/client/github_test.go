@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v87/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -39,8 +39,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("good urls ending with /", func(t *testing.T) {
@@ -55,8 +55,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestNewGitHubClient(t *testing.T) {
 		})
 		_, err := newGitHub(ctx, ctx.Token)
 
-		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
+		require.EqualError(t, err, `invalid base url: invalid url: parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestNewGitHubClient(t *testing.T) {
 		})
 		_, err := newGitHub(ctx, ctx.Token)
 
-		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
+		require.EqualError(t, err, `invalid upload url: invalid url: parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
 
 	t.Run("template", func(t *testing.T) {
@@ -101,8 +101,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
