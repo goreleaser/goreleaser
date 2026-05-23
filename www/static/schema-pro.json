@@ -1707,6 +1707,9 @@
 							}
 						]
 					},
+					"hooks": {
+						"$ref": "#/$defs/BuildHookConfig"
+					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
 					}
