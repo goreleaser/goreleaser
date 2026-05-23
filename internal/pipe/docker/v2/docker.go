@@ -204,6 +204,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	hookFields := tmpl.Fields{
 		keyImages:     da.images,
 		keyDockerfile: da.dockerfile,
+		keyContextDir: wd,
 	}
 	if err := runHook(ctx, hookFields, d.Hooks.Pre); err != nil {
 		return fmt.Errorf("pre hook failed: %w", err)

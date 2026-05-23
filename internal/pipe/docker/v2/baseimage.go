@@ -21,6 +21,7 @@ const (
 	keyImages     = "Images"
 	keyDockerfile = "Dockerfile"
 	keyDigest     = "Digest"
+	keyContextDir = "ContextDir"
 )
 
 // errNoBaseImage is returned when the Dockerfile has no resolvable base image

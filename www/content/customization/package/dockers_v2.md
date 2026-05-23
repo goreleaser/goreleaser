@@ -139,6 +139,7 @@ dockers_v2:
     # Available extra template fields:
     #   - .Dockerfile: the resolved path to the Dockerfile.
     #   - .Images:     the compiled `image:tag` list for this build.
+    #   - .ContextDir: the temporary build context directory.
     #   - .Digest:     the resulting image digest (post hook only).
     #
     # {{< g_inline_version "v2.16-unreleased" >}}
@@ -146,7 +147,7 @@ dockers_v2:
       pre:
         - cmd: ./scripts/before-docker.sh
           # Working directory for the command.
-          dir: ./
+          dir: "{{ .ContextDir }}"
           # Extra env vars to inject into the hook.
           env:
             - DOCKERFILE={{ .Dockerfile }}

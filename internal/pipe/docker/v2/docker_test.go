@@ -436,6 +436,7 @@ func TestRunHook(t *testing.T) {
 		keyImages:     []string{"foo/bar:v1", "foo/bar:latest"},
 		keyDockerfile: "/path/to/Dockerfile",
 		keyDigest:     "sha256:deadbeef",
+		keyContextDir: "/tmp/goreleaserdocker123",
 	}
 
 	t.Run("no hooks", func(t *testing.T) {
@@ -458,7 +459,7 @@ func TestRunHook(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, runHook(ctx, fields, config.Hooks{
 			{
-				Cmd:    testlib.ShC(`echo "{{.Dockerfile}} {{.Digest}} {{range .Images}}{{.}} {{end}}" > ` + out),
+				Cmd:    testlib.ShC(`echo "{{.Dockerfile}} {{.Digest}} {{.ContextDir}} {{range .Images}}{{.}} {{end}}" > ` + out),
 				Output: true,
 			},
 		}))
@@ -466,6 +467,7 @@ func TestRunHook(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, string(bts), "/path/to/Dockerfile")
 		require.Contains(t, string(bts), "sha256:deadbeef")
+		require.Contains(t, string(bts), "/tmp/goreleaserdocker123")
 		require.Contains(t, string(bts), "foo/bar:v1")
 		require.Contains(t, string(bts), "foo/bar:latest")
 	})
