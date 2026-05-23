@@ -17,6 +17,11 @@ import (
 const (
 	keyBaseImage       = "BaseImage"
 	keyBaseImageDigest = "BaseImageDigest"
+	// Template fields exposed to docker hooks.
+	keyImages     = "Images"
+	keyDockerfile = "Dockerfile"
+	keyDigest     = "Digest"
+	keyContextDir = "ContextDir"
 )
 
 // errNoBaseImage is returned when the Dockerfile has no resolvable base image

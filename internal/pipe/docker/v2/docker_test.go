@@ -3,6 +3,7 @@ package docker
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -427,4 +429,98 @@ func TestTagSuffix(t *testing.T) {
 func TestIsDriverValid(t *testing.T) {
 	require.True(t, isDriverValid("docker-container"))
 	require.False(t, isDriverValid("other"))
+}
+
+func TestRunHook(t *testing.T) {
+	fields := tmpl.Fields{
+		keyImages:     []string{"foo/bar:v1", "foo/bar:latest"},
+		keyDockerfile: "/path/to/Dockerfile",
+		keyDigest:     "sha256:deadbeef",
+		keyContextDir: "/tmp/goreleaserdocker123",
+	}
+
+	t.Run("no hooks", func(t *testing.T) {
+		require.NoError(t, runHook(testctx.Wrap(t.Context()), fields, nil))
+	})
+
+	t.Run("simple", func(t *testing.T) {
+		dir := t.TempDir()
+		marker := filepath.Join(dir, "marker")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: testlib.Touch(marker)},
+		}))
+		require.FileExists(t, marker)
+	})
+
+	t.Run("with extra fields", func(t *testing.T) {
+		dir := t.TempDir()
+		out := filepath.Join(dir, "out")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd:    testlib.ShC(`echo "{{.Dockerfile}} {{.Digest}} {{.ContextDir}} {{range .Images}}{{.}} {{end}}" > ` + out),
+				Output: true,
+			},
+		}))
+		bts, err := os.ReadFile(out)
+		require.NoError(t, err)
+		require.Contains(t, string(bts), "/path/to/Dockerfile")
+		require.Contains(t, string(bts), "sha256:deadbeef")
+		require.Contains(t, string(bts), "/tmp/goreleaserdocker123")
+		require.Contains(t, string(bts), "foo/bar:v1")
+		require.Contains(t, string(bts), "foo/bar:latest")
+	})
+
+	t.Run("env tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("{{.Env.FOO}}"),
+				Env: []string{"FOO=bar-{{.Tag}}"},
+			},
+		}))
+	})
+
+	t.Run("bad env tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("blah"),
+				Env: []string{"FOO=foo-{{.Tag}"},
+			},
+		}))
+	})
+
+	t.Run("bad dir tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("blah"),
+				Dir: "{{.Tag}",
+			},
+		}))
+	})
+
+	t.Run("bad cmd tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: "echo blah-{{.Tag }"},
+		}))
+	})
+
+	t.Run("unparseable cmd", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.Error(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: `echo "unterminated`},
+		}))
+	})
+
+	t.Run("failing cmd", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		err := runHook(ctx, fields, config.Hooks{
+			{Cmd: "exit 1"},
+		})
+		require.ErrorIs(t, err, exec.ErrNotFound)
+	})
 }

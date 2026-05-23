@@ -132,6 +132,31 @@ dockers_v2:
     flags:
       - "--ulimit=10"
 
+    # Custom hooks run around the actual `docker buildx build` invocation.
+    # Hooks receive the resolved configuration via templates, so they can
+    # inspect or operate on the image plan that's about to be built.
+    #
+    # Available extra template fields:
+    #   - .Dockerfile: the resolved path to the Dockerfile.
+    #   - .Images:     the compiled `image:tag` list for this build.
+    #   - .ContextDir: the temporary build context directory.
+    #   - .Digest:     the resulting image digest (post hook only).
+    #
+    # {{< g_inline_version "v2.16-unreleased" >}}
+    hooks:
+      pre:
+        - cmd: ./scripts/before-docker.sh
+          # Working directory for the command.
+          dir: "{{ .ContextDir }}"
+          # Extra env vars to inject into the hook.
+          env:
+            - DOCKERFILE={{ .Dockerfile }}
+          # Whether to stream the command output to stdout/stderr.
+          output: true
+      post:
+        - cmd: ./scripts/after-docker.sh {{ .Digest }} {{ range .Images }}{{ . }} {{ end }}
+          output: true
+
     # Retry configuration.
     retry:
       # Attempts of retry.
