@@ -24,6 +24,7 @@ additional features:
 - Have [global defaults for homepage, description, etc](/customization/general/metadata/);
 - Run [hooks before publishing](/customization/publish/beforepublish/) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
+- Publish [versioned Homebrew Casks](/customization/publish/homebrew_casks/#versioned-casks);
 - Keep [DockerHub image descriptions up to date](/customization/publish/dockerhub/);
 - Create [macOS disk images (`.dmg`)](/customization/package/dmg/);
 - Create [Windows installers (`.msi`) with Wix](/customization/package/msi/);
