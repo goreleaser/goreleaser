@@ -213,7 +213,7 @@ On all fields, you have these available functions:
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `in (list "a" "b" "c") "b"`             | checks if a slice contains a value                                                                                                                                                                                                         |
 | `reReplaceAll "(.*)" "foo" "bar-$1"`    | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments {{< g_inline_version "v2.8" >}} |
-| `list "a" "b" "c" \| listExclude "^a$"` | removes items matching the given regular expression from a list {{< g_inline_version "v2.16-unreleased" >}}                                                                                                                                |
+| `list "a" "b" "c" \| listExclude "^a$"` | removes items matching the given regular expression from a list {{< g_inline_version "v2.16" >}}                                                                                                                                |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:

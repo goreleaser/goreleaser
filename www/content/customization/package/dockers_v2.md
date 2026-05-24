@@ -92,7 +92,7 @@ dockers_v2:
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
 
-      # You can also use `.BaseImage` and `.BaseImageDigest`. {{< g_inline_version "v2.16-unreleased" >}}
+      # You can also use `.BaseImage` and `.BaseImageDigest`. {{< g_inline_version "v2.16" >}}
       "org.opencontainers.image.base.name": "{{.BaseImage}}"
       "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
@@ -142,7 +142,7 @@ dockers_v2:
     #   - .ContextDir: the temporary build context directory.
     #   - .Digest:     the resulting image digest (post hook only).
     #
-    # {{< g_inline_version "v2.16-unreleased" >}}
+    # {{< g_inline_version "v2.16" >}}
     hooks:
       pre:
         - cmd: ./scripts/before-docker.sh

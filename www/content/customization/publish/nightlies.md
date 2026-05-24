@@ -30,7 +30,7 @@ nightly:
   # pattern to `git.ignore_tags`, e.g. '*-devel', so GoReleaser can properly
   # ignore these tags when determining the current and previous versions.
   #
-  # Templates: allowed. {{< g_inline_version "v2.16-unreleased" >}}
+  # Templates: allowed. {{< g_inline_version "v2.16" >}}
   tag_name: devel
 
   # Whether to publish a release or not.

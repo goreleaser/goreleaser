@@ -68,7 +68,7 @@ nix:
     # (which is what `nix run` invokes).
     #
     # Templates: allowed.
-    # {{< g_inline_version "v2.16-unreleased" >}}
+    # {{< g_inline_version "v2.16" >}}
     main_program: "drumroll"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
