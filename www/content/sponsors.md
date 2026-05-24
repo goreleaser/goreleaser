@@ -187,6 +187,7 @@ These are the companies and individuals that help make GoReleaser happen:
 
 - [Chatpong Voranartaksorn](https://github.com/psychv/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Automatio AI](https://automatio.ai/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [Bruno P](https://brunopaz.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Calculators](https://calculator.now/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Feetpedia](https://feetpedia.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Jared Allard](https://git.rgst.io/jaredallard?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
@@ -199,6 +200,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Alexey Palazhchenko](https://about.me/alexey.palazhchenko?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ben](https://github.com/iwpnd?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ben Lechlitner](https://asphaltbuffet.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [Christopher Butler](https://github.com/techsaint?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Eden Zimbelman](https://o526.net?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Francis Lavoie](https://francislavoie.me?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [joe miller](http://joemiller.me?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
