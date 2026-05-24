@@ -316,6 +316,7 @@ func TestHealthcheck(t *testing.T) {
 
 func TestIsDockerDaemonAvailable(t *testing.T) {
 	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "docker daemon not reliably available on windows runners")
 	require.True(t, isDockerDaemonAvailable(t.Context()))
 }
 
