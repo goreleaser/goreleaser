@@ -207,7 +207,6 @@ These are the companies and individuals that help make GoReleaser happen:
 - [KEINOS](https://qiita.com/KEINOS?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Nicolas Gotchac](https://github.com/ngotchac?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ryan Nixon](https://www.ryannixon.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Wails](https://wails.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Weston Schmidt](http://comcast.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [David Birks](https://github.com/dbirks?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Benjamin Kane](https://www.bbkane.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
