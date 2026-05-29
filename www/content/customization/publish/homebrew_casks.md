@@ -342,58 +342,86 @@ for more information.
 
 ## Private GitHub Repositories
 
-The best way to support private repositories is to add by using a custom block,
-a custom template URL, and custom headers.
-
-Here's an example:
+The best way to support private repositories is to define a custom
+[`CurlDownloadStrategy`](https://rubydoc.brew.sh/CurlDownloadStrategy.html)
+subclass in `custom_block` and reference it from `url.using`.
 
 > [!WARNING]
-> Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
+> Homebrew 5.1.14 (May 2026) started
+> [scrubbing sensitive environment variables](https://github.com/Homebrew/brew/pull/22384)
+> — including `HOMEBREW_GITHUB_API_TOKEN` — for the duration of cask
+> `instance_eval`.
 >
-> Replace with your implementation as needed.
+> This means **you cannot read the token directly inside `url.template`
+> or `url.headers`** anymore: those strings are interpolated at
+> cask-load time, exactly when the token is hidden, and the cask fails
+> with `Error: Failed to retrieve github api token` on every
+> `brew update`/`install`/`upgrade`.
+>
+> The pattern below avoids that by deferring the token lookup to
+> download time. `url.using` takes a **class reference**, so cask-load
+> only captures the constant; Homebrew restores the environment before
+> instantiating the strategy and calling `fetch`.
+
+> [!WARNING]
+> This example uses an internal Homebrew API (`GitHub.get_release`) to
+> resolve the asset ID. Replace it with your own implementation as
+> needed.
 
 ```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   - name: foo
     custom_block: |
-      module GitHubHelper
-        def self.token
-          require "utils/github"
+      require "download_strategy"
 
-          # Prefer environment variable if available
-          github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
-          github_token ||= GitHub::API.credentials
-          raise "Failed to retrieve github api token" if github_token.nil? || github_token.empty?
-
-          github_token
+      class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
+        def initialize(url, name, version, **meta)
+          @url = url
+          parse_url_pattern
+          set_github_token
+          meta[:headers] ||= []
+          meta[:headers] << "Accept: application/octet-stream"
+          meta[:headers] << "Authorization: Bearer #{@github_token}"
+          ghurl = "https://api.github.com/repos/#{@owner}/#{@repo}/releases/assets/#{asset_id}"
+          super(ghurl, name, version, **meta)
         end
 
-        def self.release_asset_url(tag, name)
-          require "json"
-          require "net/http"
-          require "uri"
+        def parse_url_pattern
+          url_pattern = %r{https://github.com/([^/]+)/([^/]+)/releases/download/([^/]+)/(\S+)}
+          raise CurlDownloadStrategyError, "Invalid url pattern" unless @url =~ url_pattern
 
-          resp = Net::HTTP.get(
-            # Replace with your GitHub repository URL
-            URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
-            {
-              "Accept" => "application/vnd.github+json",
-              "Authorization" => "Bearer #{token}",
-              "X-GitHub-Api-Version" => "2022-11-28"
-            }
-          )
+          _, @owner, @repo, @tag, @filename = *@url.match(url_pattern)
+        end
 
-          release = JSON.parse(resp)
-          release["assets"].find { |asset| asset["name"] == name }["url"]
+        def download_url
+          "https://#{@github_token}@api.github.com/repos/#{@owner}/#{@repo}/releases/assets/#{asset_id}"
+        end
+
+        private
+
+        def set_github_token
+          @github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
+          raise CurlDownloadStrategyError, "HOMEBREW_GITHUB_API_TOKEN is required." unless @github_token
+
+          # validate access
+          GitHub.repository(@owner, @repo)
+        end
+
+        def asset_id
+          @asset_id ||= GitHub.get_release(@owner, @repo, @tag)["assets"]
+                              .find { |a| a["name"] == @filename }
+                              .fetch("id") { raise CurlDownloadStrategyError, "Asset not found" }
         end
       end
 
     url:
-      template: '#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}'
-      headers:
-        - "Accept: application/octet-stream"
-        - "Authorization: Bearer #{GitHubHelper.token}"
-        - "X-GitHub-Api-Version: 2022-11-28"
+      # Replace <owner>/<repo> with your private GitHub repository.
+      template: "https://github.com/<owner>/<repo>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      using: GitHubPrivateRepositoryReleaseDownloadStrategy
+      verified: github.com/<owner>/<repo>/
 ```
+
+Users still need `HOMEBREW_GITHUB_API_TOKEN` exported in their
+environment — Homebrew restores it before the strategy runs.
 
 {{% g_include file="includes/prs.md" %}}
