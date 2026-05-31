@@ -166,19 +166,6 @@ These are the companies and individuals that help make GoReleaser happen:
           />
           Gitea
         </a>
-        <a class="goreleaser-sponsor-item" 
-          href="https://www.interviewpal.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://avatars.githubusercontent.com/u/268665632?s=64&v=4" 
-            alt="InterviewPal.com" 
-            width="64" 
-            height="64"
-          />
-          InterviewPal.com
-        </a>
     </div>
   </div>
 </div>
