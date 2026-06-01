@@ -285,6 +285,70 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 }
 
+func TestGitLabUploadUseDirectAssetURL(t *testing.T) {
+	t.Parallel()
+	for _, usePackageRegistry := range []bool{false, true} {
+		t.Run(strconv.FormatBool(usePackageRegistry), func(t *testing.T) {
+			t.Parallel()
+			bodyCh := make(chan map[string]string, 1)
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				switch {
+				case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+					fmt.Fprint(w, `{"version":"18.0.0"}`)
+				case strings.Contains(r.URL.Path, "packages/generic") && r.Method == http.MethodPut:
+					w.WriteHeader(http.StatusCreated)
+					fmt.Fprint(w, `{"message":"201 Created"}`)
+				case strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost:
+					fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
+				case strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost:
+					b, err := io.ReadAll(r.Body)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					requestBody := map[string]string{}
+					if err := json.Unmarshal(b, &requestBody); err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					bodyCh <- requestBody
+					w.WriteHeader(http.StatusCreated)
+					fmt.Fprint(w, `{"id":1,"name":"test.tar.gz","direct_asset_url":"http://example.com/test.tar.gz"}`)
+				default:
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, "{}")
+				}
+			}))
+			t.Cleanup(srv.Close)
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "myproject",
+				GitLabURLs: config.GitLabURLs{
+					API:                srv.URL,
+					Download:           srv.URL,
+					UsePackageRegistry: usePackageRegistry,
+					UseDirectAssetURL:  true,
+				},
+				Release: config.Release{
+					GitLab: config.Repo{Owner: "someone", Name: "something"},
+				},
+			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			client, err := newGitLab(ctx, "test-token")
+			require.NoError(t, err)
+
+			err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"})
+			require.NoError(t, err)
+			requestBody := <-bodyCh
+			require.Equal(t, "test.tar.gz", requestBody["name"])
+			require.Equal(t, requestBody["url"], requestBody["direct_asset_url"])
+			require.Equal(t, "other", requestBody["link_type"])
+			require.Empty(t, requestBody["filepath"])
+			require.Empty(t, requestBody["direct_asset_path"])
+		})
+	}
+}
+
 func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
 	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
