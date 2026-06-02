@@ -226,6 +226,18 @@ func (c *githubClient) authorsLookup(authors []Author) []Author {
 	return authors
 }
 
+// isFork reports whether the given repository is a fork.
+func (c *githubClient) isFork(ctx *context.Context, repo Repo) (bool, error) {
+	c.checkRateLimit(ctx)
+	p, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
+		return c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	})
+	if err != nil {
+		return false, err
+	}
+	return p.GetFork(), nil
+}
+
 // getDefaultBranch returns the default branch of a github repo
 func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	c.checkRateLimit(ctx)
@@ -353,6 +365,19 @@ func (c *githubClient) OpenPullRequest(
 }
 
 func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
+	// merge-upstream returns 422 for non-forks; skip the call when we can tell.
+	fork, err := c.isFork(ctx, head)
+	switch {
+	case err != nil:
+		log.WithField("repo", head.String()).
+			WithError(err).
+			Debug("could not check if target is a fork; attempting sync anyway")
+	case !fork:
+		log.WithField("repo", head.String()).
+			Debug("target is not a fork; skipping merge-upstream")
+		return nil
+	}
+
 	branch := base.Branch
 	if branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)

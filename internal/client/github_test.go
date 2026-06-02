@@ -1547,6 +1547,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"main","message":"Successfully fetched"}`)
@@ -1571,6 +1576,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
 				w.WriteHeader(http.StatusUnprocessableEntity)
 				fmt.Fprint(w, `{"message":"merge conflict"}`)
@@ -1595,6 +1605,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, `{"default_branch":"develop"}`)
@@ -1616,6 +1631,58 @@ func TestGitHubSyncFork(t *testing.T) {
 			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename"},
+		)
+		require.NoError(t, err)
+	})
+
+	t.Run("skips merge-upstream when target is not a fork", func(t *testing.T) {
+		t.Parallel()
+		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":false}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(
+			ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
+		)
+		require.NoError(t, err)
+	})
+
+	t.Run("falls through when fork precheck errors", func(t *testing.T) {
+		t.Parallel()
+		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"main","message":"Successfully fetched"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(
+			ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
 		require.NoError(t, err)
 	})
@@ -1896,6 +1963,11 @@ func TestGitHubSyncForkDefaultBranchError(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"fork":true}`)
+			return
+		}
 		if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
