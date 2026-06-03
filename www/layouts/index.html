@@ -44,8 +44,8 @@
 		display: block;
 		width: var(--size);
 		height: var(--size);
-		top: calc(2% + 90% * (0.5 + 0.5 * sin(var(--i) * 137.508deg)));
-		left: calc(2% + 90% * (0.5 + 0.5 * cos(var(--i) * 97.5deg)));
+		top: calc(-25% + 130% * (0.5 + 0.5 * sin(var(--i) * 137.508deg)));
+		left: calc(-30% + 130% * (0.5 + 0.5 * cos(var(--i) * 97.5deg)));
 		opacity: calc(0.4 + 0.5 * (0.5 + 0.5 * cos(var(--i) * 71.3deg)));
 		transform: translate3d(
 				var(--goreleaser-star-x),
@@ -59,81 +59,8 @@
 		will-change: transform;
 	}
 
-	.goreleaser-hero-stars span:nth-child(1) {
-		--i: 1;
-	}
-	.goreleaser-hero-stars span:nth-child(2) {
-		--i: 2;
-	}
-	.goreleaser-hero-stars span:nth-child(3) {
-		--i: 3;
-	}
-	.goreleaser-hero-stars span:nth-child(4) {
-		--i: 4;
-	}
-	.goreleaser-hero-stars span:nth-child(5) {
-		--i: 5;
-	}
-	.goreleaser-hero-stars span:nth-child(6) {
-		--i: 6;
-	}
-	.goreleaser-hero-stars span:nth-child(7) {
-		--i: 7;
-	}
-	.goreleaser-hero-stars span:nth-child(8) {
-		--i: 8;
-	}
-	.goreleaser-hero-stars span:nth-child(9) {
-		--i: 9;
-	}
-	.goreleaser-hero-stars span:nth-child(10) {
-		--i: 10;
-	}
-	.goreleaser-hero-stars span:nth-child(11) {
-		--i: 11;
-	}
-	.goreleaser-hero-stars span:nth-child(12) {
-		--i: 12;
-	}
-	.goreleaser-hero-stars span:nth-child(13) {
-		--i: 13;
-	}
-	.goreleaser-hero-stars span:nth-child(14) {
-		--i: 14;
-	}
-	.goreleaser-hero-stars span:nth-child(15) {
-		--i: 15;
-	}
-	.goreleaser-hero-stars span:nth-child(16) {
-		--i: 16;
-	}
-	.goreleaser-hero-stars span:nth-child(17) {
-		--i: 17;
-	}
-	.goreleaser-hero-stars span:nth-child(18) {
-		--i: 18;
-	}
-	.goreleaser-hero-stars span:nth-child(19) {
-		--i: 19;
-	}
-	.goreleaser-hero-stars span:nth-child(20) {
-		--i: 20;
-	}
-	.goreleaser-hero-stars span:nth-child(21) {
-		--i: 21;
-	}
-	.goreleaser-hero-stars span:nth-child(22) {
-		--i: 22;
-	}
-	.goreleaser-hero-stars span:nth-child(23) {
-		--i: 23;
-	}
-	.goreleaser-hero-stars span:nth-child(24) {
-		--i: 24;
-	}
-
 	@media (max-width: 768px) {
-		.goreleaser-hero-stars span:nth-child(n + 11) {
+		.goreleaser-hero-stars span:nth-child(n + 17) {
 			display: none;
 		}
 	}
@@ -336,6 +263,56 @@
 		margin-bottom: 3rem;
 	}
 
+	.goreleaser-logos-marquee {
+		overflow: hidden;
+		margin-bottom: 3rem;
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			#000 8%,
+			#000 92%,
+			transparent 100%
+		);
+		mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			#000 8%,
+			#000 92%,
+			transparent 100%
+		);
+	}
+
+	.goreleaser-logos-marquee__track {
+		display: flex;
+		gap: 1rem;
+		width: max-content;
+		animation: goreleaser-logos-marquee 60s linear infinite;
+	}
+
+	.goreleaser-logos-marquee:hover .goreleaser-logos-marquee__track {
+		animation-play-state: paused;
+	}
+
+	@keyframes goreleaser-logos-marquee {
+		from {
+			transform: translate3d(0, 0, 0);
+		}
+		to {
+			transform: translate3d(-50%, 0, 0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.goreleaser-logos-marquee__track {
+			animation: none;
+		}
+	}
+
+	.goreleaser-logos-marquee .goreleaser-logo-card {
+		flex: 0 0 auto;
+		width: 140px;
+	}
+
 	.goreleaser-logo-card {
 		display: flex;
 		flex-direction: column;
@@ -416,30 +393,7 @@
 
 <section id="content" class="goreleaser-hero-section">
 	<div class="goreleaser-hero-stars" aria-hidden="true">
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
+		{{ range seq 1 40 }}<span style="--i: {{ . }}"></span>{{ end }}
 	</div>
 	<div class="goreleaser-hero">
 		<div class="goreleaser-hero__content">
@@ -743,7 +697,8 @@
 			who rely on GoReleaser for their mission-critical releases.
 		</p>
 
-		<div class="goreleaser-cards-grid">
+		<div class="goreleaser-logos-marquee">
+			<div class="goreleaser-logos-marquee__track">
 			<div class="goreleaser-logo-card">
 				<img
 					src="https://github.com/google.png?s=48"
@@ -891,6 +846,7 @@
 				/>
 				Sigstore
 			</div>
+			</div>
 		</div>
 
 		<a
@@ -921,10 +877,8 @@
 			const offset = Math.min(Math.max(-rect.top, 0), rect.height);
 
 			stars.forEach((star, index) => {
-				const xDepth =
-					(index % 2 === 0 ? 1 : -1) *
-					(0.01 + ((index * 3) % 5) / 100);
-				const yDepth = 0.04 + ((index * 7) % 10) / 100;
+				const xDepth = 0.25 + ((index * 3) % 5) * 0.06;
+				const yDepth = 0.10 + ((index * 7) % 10) * 0.03;
 
 				star.style.setProperty(
 					"--goreleaser-star-x",
@@ -949,6 +903,16 @@
 		updateStars();
 		window.addEventListener("scroll", requestUpdate, { passive: true });
 		window.addEventListener("resize", requestUpdate);
+	})();
+
+	(() => {
+		const track = document.querySelector(".goreleaser-logos-marquee__track");
+		if (!track) return;
+		Array.from(track.children).forEach((node) => {
+			const clone = node.cloneNode(true);
+			clone.setAttribute("aria-hidden", "true");
+			track.appendChild(clone);
+		});
 	})();
 </script>
 {{ end }}
