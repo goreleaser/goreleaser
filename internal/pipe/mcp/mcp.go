@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
@@ -111,7 +112,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			URL:       mcp.Repository.URL,
 			Source:    mcp.Repository.Source,
 			ID:        mcp.Repository.ID,
-			Subfolder: mcp.Repository.Subfolder,
+			Subfolder: cleanSubfolder(mcp.Repository.Subfolder),
 		}
 	}
 	server := apiv0.ServerJSON{
@@ -185,6 +186,16 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 		return nil
 	}, retryx.IsRetriable)
+}
+
+// cleanSubfolder normalizes the repository subfolder path so it passes the MCP
+// registry validation, which rejects paths with "./" prefixes, trailing
+// slashes, and similar non-clean forms.
+func cleanSubfolder(subfolder string) string {
+	if cleaned := path.Clean(subfolder); cleaned != "." {
+		return cleaned
+	}
+	return ""
 }
 
 func authProvider(registryURL, method, token string) (auth.Provider, error) {
