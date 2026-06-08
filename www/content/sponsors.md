@@ -40,19 +40,6 @@ These are the companies and individuals that help make GoReleaser happen:
     <div class="goreleaser-sponsors-tier-label">Gold</div>
     <div class="goreleaser-sponsors-grid">
         <a class="goreleaser-sponsor-item" 
-          href="https://resources.github.com/github-secure-open-source-fund/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://avatars.githubusercontent.com/u/199005812?s=96&v=4" 
-            alt="GitHub SecureOSS Fund " 
-            width="96" 
-            height="96"
-          />
-          GitHub SecureOSS Fund 
-        </a>
-        <a class="goreleaser-sponsor-item" 
           href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
           target="_blank" 
           rel="noopener sponsored"
