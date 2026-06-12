@@ -35,7 +35,7 @@ dockers_v2:
     # When set, it takes precedence over `dockerfile`.
     #
     # Templates: allowed (both the path and the file contents).
-    # {{< g_inline_version "v2.17" >}}
+    # {{< g_inline_version "v2.17-unreleased" >}}
     templated_dockerfile: "Dockerfile.tmpl"
 
     # IDs to filter the binaries/packages.
@@ -84,7 +84,7 @@ dockers_v2:
     # before being copied into the build context.
     #
     # Templates: allowed (source path, destination path, and file contents).
-    # {{< g_inline_version "v2.17" >}}
+    # {{< g_inline_version "v2.17-unreleased" >}}
     templated_extra_files:
       - # Source file path (relative to the project root).
         #
