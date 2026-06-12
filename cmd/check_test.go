@@ -61,3 +61,17 @@ func TestCheckConfigDeprecated(t *testing.T) {
 	require.Error(t, cmd.cmd.Execute())
 	require.Equal(t, 1, cmd.checked)
 }
+
+func TestCheckConfigDeprecatedAllowed(t *testing.T) {
+	cmd := newCheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--deprecated", "--allow-deprecations"})
+	require.NoError(t, cmd.cmd.Execute())
+	require.Equal(t, 1, cmd.checked)
+}
+
+func TestCheckConfigInvalidWithAllowDeprecations(t *testing.T) {
+	cmd := newCheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/invalid.yml", "--allow-deprecations"})
+	require.Error(t, cmd.cmd.Execute())
+	require.Equal(t, 1, cmd.checked)
+}
