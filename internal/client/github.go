@@ -371,10 +371,10 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 	case err != nil:
 		log.WithField("repo", head.String()).
 			WithError(err).
-			Debug("could not check if target is a fork; attempting sync anyway")
+			Warn("could not check if target is a fork; attempting sync anyway")
 	case !fork:
 		log.WithField("repo", head.String()).
-			Debug("target is not a fork; skipping merge-upstream")
+			Info("target is not a fork; skipping merge-upstream")
 		return nil
 	}
 
