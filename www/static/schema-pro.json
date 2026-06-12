@@ -1710,6 +1710,15 @@
 					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
 					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFileWithMode"
+						},
+						"type": "array"
+					},
+					"templated_dockerfile": {
+						"type": "string"
+					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
 					}
