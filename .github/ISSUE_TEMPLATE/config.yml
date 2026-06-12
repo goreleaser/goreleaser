@@ -3,6 +3,3 @@ contact_links:
   - name: Feature suggestions and Questions
     url: https://github.com/goreleaser/goreleaser/discussions/new/choose
     about: Our preferred starting point if you have any problems, questions, or suggestions about configuration, features or behavior.
-  - name: Chat on Discord
-    url: https://goreleaser.com/discord
-    about: Join our discord to chat about GoReleaser.

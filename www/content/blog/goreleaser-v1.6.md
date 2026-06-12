@@ -29,5 +29,5 @@ You can see the full changelog [here](https://github.com/goreleaser/goreleaser/
 
 - I'm risking sounding repetitive here, but we still don't have a new date for our first community call. Personal life a little too busy lately, will try my best to schedule it ASAP. [Link](https://github.com/goreleaser/community/pull/2).
 - GoReleaser now has ~9.7k stars and 268 contributors! Thanks, everyone!
-- Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+- Our Discord server is getting new members almost daily. [Join and chat with us](https://goreleaser.com/discord)!
 - nFPM also had a release as well, [check it out](https://github.com/goreleaser/nfpm/releases).

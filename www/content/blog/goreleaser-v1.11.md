@@ -49,6 +49,6 @@ data to back it up — except my memory.
 
 - GoReleaser now has ~10.5k stars and 292 contributors! Thanks, everyone!
 - GoReleaser now has a [LinkedIn page](https://www.linkedin.com/company/goreleaser/);
-- We eventually discuss new features in our Discord server. [Join the conversation](https://discord.gg/RGEBtg8vQ6)!
+- We eventually discuss new features in our Discord server. [Join the conversation](https://goreleaser.com/discord)!
 - nFPM had new releases as well, [check it out](https://github.com/goreleaser/nfpm/releases).
 - GoReleaser Pro now has [nightly releases](https://github.com/goreleaser/goreleaser-pro/releases/tag/nightly);

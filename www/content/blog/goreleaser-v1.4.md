@@ -54,7 +54,7 @@ goreleaser` or `man goreleaser-pro` to check them out.
   ASAP. [Link](https://github.com/goreleaser/community/pull/2).
 - GoReleaser now has ~9.5k stars and 262 contributors! Thanks, everyone!
 - Our Discord server is getting new members almost daily. 
-  [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+  [Join and chat with us](https://goreleaser.com/discord)!
 
 ---
 
