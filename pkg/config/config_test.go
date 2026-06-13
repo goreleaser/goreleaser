@@ -22,6 +22,17 @@ func TestEmptyRepoNameAndOwner(t *testing.T) {
 	require.Empty(t, Repo{}.String())
 }
 
+func TestGitLabURLsConfig(t *testing.T) {
+	conf := `
+gitlab_urls:
+    use_direct_asset_url: true
+`
+	prop, err := LoadReader(strings.NewReader(conf))
+
+	require.NoError(t, err)
+	require.True(t, prop.GitLabURLs.UseDirectAssetURL)
+}
+
 func TestLoadReader(t *testing.T) {
 	conf := `
 nfpms:

@@ -36,6 +36,7 @@ type GitLabURLs struct {
 	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty" json:"use_package_registry,omitempty"`
 	UseJobToken        bool   `yaml:"use_job_token,omitempty" json:"use_job_token,omitempty"`
+	UseDirectAssetURL  bool   `yaml:"use_direct_asset_url,omitempty" json:"use_direct_asset_url,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.

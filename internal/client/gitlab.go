@@ -602,23 +602,7 @@ func (c *gitlabClient) Upload(
 			WithField("url", baseLinkURL).
 			Debug("uploaded file")
 
-		name := artifact.Name
-		filename := "/" + name
-		opt := &gitlab.CreateReleaseLinkOptions{
-			Name: &name,
-			URL:  &linkURL,
-		}
-		if c.isV17OrLater {
-			opt.DirectAssetPath = &filename
-		} else {
-			opt.FilePath = &filename
-		}
-
-		releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(
-			projectID,
-			releaseID,
-			opt,
-		)
+		releaseLink, resp, err := c.createReleaseLink(ctx, projectID, releaseID, artifact.Name, linkURL)
 		if err != nil {
 			// this status means the asset already exists
 			if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
@@ -650,6 +634,71 @@ func (c *gitlabClient) Upload(
 
 		return nil
 	}, retryx.IsRetriable)
+}
+
+type createGitLabReleaseLinkOptions struct {
+	Name           *string               `json:"name,omitempty"`
+	URL            *string               `json:"url,omitempty"`
+	DirectAssetURL *string               `json:"direct_asset_url,omitempty"`
+	LinkType       *gitlab.LinkTypeValue `json:"link_type,omitempty"`
+}
+
+func (c *gitlabClient) createReleaseLink(
+	ctx *context.Context,
+	projectID,
+	releaseID,
+	name,
+	linkURL string,
+) (*gitlab.ReleaseLink, *gitlab.Response, error) {
+	if ctx.Config.GitLabURLs.UseDirectAssetURL {
+		return c.createReleaseLinkWithDirectAssetURL(projectID, releaseID, name, linkURL)
+	}
+
+	filename := "/" + name
+	opt := &gitlab.CreateReleaseLinkOptions{
+		Name: &name,
+		URL:  &linkURL,
+	}
+	if c.isV17OrLater {
+		opt.DirectAssetPath = &filename
+	} else {
+		opt.FilePath = &filename
+	}
+
+	return c.client.ReleaseLinks.CreateReleaseLink(projectID, releaseID, opt)
+}
+
+func (c *gitlabClient) createReleaseLinkWithDirectAssetURL(
+	projectID,
+	releaseID,
+	name,
+	linkURL string,
+) (*gitlab.ReleaseLink, *gitlab.Response, error) {
+	// Some GitLab CE versions, including 13.4.3, accept direct_asset_url in
+	// create release link requests. go-gitlab does not expose it in its create
+	// options, so this opt-in compatibility path builds the request directly.
+	u := fmt.Sprintf(
+		"projects/%s/releases/%s/assets/links",
+		gitlab.PathEscape(projectID),
+		gitlab.PathEscape(releaseID),
+	)
+	linkType := gitlab.OtherLinkType
+	req, err := c.client.NewRequest(http.MethodPost, u, &createGitLabReleaseLinkOptions{
+		Name:           &name,
+		URL:            &linkURL,
+		DirectAssetURL: &linkURL,
+		LinkType:       &linkType,
+	}, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	releaseLink := new(gitlab.ReleaseLink)
+	resp, err := c.client.Do(req, releaseLink)
+	if err != nil {
+		return nil, resp, err
+	}
+	return releaseLink, resp, err
 }
 
 // getMilestoneByTitle returns a milestone by title.

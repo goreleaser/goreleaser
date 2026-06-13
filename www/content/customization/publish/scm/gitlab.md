@@ -83,6 +83,29 @@ gitlab_urls:
   use_package_registry: true
 ```
 
+## Direct asset URLs
+
+By default, GoReleaser asks GitLab to create a permanent direct asset link for
+each uploaded artifact.
+
+Some older GitLab instances may create broken direct asset URLs when GoReleaser
+sends an asset path for GitLab to derive the final URL. This has been observed
+on GitLab Community Edition 13.4.3 and is tracked in
+[goreleaser/goreleaser#3299](https://github.com/goreleaser/goreleaser/issues/3299).
+If your release links work, but the generated direct asset URLs return 404, set
+`use_direct_asset_url` to `true`:
+
+```yaml {filename=".goreleaser.yaml"}
+gitlab_urls:
+  use_direct_asset_url: true
+```
+
+With this option enabled, GoReleaser sends the uploaded artifact URL as the
+release link's direct asset URL instead of asking GitLab to derive it from an
+asset path. Keep the default value unless your GitLab version accepts
+`direct_asset_url` in release link create requests and you need this
+compatibility behavior.
+
 ## Example release
 
 You can check [this example repository](https://gitlab.com/goreleaser/example/-/releases) for a real world example.

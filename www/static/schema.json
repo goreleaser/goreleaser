@@ -1622,6 +1622,9 @@
 					},
 					"use_job_token": {
 						"type": "boolean"
+					},
+					"use_direct_asset_url": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
