@@ -728,7 +728,7 @@ will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 
 ## A note about MSIX
 
-{{< g_inline_version "v2.17-unreleased" >}}
+{{< g_version "v2.17-unreleased" >}}
 
 {{< g_experimental "https://github.com/goreleaser/goreleaser/issues/6519" >}}
 
