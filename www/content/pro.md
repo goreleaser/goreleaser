@@ -152,6 +152,23 @@ GoReleaser will automatically detect the offline license and verify it locally.
 > [!NOTE]
 > Offline licenses are available on the **Business** and **Enterprise** plans.
 
+### Fallback keys
+
+{{< g_version "v2.17-unreleased" >}}
+
+The `--key` flag can be set multiple times to provide fallbacks. GoReleaser
+tries each key in order and uses the first one that validates.
+
+This is useful, for example, to provide an offline license key and fall back to
+the regular online key if the first one fails:
+
+```bash
+goreleaser release --key goreleaser.key --key "your-license-key"
+```
+
+If no `--key` flag is provided, GoReleaser falls back to the `GORELEASER_KEY`
+environment variable.
+
 ## Road map
 
 We don't have a properly organized public road map, but we are always open to

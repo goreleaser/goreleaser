@@ -28,6 +28,16 @@ dockers_v2:
     # Templates: allowed.
     dockerfile: "{{ .Env.DOCKERFILE }}"
 
+    # Path to a Dockerfile that should be templated before being used.
+    #
+    # The file contents are rendered as a template, and the result is used as
+    # the Dockerfile for the build.
+    # When set, it takes precedence over `dockerfile`.
+    #
+    # Templates: allowed (both the path and the file contents).
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    templated_dockerfile: "Dockerfile.tmpl"
+
     # IDs to filter the binaries/packages.
     #
     # Make sure to only include the IDs of binaries you want to `COPY` in your
@@ -69,6 +79,27 @@ dockers_v2:
     # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
     extra_files:
       - config.yml
+
+    # Same as `extra_files`, but the source files are rendered as templates
+    # before being copied into the build context.
+    #
+    # Templates: allowed (source path, destination path, and file contents).
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    templated_extra_files:
+      - # Source file path (relative to the project root).
+        #
+        # Templates: allowed.
+        src: config.yml.tmpl
+
+        # Destination path inside the build context.
+        #
+        # Templates: allowed.
+        dst: config.yml
+
+        # File mode.
+        #
+        # Default: 0o644.
+        mode: 0o644
 
     # Labels to be added to the image.
     #

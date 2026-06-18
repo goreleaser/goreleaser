@@ -40,19 +40,6 @@ These are the companies and individuals that help make GoReleaser happen:
     <div class="goreleaser-sponsors-tier-label">Gold</div>
     <div class="goreleaser-sponsors-grid">
         <a class="goreleaser-sponsor-item" 
-          href="https://resources.github.com/github-secure-open-source-fund/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://avatars.githubusercontent.com/u/199005812?s=96&v=4" 
-            alt="GitHub SecureOSS Fund " 
-            width="96" 
-            height="96"
-          />
-          GitHub SecureOSS Fund 
-        </a>
-        <a class="goreleaser-sponsor-item" 
           href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
           target="_blank" 
           rel="noopener sponsored"
@@ -185,6 +172,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Benjamin Kane](https://www.bbkane.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Carl Tsai](https://github.com/moonape1226?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ethan Li](https://linkedin.com/in/ethanjli?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [Recipe.net](https://recipe.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [^.{5}\s.{2}ram.{3}$](https://dives.dev/about?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Andrew](https://codelumberjack.ai?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Baptiste Canton](https://github.com/batmac?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
@@ -193,7 +181,6 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Joseph Sirianni](https://github.com/jsirianni?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Kazuma Watanabe](https://sil.hatenablog.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Oleg Balunenko](https://www.mentoring-club.com/the-mentors/oleg-balunenko?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Recipe.net](https://recipe.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Sidartha Karna](https://github.com/sidarthakarna?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Moti ne tirane](https://www.motijavor.com/shqiperi/tirane/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)

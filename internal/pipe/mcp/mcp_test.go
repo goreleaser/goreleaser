@@ -495,7 +495,7 @@ func TestPublishWithRepository(t *testing.T) {
 					URL:       "https://gitlab.com/group/project",
 					Source:    "gitlab",
 					ID:        "group/project",
-					Subfolder: "servers/mcp",
+					Subfolder: "./servers/mcp/",
 				},
 				Auth: config.MCPAuth{
 					Type: "none",
@@ -526,6 +526,25 @@ func TestPublishWithRepository(t *testing.T) {
 		Packages: nil,
 	}
 	require.Equal(t, expected, receivedRequest)
+}
+
+func TestCleanSubfolder(t *testing.T) {
+	for input, expected := range map[string]string{
+		"":                  "",
+		".":                 "",
+		"./":                "",
+		"servers/mcp":       "servers/mcp",
+		"./servers/mcp":     "servers/mcp",
+		"./servers/mcp/":    "servers/mcp",
+		"servers/mcp/":      "servers/mcp",
+		"servers//mcp":      "servers/mcp",
+		"./internal/ns/mcp": "internal/ns/mcp",
+		"servers/./mcp":     "servers/mcp",
+	} {
+		t.Run(input, func(t *testing.T) {
+			require.Equal(t, expected, cleanSubfolder(input))
+		})
+	}
 }
 
 func TestAuthProvider(t *testing.T) {

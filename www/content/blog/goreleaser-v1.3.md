@@ -32,4 +32,4 @@ Other news:
 - Our community call was set for January 7th, but was delayed. We're still picking a new date. [Link](https://github.com/goreleaser/community/pull/2).
 - We created an example repository with Supply Chain Security good practices, [check it out](https://github.com/goreleaser/supply-chain-example).
 - GoReleaser now has ~9.4k stars and 261 contributors! Thanks, everyone!
-- Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+- Our Discord server is getting new members almost daily. [Join and chat with us](https://goreleaser.com/discord)!

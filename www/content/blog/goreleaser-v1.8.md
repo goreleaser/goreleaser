@@ -28,5 +28,5 @@ You can see the full changelog [here](https://github.com/goreleaser/goreleaser/
 - Release Party though! Thanks to everyone who joined!
 - [GoReleaser is now in the ThoughtWorks Technology Radar!](https://www.thoughtworks.com/radar/tools/goreleaser)
 - GoReleaser now has ~9.9k stars and 271 contributors! Thanks, everyone!
-- Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+- Our Discord server is getting new members almost daily. [Join and chat with us](https://goreleaser.com/discord)!
 - nFPM also had a release as well, [check it out](https://github.com/goreleaser/nfpm/releases).

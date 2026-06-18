@@ -42,8 +42,10 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 		path := filepath.Join(build.UnproxiedDir, "go.mod")
 		mod, err := os.ReadFile(path)
 		if err != nil {
-			log.Errorf("could not check %q", path)
-			return nil
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			return fmt.Errorf("could not check %q: %w", path, err)
 		}
 		for line := range strings.SplitSeq(string(mod), "\n") {
 			if !replaceRe.MatchString(line) {

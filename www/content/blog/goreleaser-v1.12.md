@@ -40,7 +40,7 @@ notes [here][oss-rel] and [here (for Pro)][pro-rel].
 
 - GoReleaser now has ~10.8k stars and 305 contributors! Thanks, everyone!
 - We eventually discuss new features in our Discord server. 
-  [Join the conversation](https://discord.gg/RGEBtg8vQ6)!
+  [Join the conversation](https://goreleaser.com/discord)!
 - nFPM had new releases as well, 
   [check it out](https://github.com/goreleaser/nfpm/releases).
 
