@@ -106,7 +106,7 @@ Run the init command to create an example `.goreleaser.yaml` file:
 goreleaser init
 ```
 
-Now, lets run a "local-only" release to see if it works using the release command:
+Now, let's run a "local-only" release to see if it works using the release command:
 
 ```sh
 goreleaser release --snapshot --clean
