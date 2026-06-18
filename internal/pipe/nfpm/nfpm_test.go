@@ -1996,7 +1996,7 @@ func TestRunPipeMSIX(t *testing.T) {
 		NFPMs: []config.NFPM{
 			{
 				ID:      "someid",
-				Bindir:  "/",
+				Bindir:  "/usr/bin",
 				IDs:     []string{"foo"},
 				Formats: []string{"msix"},
 				NFPMOverridables: config.NFPMOverridables{
@@ -2027,13 +2027,16 @@ func TestRunPipeMSIX(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 
-	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.MSIX)).List()
 	require.Len(t, packages, 1)
 	pkg := packages[0]
 	require.Equal(t, "mybin_1.2.3.0_x64.msix", pkg.Name)
 	require.Equal(t, "windows", pkg.Goos)
 	require.Equal(t, "msix", artifact.MustExtra[string](*pkg, artifact.ExtraFormat))
 	require.FileExists(t, pkg.Path)
+	// bindir is forced to "/" for msix, so the binary lands at the package
+	// root regardless of the configured bindir.
+	require.Equal(t, []string{"/mybin.exe"}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
 }
 
 // MSIX only packages Windows binaries, and the other (Linux) formats never
@@ -2096,16 +2099,14 @@ func TestRunPipeMSIXMixedFormats(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 
-	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	names := make([]string, 0, len(packages))
-	for _, p := range packages {
-		names = append(names, p.Name)
-	}
-	// deb only for the linux binary, msix only for the windows binary.
-	require.ElementsMatch(t, []string{
-		"mybin_1.2.3_amd64.deb",
-		"mybin_1.2.3.0_x64.msix",
-	}, names)
+	// deb is tagged as a Linux package, msix gets its own artifact type.
+	debs := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, debs, 1)
+	require.Equal(t, "mybin_1.2.3_amd64.deb", debs[0].Name)
+
+	msixs := ctx.Artifacts.Filter(artifact.ByType(artifact.MSIX)).List()
+	require.Len(t, msixs, 1)
+	require.Equal(t, "mybin_1.2.3.0_x64.msix", msixs[0].Name)
 }
 
 func TestMSIXPassphraseFromEnv(t *testing.T) {

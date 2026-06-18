@@ -601,10 +601,10 @@ nfpms:
 
     # Custom configuration applied only to the MSIX packager.
     #
-    # MSIX packages Windows binaries. Note that, unlike the Linux formats, the
-    # binaries are placed at the root of the package (respecting `bindir`), and
-    # the `executable` of each application below must point to the binary's path
-    # inside the package.
+    # MSIX packages Windows binaries. Note that, unlike the Linux formats,
+    # `bindir` does not apply: binaries are always placed at the root of the
+    # package, so the `executable` of each application below is simply the
+    # binary's file name.
     #
     # {{< g_inline_version "v2.17" >}}
     msix:
@@ -735,9 +735,9 @@ A few things differ from the Linux formats:
 
 - `msix.publisher` and `msix.properties.logo` are **required**, and at least one
   `msix.applications` entry (with `id` and `executable`) must be provided.
-- Files are placed at the root of the package (relative to `bindir`), so each
-  application's `executable` must reference the binary's path inside the
-  package.
+- `bindir` does not apply to `msix`: binaries are always placed at the root of
+  the package, so each application's `executable` is simply the binary's file
+  name (e.g. `myapp.exe`).
 - Symlinks are not supported and are skipped.
 - The version is converted to MSIX's four-part `Major.Minor.Build.Revision`
   format; non-numeric parts default to `0`.

@@ -274,6 +274,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
 		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
+	case msixFormat:
+		// bindir is a Linux filesystem concept that does not map to MSIX: an
+		// MSIX package is a virtual filesystem rooted at the install location,
+		// so the binary belongs at the package root and the application's
+		// executable is simply its file name.
+		fpm.Bindir = "/"
 	}
 
 	if artifacts[0].Goos == "android" && format != termuxFormat {
@@ -630,8 +636,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return fmt.Errorf("could not set package mtime: %w", err)
 		}
 	}
+	packageType := artifact.LinuxPackage
+	if format == msixFormat {
+		packageType = artifact.MSIX
+	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    artifact.LinuxPackage,
+		Type:    packageType,
 		Name:    packageFilename,
 		Path:    path,
 		Goos:    artifacts[0].Goos,
