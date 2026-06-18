@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"dario.cat/mergo"
@@ -178,6 +179,9 @@ const (
 	msixFormat   = "msix"
 )
 
+// msix is still experimental, so we warn the user once per run.
+var msixExperimentalOnce sync.Once
+
 func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
 		return false
@@ -275,6 +279,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
 		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
 	case msixFormat:
+		msixExperimentalOnce.Do(func() {
+			log.Warn("you are using the experimental msix packager")
+		})
 		// bindir is a Linux filesystem concept that does not map to MSIX: an
 		// MSIX package is a virtual filesystem rooted at the install location,
 		// so the binary belongs at the package root and the application's

@@ -601,6 +601,8 @@ nfpms:
 
     # Custom configuration applied only to the MSIX packager.
     #
+    # Experimental.
+    #
     # MSIX packages Windows binaries. Note that, unlike the Linux formats,
     # `bindir` does not apply: binaries are always placed at the root of the
     # package, so the `executable` of each application below is simply the
@@ -724,6 +726,8 @@ will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 ## A note about MSIX
 
 {{< g_inline_version "v2.17" >}}
+
+{{< g_experimental "https://github.com/goreleaser/goreleaser/issues/6519" >}}
 
 Unlike the other formats, `msix` packages **Windows** binaries, not Linux ones.
 When `msix` is one of the `formats`, GoReleaser feeds Windows binaries to the
