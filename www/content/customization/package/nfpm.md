@@ -123,6 +123,9 @@ nfpms:
 
     # Path that the binaries should be installed.
     #
+    # Ignored by the `msix` format, which always places binaries at the
+    # package root.
+    #
     # Default: '/usr/bin'.
     bindir: /usr/bin
 
