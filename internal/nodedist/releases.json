@@ -94,5 +94,13 @@
     "node-v26.3.0-linux-x64.tar.gz": "a6e65cc653e40c1653b77742f9185dbce3ff1f99fa2746d211bddb53530ef206",
     "win-arm64/node.exe": "11efc27fb91247b997a095df43548d8fa59f2d1e18dbb00f98bfeb8e5b0945be",
     "win-x64/node.exe": "35d366f67382f0ba791dcabeded8f6a6d5c77efee4d833f38c1dd3a1e6f160f8"
+  },
+  "v26.3.1": {
+    "node-v26.3.1-darwin-arm64.tar.gz": "3f624ab0d774553c0d28b968e141d8c676a35a2811fb0b7b356ba9cbdce15f74",
+    "node-v26.3.1-darwin-x64.tar.gz": "3ec9e5a28c641c088f3d04ad38721bfdedb2f8aa8c031979fa93df08b5a92e58",
+    "node-v26.3.1-linux-arm64.tar.gz": "2f0829b201e9db20996ae15bce62138df1e3d317775b005778b05cf7b19714f1",
+    "node-v26.3.1-linux-x64.tar.gz": "e892cd615e637edebcf22f9653d80fba63167ad6754d20881fd52cc37be81441",
+    "win-arm64/node.exe": "b8ad851e5ac8cbb784633ec905bd86a282697cc73eb1836c503f02968c7d2c41",
+    "win-x64/node.exe": "2e5b4362a7ea3478cb408a07189c19c16e487f188ac96db2e9e0f45ad8e21837"
   }
 }
