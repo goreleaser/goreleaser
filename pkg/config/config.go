@@ -442,6 +442,24 @@ type Scoop struct {
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 
+// Gentoo contains the gentoo ebuild section.
+type Gentoo struct {
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
+	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	Keywords              StringArray  `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	Files                 []ExtraFile  `yaml:"files,omitempty" json:"files,omitempty"`
+	Bin                   bool         `yaml:"bin" json:"bin"`
+	Type                  string       `yaml:"type,omitempty" json:"type,omitempty"`
+	KeepVersions          int          `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
 	Name              string        `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1278,6 +1296,7 @@ type Project struct {
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
+	Gentoos           []Gentoo          `yaml:"gentoos,omitempty" json:"gentoos,omitempty"`
 	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`

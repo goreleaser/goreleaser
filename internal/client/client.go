@@ -79,6 +79,7 @@ type RepoFile struct {
 	Content    []byte
 	Path       string
 	Identifier string // for the use of the caller.
+	Delete     bool   // when true, file will be removed
 }
 
 // FileCreator can create the given file to some code repository.
@@ -90,6 +91,16 @@ type FileCreator interface {
 type FilesCreator interface {
 	FileCreator
 	CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) (err error)
+}
+
+// DirectoryLister can list directory contents.
+type DirectoryLister interface {
+	ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error)
+}
+
+// FileDeleter removes files from a repository.
+type FileDeleter interface {
+	DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error
 }
 
 // ReleaseNotesGenerator can generate release notes.

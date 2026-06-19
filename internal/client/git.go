@@ -30,6 +30,30 @@ type gitClient struct {
 	branch string
 }
 
+func (g *gitClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error) {
+	parent := filepath.Join(ctx.Config.Dist, "git")
+	name := repo.Name + "-" + g.branch
+	cwd := filepath.Join(parent, name, dir)
+	entries, err := os.ReadDir(cwd)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var names []string
+	for _, e := range entries {
+		if e.Type().IsRegular() {
+			names = append(names, e.Name())
+		}
+	}
+	return names, nil
+}
+
+func (g *gitClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error {
+	return g.CreateFiles(ctx, commitAuthor, repo, message, []RepoFile{{Path: path, Delete: true}})
+}
+
 // NewGitUploadClient creates a new git client.
 func NewGitUploadClient(branch string) FilesCreator {
 	return &gitClient{
@@ -133,6 +157,14 @@ func (g *gitClient) CreateFiles(
 
 	for _, file := range files {
 		location := filepath.Join(cwd, file.Path)
+		if file.Delete {
+			log.WithField("path", location).Info("deleting")
+			if err := os.RemoveAll(location); err != nil && !errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("failed to remove %s: %w", file.Path, err)
+			}
+			continue
+		}
+
 		log.WithField("path", location).Info("writing")
 		if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
 			return fmt.Errorf("failed to create parent dirs for %s: %w", file.Path, err)

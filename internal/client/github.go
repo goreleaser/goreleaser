@@ -35,6 +35,8 @@ var (
 	_ ReleaseNotesGenerator = &githubClient{}
 	_ PullRequestOpener     = &githubClient{}
 	_ ForkSyncer            = &githubClient{}
+	_ DirectoryLister       = &githubClient{}
+	_ FileDeleter           = &githubClient{}
 )
 
 type githubClient struct {
@@ -124,6 +126,49 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 		return &githubClient{}, err
 	}
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error) {
+	c.checkRateLimit(ctx)
+	_, contents, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, dir, &github.RepositoryContentGetOptions{Ref: repo.Branch})
+	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var names []string
+	for _, item := range contents {
+		if item != nil && item.GetType() == "file" {
+			names = append(names, item.GetName())
+		}
+	}
+	return names, nil
+}
+
+func (c *githubClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error {
+	c.checkRateLimit(ctx)
+	branch := repo.Branch
+	if branch == "" {
+		def, err := c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return err
+		}
+		branch = def
+	}
+	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: branch})
+	if err != nil {
+		return err
+	}
+	opts := &github.RepositoryContentFileOptions{
+		Committer: &github.CommitAuthor{Name: github.Ptr(commitAuthor.Name), Email: github.Ptr(commitAuthor.Email)},
+		Message:   github.Ptr(message),
+		Branch:    github.Ptr(branch),
+		SHA:       github.Ptr(file.GetSHA()),
+	}
+	_, _, err = c.client.Repositories.DeleteFile(ctx, repo.Owner, repo.Name, path, opts)
+	return err
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
