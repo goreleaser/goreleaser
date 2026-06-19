@@ -162,9 +162,9 @@ func (c *githubClient) DeleteFile(ctx *context.Context, commitAuthor config.Comm
 		return err
 	}
 	opts := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{Name: github.Ptr(commitAuthor.Name), Email: github.Ptr(commitAuthor.Email)},
-		Message:   github.Ptr(message),
-		Branch:    github.Ptr(branch),
+		Committer: &github.CommitAuthor{Name: &commitAuthor.Name, Email: &commitAuthor.Email},
+		Message:   &message,
+		Branch:    &branch,
 		SHA:       github.Ptr(file.GetSHA()),
 	}
 	_, _, err = c.client.Repositories.DeleteFile(ctx, repo.Owner, repo.Name, path, opts)

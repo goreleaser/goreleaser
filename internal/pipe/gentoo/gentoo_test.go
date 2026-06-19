@@ -9,13 +9,12 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDoRunMultiArch(t *testing.T) {
 	dist := t.TempDir()
-	ctx := testctx.WrapWithCfg(context.Background(), config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "foo",
 		Gentoos: []config.Gentoo{{
@@ -57,7 +56,7 @@ func TestDoRunWithFiles(t *testing.T) {
 	svc := "foo.service"
 	require.NoError(t, os.WriteFile(svc, []byte("svc"), 0o644))
 
-	ctx := testctx.WrapWithCfg(context.Background(), config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "foo",
 		Gentoos: []config.Gentoo{{
@@ -89,6 +88,6 @@ func TestDoRunWithFiles(t *testing.T) {
 }
 
 func TestDefaultRequiresBin(t *testing.T) {
-	ctx := testctx.WrapWithCfg(context.Background(), config.Project{Gentoos: []config.Gentoo{{}}}, testctx.WithVersion("1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Gentoos: []config.Gentoo{{}}}, testctx.WithVersion("1.0.0"))
 	require.Error(t, Pipe{}.Default(ctx))
 }
