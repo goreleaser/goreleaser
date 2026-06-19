@@ -319,7 +319,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 			if err != nil {
 				return err
 			}
-			err = fc.CreateFiles(ctx, author, repo, msg, g.files)
+			if err := fc.CreateFiles(ctx, author, repo, msg, g.files); err != nil {
+				return err
+			}
 		} else {
 			for _, f := range g.files {
 				if f.Delete {
