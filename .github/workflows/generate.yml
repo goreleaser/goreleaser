@@ -1,6 +1,9 @@
 name: generate
 on:
   workflow_dispatch: {}
+  release:
+    types:
+      - published
   schedule:
     - cron: "0 8 * * *"
 permissions: read-all
