@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser/v2
 go 1.26.3
 
 require (
-	charm.land/lipgloss/v2 v2.0.3
+	charm.land/lipgloss/v2 v2.0.4
 	code.gitea.io/sdk/gitea v0.25.1
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
@@ -15,14 +15,14 @@ require (
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-version v0.2.2
-	github.com/caarlos0/log v0.6.0
+	github.com/caarlos0/log v0.6.2
 	github.com/charmbracelet/fang v1.0.0
 	github.com/charmbracelet/keygen v0.5.4
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.1.1
-	github.com/google/go-containerregistry v0.21.6
+	github.com/google/go-containerregistry v0.21.7
 	github.com/google/go-github/v88 v88.0.0
 	github.com/google/ko v0.18.2-0.20260407063826-ae9c7272d7de
 	github.com/google/uuid v1.6.0
@@ -40,7 +40,7 @@ require (
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/slack-go/slack v0.25.0
+	github.com/slack-go/slack v0.26.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/ulikunitz/xz v0.5.15
@@ -182,7 +182,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.29 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.29 // indirect
 	github.com/aws/aws-sdk-go-v2/service/kms v1.50.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.103.3
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.19 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.3 // indirect
@@ -208,7 +208,7 @@ require (
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v29.4.3+incompatible // indirect
+	github.com/docker/cli v29.5.3+incompatible // indirect
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/docker-credential-helpers v0.9.5 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
