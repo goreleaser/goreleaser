@@ -160,7 +160,7 @@ npms:
 Initially, we are supporting the following platforms:
 
 - `linux`: `amd64` and `arm64`
-- `darwin`: `amd64` and `arm64`
+- `darwin`: `amd64`, `arm64`, and universal binaries (`all`)
 - `windows`: `amd64` and `arm64`
 
 And these archive formats:
