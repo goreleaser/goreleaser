@@ -529,6 +529,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		},
 	}
 
+	if format == termuxFormat {
+		// Termux architecture format is different from Debian packages
+		info.Deb.Arch = infoArch
+	}
+
 	if skips.Any(ctx, skips.Sign) {
 		info.APK.Signature = nfpm.APKSignature{}
 		info.RPM.Signature = nfpm.RPMSignature{}
