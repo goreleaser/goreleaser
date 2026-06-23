@@ -1991,9 +1991,7 @@ func TestTermuxArch(t *testing.T) {
 	dist := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
@@ -2017,9 +2015,7 @@ func TestTermuxArch(t *testing.T) {
 			Goos:   goos,
 			Goarch: "arm64",
 			Type:   artifact.Binary,
-			Extra: map[string]any{
-				artifact.ExtraID: "default",
-			},
+			Extra:  map[string]any{artifact.ExtraID: "default"},
 		})
 	}
 
