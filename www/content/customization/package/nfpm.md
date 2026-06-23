@@ -1,11 +1,16 @@
 ---
-title: "nFPM - Linux packages"
+title: "nFPM - Linux and Windows packages"
 linkTitle: nFPM
 weight: 30
 ---
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
-generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, and Archlinux packages.
+generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, Archlinux, and Windows
+`.msix` packages.
+
+Most of the options below are Linux oriented. The `msix` format packages
+**Windows** binaries instead — see [its section below](#a-note-about-msix) for
+how it differs.
 
 Available options:
 
@@ -79,6 +84,9 @@ nfpms:
       - rpm
       - termux.deb
       - archlinux
+      - ipk
+      # msix packages Windows binaries instead of Linux ones.
+      - msix
 
     # Umask to be used on files without explicit mode set. (overridable)
     #
@@ -114,6 +122,9 @@ nfpms:
       - fish
 
     # Path that the binaries should be installed.
+    #
+    # Ignored by the `msix` format, which always places binaries at the
+    # package root.
     #
     # Default: '/usr/bin'.
     bindir: /usr/bin
@@ -590,6 +601,107 @@ nfpms:
       # Default: none
       tags:
         - foo
+
+    # Custom configuration applied only to the MSIX packager.
+    #
+    # Experimental.
+    #
+    # MSIX packages Windows binaries. Note that, unlike the Linux formats,
+    # `bindir` does not apply: binaries are always placed at the root of the
+    # package, so the `executable` of each application below is simply the
+    # binary's file name.
+    #
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    msix:
+      # The publisher identity. Must match the subject of the signing
+      # certificate. Required.
+      #
+      # Templates: allowed.
+      publisher: "CN=MyCompany, O=MyCompany, C=US"
+
+      # Architecture in MSIX nomenclature (x64, x86, arm64, arm, neutral).
+      #
+      # Default: derived from the binary's GOARCH.
+      arch: x64
+
+      # Package identity.
+      identity:
+        # Resource identifier.
+        resource_id: MyApp
+
+      # Package properties.
+      properties:
+        # Display name shown to users.
+        #
+        # Default: the package name.
+        # Templates: allowed.
+        display_name: My App
+
+        # Publisher display name shown to users.
+        #
+        # Default: the package name.
+        # Templates: allowed.
+        publisher_display_name: My Company
+
+        # Path to the package logo. Required.
+        #
+        # Templates: allowed.
+        logo: ./assets/logo.png
+
+      # Applications declared in the package. At least one is required.
+      applications:
+        - # Application ID. Required.
+          id: MyApp
+
+          # Path to the executable inside the package. Required.
+          executable: myapp.exe
+
+          # Entry point.
+          #
+          # Default: 'Windows.FullTrustApplication'.
+          entry_point: Windows.FullTrustApplication
+
+          # Visual elements for this application.
+          visual_elements:
+            # Default: the package name.
+            display_name: My App
+            # Default: the package description.
+            description: Does great things.
+            # Default: 'transparent'.
+            background_color: transparent
+            # Default: the package logo.
+            square150x150_logo: ./assets/logo150.png
+            # Default: the package logo.
+            square44x44_logo: ./assets/logo44.png
+
+      # Target device families.
+      #
+      # Default: Windows.Desktop, 10.0.17763.0 to 10.0.22621.0.
+      dependencies:
+        target_device_families:
+          - name: Windows.Desktop
+            min_version: 10.0.17763.0
+            max_version_tested: 10.0.22621.0
+
+      # Declared capabilities.
+      capabilities:
+        capabilities:
+          - internetClient
+        device_capabilities:
+          - location
+        # 'runFullTrust' is added automatically for FullTrust applications.
+        restricted:
+          - runFullTrust
+
+      # Signing configuration.
+      signature:
+        # Path to a PFX certificate file used to sign the package.
+        #
+        # The passphrase is taken from the environment, see "Signing key
+        # passphrases" below (use the 'MSIX' format).
+        #
+        # Templates: allowed.
+        pfx_file: ./certs/signing.pfx
 ```
 
 {{< g_templates >}}
@@ -608,11 +720,52 @@ variables, in the following order of preference:
 
 Basically, it'll start from the most specific to the most generic.
 Also, `[ID]` is the uppercase `id` value, and `[FORMAT]` is the uppercase format
-(`deb`, `rpm`, etc).
+(`deb`, `rpm`, `msix`, etc).
 
 So, if your `nfpms.id` is `default`, then the deb-specific passphrase
 will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 `$NFPM_DEFAULT_PASSPHRASE`, and finally, `$NFPM_PASSPHRASE`.
+
+## A note about MSIX
+
+{{< g_version "v2.17-unreleased" >}}
+
+{{< g_experimental "https://github.com/goreleaser/goreleaser/issues/6519" >}}
+
+Unlike the other formats, `msix` packages **Windows** binaries, not Linux ones.
+When `msix` is one of the `formats`, GoReleaser feeds Windows binaries to the
+nfpm pipe; the Linux formats ignore those binaries, and `msix` ignores the
+non-Windows ones. This means a single `nfpms` entry can list both Linux formats
+and `msix` — each binary ends up only in the package that matches its platform.
+
+A few things differ from the Linux formats:
+
+- `msix.publisher` and `msix.properties.logo` are **required**, and at least one
+  `msix.applications` entry (with `id` and `executable`) must be provided.
+- `bindir` does not apply to `msix`: binaries are always placed at the root of
+  the package, so each application's `executable` is simply the binary's file
+  name (e.g. `myapp.exe`).
+- Symlinks are not supported and are skipped.
+- The version is converted to MSIX's four-part `Major.Minor.Build.Revision`
+  format; non-numeric parts default to `0`.
+- To sign the package, set `msix.signature.pfx_file` and provide the passphrase
+  via the environment (see [Signing key passphrases](#signing-key-passphrases),
+  using `MSIX` as the format).
+
+**Example mixing Linux and Windows packages:**
+
+```yaml {filename=".goreleaser.yaml"}
+nfpms:
+  - formats: [deb, rpm, msix]
+    bindir: /usr/bin
+    msix:
+      publisher: "CN=MyCompany"
+      properties:
+        logo: ./assets/logo.png
+      applications:
+        - id: MyApp
+          executable: myapp.exe
+```
 
 ## A note about Termux
 
