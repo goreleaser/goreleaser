@@ -33,15 +33,16 @@ type Fields map[string]any
 
 // Template fields names used in build targets and more.
 const (
-	KeyOS      = "Os"
-	KeyArch    = "Arch"
-	KeyAmd64   = "Amd64"
-	Key386     = "I386"
-	KeyArm     = "Arm"
-	KeyArm64   = "Arm64"
-	KeyMips    = "Mips"
-	KeyPpc64   = "Ppc64"
-	KeyRiscv64 = "Riscv64"
+	KeyOS       = "Os"
+	KeyArch     = "Arch"
+	KeyAmd64    = "Amd64"
+	Key386      = "I386"
+	KeyArm      = "Arm"
+	KeyArmFloat = "ArmFloat"
+	KeyArm64    = "Arm64"
+	KeyMips     = "Mips"
+	KeyPpc64    = "Ppc64"
+	KeyRiscv64  = "Riscv64"
 )
 
 // general keys.
@@ -203,6 +204,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 		KeyAmd64:     a.Goamd64,
 		Key386:       a.Go386,
 		KeyArm:       a.Goarm,
+		KeyArmFloat:  a.GoarmFloat,
 		KeyArm64:     a.Goarm64,
 		KeyMips:      a.Gomips,
 		KeyPpc64:     a.Goppc64,
@@ -229,15 +231,16 @@ func buildOptsToFields(opts build.Options) Fields {
 		// set them all to empty, which should prevent breaking templates.
 		// the .Fields() call will override whichever values are actually
 		// available.
-		KeyOS:      "",
-		KeyArch:    "",
-		KeyAmd64:   "",
-		Key386:     "",
-		KeyArm:     "",
-		KeyArm64:   "",
-		KeyMips:    "",
-		KeyPpc64:   "",
-		KeyRiscv64: "",
+		KeyOS:       "",
+		KeyArch:     "",
+		KeyAmd64:    "",
+		Key386:      "",
+		KeyArm:      "",
+		KeyArmFloat: "",
+		KeyArm64:    "",
+		KeyMips:     "",
+		KeyPpc64:    "",
+		KeyRiscv64:  "",
 	}
 	for k, v := range opts.Target.Fields() {
 		f[k] = v

@@ -88,7 +88,9 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		case "386":
 			t.Go386 = extra
 		case "arm":
-			t.Goarm = extra
+			version, float, _ := strings.Cut(extra, ",")
+			t.Goarm = version
+			t.GoarmFloat = float
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
 		case "ppc64":
@@ -484,19 +486,20 @@ func getHeaderArtifactForLibrary(build config.Build, t Target, fullPathWithoutEx
 	}
 
 	return &artifact.Artifact{
-		Type:      artifact.Header,
-		Path:      fullPath,
-		Name:      headerName,
-		Goos:      t.Goos,
-		Goarch:    t.Goarch,
-		Goamd64:   t.Goamd64,
-		Go386:     t.Go386,
-		Goarm:     t.Goarm,
-		Goarm64:   t.Goarm64,
-		Gomips:    t.Gomips,
-		Goppc64:   t.Goppc64,
-		Goriscv64: t.Goriscv64,
-		Target:    t.Target,
+		Type:       artifact.Header,
+		Path:       fullPath,
+		Name:       headerName,
+		Goos:       t.Goos,
+		Goarch:     t.Goarch,
+		Goamd64:    t.Goamd64,
+		Go386:      t.Go386,
+		Goarm:      t.Goarm,
+		GoarmFloat: t.GoarmFloat,
+		Goarm64:    t.Goarm64,
+		Gomips:     t.Gomips,
+		Goppc64:    t.Goppc64,
+		Goriscv64:  t.Goriscv64,
+		Target:     t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",
@@ -511,19 +514,20 @@ func getBinaryArtifact(
 	name, path, ext string,
 ) *artifact.Artifact {
 	return &artifact.Artifact{
-		Type:      artifactType(t, build.Buildmode),
-		Path:      path,
-		Name:      name,
-		Goos:      t.Goos,
-		Goarch:    t.Goarch,
-		Goamd64:   t.Goamd64,
-		Go386:     t.Go386,
-		Goarm:     t.Goarm,
-		Goarm64:   t.Goarm64,
-		Gomips:    t.Gomips,
-		Goppc64:   t.Goppc64,
-		Goriscv64: t.Goriscv64,
-		Target:    t.Target,
+		Type:       artifactType(t, build.Buildmode),
+		Path:       path,
+		Name:       name,
+		Goos:       t.Goos,
+		Goarch:     t.Goarch,
+		Goamd64:    t.Goamd64,
+		Go386:      t.Go386,
+		Goarm:      t.Goarm,
+		GoarmFloat: t.GoarmFloat,
+		Goarm64:    t.Goarm64,
+		Gomips:     t.Gomips,
+		Goppc64:    t.Goppc64,
+		Goriscv64:  t.Goriscv64,
+		Target:     t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(name), ext),
 			artifact.ExtraExt:     ext,
