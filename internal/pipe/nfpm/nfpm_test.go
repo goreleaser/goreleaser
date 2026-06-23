@@ -1,11 +1,17 @@
 package nfpm
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/blakesmith/ar"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -1979,6 +1985,106 @@ func TestTemplateExt(t *testing.T) {
 		"a_.termux.deb_b.termux.deb",
 		"a_.pkg.tar.zst_b.pkg.tar.zst",
 	}, names)
+}
+
+func TestTermuxArch(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				IDs:        []string{"default"},
+				Formats:    []string{"deb", "termux.deb"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+				},
+			},
+		},
+	})
+	for _, goos := range []string{"linux", "android"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goos:   goos,
+			Goarch: "arm64",
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID: "default",
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 2)
+
+	got := map[string]string{}
+	for _, pkg := range packages {
+		got[pkg.Format()] = debControlArch(t, pkg.Path)
+	}
+
+	// the same arm64 binary must keep Termux's expected `aarch64` arch on
+	// `termux.deb`, while being normalized to Debian's `arm64` on a regular
+	// `deb`. See https://github.com/goreleaser/nfpm/issues/1103.
+	require.Equal(t, map[string]string{
+		"deb":        "arm64",
+		"termux.deb": "aarch64",
+	}, got)
+}
+
+// debControlArch reads the Architecture field from the control file of the
+// given .deb (or .termux.deb) package.
+func debControlArch(tb testing.TB, path string) string {
+	tb.Helper()
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	defer f.Close()
+
+	reader := ar.NewReader(f)
+	for {
+		hdr, err := reader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(tb, err)
+		if strings.TrimRight(hdr.Name, "/ ") != "control.tar.gz" {
+			continue
+		}
+		gz, err := gzip.NewReader(reader)
+		require.NoError(tb, err)
+		defer gz.Close()
+		tr := tar.NewReader(gz)
+		for {
+			th, err := tr.Next()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			require.NoError(tb, err)
+			if filepath.Base(th.Name) != "control" {
+				continue
+			}
+			bts, err := io.ReadAll(tr)
+			require.NoError(tb, err)
+			for line := range strings.Lines(string(bts)) {
+				if arch, ok := strings.CutPrefix(line, "Architecture:"); ok {
+					return strings.TrimSpace(arch)
+				}
+			}
+		}
+	}
+	tb.Fatalf("Architecture field not found in %s control file", path)
+	return ""
 }
 
 func sources(contents files.Contents) []string {
