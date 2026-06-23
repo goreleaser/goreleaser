@@ -364,10 +364,10 @@ func TestToPlatform(t *testing.T) {
 		goarm    string
 		expected string
 	}{
-		{"softfloat v5", "5_softfloat", "linux/arm/v5"},
-		{"softfloat v6", "6_softfloat", "linux/arm/v6"},
-		{"hardfloat v6", "6_hardfloat", "linux/arm/v6"},
-		{"hardfloat v7", "7_hardfloat", "linux/arm/v7"},
+		{"softfloat v5", "5,softfloat", "linux/arm/v5"},
+		{"softfloat v6", "6,softfloat", "linux/arm/v6"},
+		{"hardfloat v6", "6,hardfloat", "linux/arm/v6"},
+		{"hardfloat v7", "7,hardfloat", "linux/arm/v7"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			plat, err := toPlatform(&artifact.Artifact{
