@@ -1,0 +1,2 @@
+FROM alpine:3.20 AS base
+FROM base AS final

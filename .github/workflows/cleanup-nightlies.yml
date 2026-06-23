@@ -1,0 +1,29 @@
+name: cleanup nightlies
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: github.repository == 'goreleaser/goreleaser'
+    steps:
+      - name: Delete old nightly releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          gh release -R goreleaser/goreleaser list \
+            --limit 100 \
+            --json tagName,isPrerelease,publishedAt \
+            --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-nightly"))) | {tagName, publishedAt}] | sort_by(.publishedAt) | reverse | .[5:][].tagName' |
+          while read -r tag; do
+            echo "Deleting $tag..."
+            gh release -R goreleaser/goreleaser delete "$tag" --cleanup-tag --yes
+          done

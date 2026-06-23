@@ -39,7 +39,8 @@ func TestNewReleaseClient(t *testing.T) {
 	t.Parallel()
 	t.Run("normal", func(t *testing.T) {
 		t.Parallel()
-		cli, err := NewReleaseClient(testctx.Wrap(t.Context(),
+		cli, err := NewReleaseClient(testctx.Wrap(
+			t.Context(),
 			testctx.WithTokenType(context.TokenTypeGitHub),
 		))
 		require.NoError(t, err)
@@ -48,7 +49,8 @@ func TestNewReleaseClient(t *testing.T) {
 
 	t.Run("bad tmpl", func(t *testing.T) {
 		t.Parallel()
-		_, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
+		_, err := NewReleaseClient(testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				Release: config.Release{
 					Disable: "{{ .Nope }}",
@@ -61,7 +63,8 @@ func TestNewReleaseClient(t *testing.T) {
 
 	t.Run("disabled", func(t *testing.T) {
 		t.Parallel()
-		cli, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
+		cli, err := NewReleaseClient(testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				Release: config.Release{
 					Disable: "true",

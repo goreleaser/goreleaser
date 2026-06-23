@@ -776,6 +776,7 @@
 							"zig",
 							"bun",
 							"deno",
+							"node",
 							"uv",
 							"poetry",
 							"prebuilt"
@@ -1233,7 +1234,13 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"src.rpm"
+							]
 						},
 						"type": "array"
 					},
@@ -1700,6 +1707,18 @@
 							}
 						]
 					},
+					"hooks": {
+						"$ref": "#/$defs/BuildHookConfig"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFileWithMode"
+						},
+						"type": "array"
+					},
+					"templated_dockerfile": {
+						"type": "string"
+					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
 					}
@@ -1941,7 +1960,13 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"src.rpm"
+							]
 						},
 						"type": "array"
 					},
@@ -4459,6 +4484,9 @@
 							"alejandra",
 							"nixfmt"
 						]
+					},
+					"main_program": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

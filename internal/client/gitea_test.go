@@ -184,7 +184,8 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 		func(ctx *context.Context) {
 			ctx.PreRelease = s.isPrerelease
 		},
-		testctx.WithSemver(6, 6, 6, ""))
+		testctx.WithSemver(6, 6, 6, ""),
+	)
 
 	s.releaseID = 666
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)

@@ -1,12 +1,17 @@
 package nfpm
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/blakesmith/ar"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -1991,6 +1996,237 @@ func TestTemplateExt(t *testing.T) {
 		"a_.termux.deb_b.termux.deb",
 		"a_.pkg.tar.zst_b.pkg.tar.zst",
 	}, names)
+}
+
+func TestTermuxArch(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				IDs:        []string{"default"},
+				Formats:    []string{"deb", "termux.deb"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+				},
+			},
+		},
+	})
+	for _, goos := range []string{"linux", "android"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goos:   goos,
+			Goarch: "arm64",
+			Type:   artifact.Binary,
+			Extra:  map[string]any{artifact.ExtraID: "default"},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 2)
+
+	got := map[string]string{}
+	for _, pkg := range packages {
+		got[pkg.Format()] = debControlArch(t, pkg.Path)
+	}
+
+	// the same arm64 binary must keep Termux's expected `aarch64` arch on
+	// `termux.deb`, while being normalized to Debian's `arm64` on a regular
+	// `deb`. See https://github.com/goreleaser/nfpm/issues/1103.
+	require.Equal(t, map[string]string{
+		"deb":        "arm64",
+		"termux.deb": "aarch64",
+	}, got)
+}
+
+// debControlArch reads the Architecture field from the control file of the
+// given .deb (or .termux.deb) package.
+func debControlArch(tb testing.TB, path string) string {
+	tb.Helper()
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	defer f.Close()
+
+	reader := ar.NewReader(f)
+	for {
+		hdr, err := reader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(tb, err)
+		if strings.TrimRight(hdr.Name, "/ ") != "control.tar.gz" {
+			continue
+		}
+		gz, err := gzip.NewReader(reader)
+		require.NoError(tb, err)
+		defer gz.Close()
+		tr := tar.NewReader(gz)
+		for {
+			th, err := tr.Next()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			require.NoError(tb, err)
+			if filepath.Base(th.Name) != "control" {
+				continue
+			}
+			bts, err := io.ReadAll(tr)
+			require.NoError(tb, err)
+			for line := range strings.Lines(string(bts)) {
+				if arch, ok := strings.CutPrefix(line, "Architecture:"); ok {
+					return strings.TrimSpace(arch)
+				}
+			}
+		}
+	}
+	tb.Fatalf("Architecture field not found in %s control file", path)
+	return ""
+}
+
+func TestRunPipeMSIX(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin.exe")
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+	logoPath := filepath.Join(dist, "logo.png")
+	require.NoError(t, os.WriteFile(logoPath, []byte("logo"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Env:         []string{"PUBLISHER=CN=Me"},
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Bindir:  "/usr/bin",
+				IDs:     []string{"foo"},
+				Formats: []string{"msix"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName:      "mybin",
+					FileNameTemplate: "{{.ConventionalFileName}}",
+					MSIX: config.NFPMMSIX{
+						Publisher: "{{ .Env.PUBLISHER }}",
+						Properties: config.NFPMMSIXProperties{
+							Logo: logoPath,
+						},
+						Applications: []config.NFPMMSIXApplication{
+							{ID: "App", Executable: "mybin.exe"},
+						},
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.2.3"), testctx.WithCurrentTag("v1.2.3"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin.exe",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "windows",
+		Type:   artifact.Binary,
+		Extra:  map[string]any{artifact.ExtraID: "foo"},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.MSIX)).List()
+	require.Len(t, packages, 1)
+	pkg := packages[0]
+	require.Equal(t, "mybin_1.2.3.0_x64.msix", pkg.Name)
+	require.Equal(t, "windows", pkg.Goos)
+	require.Equal(t, "msix", artifact.MustExtra[string](*pkg, artifact.ExtraFormat))
+	require.FileExists(t, pkg.Path)
+	// bindir is forced to "/" for msix, so the binary lands at the package
+	// root regardless of the configured bindir.
+	require.Equal(t, []string{"/mybin.exe"}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
+}
+
+// MSIX only packages Windows binaries, and the other (Linux) formats never
+// package Windows ones. A single config listing both should only emit the
+// matching package per platform.
+func TestRunPipeMSIXMixedFormats(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "win"), 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "linux"), 0o755))
+	winBin := filepath.Join(dist, "win", "mybin.exe")
+	linuxBin := filepath.Join(dist, "linux", "mybin")
+	require.NoError(t, os.WriteFile(winBin, []byte("binary"), 0o755))
+	require.NoError(t, os.WriteFile(linuxBin, []byte("binary"), 0o755))
+	logoPath := filepath.Join(dist, "logo.png")
+	require.NoError(t, os.WriteFile(logoPath, []byte("logo"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Bindir:     "/usr/bin",
+				IDs:        []string{"foo"},
+				Formats:    []string{"deb", "msix"},
+				Maintainer: "me@me",
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName:      "mybin",
+					FileNameTemplate: "{{.ConventionalFileName}}",
+					MSIX: config.NFPMMSIX{
+						Publisher: "CN=Me",
+						Properties: config.NFPMMSIXProperties{
+							Logo: logoPath,
+						},
+						Applications: []config.NFPMMSIXApplication{
+							{ID: "App", Executable: "mybin.exe"},
+						},
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.2.3"), testctx.WithCurrentTag("v1.2.3"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin.exe",
+		Path:   winBin,
+		Goarch: "amd64",
+		Goos:   "windows",
+		Type:   artifact.Binary,
+		Extra:  map[string]any{artifact.ExtraID: "foo"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   linuxBin,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra:  map[string]any{artifact.ExtraID: "foo"},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	// deb is tagged as a Linux package, msix gets its own artifact type.
+	debs := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, debs, 1)
+	require.Equal(t, "mybin_1.2.3_amd64.deb", debs[0].Name)
+
+	msixs := ctx.Artifacts.Filter(artifact.ByType(artifact.MSIX)).List()
+	require.Len(t, msixs, 1)
+	require.Equal(t, "mybin_1.2.3.0_x64.msix", msixs[0].Name)
+}
+
+func TestMSIXPassphraseFromEnv(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{}, testctx.WithEnv(map[string]string{
+		"NFPM_SOMEID_MSIX_PASSPHRASE": "secret",
+	}))
+	require.Equal(t, "secret", getPassphraseFromEnv(ctx, "MSIX", "someid"))
 }
 
 func sources(contents files.Contents) []string {

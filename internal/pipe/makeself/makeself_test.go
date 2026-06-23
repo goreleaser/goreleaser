@@ -114,7 +114,8 @@ func TestRun(t *testing.T) {
 			artifact.And(
 				artifact.ByType(artifact.Makeself),
 				artifact.ByID("simple"),
-			)).List()
+			),
+		).List()
 		require.Len(t, result, 4)
 
 		for _, m := range result {
@@ -158,7 +159,8 @@ func TestRun(t *testing.T) {
 			artifact.And(
 				artifact.ByType(artifact.Makeself),
 				artifact.ByID("complete"),
-			)).List()
+			),
+		).List()
 		require.Len(t, result, 1)
 
 		m := result[0]

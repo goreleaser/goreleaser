@@ -747,21 +747,22 @@ func testSign(
 	// verify that only the artifacts and the signatures are in the dist dir
 	gotFiles := []string{}
 
-	require.NoError(tb, filepath.Walk(tmpdir,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
+	require.NoError(
+		tb, filepath.Walk(tmpdir,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() {
+					return nil
+				}
+				relPath, err := filepath.Rel(tmpdir, path)
+				if err != nil {
+					return err
+				}
+				gotFiles = append(gotFiles, relPath)
 				return nil
-			}
-			relPath, err := filepath.Rel(tmpdir, path)
-			if err != nil {
-				return err
-			}
-			gotFiles = append(gotFiles, relPath)
-			return nil
-		}),
+			}),
 	)
 
 	wantFiles := append(artifacts, signaturePaths...)

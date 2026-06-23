@@ -68,6 +68,32 @@ func TestCheckGoMod(t *testing.T) {
 
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
+	t.Run("unreadable go mod", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		// Create a directory named "go.mod" so ReadFile fails with a
+		// non-ErrNotExist error.
+		require.NoError(t, os.Mkdir(filepath.Join(dir, "go.mod"), 0o755))
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.Error(t, CheckGoModPipe{}.Run(ctx))
+	})
 	t.Run("replace", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")

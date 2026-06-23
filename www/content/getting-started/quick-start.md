@@ -36,6 +36,23 @@ cargo init --bin
 ```
 
 {{< /tab >}}
+{{< tab name="Node.js" icon="node" >}}
+
+Initialize your project with:
+
+```sh
+npm init -y
+npm pkg set engines.node=">=25.5 <26"
+npm install
+```
+
+Then create an `index.js` file:
+
+```js {filename="index.js"}
+console.log("Ba dum, tss!");
+```
+
+{{< /tab >}}
 {{< tab name="Zig" icon="zig" >}}
 
 Initialize your project with:
@@ -89,7 +106,7 @@ Run the init command to create an example `.goreleaser.yaml` file:
 goreleaser init
 ```
 
-Now, lets run a "local-only" release to see if it works using the release command:
+Now, let's run a "local-only" release to see if it works using the release command:
 
 ```sh
 goreleaser release --snapshot --clean
@@ -121,6 +138,14 @@ It will default to your current `GOOS`/`GOARCH`.
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
+  goreleaser build --single-target
+```
+
+{{< /tab >}}
+{{< tab name="Node.js" icon="node" >}}
+
+```sh
+TARGET="linux-arm64" \
   goreleaser build --single-target
 ```
 

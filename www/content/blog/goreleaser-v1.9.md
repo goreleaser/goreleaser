@@ -35,4 +35,4 @@ You can see the full changelog [here](https://github.com/goreleaser/goreleaser/
 - Still no community meeting, sorry 🫠. [Link](https://github.com/goreleaser/community/pull/2).
 - We hit 10k stars on our [main repository](https://github.com/goreleaser/goreleaser)!
 - GoReleaser now has ~10.1k stars and 277 contributors! Thanks, everyone!
-- Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+- Our Discord server is getting new members almost daily. [Join and chat with us](https://goreleaser.com/discord)!

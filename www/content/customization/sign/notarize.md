@@ -362,7 +362,7 @@ jobs:
 
 ## How it works
 
-To make the behavior of this featur a bit clearer, this is the order in which
+To make the behavior of this feature a bit clearer, this is the order in which
 the relevant steps are executed:
 
 ### Cross-platform

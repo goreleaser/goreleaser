@@ -131,6 +131,9 @@ stdenvNoCC.mkDerivation {
     {{- with .License }}
     license = lib.licenses.{{ . }};
     {{- end }}
+    {{- with .MainProgram }}
+    mainProgram = "{{ . }}";
+    {{- end }}
 
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
 

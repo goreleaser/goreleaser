@@ -38,7 +38,7 @@ archives:
     # - `tzst` {{< g_inline_version "v2.1" >}}
     # - `tar`
     # - `gz`
-    # - `xz` {{< g_inline_version "v2.16-unreleased" >}}
+    # - `xz` {{< g_inline_version "v2.16" >}}
     # - `zip`
     # - `binary`
     #
@@ -103,7 +103,7 @@ archives:
         # - `tzst` # {{< g_inline_version "v2.1" >}}
         # - `tar`
         # - `gz`
-        # - `xz` {{< g_inline_version "v2.16-unreleased" >}}
+        # - `xz` {{< g_inline_version "v2.16" >}}
         # - `zip`
         # - `binary` # be extra-cautious with the file name template in this case!
         # - `none`   # skips this archive

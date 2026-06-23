@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -39,8 +39,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("good urls ending with /", func(t *testing.T) {
@@ -55,8 +55,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestNewGitHubClient(t *testing.T) {
 		})
 		_, err := newGitHub(ctx, ctx.Token)
 
-		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
+		require.EqualError(t, err, `invalid base url: invalid url: parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestNewGitHubClient(t *testing.T) {
 		})
 		_, err := newGitHub(ctx, ctx.Token)
 
-		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
+		require.EqualError(t, err, `invalid upload url: invalid url: parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
 
 	t.Run("template", func(t *testing.T) {
@@ -101,8 +101,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL())
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
@@ -918,6 +918,54 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 	require.Contains(t, err.Error(), "sha must be provided")
 }
 
+func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
+	t.Parallel()
+	var compareCalls atomic.Int32
+	reset := time.Now().UTC().Add(time.Hour)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch r.URL.Path {
+		case "/api/v3/rate_limit":
+			w.WriteHeader(http.StatusOK)
+			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
+			fmt.Fprintf(w, `{"resources":{"core":{"remaining":5000,"reset":%s}}}`, string(resetstr))
+		case "/api/v3/repos/owner/repo/compare/v1...v2":
+			if compareCalls.Add(1) == 1 {
+				// Simulate the argo-cd failure: go-github maps a 403 with this
+				// documentation_url to *AbuseRateLimitError. Retry-After is in
+				// seconds; the SDK then short-circuits any request made before
+				// that window elapses, so MaxDelay below has to exceed it.
+				w.Header().Set("Retry-After", "1")
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprint(w, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+			http.Error(w, "unexpected", http.StatusTeapot)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{API: srv.URL},
+		Retry: config.Retry{
+			Attempts: 3,
+			Delay:    10 * time.Millisecond,
+			MaxDelay: 2 * time.Second, // must exceed the 1s Retry-After window
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+	require.NoError(t, err)
+	require.Empty(t, items)
+	require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
+}
+
 func TestGitHubCheckRateLimit(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
@@ -974,7 +1022,8 @@ func TestGitHubCreateRelease(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1031,7 +1080,8 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1083,7 +1133,8 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1133,7 +1184,8 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -1270,96 +1322,42 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 }
 
 func TestGitHubAuthorsLookup(t *testing.T) {
-	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-
-		if r.URL.Path == "/api/v3/search/users" {
-			q := r.URL.Query().Get("q")
-			switch q {
-			case "single@example.com", "cached@example.com":
-				fmt.Fprint(w, `{"total_count": 1, "items": [{"login": "singleuser"}]}`)
-			case "multiple@example.com":
-				fmt.Fprint(w, `{"total_count": 2, "items": [{"login": "user1"}, {"login": "user2"}]}`)
-			case "error@example.com":
-				w.WriteHeader(http.StatusInternalServerError)
-			default:
-				fmt.Fprint(w, `{"total_count": 0, "items": []}`)
-			}
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-	})
-
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitHubURLs: config.GitHubURLs{
-			API: srv.URL,
-		},
 		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
-	cache := map[string]string{}
 
 	t.Run("noreply email without numeric id", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Foo Bar", Email: "foobar@users.noreply.github.com"},
-		}, cache)
+		})
 		require.Equal(t, "foobar", result[0].Username)
 	})
 
 	t.Run("noreply email with numeric id", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Foo Bar", Email: "12345+foobar@users.noreply.github.com"},
-		}, cache)
+		})
 		require.Equal(t, "foobar", result[0].Username)
 	})
 
-	t.Run("api lookup single result", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Single User", Email: "single@example.com"},
-		}, cache)
-		require.Equal(t, "singleuser", result[0].Username)
-	})
-
-	t.Run("api lookup cache", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Cached User", Email: "cached@example.com"},
-			{Name: "Cached User 2", Email: "cached@example.com"},
-		}, cache)
-		require.Equal(t, "singleuser", result[0].Username)
-		require.Equal(t, "singleuser", result[1].Username)
-	})
-
-	t.Run("api lookup no results", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Unknown User", Email: "unknown@example.com"},
-		}, cache)
-		require.Empty(t, result[0].Username)
-	})
-
-	t.Run("api lookup multiple results", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Ambiguous User", Email: "multiple@example.com"},
-		}, cache)
-		require.Empty(t, result[0].Username)
-	})
-
-	t.Run("api lookup error", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
-			{Name: "Error User", Email: "error@example.com"},
-		}, cache)
+	t.Run("non-noreply email is left alone", func(t *testing.T) {
+		result := client.authorsLookup([]Author{
+			{Name: "Some User", Email: "someone@example.com"},
+		})
 		require.Empty(t, result[0].Username)
 	})
 
 	t.Run("mixed authors", func(t *testing.T) {
-		result := client.authorsLookup(ctx, []Author{
+		result := client.authorsLookup([]Author{
 			{Name: "Noreply User", Email: "noreplyuser@users.noreply.github.com"},
 			{Name: "Noreply Plus", Email: "999+noreplyplus@users.noreply.github.com"},
-			{Name: "Single User", Email: "single@example.com"},
-		}, cache)
+			{Name: "Regular User", Email: "regular@example.com"},
+		})
 		require.Equal(t, "noreplyuser", result[0].Username)
 		require.Equal(t, "noreplyplus", result[1].Username)
-		require.Equal(t, "singleuser", result[2].Username)
+		require.Empty(t, result[2].Username)
 	})
 }
 
@@ -1549,6 +1547,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"main","message":"Successfully fetched"}`)
@@ -1561,7 +1564,8 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
@@ -1572,6 +1576,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
 				w.WriteHeader(http.StatusUnprocessableEntity)
 				fmt.Fprint(w, `{"message":"merge conflict"}`)
@@ -1584,7 +1593,8 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
@@ -1595,6 +1605,11 @@ func TestGitHubSyncFork(t *testing.T) {
 		t.Parallel()
 		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":true}`)
+				return
+			}
 			if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, `{"default_branch":"develop"}`)
@@ -1612,9 +1627,62 @@ func TestGitHubSyncFork(t *testing.T) {
 		})
 		client, err := newGitHub(ctx, "test-token")
 		require.NoError(t, err)
-		err = client.SyncFork(ctx,
+		err = client.SyncFork(
+			ctx,
 			Repo{Owner: "headowner", Name: "headname"},
 			Repo{Owner: "baseowner", Name: "basename"},
+		)
+		require.NoError(t, err)
+	})
+
+	t.Run("skips merge-upstream when target is not a fork", func(t *testing.T) {
+		t.Parallel()
+		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"fork":false}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(
+			ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
+		)
+		require.NoError(t, err)
+	})
+
+	t.Run("falls through when fork precheck errors", func(t *testing.T) {
+		t.Parallel()
+		srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"main","message":"Successfully fetched"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(
+			ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
 		)
 		require.NoError(t, err)
 	})
@@ -1849,7 +1917,8 @@ func TestGitHubOpenPullRequestDefaultBranchError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(ctx,
+	err = client.OpenPullRequest(
+		ctx,
 		Repo{Owner: "someone", Name: "something"},
 		Repo{Branch: "foo"},
 		"some title", false,
@@ -1881,7 +1950,8 @@ func TestGitHubOpenPullRequest422(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(ctx,
+	err = client.OpenPullRequest(
+		ctx,
 		Repo{Owner: "someone", Name: "something", Branch: "main"},
 		Repo{Branch: "foo"},
 		"some title", false,
@@ -1893,6 +1963,11 @@ func TestGitHubSyncForkDefaultBranchError(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/repos/headowner/headname" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"fork":true}`)
+			return
+		}
 		if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -1908,7 +1983,8 @@ func TestGitHubSyncForkDefaultBranchError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.SyncFork(ctx,
+	err = client.SyncFork(
+		ctx,
 		Repo{Owner: "headowner", Name: "headname"},
 		Repo{Owner: "baseowner", Name: "basename"},
 	)
@@ -2074,7 +2150,8 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -2103,7 +2180,8 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 
 func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
 	t.Parallel()
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			Release: config.Release{
 				NameTemplate:    "v1.0.0",
@@ -2142,7 +2220,8 @@ func TestGitHubCreateReleaseCreateError(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,
@@ -2185,7 +2264,8 @@ func TestGitHubCreateOrUpdateReleaseUpdate(t *testing.T) {
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
 
-	ctx := testctx.WrapWithCfg(t.Context(),
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL,

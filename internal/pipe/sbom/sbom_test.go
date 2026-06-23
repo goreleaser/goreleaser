@@ -686,21 +686,22 @@ func testSBOMCataloging(
 	// verify that only the artifacts and the sboms are in the dist dir
 	gotFiles := []string{}
 
-	require.NoError(tb, filepath.Walk(tmpdir,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
+	require.NoError(
+		tb, filepath.Walk(tmpdir,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() {
+					return nil
+				}
+				relPath, err := filepath.Rel(filepath.FromSlash(tmpdir), filepath.FromSlash(path))
+				if err != nil {
+					return err
+				}
+				gotFiles = append(gotFiles, filepath.ToSlash(relPath))
 				return nil
-			}
-			relPath, err := filepath.Rel(filepath.FromSlash(tmpdir), filepath.FromSlash(path))
-			if err != nil {
-				return err
-			}
-			gotFiles = append(gotFiles, filepath.ToSlash(relPath))
-			return nil
-		}),
+			}),
 	)
 
 	wantFiles := append(artifacts, sbomPaths...)

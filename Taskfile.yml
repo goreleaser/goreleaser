@@ -99,6 +99,13 @@ tasks:
     generates:
       - ./internal/pipe/nix/licenses.go
 
+  nodedist:releases:generate:
+    desc: Refresh internal/nodedist/releases.json
+    cmds:
+      - ./scripts/gen-node-releases.sh
+    generates:
+      - ./internal/nodedist/releases.json
+
   schema:generate:
     desc: Generate JSONSchema
     cmds:
@@ -136,7 +143,6 @@ tasks:
   docs:sponsors:
     desc: Update OpenCollective and GitHub sponsors list
     cmds:
-      - which sponsors || go install github.com/goreleaser/sponsors@main
       - sponsors generate --config gh://goreleaser/.github/sponsors.yml sponsors.json
       - sponsors apply sponsors.json gh://goreleaser/.github/sponsors.tpl.md ./README.md
       - sponsors apply sponsors.json ./.github/templates/sponsors.tpl.md ./www/content/sponsors.md

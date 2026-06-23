@@ -222,6 +222,39 @@ func TestHTTPError(t *testing.T) {
 	t.Run("plain error not retriable", func(t *testing.T) {
 		require.False(t, IsRetriable(errors.New("something")))
 	})
+	t.Run("403 with RetryAfter is retriable", func(t *testing.T) {
+		err := HTTPError{
+			Err:        errors.New("secondary rate limit"),
+			Status:     http.StatusForbidden,
+			RetryAfter: 5 * time.Second,
+		}
+		require.True(t, IsRetriable(err))
+	})
+	t.Run("403 without RetryAfter not retriable", func(t *testing.T) {
+		err := HTTP(errors.New("forbidden"), &http.Response{StatusCode: http.StatusForbidden})
+		require.False(t, IsRetriable(err))
+	})
+}
+
+func TestDoHonorsRetryAfter(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		var calls atomic.Int32
+		start := time.Now()
+		err := Do(t.Context(), retryConfig(2), func() error {
+			if calls.Add(1) == 1 {
+				return HTTPError{
+					Err:        errors.New("secondary rate limit"),
+					Status:     http.StatusForbidden,
+					RetryAfter: 30 * time.Second,
+				}
+			}
+			return nil
+		}, IsRetriable)
+		require.NoError(t, err)
+		require.Equal(t, int32(2), calls.Load())
+		// Delay base in retryConfig is 10s; RetryAfter (30s) must take precedence.
+		require.GreaterOrEqual(t, time.Since(start), 30*time.Second)
+	})
 }
 
 func TestRetriable(t *testing.T) {

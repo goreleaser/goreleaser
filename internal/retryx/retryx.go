@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	retry "github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
@@ -14,9 +15,13 @@ import (
 )
 
 // HTTPError carries an HTTP status code alongside the original error.
+// RetryAfter, when non-zero, is a server-suggested wait duration (e.g. from a
+// rate-limit response). Errors that carry one are always retriable, and the
+// retry loop honors the duration before the next attempt.
 type HTTPError struct {
-	Err    error
-	Status int
+	Err        error
+	Status     int
+	RetryAfter time.Duration
 }
 
 func (e HTTPError) Error() string { return e.Err.Error() }
@@ -57,7 +62,9 @@ func IsRetriable(err error) bool {
 		return true
 	}
 	if he, ok := errors.AsType[HTTPError](err); ok {
-		return he.Status >= 500 || he.Status == http.StatusTooManyRequests
+		return he.RetryAfter > 0 ||
+			he.Status >= 500 ||
+			he.Status == http.StatusTooManyRequests
 	}
 	return false
 }
@@ -77,7 +84,7 @@ func opts(ctx context.Context, c config.Retry, retryIf func(error) bool) []retry
 	opts := []retry.Option{
 		retry.Context(ctx),
 		retry.Attempts(max(c.Attempts, 1)),
-		retry.DelayType(retry.BackOffDelay),
+		retry.DelayType(delay),
 		retry.Delay(c.Delay),
 		retry.MaxDelay(c.MaxDelay),
 		retry.LastErrorOnly(true),
@@ -89,6 +96,16 @@ func opts(ctx context.Context, c config.Retry, retryIf func(error) bool) []retry
 		opts = append(opts, retry.RetryIf(retryIf))
 	}
 	return opts
+}
+
+// delay honors a server-suggested RetryAfter when the error carries one,
+// otherwise falls back to exponential backoff. retry-go applies MaxDelay on top
+// of whatever this returns.
+func delay(n uint, err error, c *retry.Config) time.Duration {
+	if he, ok := errors.AsType[HTTPError](err); ok && he.RetryAfter > 0 {
+		return he.RetryAfter
+	}
+	return retry.BackOffDelay(n, err, c)
 }
 
 // IsNetworkError returns true if the error looks like a transient network error.

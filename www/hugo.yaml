@@ -126,9 +126,9 @@ params:
     enable: true
     base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
   banner:
-    key: "announcement-v2.15"
+    key: "announcement-v2.16"
     message: |
-      🎉 [GoReleaser v2.15 is out!](/blog/goreleaser-v2.15) with Flatpak, SRPM, and more!
+      🎉 [GoReleaser v2.16 is out!](/blog/goreleaser-v2.16) with Immutable releases, Node.js builds, and more!
 
 permalinks:
   page:

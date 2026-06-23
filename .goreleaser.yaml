@@ -1,6 +1,7 @@
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
 # vim: set ts=2 sw=2 tw=0 fo=jcroql
 version: 2
+pro: true
 
 env:
   - GO111MODULE=on
@@ -21,7 +22,7 @@ report_sizes: true
 git:
   ignore_tags:
     - nightly
-    - "{{ if not .IsNightly }}*-nightly{{ end }}"
+    - "*-nightly"
 
 metadata:
   mod_timestamp: "{{ .CommitTimestamp }}"
@@ -76,7 +77,8 @@ checksum:
 changelog:
   sort: asc
   use: github
-  format: "{{ .SHA }}: {{ .Message }}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
+  format: '{{ .SHA }}: {{ .Message }}{{ if and (not .IsNightly) .Logins }} ({{ .Logins | listExclude "^@Copilot$" | englishJoin }}){{ end }}'
+
   filters:
     exclude:
       - "^test:"
@@ -126,17 +128,18 @@ dockers_v2:
       - scripts/entrypoint.sh
     labels:
       "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      "io.artifacthub.package.logo-url": "https://goreleaser.com/static/avatar.png"
+      "io.artifacthub.package.logo-url": "https://goreleaser.com/favicon.svg"
       "io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
       "io.artifacthub.package.license": "MIT"
+    annotations:
       "org.opencontainers.image.description": "Release engineering, simplified"
       "org.opencontainers.image.created": "{{.Date}}"
       "org.opencontainers.image.name": "{{.ProjectName}}"
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
-    annotations:
-      "org.opencontainers.image.description": "Release engineering, simplified"
+      "org.opencontainers.image.base.name": "{{.BaseImage}}"
+      "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
 archives:
   - name_template: >-
@@ -263,6 +266,25 @@ scoops:
     description: Release engineering, simplified
     license: MIT
 
+npms:
+  - name: "@goreleaser/goreleaser"
+    repository: "git+https://github.com/goreleaser/goreleaser.git"
+    bugs: https://github.com/goreleaser/goreleaser/issues
+    description: Release engineering, simplified
+    homepage: https://goreleaser.com
+    license: MIT
+    author: "Carlos Alexandro Becker <carlos@becker.software>"
+    access: public
+    keywords:
+      - release
+      - golang
+      - go
+      - rust
+      - zig
+      - bun
+      - deno
+      - docker
+
 nfpms:
   - file_name_template: "{{ .ConventionalFileName }}"
     id: packages
@@ -366,19 +388,30 @@ docker_signs:
       - "${artifact}@${digest}"
       - --yes
 
+gemfury:
+  - account: goreleaser
+    disable: "{{ .IsNightly }}"
+
 milestones:
   - close: true
+
+nightly:
+  publish_release: true
+  tag_name: "{{ incminor .Tag }}-{{ .ShortCommit }}-nightly"
+  version_template: "{{ incminor .Version }}-{{ .ShortCommit }}-nightly"
 
 release:
   name_template: "{{ .Tag }}"
   prerelease: auto
   header: |
+    {{ if not .IsNightly }}
     ## Announcement
 
     Read the official announcement: [Announcing GoReleaser v{{.Major}}.{{.Minor}}](https://goreleaser.com/blog/goreleaser-v{{.Major}}.{{.Minor}}/).
+    {{ end }}
 
   footer: |
-    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     {{ if not .IsNightly }}
     ## Helping out

@@ -647,6 +647,7 @@
 							"zig",
 							"bun",
 							"deno",
+							"node",
 							"uv",
 							"poetry"
 						]
@@ -1341,6 +1342,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"hooks": {
+						"$ref": "#/$defs/BuildHookConfig"
 					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
@@ -2917,6 +2921,9 @@
 					"ipk": {
 						"$ref": "#/$defs/NFPMIPK"
 					},
+					"msix": {
+						"$ref": "#/$defs/NFPMMSIX"
+					},
 					"overrides": {
 						"additionalProperties": {
 							"$ref": "#/$defs/NFPMOverridables"
@@ -2941,7 +2948,8 @@
 								"rpm",
 								"termux.deb",
 								"archlinux",
-								"ipk"
+								"ipk",
+								"msix"
 							]
 						},
 						"type": "array"
@@ -3270,6 +3278,171 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"NFPMMSIX": {
+				"properties": {
+					"arch": {
+						"type": "string"
+					},
+					"publisher": {
+						"type": "string"
+					},
+					"identity": {
+						"$ref": "#/$defs/NFPMMSIXIdentity"
+					},
+					"properties": {
+						"$ref": "#/$defs/NFPMMSIXProperties"
+					},
+					"applications": {
+						"items": {
+							"$ref": "#/$defs/NFPMMSIXApplication"
+						},
+						"type": "array"
+					},
+					"dependencies": {
+						"$ref": "#/$defs/NFPMMSIXDependencies"
+					},
+					"capabilities": {
+						"$ref": "#/$defs/NFPMMSIXCapabilities"
+					},
+					"signature": {
+						"$ref": "#/$defs/NFPMMSIXSignature"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXApplication": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"executable": {
+						"type": "string"
+					},
+					"entry_point": {
+						"type": "string"
+					},
+					"visual_elements": {
+						"$ref": "#/$defs/NFPMMSIXVisualElements"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"id",
+					"executable"
+				]
+			},
+			"NFPMMSIXCapabilities": {
+				"properties": {
+					"capabilities": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"device_capabilities": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"restricted": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXDependencies": {
+				"properties": {
+					"target_device_families": {
+						"items": {
+							"$ref": "#/$defs/NFPMMSIXTargetDeviceFamily"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXIdentity": {
+				"properties": {
+					"resource_id": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXProperties": {
+				"properties": {
+					"display_name": {
+						"type": "string"
+					},
+					"publisher_display_name": {
+						"type": "string"
+					},
+					"logo": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXSignature": {
+				"properties": {
+					"pfx_file": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMMSIXTargetDeviceFamily": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"min_version": {
+						"type": "string"
+					},
+					"max_version_tested": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"min_version",
+					"max_version_tested"
+				]
+			},
+			"NFPMMSIXVisualElements": {
+				"properties": {
+					"display_name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"background_color": {
+						"type": "string"
+					},
+					"square150x150_logo": {
+						"type": "string"
+					},
+					"square44x44_logo": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"NFPMOverridables": {
 				"properties": {
 					"file_name_template": {
@@ -3359,6 +3532,9 @@
 					},
 					"ipk": {
 						"$ref": "#/$defs/NFPMIPK"
+					},
+					"msix": {
+						"$ref": "#/$defs/NFPMMSIX"
 					}
 				},
 				"additionalProperties": false,
@@ -3505,6 +3681,9 @@
 							"alejandra",
 							"nixfmt"
 						]
+					},
+					"main_program": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

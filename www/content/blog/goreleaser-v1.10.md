@@ -35,7 +35,7 @@ Fun fact: it is actually winter now here in Brazil. Regardless, this release is 
 ### Other news
 
 - GoReleaser now has ~10.3k stars and 285 contributors! Thanks, everyone!
-- Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
+- Our Discord server is getting new members almost daily. [Join and chat with us](https://goreleaser.com/discord)!
 - Check out a preview of the split release phases feature:
 
 {{< youtube "G0MF0R_LD1g" >}}

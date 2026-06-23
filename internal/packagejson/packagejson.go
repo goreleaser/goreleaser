@@ -7,9 +7,11 @@ import (
 )
 
 type Package struct {
-	Name   string `json:"name"`
-	Module string `json:"module"`
-	Type   string `json:"type"`
+	Name    string            `json:"name"`
+	Module  string            `json:"module"`
+	Type    string            `json:"type"`
+	Engines map[string]string `json:"engines"`
+	Scripts map[string]string `json:"scripts"`
 
 	DevDependencies map[string]string `json:"devDependencies"` //nolint:tagliatelle
 }

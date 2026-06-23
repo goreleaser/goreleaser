@@ -71,6 +71,7 @@ type Pipe struct{}
 func (Pipe) String() string                         { return "flatpak packages" }
 func (Pipe) ContinueOnError() bool                  { return true }
 func (Pipe) Dependencies(*context.Context) []string { return []string{"flatpak-builder", "flatpak"} }
+
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Flatpak) || len(ctx.Config.Flatpaks) == 0
 }

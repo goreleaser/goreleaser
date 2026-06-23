@@ -2,6 +2,12 @@
 	"name": "example",
 	"module": "index.ts",
 	"type": "module",
+	"engines": {
+		"node": ">=22.20.0"
+	},
+	"scripts": {
+		"build": "esbuild src/index.ts"
+	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},

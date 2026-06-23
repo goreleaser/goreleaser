@@ -1,0 +1,2 @@
+ARG VER
+FROM alpine:${VER:-3.20}

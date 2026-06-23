@@ -3,6 +3,7 @@ package docker
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -71,24 +73,11 @@ func TestDefault(t *testing.T) {
 
 func TestMakeContext(t *testing.T) {
 	t.Run("no dockerfile", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{}, nil)
-		testlib.AssertSkipped(t, err)
-	})
-	t.Run("dockerfile tmpl error", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{.Nope}}",
-		}, nil)
-		testlib.RequireTemplateError(t, err)
-	})
-	t.Run("dockerfile template evaluates to empty", func(t *testing.T) {
-		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "{{ if .IsSnapshot }}Dockerfile{{ end }}",
-		}, nil)
+		_, err := makeContext(config.DockerV2{}, nil, "  ")
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
-		dir, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
-			Dockerfile: "./testdata/Dockerfile",
+		dir, err := makeContext(config.DockerV2{
 			ExtraFiles: []string{"./testdata/foo.conf"},
 		}, []*artifact.Artifact{
 			{
@@ -104,7 +93,7 @@ func TestMakeContext(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "amd64",
 			},
-		})
+		}, "./testdata/Dockerfile")
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			_ = os.RemoveAll(dir)
@@ -144,6 +133,7 @@ func TestPublishExtraArgs(t *testing.T) {
 func TestMakeArgs(t *testing.T) {
 	t.Run("tmpl error", func(t *testing.T) {
 		for name, mod := range map[string]func(d *config.DockerV2){
+			"dockerfile":  func(d *config.DockerV2) { d.Dockerfile = "{{.Nope}}" },
 			"images":      func(d *config.DockerV2) { d.Images = []string{"{{.Nope}}"} },
 			"tags":        func(d *config.DockerV2) { d.Tags = []string{"{{.Nope}}"} },
 			"labels":      func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
@@ -159,33 +149,42 @@ func TestMakeArgs(t *testing.T) {
 					Tags:       []string{"latest", "v{{.Version}}"},
 				}
 				mod(&d)
-				_, _, err := makeArgs(ctx, d, nil)
+				_, err := makeArgs(ctx, d, nil)
 				testlib.RequireTemplateError(t, err)
 			})
 		}
 	})
 	t.Run("no images", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 		}, nil)
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no tags", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 			Images:     []string{"ghcr.io/foo/bar"},
 		}, nil)
 		require.Error(t, err)
 	})
+	t.Run("no dockerfile", func(t *testing.T) {
+		da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+			Images: []string{"ghcr.io/foo/bar"},
+			Tags:   []string{"latest"},
+		}, nil)
+		require.NoError(t, err)
+		require.Empty(t, da.dockerfile)
+	})
 	t.Run("simple", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(),
+		ctx := testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				ProjectName: "dockerv2",
 			},
 			testctx.WithEnv(map[string]string{"FOO": "bar"}),
 			testctx.WithDate(time.Date(2025, 8, 19, 0, 0, 0, 0, time.UTC)),
 		)
-		args, images, err := makeArgs(ctx, config.DockerV2{
+		da, err := makeArgs(ctx, config.DockerV2{
 			ID:         "test",
 			IDs:        []string{"test"},
 			Dockerfile: "{{.Env.FOO}}.dockerfile",
@@ -232,7 +231,7 @@ func TestMakeArgs(t *testing.T) {
 				"--ulimit=1000",
 				".",
 			},
-			args,
+			da.args,
 		)
 		require.Equal(
 			t,
@@ -242,7 +241,7 @@ func TestMakeArgs(t *testing.T) {
 				"ghcr.io/foo/bar:latest",
 				"ghcr.io/foo/bar:v",
 			},
-			images,
+			da.images,
 		)
 	})
 }
@@ -451,4 +450,98 @@ func TestTagSuffix(t *testing.T) {
 func TestIsDriverValid(t *testing.T) {
 	require.True(t, isDriverValid("docker-container"))
 	require.False(t, isDriverValid("other"))
+}
+
+func TestRunHook(t *testing.T) {
+	fields := tmpl.Fields{
+		keyImages:     []string{"foo/bar:v1", "foo/bar:latest"},
+		keyDockerfile: "/path/to/Dockerfile",
+		keyDigest:     "sha256:deadbeef",
+		keyContextDir: "/tmp/goreleaserdocker123",
+	}
+
+	t.Run("no hooks", func(t *testing.T) {
+		require.NoError(t, runHook(testctx.Wrap(t.Context()), fields, nil))
+	})
+
+	t.Run("simple", func(t *testing.T) {
+		dir := t.TempDir()
+		marker := filepath.Join(dir, "marker")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: testlib.Touch(marker)},
+		}))
+		require.FileExists(t, marker)
+	})
+
+	t.Run("with extra fields", func(t *testing.T) {
+		dir := t.TempDir()
+		out := filepath.Join(dir, "out")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd:    testlib.ShC(`echo "{{.Dockerfile}} {{.Digest}} {{.ContextDir}} {{range .Images}}{{.}} {{end}}" > ` + out),
+				Output: true,
+			},
+		}))
+		bts, err := os.ReadFile(out)
+		require.NoError(t, err)
+		require.Contains(t, string(bts), "/path/to/Dockerfile")
+		require.Contains(t, string(bts), "sha256:deadbeef")
+		require.Contains(t, string(bts), "/tmp/goreleaserdocker123")
+		require.Contains(t, string(bts), "foo/bar:v1")
+		require.Contains(t, string(bts), "foo/bar:latest")
+	})
+
+	t.Run("env tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("{{.Env.FOO}}"),
+				Env: []string{"FOO=bar-{{.Tag}}"},
+			},
+		}))
+	})
+
+	t.Run("bad env tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("blah"),
+				Env: []string{"FOO=foo-{{.Tag}"},
+			},
+		}))
+	})
+
+	t.Run("bad dir tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{
+				Cmd: testlib.Echo("blah"),
+				Dir: "{{.Tag}",
+			},
+		}))
+	})
+
+	t.Run("bad cmd tmpl", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		testlib.RequireTemplateError(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: "echo blah-{{.Tag }"},
+		}))
+	})
+
+	t.Run("unparseable cmd", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.Error(t, runHook(ctx, fields, config.Hooks{
+			{Cmd: `echo "unterminated`},
+		}))
+	})
+
+	t.Run("failing cmd", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		err := runHook(ctx, fields, config.Hooks{
+			{Cmd: "exit 1"},
+		})
+		require.ErrorIs(t, err, exec.ErrNotFound)
+	})
 }

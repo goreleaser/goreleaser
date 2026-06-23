@@ -1,0 +1,75 @@
+{{- /*
+  Hydrates [data-nightly-tag] spans on the install page with the latest
+  nightly tag + date for each repo (data-repo). Data is fetched from the
+  unauthenticated GitHub API and cached in localStorage so the docs stay
+  fresh without needing a rebuild.
+*/ -}}
+<script>
+(function () {
+  var TTL = 6 * 60 * 60 * 1000; // 6h
+  var KEY = "goreleaser:install-nightlies:v1";
+  var DATE_OPTS = { year: "numeric", month: "long", day: "numeric" };
+
+  function loadCache() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveCache(c) {
+    try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {}
+  }
+
+  function pickNightly(releases) {
+    for (var i = 0; i < releases.length; i++) {
+      var r = releases[i];
+      if (r.draft) continue;
+      if (r.prerelease && /-nightly$/.test(r.tag_name)) {
+        return { tag: r.tag_name, date: r.published_at, url: r.html_url };
+      }
+    }
+    return null;
+  }
+
+  function render(el, nightly) {
+    if (!nightly) {
+      el.textContent = "unavailable";
+      return;
+    }
+    var date = new Date(nightly.date).toLocaleDateString(undefined, DATE_OPTS);
+    el.innerHTML = '';
+    var code = document.createElement('code');
+    code.textContent = nightly.tag;
+    el.appendChild(code);
+    el.appendChild(document.createTextNode(' (' + date + ')'));
+  }
+
+  function fetchRepo(repo) {
+    return fetch("https://api.github.com/repos/" + repo + "/releases?per_page=30", {
+      headers: { "Accept": "application/vnd.github+json" },
+    }).then(function (r) {
+      if (!r.ok) throw new Error("github api: " + r.status);
+      return r.json();
+    }).then(pickNightly);
+  }
+
+  var spans = document.querySelectorAll("[data-nightly-tag]");
+  if (!spans.length) return;
+  var cache = loadCache();
+  var now = Date.now();
+
+  spans.forEach(function (el) {
+    var repo = el.getAttribute("data-repo");
+    if (!repo) return;
+    var entry = cache[repo];
+    if (entry && entry.fetched && (now - entry.fetched) < TTL && entry.data) {
+      render(el, entry.data);
+      return;
+    }
+    fetchRepo(repo).then(function (data) {
+      render(el, data);
+      cache[repo] = { fetched: Date.now(), data: data };
+      saveCache(cache);
+    }).catch(function () {
+      render(el, entry && entry.data ? entry.data : null);
+    });
+  });
+})();
+</script>

@@ -326,6 +326,9 @@ type Nix struct {
 
 	// v2.14+
 	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
+
+	// v2.16+
+	MainProgram string `yaml:"main_program,omitempty" json:"main_program,omitempty"`
 }
 
 type NixDependency struct {
@@ -454,12 +457,6 @@ type CommitSigning struct {
 	Format  string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
 }
 
-// BuildHooks define actions to run before and/or after something.
-type BuildHooks struct { // renamed on pro
-	Pre  string `yaml:"pre,omitempty" json:"pre,omitempty"`
-	Post string `yaml:"post,omitempty" json:"post,omitempty"`
-}
-
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
 	Goos      string `yaml:"goos,omitempty" json:"goos,omitempty"`
@@ -497,7 +494,7 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno,enum=uv,enum=poetry"`
+	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno,enum=node,enum=uv,enum=poetry"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
@@ -691,7 +688,7 @@ type NFPM struct {
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
+	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk,enum=msix"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
@@ -840,6 +837,74 @@ type NFPMIPK struct {
 	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
 }
 
+// NFPMMSIXIdentity contains identity fields for MSIX packages.
+type NFPMMSIXIdentity struct {
+	ResourceID string `yaml:"resource_id,omitempty" json:"resource_id,omitempty"`
+}
+
+// NFPMMSIXProperties contains display properties for MSIX packages.
+type NFPMMSIXProperties struct {
+	DisplayName          string `yaml:"display_name,omitempty" json:"display_name,omitempty"`
+	PublisherDisplayName string `yaml:"publisher_display_name,omitempty" json:"publisher_display_name,omitempty"`
+	Logo                 string `yaml:"logo,omitempty" json:"logo,omitempty"`
+}
+
+// NFPMMSIXVisualElements contains visual presentation settings for an MSIX
+// application.
+type NFPMMSIXVisualElements struct {
+	DisplayName       string `yaml:"display_name,omitempty" json:"display_name,omitempty"`
+	Description       string `yaml:"description,omitempty" json:"description,omitempty"`
+	BackgroundColor   string `yaml:"background_color,omitempty" json:"background_color,omitempty"`
+	Square150x150Logo string `yaml:"square150x150_logo,omitempty" json:"square150x150_logo,omitempty"`
+	Square44x44Logo   string `yaml:"square44x44_logo,omitempty" json:"square44x44_logo,omitempty"`
+}
+
+// NFPMMSIXApplication describes an application entry in an MSIX package.
+type NFPMMSIXApplication struct {
+	ID             string                 `yaml:"id" json:"id"`
+	Executable     string                 `yaml:"executable" json:"executable"`
+	EntryPoint     string                 `yaml:"entry_point,omitempty" json:"entry_point,omitempty"`
+	VisualElements NFPMMSIXVisualElements `yaml:"visual_elements,omitempty" json:"visual_elements,omitempty"`
+}
+
+// NFPMMSIXTargetDeviceFamily describes a target device family for an MSIX
+// package.
+type NFPMMSIXTargetDeviceFamily struct {
+	Name             string `yaml:"name" json:"name"`
+	MinVersion       string `yaml:"min_version" json:"min_version"`
+	MaxVersionTested string `yaml:"max_version_tested" json:"max_version_tested"`
+}
+
+// NFPMMSIXDependencies contains dependency information for MSIX packages.
+type NFPMMSIXDependencies struct {
+	TargetDeviceFamilies []NFPMMSIXTargetDeviceFamily `yaml:"target_device_families,omitempty" json:"target_device_families,omitempty"`
+}
+
+// NFPMMSIXCapabilities contains capability declarations for MSIX packages.
+type NFPMMSIXCapabilities struct {
+	Capabilities       []string `yaml:"capabilities,omitempty" json:"capabilities,omitempty"`
+	DeviceCapabilities []string `yaml:"device_capabilities,omitempty" json:"device_capabilities,omitempty"`
+	Restricted         []string `yaml:"restricted,omitempty" json:"restricted,omitempty"`
+}
+
+// NFPMMSIXSignature contains signing configuration for MSIX packages.
+type NFPMMSIXSignature struct {
+	PFXFile       string `yaml:"pfx_file,omitempty" json:"pfx_file,omitempty"`
+	KeyPassphrase string `yaml:"-" json:"-"` // populated from environment variable
+}
+
+// NFPMMSIX is custom config only available on MSIX packages.
+type NFPMMSIX struct {
+	Arch         string                `yaml:"arch,omitempty" json:"arch,omitempty"`
+	Publisher    string                `yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	Identity     NFPMMSIXIdentity      `yaml:"identity,omitempty" json:"identity,omitempty"`
+	Properties   NFPMMSIXProperties    `yaml:"properties,omitempty" json:"properties,omitempty"`
+	Applications []NFPMMSIXApplication `yaml:"applications,omitempty" json:"applications,omitempty"`
+	Dependencies NFPMMSIXDependencies  `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Capabilities NFPMMSIXCapabilities  `yaml:"capabilities,omitempty" json:"capabilities,omitempty"`
+	Signature    NFPMMSIXSignature     `yaml:"signature,omitempty" json:"signature,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string        `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
@@ -862,6 +927,7 @@ type NFPMOverridables struct {
 	APK              NFPMAPK       `yaml:"apk,omitempty" json:"apk,omitempty"`
 	ArchLinux        NFPMArchLinux `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
 	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk,omitempty"`
+	MSIX             NFPMMSIX      `yaml:"msix,omitempty" json:"msix,omitempty"`
 }
 
 type NFPMContent struct {
@@ -1148,6 +1214,7 @@ type DockerV2 struct {
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Hooks       BuildHookConfig   `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 
 	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }

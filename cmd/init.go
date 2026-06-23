@@ -64,6 +64,9 @@ func newInitCmd() *initCmd {
 				example = static.BunExampleConfig
 			case "deno":
 				example = static.DenoExampleConfig
+			case "node":
+				example = static.NodeExampleConfig
+				gitignoreLines = append(gitignoreLines, "node_modules/")
 			case "uv":
 				example = static.UVExampleConfig
 				gitignoreLines = append(gitignoreLines, "build/")
@@ -105,7 +108,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "bun", "deno", "rust", "zig"},
+			[]string{"go", "bun", "deno", "node", "rust", "zig", "uv", "poetry"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)
@@ -169,6 +172,13 @@ func langDetect() string {
 	if pkg, err := packagejson.Open(packageJSON); err == nil && pkg.IsBun() {
 		log.Info("project contains a " + code(packageJSON) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
 		return "bun"
+	}
+
+	for _, file := range []string{"package-lock.json", "yarn.lock", "pnpm-lock.yaml"} {
+		if _, err := os.Stat(file); err == nil {
+			log.Info("project contains a " + code(file) + " file, using default " + code("node") + " configuration")
+			return "node"
+		}
 	}
 
 	pyproj, err := pyproject.Open(pyprojectToml)

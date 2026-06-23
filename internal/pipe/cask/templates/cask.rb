@@ -54,9 +54,6 @@ cask "{{ .Name }}" do
   {{- with .Completions.Zsh }}
   zsh_completion "{{ . }}"
   {{- end }}
-  {{- with generateCompletions .GenerateCompletionsFromExecutable }}
-  {{ . }}
-  {{- end }}
 
   {{ with .Service -}}
   service "{{ . }}"
@@ -76,6 +73,16 @@ cask "{{ .Name }}" do
     {{ . }}
     {{- end }}
   end
+  {{- end }}
+
+  {{- /*
+    generate_completions_from_executable must come after postflight so that
+    any setup done in postflight (e.g. removing the macOS quarantine attribute)
+    runs before Homebrew tries to execute the binary to generate completions.
+    See: https://github.com/goreleaser/goreleaser/issues/5958
+  */}}
+  {{- with generateCompletions .GenerateCompletionsFromExecutable }}
+  {{ . }}
   {{- end }}
 
   {{ with .Hooks.Pre.Uninstall -}}

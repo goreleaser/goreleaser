@@ -28,6 +28,16 @@ dockers_v2:
     # Templates: allowed.
     dockerfile: "{{ .Env.DOCKERFILE }}"
 
+    # Path to a Dockerfile that should be templated before being used.
+    #
+    # The file contents are rendered as a template, and the result is used as
+    # the Dockerfile for the build.
+    # When set, it takes precedence over `dockerfile`.
+    #
+    # Templates: allowed (both the path and the file contents).
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    templated_dockerfile: "Dockerfile.tmpl"
+
     # IDs to filter the binaries/packages.
     #
     # Make sure to only include the IDs of binaries you want to `COPY` in your
@@ -70,18 +80,35 @@ dockers_v2:
     extra_files:
       - config.yml
 
+    # Same as `extra_files`, but the source files are rendered as templates
+    # before being copied into the build context.
+    #
+    # Templates: allowed (source path, destination path, and file contents).
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    templated_extra_files:
+      - # Source file path (relative to the project root).
+        #
+        # Templates: allowed.
+        src: config.yml.tmpl
+
+        # Destination path inside the build context.
+        #
+        # Templates: allowed.
+        dst: config.yml
+
+        # File mode.
+        #
+        # Default: 0o644.
+        mode: 0o644
+
     # Labels to be added to the image.
     #
     # Items with empty keys or values will be ignored.
     #
     # Templates: allowed.
     labels:
-      "org.opencontainers.image.description": "My software"
-      "org.opencontainers.image.created": "{{.Date}}"
-      "org.opencontainers.image.name": "{{.ProjectName}}"
-      "org.opencontainers.image.revision": "{{.FullCommit}}"
-      "org.opencontainers.image.version": "{{.Version}}"
-      "org.opencontainers.image.source": "{{.GitURL}}"
+      "foo": "bar"
+      "project": "{{.ProjectName}}"
 
     # Annotations to be added to the image.
     #
@@ -89,8 +116,16 @@ dockers_v2:
     #
     # Templates: allowed.
     annotations:
-      "foo": "bar"
-      "project": "{{.ProjectName}}"
+      "org.opencontainers.image.description": "My software"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+
+      # You can also use `.BaseImage` and `.BaseImageDigest`. {{< g_inline_version "v2.16" >}}
+      "org.opencontainers.image.base.name": "{{.BaseImage}}"
+      "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
     # Platforms to build.
     #
@@ -127,6 +162,34 @@ dockers_v2:
     # Templates: allowed.
     flags:
       - "--ulimit=10"
+
+    # Custom hooks run around the actual `docker buildx build` invocation.
+    # Hooks receive the resolved configuration via templates, so they can
+    # inspect or operate on the image plan that's about to be built.
+    #
+    # Available extra template fields:
+    #   - .Dockerfile: the resolved path to the Dockerfile.
+    #   - .Images:     the compiled `image:tag` list for this build.
+    #   - .ContextDir: the temporary build context directory.
+    #   - .Digest:     the resulting image digest (post hook only).
+    #
+    # {{< g_inline_version "v2.16" >}}
+    hooks:
+      pre:
+        - cmd: ./scripts/before-docker.sh
+          # Working directory for the command.
+          dir: "{{ .ContextDir }}"
+          # Only run this hook if the template evaluates to `true`.
+          # {{< g_inline_version "v2.17-unreleased" >}}
+          if: "{{ eq .Runtime.Goarch \"amd64\" }}"
+          # Extra env vars to inject into the hook.
+          env:
+            - DOCKERFILE={{ .Dockerfile }}
+          # Whether to stream the command output to stdout/stderr.
+          output: true
+      post:
+        - cmd: ./scripts/after-docker.sh {{ .Digest }} {{ range .Images }}{{ . }} {{ end }}
+          output: true
 
     # Retry configuration.
     retry:

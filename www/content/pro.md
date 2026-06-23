@@ -24,6 +24,7 @@ additional features:
 - Have [global defaults for homepage, description, etc](/customization/general/metadata/);
 - Run [hooks before publishing](/customization/publish/beforepublish/) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
+- Publish [versioned Homebrew Casks](/customization/publish/homebrew_casks/#versioned-casks);
 - Keep [DockerHub image descriptions up to date](/customization/publish/dockerhub/);
 - Create [macOS disk images (`.dmg`)](/customization/package/dmg/);
 - Create [Windows installers (`.msi`) with Wix](/customization/package/msi/);
@@ -66,10 +67,37 @@ additional features:
   [custom template variables](/customization/general/templates/#custom-variables)
   (goes well with [includes](/customization/general/includes/)).
 
-<script src="https://gumroad.com/js/gumroad.js"></script>
+## Pricing
 
-<a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get
-GoReleaser Pro</a>
+{{< tabs >}}
+
+{{< tab "Yearly" >}}
+
+{{< cards cols="2" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=yearly&wanted=true" title="Personal — $165/yr" subtitle="For your personal projects." icon="user" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=yearly&wanted=true" title="Startup — $247/yr" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=yearly&wanted=true" title="Business — $948/yr" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=yearly&wanted=true" title="Enterprise — $3,300/yr" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
+{{< /cards >}}
+
+{{< /tab >}}
+
+{{< tab "Monthly" >}}
+
+{{< cards cols="2" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=monthly&wanted=true" title="Personal — $15/mo" subtitle="For your personal projects." icon="user" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=monthly&wanted=true" title="Startup — $22/mo" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=monthly&wanted=true" title="Business — $86/mo" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=monthly&wanted=true" title="Enterprise — $300/mo" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
+{{< /cards >}}
+
+{{< /tab >}}
+
+{{< /tabs >}}
+
+> [!TIP]
+> Save up to **8%** with yearly billing.
+> All prices are in USD.
 
 ## Using GoReleaser Pro
 
@@ -124,6 +152,23 @@ GoReleaser will automatically detect the offline license and verify it locally.
 > [!NOTE]
 > Offline licenses are available on the **Business** and **Enterprise** plans.
 
+### Fallback keys
+
+{{< g_version "v2.17-unreleased" >}}
+
+The `--key` flag can be set multiple times to provide fallbacks. GoReleaser
+tries each key in order and uses the first one that validates.
+
+This is useful, for example, to provide an offline license key and fall back to
+the regular online key if the first one fails:
+
+```bash
+goreleaser release --key goreleaser.key --key "your-license-key"
+```
+
+If no `--key` flag is provided, GoReleaser falls back to the `GORELEASER_KEY`
+environment variable.
+
 ## Road map
 
 We don't have a properly organized public road map, but we are always open to
@@ -133,10 +178,10 @@ Once you subscribe, feel free to
 [email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
 with your suggestions and ideas.
 
-## Pricing & Sponsors
+## Sponsors & discounts
 
-- The current pricing is low and is likely to increase as we keep adding more
-  pro-only features;
+- Prices may increase as we keep adding more pro-only features, so lock in your
+  rate now;
 - If you sponsor either the project or any of its developers, you [can ask for a
   discount](mailto:carlos@becker.software?subject=GoReleaser%20Coupon%20Request)!
 

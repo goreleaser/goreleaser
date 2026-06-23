@@ -13,4 +13,6 @@ func TestParse(t *testing.T) {
 	require.Equal(t, "index.ts", pkg.Module)
 	require.Equal(t, "module", pkg.Type)
 	require.True(t, pkg.IsBun())
+	require.Equal(t, ">=22.20.0", pkg.Engines["node"])
+	require.Equal(t, "esbuild src/index.ts", pkg.Scripts["build"])
 }

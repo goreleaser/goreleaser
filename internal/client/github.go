@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
@@ -25,6 +25,10 @@ import (
 )
 
 const DefaultGitHubDownloadURL = "https://github.com"
+
+// maxSecondaryRateLimitWait caps how long the go-github SDK will report a
+// secondary rate-limit Retry-After.
+const maxSecondaryRateLimitWait = 10 * time.Minute
 
 var (
 	_ Client                = &githubClient{}
@@ -45,12 +49,29 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		if err != nil {
-			return retryx.HTTP(err, must(resp).Response)
-		}
-		return nil
+		return githubError(err, resp)
 	}, retryx.IsRetriable)
 	return result, resp, err
+}
+
+// githubError wraps an error from the go-github SDK into a retryx.HTTPError,
+// translating the SDK's typed primary/secondary rate-limit errors into a
+// RetryAfter the retry layer can honor. Both kinds are returned with HTTP 403,
+// which would otherwise be classified as non-retriable.
+func githubError(err error, resp *github.Response) error {
+	if err == nil {
+		return nil
+	}
+	he := retryx.HTTPError{Err: err}
+	if r := must(resp).Response; r != nil {
+		he.Status = r.StatusCode
+	}
+	if rle, ok := errors.AsType[*github.RateLimitError](err); ok {
+		he.RetryAfter = max(time.Until(rle.Rate.Reset.Time), time.Second)
+	} else if arle, ok := errors.AsType[*github.AbuseRateLimitError](err); ok {
+		he.RetryAfter = max(*must(arle.RetryAfter), time.Minute)
+	}
+	return he
 }
 
 // NewGitHubReleaseNotesGenerator returns a GitHub client that can generate
@@ -87,11 +108,18 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 		return nil, fmt.Errorf("templating GitHub upload URL: %w", err)
 	}
 
-	if baseURL == "" {
-		return &githubClient{client: github.NewClient(httpClient)}, nil
+	opts := []github.ClientOptionsFunc{
+		github.WithHTTPClient(httpClient),
+		github.WithMaxSecondaryRateLimitRetryAfterDuration(maxSecondaryRateLimitWait),
+	}
+	if baseURL != "" {
+		if uploadURL == "" {
+			uploadURL = baseURL
+		}
+		opts = append(opts, github.WithEnterpriseURLs(baseURL, uploadURL))
 	}
 
-	client, err := github.NewClient(httpClient).WithEnterpriseURLs(baseURL, uploadURL)
+	client, err := github.NewClient(opts...)
 	if err != nil {
 		return &githubClient{}, err
 	}
@@ -101,13 +129,6 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
 	c.rateLimitChecker(ctx, 100, func(limits *github.RateLimits) *github.Rate {
 		return limits.Core
-	})
-}
-
-func (c *githubClient) checkSearchRateLimit(ctx *context.Context) {
-	// 5 should be safe enough (search limit is 30/min)
-	c.rateLimitChecker(ctx, 5, func(limits *github.RateLimits) *github.Rate {
-		return limits.Search
 	})
 }
 
@@ -154,7 +175,6 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	c.checkRateLimit(ctx)
 	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
-	cache := map[string]string{}
 
 	for {
 		result, resp, err := githubDo(ctx, func() (*github.CommitsComparison, *github.Response, error) {
@@ -173,7 +193,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				})
 			}
 			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
-			authors = append(authors, c.authorsLookup(ctx, coauthors, cache)...)
+			authors = append(authors, c.authorsLookup(coauthors)...)
 			log = append(log, fillDeprecated(ChangelogItem{
 				SHA:     commit.GetSHA(),
 				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
@@ -189,33 +209,33 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return log, nil
 }
 
-func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cache map[string]string) []Author {
+func (c *githubClient) authorsLookup(authors []Author) []Author {
 	for i := range authors {
 		author := &authors[i]
-		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
-			// GitHub noreply format: ID+USERNAME@users.noreply.github.com
-			if _, clean, ok := strings.Cut(before, "+"); ok {
-				author.Username = clean
-				continue
-			}
-			author.Username = before
+		before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com")
+		if !ok {
 			continue
 		}
-		if username, ok := cache[author.Email]; ok {
-			author.Username = username
+		// GitHub noreply format: ID+USERNAME@users.noreply.github.com
+		if _, clean, ok := strings.Cut(before, "+"); ok {
+			author.Username = clean
 			continue
 		}
-		c.checkSearchRateLimit(ctx)
-		res, _, err := githubDo(ctx, func() (*github.UsersSearchResult, *github.Response, error) {
-			return c.client.Search.Users(ctx, author.Email, nil)
-		})
-		if err == nil && len(res.Users) == 1 {
-			author.Username = res.Users[0].GetLogin()
-			cache[author.Email] = author.Username
-			continue
-		}
+		author.Username = before
 	}
 	return authors
+}
+
+// isFork reports whether the given repository is a fork.
+func (c *githubClient) isFork(ctx *context.Context, repo Repo) (bool, error) {
+	c.checkRateLimit(ctx)
+	p, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
+		return c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	})
+	if err != nil {
+		return false, err
+	}
+	return p.GetFork(), nil
 }
 
 // getDefaultBranch returns the default branch of a github repo
@@ -345,6 +365,19 @@ func (c *githubClient) OpenPullRequest(
 }
 
 func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
+	// merge-upstream returns 422 for non-forks; skip the call when we can tell.
+	fork, err := c.isFork(ctx, head)
+	switch {
+	case err != nil:
+		log.WithField("repo", head.String()).
+			WithError(err).
+			Warn("could not check if target is a fork; attempting sync anyway")
+	case !fork:
+		log.WithField("repo", head.String()).
+			Info("target is not a fork; skipping merge-upstream")
+		return nil
+	}
+
 	branch := base.Branch
 	if branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
@@ -691,10 +724,7 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 				ctx.Config.Release.GitHub.Name,
 				asset.GetID(),
 			)
-			if err != nil {
-				return r, retryx.HTTP(err, must(r).Response)
-			}
-			return r, nil
+			return r, githubError(err, r)
 		}, retryx.IsRetriable)
 		if err != nil {
 			githubErrLogger(resp, err).
@@ -762,7 +792,7 @@ func (c *githubClient) Upload(
 			}
 			return retryx.Retriable(err)
 		}
-		return retryx.HTTP(err, must(resp).Response)
+		return githubError(err, resp)
 	}, retryx.IsRetriable)
 }
 
