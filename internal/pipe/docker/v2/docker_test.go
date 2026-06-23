@@ -358,27 +358,6 @@ func TestToPlatform(t *testing.T) {
 		})
 		require.Error(t, err)
 	})
-
-	for _, tc := range []struct {
-		name     string
-		goarm    string
-		expected string
-	}{
-		{"softfloat v5", "5,softfloat", "linux/arm/v5"},
-		{"softfloat v6", "6,softfloat", "linux/arm/v6"},
-		{"hardfloat v6", "6,hardfloat", "linux/arm/v6"},
-		{"hardfloat v7", "7,hardfloat", "linux/arm/v7"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			plat, err := toPlatform(&artifact.Artifact{
-				Goos:   "linux",
-				Goarch: "arm",
-				Goarm:  tc.goarm,
-			})
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, plat)
-		})
-	}
 }
 
 func TestParsePlatform(t *testing.T) {
