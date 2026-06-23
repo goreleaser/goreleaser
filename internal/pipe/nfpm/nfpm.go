@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"dario.cat/mergo"
@@ -29,6 +30,7 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/arch" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/deb"  // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/ipk"  // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/msix" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/rpm"  // blank import to register the format
 )
 
@@ -141,7 +143,7 @@ func findArtifacts(ctx *context.Context, fpm config.NFPM) (map[string][]*artifac
 			artifact.CArchive,
 			artifact.CShared,
 		),
-		artifact.ByGooses("linux", "ios", "android", "aix"),
+		artifact.ByGooses("linux", "ios", "android", "aix", "windows"),
 		artifact.Or(
 			artifact.Not(artifact.ByGoarch("amd64")),
 			artifact.ByGoamd64s(fpm.GoAmd64...),
@@ -172,7 +174,13 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
-const termuxFormat = "termux.deb"
+const (
+	termuxFormat = "termux.deb"
+	msixFormat   = "msix"
+)
+
+// msix is still experimental, so we warn the user once per run.
+var msixExperimentalOnce sync.Once
 
 func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
@@ -211,6 +219,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips                                                          // key used for the ConventionalFileName et al
 	arch := infoArch + artifacts[0].Go386 + artifacts[0].Goamd64 + artifacts[0].Goarm64 + artifacts[0].Goppc64 + artifacts[0].Goriscv64 // unique arch key
 	infoPlatform := artifacts[0].Goos
+
+	// msix is the only Windows format, and it only packages Windows binaries.
+	if (infoPlatform == "windows") != (format == msixFormat) {
+		log.Debugf("skipping %s/%s as its not supported", infoPlatform, format)
+		return nil
+	}
+
 	if infoPlatform == "ios" {
 		if format == "deb" {
 			infoPlatform = "iphoneos-arm64"
@@ -263,6 +278,15 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
 		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
+	case msixFormat:
+		msixExperimentalOnce.Do(func() {
+			log.Warn("you are using the experimental msix packager")
+		})
+		// bindir is a Linux filesystem concept that does not map to MSIX: an
+		// MSIX package is a virtual filesystem rooted at the install location,
+		// so the binary belongs at the package root and the application's
+		// executable is simply its file name.
+		fpm.Bindir = "/"
 	}
 
 	if artifacts[0].Goos == "android" && format != termuxFormat {
@@ -334,6 +358,20 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	apkKeyName, err := t.Apply(overridden.APK.Signature.KeyName)
 	if err != nil {
+		return err
+	}
+
+	msixPFXFile, err := t.Apply(overridden.MSIX.Signature.PFXFile)
+	if err != nil {
+		return err
+	}
+
+	if err := t.ApplyAll(
+		&overridden.MSIX.Publisher,
+		&overridden.MSIX.Properties.DisplayName,
+		&overridden.MSIX.Properties.PublisherDisplayName,
+		&overridden.MSIX.Properties.Logo,
+	); err != nil {
 		return err
 	}
 
@@ -526,6 +564,31 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Tags:          overridden.IPK.Tags,
 				Fields:        overridden.IPK.Fields,
 			},
+			MSIX: nfpm.MSIX{
+				Arch:      overridden.MSIX.Arch,
+				Publisher: overridden.MSIX.Publisher,
+				Identity: nfpm.MSIXIdentity{
+					ResourceID: overridden.MSIX.Identity.ResourceID,
+				},
+				Properties: nfpm.MSIXProperties{
+					DisplayName:          overridden.MSIX.Properties.DisplayName,
+					PublisherDisplayName: overridden.MSIX.Properties.PublisherDisplayName,
+					Logo:                 overridden.MSIX.Properties.Logo,
+				},
+				Applications: msixApplications(overridden.MSIX.Applications),
+				Dependencies: nfpm.MSIXDependencies{
+					TargetDeviceFamilies: msixTargetDeviceFamilies(overridden.MSIX.Dependencies.TargetDeviceFamilies),
+				},
+				Capabilities: nfpm.MSIXCapabilities{
+					Capabilities:       overridden.MSIX.Capabilities.Capabilities,
+					DeviceCapabilities: overridden.MSIX.Capabilities.DeviceCapabilities,
+					Restricted:         overridden.MSIX.Capabilities.Restricted,
+				},
+				Signature: nfpm.MSIXSignature{
+					PFXFile:       msixPFXFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "MSIX", fpm.ID),
+				},
+			},
 		},
 	}
 
@@ -533,6 +596,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		info.APK.Signature = nfpm.APKSignature{}
 		info.RPM.Signature = nfpm.RPMSignature{}
 		info.Deb.Signature = nfpm.DebSignature{}
+		info.MSIX.Signature = nfpm.MSIXSignature{}
 	}
 
 	packager, err := nfpm.Get(strings.Replace(format, "termux.", "", 1))
@@ -579,8 +643,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return fmt.Errorf("could not set package mtime: %w", err)
 		}
 	}
+	packageType := artifact.LinuxPackage
+	if format == msixFormat {
+		packageType = artifact.MSIX
+	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    artifact.LinuxPackage,
+		Type:    packageType,
 		Name:    packageFilename,
 		Path:    path,
 		Goos:    artifacts[0].Goos,
@@ -620,6 +688,37 @@ func setupLintian(ctx *context.Context, fpm config.NFPM, packageName, format, ar
 			Mode: 0o644,
 		},
 	}, nil
+}
+
+func msixApplications(apps []config.NFPMMSIXApplication) []nfpm.MSIXApplication {
+	result := make([]nfpm.MSIXApplication, len(apps))
+	for i, app := range apps {
+		result[i] = nfpm.MSIXApplication{
+			ID:         app.ID,
+			Executable: app.Executable,
+			EntryPoint: app.EntryPoint,
+			VisualElements: nfpm.MSIXVisualElements{
+				DisplayName:       app.VisualElements.DisplayName,
+				Description:       app.VisualElements.Description,
+				BackgroundColor:   app.VisualElements.BackgroundColor,
+				Square150x150Logo: app.VisualElements.Square150x150Logo,
+				Square44x44Logo:   app.VisualElements.Square44x44Logo,
+			},
+		}
+	}
+	return result
+}
+
+func msixTargetDeviceFamilies(families []config.NFPMMSIXTargetDeviceFamily) []nfpm.MSIXTargetDeviceFamily {
+	result := make([]nfpm.MSIXTargetDeviceFamily, len(families))
+	for i, f := range families {
+		result[i] = nfpm.MSIXTargetDeviceFamily{
+			Name:             f.Name,
+			MinVersion:       f.MinVersion,
+			MaxVersionTested: f.MaxVersionTested,
+		}
+	}
+	return result
 }
 
 func destinations(contents files.Contents) []string {
