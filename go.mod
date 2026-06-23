@@ -193,7 +193,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blacktop/go-dwarf v1.0.14 // indirect
 	github.com/blacktop/go-macho v1.1.263 // indirect
-	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
+	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/buger/jsonparser v1.1.2 // indirect
 	github.com/carlmjohnson/versioninfo v0.22.5 // indirect
