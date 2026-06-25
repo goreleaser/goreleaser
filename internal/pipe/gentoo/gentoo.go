@@ -13,6 +13,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/blang/semver"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -291,6 +293,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 		}
 		repo := client.RepoFromRef(g.cfg.Repository)
 
+		cl, err = client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
+		if err != nil {
+			return err
+		}
+
 		// list existing ebuilds
 		if lister, ok := cl.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
 			dir := filepath.Dir(g.cfg.Path)
@@ -303,9 +310,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 						ebuilds = append(ebuilds, n)
 					}
 				}
-				sort.Slice(ebuilds, func(i, j int) bool { return ebuilds[i] > ebuilds[j] })
-				for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
-					g.files = append(g.files, client.RepoFile{Path: filepath.Join(dir, n), Delete: true})
+				sort.Slice(ebuilds, func(i, j int) bool {
+					vIStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[i], prefix), ".ebuild")
+					vJStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[j], prefix), ".ebuild")
+					vI, errI := semver.ParseTolerant(vIStr)
+					vJ, errJ := semver.ParseTolerant(vJStr)
+					if errI == nil && errJ == nil {
+						return vI.GT(vJ)
+					}
+					return ebuilds[i] > ebuilds[j]
+				})
+				if len(ebuilds) > g.cfg.KeepVersions-1 {
+					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
+						g.files = append(g.files, client.RepoFile{Path: filepath.Join(dir, n), Delete: true})
+					}
 				}
 			}
 		}
@@ -315,10 +333,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 		} else if fc, ok := cl.(client.FilesCreator); ok {
-			cl, err = client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
-			if err != nil {
-				return err
-			}
 			if err := fc.CreateFiles(ctx, author, repo, msg, g.files); err != nil {
 				return err
 			}
