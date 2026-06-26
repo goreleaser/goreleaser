@@ -243,6 +243,7 @@ var validLicenses = []string{
 	"qhull",
 	"qpl",
 	"qwtException",
+	"reticulum",
 	"ruby",
 	"sendmail",
 	"sfl",
