@@ -73,13 +73,25 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - name: setup-makeself-flatpak
+      - name: setup-makeself
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update -q
           sudo apt install -yq makeself flatpak flatpak-builder
-          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
+      - name: cache-flatpak
+        id: cache-flatpak
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        with:
+          path: ~/.local/share/flatpak
+          key: flatpak-${{ runner.os }}-freedesktop-24.08
+      - name: setup-flatpak
+        # runtimes are installed --user so the cache (runner-owned) can restore
+        # them without sudo; only download on a cache miss.
+        if: matrix.os == 'ubuntu-latest' && steps.cache-flatpak.outputs.cache-hit != 'true'
+        run: |
+          flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
       - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
         if: matrix.os == 'ubuntu-latest'
         with:
