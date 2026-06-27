@@ -45,6 +45,11 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
+        include:
+          # the race detector is OS-independent and coverage is only uploaded
+          # from ubuntu, so skip both on windows to speed up the slowest job.
+          - os: windows-latest
+            test-args: RACE=false COVER=false
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -116,7 +121,7 @@ jobs:
       - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
       - run: task setup
       - run: task build
-      - run: task test
+      - run: task test ${{ matrix.test-args }}
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: matrix.os == 'ubuntu-latest'
         with:
