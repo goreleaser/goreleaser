@@ -1,6 +1,6 @@
 module github.com/goreleaser/goreleaser/v2
 
-go 1.26.3
+go 1.26.4
 
 require (
 	charm.land/lipgloss/v2 v2.0.4
@@ -28,7 +28,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
-	github.com/goreleaser/nfpm/v2 v2.46.3
+	github.com/goreleaser/nfpm/v2 v2.47.0
 	github.com/goreleaser/quill v0.0.0-20260503024558-dbc159c51d43
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.14.0
@@ -51,7 +51,7 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.21.0
 	golang.org/x/text v0.38.0
-	golang.org/x/tools v0.46.0
+	golang.org/x/tools v0.47.0
 	gopkg.in/mail.v2 v2.3.1
 )
 
