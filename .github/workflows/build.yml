@@ -73,7 +73,7 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - name: setup-makeself
+      - name: install-flatpak-makeself
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update -q
