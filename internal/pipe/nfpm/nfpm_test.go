@@ -798,7 +798,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "-1.0.0-1-riscv64.pkg.tar.zst",
 			prefix + "_1.0.0_riscv64.apk",
 			prefix + "-1.0.0-1.riscv64.rpm",
-			prefix + "_1.0.0_riscv64.ipk",
+			prefix + "_1.0.0_riscv64_generic.ipk",
 			prefix + "_1.0.0_riscv64.deb",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
