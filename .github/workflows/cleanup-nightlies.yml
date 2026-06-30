@@ -6,12 +6,14 @@ on:
     - cron: "0 6 * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     if: github.repository == 'goreleaser/goreleaser'
+    permissions:
+      contents: write
     steps:
       - name: Delete old nightly releases
         env:

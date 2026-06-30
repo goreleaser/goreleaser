@@ -340,6 +340,7 @@ type Winget struct {
 	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
 	PackageName           string             `yaml:"package_name,omitempty" json:"package_name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
+	DefaultLocale         string             `yaml:"default_locale,omitempty" json:"default_locale,omitempty"`
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
 	PublisherSupportURL   string             `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`

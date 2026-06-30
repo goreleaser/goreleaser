@@ -59,6 +59,17 @@ winget:
     # Templates: allowed.
     package_identifier: myproject.myproject
 
+    # Default locale used for the generated manifests.
+    #
+    # This sets the `DefaultLocale`, `PackageLocale` and `InstallerLocale`
+    # fields, as well as the locale manifest filename
+    # (e.g. `<package>.locale.en-GB.yaml`).
+    #
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    # Default: 'en-US'.
+    # Templates: allowed.
+    default_locale: en-GB
+
     # Package name.
     #
     # Default: name.
