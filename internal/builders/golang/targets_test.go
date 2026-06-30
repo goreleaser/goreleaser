@@ -47,9 +47,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"softfloat",
 		},
 		Goarm: []string{
-			"5",
-			"6",
-			"7",
 			"5,softfloat",
 			"5,hardfloat",
 			"6,softfloat",
@@ -124,8 +121,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_amd64_v2",
 			"linux_amd64_v3",
 			"linux_amd64_v4",
-			"linux_arm_5",
-			"linux_arm_6",
 			"linux_arm_5,softfloat",
 			"linux_arm_5,hardfloat",
 			"linux_arm_6,softfloat",
@@ -151,9 +146,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"freebsd_amd64_v2",
 			"freebsd_amd64_v3",
 			"freebsd_amd64_v4",
-			"freebsd_arm_5",
-			"freebsd_arm_6",
-			"freebsd_arm_7",
 			"freebsd_arm_5,softfloat",
 			"freebsd_arm_5,hardfloat",
 			"freebsd_arm_6,softfloat",
@@ -320,14 +312,11 @@ func TestListTargets(t *testing.T) {
 		targets, err := listTargets(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
-			Goarm:  []string{"5", "6", "7", "5,softfloat", "5,hardfloat", "6,softfloat", "6,hardfloat", "7,softfloat", "7,hardfloat"},
+			Goarm:  []string{"5,softfloat", "5,hardfloat", "6,softfloat", "6,hardfloat", "7,softfloat", "7,hardfloat"},
 			Tool:   "go",
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{
-			"linux_arm_5",
-			"linux_arm_6",
-			"linux_arm_7",
 			"linux_arm_5,softfloat",
 			"linux_arm_5,hardfloat",
 			"linux_arm_6,softfloat",
@@ -335,6 +324,16 @@ func TestListTargets(t *testing.T) {
 			"linux_arm_7,softfloat",
 			"linux_arm_7,hardfloat",
 		}, targets)
+	})
+
+	t.Run("goarm bare conflicts with float variant", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"7", "7,softfloat"},
+			Tool:   "go",
+		})
+		require.EqualError(t, err, `goarm "7" conflicts with "7,softfloat": make the float explicit ("7,hardfloat") or drop one`)
 	})
 
 	t.Run("invalid goarm with invalid softfloat syntax", func(t *testing.T) {
@@ -353,5 +352,14 @@ func TestListTargets(t *testing.T) {
 			Goarm:  []string{"8"},
 		})
 		require.EqualError(t, err, "invalid goarm: 8")
+	})
+
+	t.Run("invalid goarm with empty version", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{",softfloat"},
+		})
+		require.EqualError(t, err, "invalid goarm: ,softfloat")
 	})
 }

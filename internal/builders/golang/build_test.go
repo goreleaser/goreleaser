@@ -436,9 +436,6 @@ func TestWithDefaults(t *testing.T) {
 				Goos:   []string{"linux"},
 				Goarch: []string{"arm"},
 				Goarm: []string{
-					"5",
-					"6",
-					"7",
 					"5,softfloat",
 					"5,hardfloat",
 					"6,softfloat",
@@ -448,9 +445,6 @@ func TestWithDefaults(t *testing.T) {
 				},
 			},
 			targets: []string{
-				"linux_arm_5",
-				"linux_arm_6",
-				"linux_arm_7",
 				"linux_arm_5,softfloat",
 				"linux_arm_5,hardfloat",
 				"linux_arm_6,softfloat",

@@ -117,7 +117,7 @@ func listTargets(build config.Build) ([]string, error) {
 		if target.Go386 != "" && !slices.Contains(validGo386, target.Go386) {
 			return result, fmt.Errorf("invalid go386: %s", target.Go386)
 		}
-		if target.Goarm != "" && !validGoarm.MatchString(target.fullGoarm()) {
+		if target.fullGoarm() != "" && !validGoarm.MatchString(target.fullGoarm()) {
 			return result, fmt.Errorf("invalid goarm: %s", target.fullGoarm())
 		}
 		if target.Goarm64 != "" && !validGoarm64.MatchString(target.Goarm64) {
@@ -143,10 +143,33 @@ func listTargets(build config.Build) ([]string, error) {
 		warnUnstable(target)
 		targets = append(targets, target)
 	}
+	if err := checkGoarmFloatConflict(targets); err != nil {
+		return result, err
+	}
 	for _, target := range targets {
 		result = append(result, target.String())
 	}
 	return result, nil
+}
+
+// checkGoarmFloatConflict rejects building the same goarm version both bare and
+// with a float ABI (e.g. "7" and "7,softfloat"). Such artifacts share
+// goos/goarch/goarm and are indistinguishable downstream (archives, nfpm,
+// docker), so they would silently overwrite each other. The float must be made
+// explicit on both (e.g. "7,hardfloat" and "7,softfloat").
+func checkGoarmFloatConflict(targets []Target) error {
+	bare := map[string]bool{}
+	for _, t := range targets {
+		if t.Goarch == "arm" && t.Abi == "" {
+			bare[t.Goos+t.Goarm] = true
+		}
+	}
+	for _, t := range targets {
+		if t.Goarch == "arm" && t.Abi != "" && bare[t.Goos+t.Goarm] {
+			return fmt.Errorf("goarm %q conflicts with %q: make the float explicit (%q) or drop one", t.Goarm, t.fullGoarm(), t.Goarm+",hardfloat")
+		}
+	}
+	return nil
 }
 
 func allBuildTargets(build config.Build) []Target {

@@ -135,6 +135,11 @@ builds:
     #   - 7,softfloat
     #   - 7,hardfloat
     #
+    # Mixing a bare version with a float variant of the same version (e.g. `7`
+    # and `7,softfloat`) is an error, as they'd be indistinguishable and
+    # overwrite each other. Make the float explicit on both instead
+    # (`7,hardfloat` and `7,softfloat`).
+    #
     # Default: [ 6 ].
     goarm:
       - 6
