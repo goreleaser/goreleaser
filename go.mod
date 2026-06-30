@@ -29,7 +29,7 @@ require (
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
 	github.com/goreleaser/nfpm/v2 v2.47.0
-	github.com/goreleaser/quill v0.0.0-20260503024558-dbc159c51d43
+	github.com/goreleaser/quill v0.0.0-20260630015114-8310f3e9a321
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.14.0
 	github.com/jarcoal/httpmock v1.4.1
@@ -378,5 +378,5 @@ require (
 	lukechampine.com/blake3 v1.4.1
 	sigs.k8s.io/kind v0.31.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
-	software.sslmate.com/src/go-pkcs12 v0.7.1 // indirect
+	software.sslmate.com/src/go-pkcs12 v0.7.3 // indirect
 )
