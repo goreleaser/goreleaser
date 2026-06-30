@@ -78,46 +78,46 @@ func TestParse(t *testing.T) {
 			Goarm:  "7",
 		},
 		"linux_arm_5,softfloat": {
-			Target:     "linux_arm_5,softfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "5",
-			GoarmFloat: "softfloat",
+			Target: "linux_arm_5,softfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "5",
+			Abi:    "softfloat",
 		},
 		"linux_arm_5,hardfloat": {
-			Target:     "linux_arm_5,hardfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "5",
-			GoarmFloat: "hardfloat",
+			Target: "linux_arm_5,hardfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "5",
+			Abi:    "hardfloat",
 		},
 		"linux_arm_6,softfloat": {
-			Target:     "linux_arm_6,softfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "6",
-			GoarmFloat: "softfloat",
+			Target: "linux_arm_6,softfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "6",
+			Abi:    "softfloat",
 		},
 		"linux_arm_6,hardfloat": {
-			Target:     "linux_arm_6,hardfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "6",
-			GoarmFloat: "hardfloat",
+			Target: "linux_arm_6,hardfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "6",
+			Abi:    "hardfloat",
 		},
 		"linux_arm_7,softfloat": {
-			Target:     "linux_arm_7,softfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "7",
-			GoarmFloat: "softfloat",
+			Target: "linux_arm_7,softfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "7",
+			Abi:    "softfloat",
 		},
 		"linux_arm_7,hardfloat": {
-			Target:     "linux_arm_7,hardfloat",
-			Goos:       "linux",
-			Goarch:     "arm",
-			Goarm:      "7",
-			GoarmFloat: "hardfloat",
+			Target: "linux_arm_7,hardfloat",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "7",
+			Abi:    "hardfloat",
 		},
 		"linux_mips": {
 			Target: "linux_mips_hardfloat",
@@ -163,6 +163,35 @@ func TestParse(t *testing.T) {
 			require.Equal(t, dst, got.(Target))
 		})
 	}
+}
+
+func TestGoarmAbi(t *testing.T) {
+	t.Run("env reconstructs GOARM with float suffix", func(t *testing.T) {
+		got, err := Default.Parse("linux_arm_7,softfloat")
+		require.NoError(t, err)
+		require.Contains(t, got.(Target).env(), "GOARM=7,softfloat")
+	})
+
+	t.Run("env keeps plain GOARM", func(t *testing.T) {
+		got, err := Default.Parse("linux_arm_7")
+		require.NoError(t, err)
+		require.Contains(t, got.(Target).env(), "GOARM=7")
+	})
+
+	t.Run("artifact carries clean Goarm and Abi extra", func(t *testing.T) {
+		target, err := Default.Parse("linux_arm_7,softfloat")
+		require.NoError(t, err)
+		a := getBinaryArtifact(target.(Target), config.Build{ID: "foo"}, "foo", "foo", "")
+		require.Equal(t, "7", a.Goarm)
+		require.Equal(t, "softfloat", a.Extra[keyAbi])
+	})
+
+	t.Run("plain arm artifact has no Abi extra", func(t *testing.T) {
+		target, err := Default.Parse("linux_arm_7")
+		require.NoError(t, err)
+		a := getBinaryArtifact(target.(Target), config.Build{ID: "foo"}, "foo", "foo", "")
+		require.NotContains(t, a.Extra, keyAbi)
+	})
 }
 
 func TestWithDefaults(t *testing.T) {

@@ -11,6 +11,10 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
+// keyAbi is the template field exposing the GOARM softfloat/hardfloat suffix,
+// matching the rust/zig/deno builders' .Abi field.
+const keyAbi = "Abi"
+
 func formatBuildTarget(o config.BuildDetailsOverride) string {
 	return formatTarget(Target{
 		Goos:      o.Goos,
@@ -35,32 +39,34 @@ func formatTarget(t Target) string {
 
 // Target is a Go build target.
 type Target struct {
-	Target     string
-	Goos       string
-	Goarch     string
-	Goamd64    string
-	Go386      string
-	Goarm      string
-	GoarmFloat string
-	Goarm64    string
-	Gomips     string
-	Goppc64    string
-	Goriscv64  string
+	Target  string
+	Goos    string
+	Goarch  string
+	Goamd64 string
+	Go386   string
+	Goarm   string
+	// Abi holds the optional GOARM softfloat/hardfloat suffix, mirroring the
+	// rust/zig builders' Abi (where hardfloat == eabihf, softfloat == eabi).
+	Abi       string
+	Goarm64   string
+	Gomips    string
+	Goppc64   string
+	Goriscv64 string
 }
 
 // Fields implements build.Target.
 func (t Target) Fields() map[string]string {
 	return map[string]string{
-		tmpl.KeyOS:       t.Goos,
-		tmpl.KeyArch:     t.Goarch,
-		tmpl.KeyAmd64:    t.Goamd64,
-		tmpl.Key386:      t.Go386,
-		tmpl.KeyArm:      t.Goarm,
-		tmpl.KeyArmFloat: t.GoarmFloat,
-		tmpl.KeyArm64:    t.Goarm64,
-		tmpl.KeyMips:     t.Gomips,
-		tmpl.KeyPpc64:    t.Goppc64,
-		tmpl.KeyRiscv64:  t.Goriscv64,
+		tmpl.KeyOS:      t.Goos,
+		tmpl.KeyArch:    t.Goarch,
+		tmpl.KeyAmd64:   t.Goamd64,
+		tmpl.Key386:     t.Go386,
+		tmpl.KeyArm:     t.Goarm,
+		keyAbi:          t.Abi,
+		tmpl.KeyArm64:   t.Goarm64,
+		tmpl.KeyMips:    t.Gomips,
+		tmpl.KeyPpc64:   t.Goppc64,
+		tmpl.KeyRiscv64: t.Goriscv64,
 	}
 }
 
@@ -72,10 +78,10 @@ func (t Target) String() string {
 // fullGoarm returns the GOARM value combining the version with the optional
 // softfloat/hardfloat suffix, e.g. "7" or "7,softfloat".
 func (t Target) fullGoarm() string {
-	if t.GoarmFloat == "" {
+	if t.Abi == "" {
 		return t.Goarm
 	}
-	return t.Goarm + "," + t.GoarmFloat
+	return t.Goarm + "," + t.Abi
 }
 
 func (t Target) env() []string {
@@ -111,10 +117,7 @@ func listTargets(build config.Build) ([]string, error) {
 		if target.Go386 != "" && !slices.Contains(validGo386, target.Go386) {
 			return result, fmt.Errorf("invalid go386: %s", target.Go386)
 		}
-		if target.Goarm != "" && !slices.Contains(validGoarm, target.Goarm) {
-			return result, fmt.Errorf("invalid goarm: %s", target.Goarm)
-		}
-		if target.GoarmFloat != "" && !slices.Contains(validGoarmFloat, target.GoarmFloat) {
+		if target.Goarm != "" && !validGoarm.MatchString(target.fullGoarm()) {
 			return result, fmt.Errorf("invalid goarm: %s", target.fullGoarm())
 		}
 		if target.Goarm64 != "" && !validGoarm64.MatchString(target.Goarm64) {
@@ -179,10 +182,10 @@ func allBuildTargets(build config.Build) []Target {
 				for _, goarm := range build.Goarm {
 					version, float, _ := strings.Cut(goarm, ",")
 					targets = append(targets, Target{
-						Goos:       goos,
-						Goarch:     goarch,
-						Goarm:      version,
-						GoarmFloat: float,
+						Goos:   goos,
+						Goarch: goarch,
+						Goarm:  version,
+						Abi:    float,
 					})
 				}
 			case "mips", "mipsle", "mips64", "mips64le":
@@ -374,12 +377,11 @@ var (
 		"sparc64",
 	}
 
-	validGoamd64    = []string{"v1", "v2", "v3", "v4"}
-	validGo386      = []string{"sse2", "softfloat"}
-	validGoarm      = []string{"5", "6", "7"}
-	validGoarmFloat = []string{"softfloat", "hardfloat"}
-	validGoarm64    = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
-	validGomips     = []string{"hardfloat", "softfloat"}
-	validGoppc64    = []string{"power8", "power9", "power10"}
-	validGoriscv64  = []string{"rva20u64", "rva22u64", "rva23u64"}
+	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
+	validGo386     = []string{"sse2", "softfloat"}
+	validGoarm     = regexp.MustCompile(`^[567](,softfloat|,hardfloat)?$`)
+	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
+	validGomips    = []string{"hardfloat", "softfloat"}
+	validGoppc64   = []string{"power8", "power9", "power10"}
+	validGoriscv64 = []string{"rva20u64", "rva22u64", "rva23u64"}
 )
