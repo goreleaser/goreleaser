@@ -79,7 +79,9 @@ func convertToGoarch(s string) string {
 
 func isValid(target string) bool {
 	targetsOnce.Do(func() {
-		allTargets = strings.Split(string(allTargetsBts), "\n")
+		allTargets = slices.DeleteFunc(strings.Split(string(allTargetsBts), "\n"), func(s string) bool {
+			return s == ""
+		})
 	})
 
 	return slices.Contains(allTargets, target)
