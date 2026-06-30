@@ -5386,6 +5386,9 @@
 					"package_identifier": {
 						"type": "string"
 					},
+					"default_locale": {
+						"type": "string"
+					},
 					"publisher": {
 						"type": "string"
 					},
