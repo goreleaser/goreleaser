@@ -345,4 +345,13 @@ func TestListTargets(t *testing.T) {
 		})
 		require.EqualError(t, err, "invalid goarm: 5,invalid")
 	})
+
+	t.Run("invalid goarm version out of range", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"8"},
+		})
+		require.EqualError(t, err, "invalid goarm: 8")
+	})
 }

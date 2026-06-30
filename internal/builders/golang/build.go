@@ -90,7 +90,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		case "arm":
 			version, float, _ := strings.Cut(extra, ",")
 			t.Goarm = version
-			t.GoarmFloat = float
+			t.Abi = float
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
 		case "ppc64":
@@ -485,27 +485,30 @@ func getHeaderArtifactForLibrary(build config.Build, t Target, fullPathWithoutEx
 		return nil
 	}
 
-	return &artifact.Artifact{
-		Type:       artifact.Header,
-		Path:       fullPath,
-		Name:       headerName,
-		Goos:       t.Goos,
-		Goarch:     t.Goarch,
-		Goamd64:    t.Goamd64,
-		Go386:      t.Go386,
-		Goarm:      t.Goarm,
-		GoarmFloat: t.GoarmFloat,
-		Goarm64:    t.Goarm64,
-		Gomips:     t.Gomips,
-		Goppc64:    t.Goppc64,
-		Goriscv64:  t.Goriscv64,
-		Target:     t.Target,
+	a := &artifact.Artifact{
+		Type:      artifact.Header,
+		Path:      fullPath,
+		Name:      headerName,
+		Goos:      t.Goos,
+		Goarch:    t.Goarch,
+		Goamd64:   t.Goamd64,
+		Go386:     t.Go386,
+		Goarm:     t.Goarm,
+		Goarm64:   t.Goarm64,
+		Gomips:    t.Gomips,
+		Goppc64:   t.Goppc64,
+		Goriscv64: t.Goriscv64,
+		Target:    t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",
 			artifact.ExtraID:     build.ID,
 		},
 	}
+	if t.Abi != "" {
+		a.Extra[keyAbi] = t.Abi
+	}
+	return a
 }
 
 func getBinaryArtifact(
@@ -513,21 +516,20 @@ func getBinaryArtifact(
 	build config.Build,
 	name, path, ext string,
 ) *artifact.Artifact {
-	return &artifact.Artifact{
-		Type:       artifactType(t, build.Buildmode),
-		Path:       path,
-		Name:       name,
-		Goos:       t.Goos,
-		Goarch:     t.Goarch,
-		Goamd64:    t.Goamd64,
-		Go386:      t.Go386,
-		Goarm:      t.Goarm,
-		GoarmFloat: t.GoarmFloat,
-		Goarm64:    t.Goarm64,
-		Gomips:     t.Gomips,
-		Goppc64:    t.Goppc64,
-		Goriscv64:  t.Goriscv64,
-		Target:     t.Target,
+	a := &artifact.Artifact{
+		Type:      artifactType(t, build.Buildmode),
+		Path:      path,
+		Name:      name,
+		Goos:      t.Goos,
+		Goarch:    t.Goarch,
+		Goamd64:   t.Goamd64,
+		Go386:     t.Go386,
+		Goarm:     t.Goarm,
+		Goarm64:   t.Goarm64,
+		Gomips:    t.Gomips,
+		Goppc64:   t.Goppc64,
+		Goriscv64: t.Goriscv64,
+		Target:    t.Target,
 		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(name), ext),
 			artifact.ExtraExt:     ext,
@@ -535,6 +537,10 @@ func getBinaryArtifact(
 			artifact.ExtraBuilder: "go",
 		},
 	}
+	if t.Abi != "" {
+		a.Extra[keyAbi] = t.Abi
+	}
+	return a
 }
 
 func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {
