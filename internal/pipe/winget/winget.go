@@ -71,12 +71,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if winget.Goamd64 == "" {
 			winget.Goamd64 = "v1"
 		}
-		// winget-pkgs rejects PRs that touch more than a single package version,
-		// so the head branch must change per release. Default to a versioned
-		// template when the user did not set one and a PR is being opened.
-		if winget.Repository.Branch == "" && winget.Repository.PullRequest.Enabled {
-			winget.Repository.Branch = "update-{{ .ProjectName }}-{{ .Version }}"
-		}
 		winget.DefaultLocale = cmp.Or(winget.DefaultLocale, defaultLocale)
 		winget.PackageName = cmp.Or(winget.PackageName, winget.Name)
 	}
