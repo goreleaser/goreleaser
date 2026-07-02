@@ -851,6 +851,48 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "foo", winget.Name)
 }
 
+func TestDefaultBranch(t *testing.T) {
+	t.Run("pull request disabled keeps branch empty", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ProjectName: "foo",
+			Winget:      []config.Winget{{}},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Empty(t, ctx.Config.Winget[0].Repository.Branch)
+	})
+
+	t.Run("pull request enabled defaults to a versioned branch", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ProjectName: "foo",
+			Winget: []config.Winget{{
+				Repository: config.RepoRef{
+					PullRequest: config.PullRequest{Enabled: true},
+				},
+			}},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(
+			t,
+			"update-{{ .ProjectName }}-{{ .Version }}",
+			ctx.Config.Winget[0].Repository.Branch,
+		)
+	})
+
+	t.Run("user-set branch is preserved", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ProjectName: "foo",
+			Winget: []config.Winget{{
+				Repository: config.RepoRef{
+					Branch:      "my-branch",
+					PullRequest: config.PullRequest{Enabled: true},
+				},
+			}},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, "my-branch", ctx.Config.Winget[0].Repository.Branch)
+	})
+}
+
 func TestFormatBinary(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
