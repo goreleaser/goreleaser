@@ -18,11 +18,9 @@ func RepoFromRef(ref config.RepoRef) Repo {
 
 // TemplateRef templates a config.RepoFromRef
 func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (config.RepoRef, error) {
-	// When opening a pull request and the user did not set a branch, default to
-	// a per-release branch so each release gets its own branch and PR. Otherwise
-	// the branch falls back to the repository's default branch, which stacks
-	// releases onto a single branch/PR (and registries such as winget-pkgs
-	// reject pull requests that touch more than one version).
+	// Default to a per-release branch when opening a PR and the user set none,
+	// so releases don't stack onto the repo's default branch (some registries,
+	// e.g. winget-pkgs, reject PRs that touch more than one version).
 	if ref.Branch == "" && ref.PullRequest.Enabled {
 		ref.Branch = "{{ .ProjectName }}-{{ .Version }}"
 	}
