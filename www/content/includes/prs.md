@@ -3,6 +3,11 @@
 GoReleaser allows you to, instead of pushing directly to the main branch, push
 to a feature branch, and open a pull requests with the changes.
 
+When `pull_request.enabled` is `true` and you don't set a `branch`, GoReleaser
+defaults it to `{{ .ProjectName }}-{{ .Version }}`, so each release opens its own
+branch and pull request instead of stacking onto the repository's default
+branch.
+
 ### Templates
 
 GoReleaser will check for a `.github/PULL_REQUEST_TEMPLATE.md`, and set it in
