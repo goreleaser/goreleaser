@@ -99,19 +99,15 @@ jobs:
       - goreleaser
     permissions:
       contents: read
-      actions: read
     if: ${{ always() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7 # v1
+        uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3 # v1.0.1
         with:
-          github-token: ${{ secrets.github_token }}
-          title: "nightly"
-          description: |
-            goreleaser nightly build finished with status {{STATUS}}.
+          to: ${{ secrets.TELEGRAM_NIGHTLY_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          disable_web_page_preview: true
+          message: |
+            goreleaser nightly build finished with status ${{ needs.goreleaser.result }}.
 
             https://github.com/goreleaser/goreleaser/releases/v${{ needs.goreleaser.outputs.version }}
-          discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
-          username: GoReleaser
-          avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
-          include-details: false
