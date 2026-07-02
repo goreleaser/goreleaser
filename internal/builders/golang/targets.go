@@ -16,12 +16,14 @@ import (
 const keyAbi = "Abi"
 
 func formatBuildTarget(o config.BuildDetailsOverride) string {
+	version, abi, _ := strings.Cut(o.Goarm, ",")
 	return formatTarget(Target{
 		Goos:      o.Goos,
 		Goarch:    o.Goarch,
 		Goamd64:   o.Goamd64,
 		Go386:     o.Go386,
-		Goarm:     o.Goarm,
+		Goarm:     version,
+		Abi:       abi,
 		Goarm64:   o.Goarm64,
 		Gomips:    o.Gomips,
 		Goppc64:   o.Goppc64,
@@ -104,7 +106,11 @@ func listTargets(build config.Build) ([]string, error) {
 	var targets []Target
 	//nolint:prealloc
 	var result []string
-	for _, target := range allBuildTargets(build) {
+	built, err := allBuildTargets(build)
+	if err != nil {
+		return result, err
+	}
+	for _, target := range built {
 		if !slices.Contains(validGoos, target.Goos) {
 			return result, fmt.Errorf("invalid goos: %s", target.Goos)
 		}
@@ -116,9 +122,6 @@ func listTargets(build config.Build) ([]string, error) {
 		}
 		if target.Go386 != "" && !slices.Contains(validGo386, target.Go386) {
 			return result, fmt.Errorf("invalid go386: %s", target.Go386)
-		}
-		if target.fullGoarm() != "" && !validGoarm.MatchString(target.fullGoarm()) {
-			return result, fmt.Errorf("invalid goarm: %s", target.fullGoarm())
 		}
 		if target.Goarm64 != "" && !validGoarm64.MatchString(target.Goarm64) {
 			return result, fmt.Errorf("invalid goarm64: %s", target.Goarm64)
@@ -143,7 +146,7 @@ func listTargets(build config.Build) ([]string, error) {
 		warnUnstable(target)
 		targets = append(targets, target)
 	}
-	if err := checkGoarmFloatConflict(targets); err != nil {
+	if err := checkGoarmConflict(targets); err != nil {
 		return result, err
 	}
 	for _, target := range targets {
@@ -152,27 +155,39 @@ func listTargets(build config.Build) ([]string, error) {
 	return result, nil
 }
 
-// checkGoarmFloatConflict rejects building the same goarm version both bare and
-// with a float ABI (e.g. "7" and "7,softfloat"). Such artifacts share
-// goos/goarch/goarm and are indistinguishable downstream (archives, nfpm,
-// docker), so they would silently overwrite each other. The float must be made
-// explicit on both (e.g. "7,hardfloat" and "7,softfloat").
-func checkGoarmFloatConflict(targets []Target) error {
-	bare := map[string]bool{}
-	for _, t := range targets {
-		if t.Goarch == "arm" && t.Abi == "" {
-			bare[t.Goos+t.Goarm] = true
-		}
+// splitGoarm validates a raw GOARM value (e.g. "7" or "7,softfloat") and splits
+// it into the version and optional float ABI. GOARM 5 is soft-float only, so
+// "5,hardfloat" is rejected.
+func splitGoarm(goarm string) (version, abi string, err error) {
+	if !validGoarm.MatchString(goarm) {
+		return "", "", fmt.Errorf("invalid goarm: %s", goarm)
 	}
+	version, abi, _ = strings.Cut(goarm, ",")
+	return version, abi, nil
+}
+
+type goarmKey struct{ goos, version string }
+
+// checkGoarmConflict rejects building the same GOARM version with more than one
+// float ABI (e.g. "7" and "7,softfloat", or "7,softfloat" and "7,hardfloat").
+// Such artifacts share goos/goarch/goarm and are indistinguishable downstream
+// (archives, nfpm, docker), so only one ABI per GOARM version is supported.
+func checkGoarmConflict(targets []Target) error {
+	seen := map[goarmKey]string{}
 	for _, t := range targets {
-		if t.Goarch == "arm" && t.Abi != "" && bare[t.Goos+t.Goarm] {
-			return fmt.Errorf("goarm %q conflicts with %q: make the float explicit (%q) or drop one", t.Goarm, t.fullGoarm(), t.Goarm+",hardfloat")
+		if t.Goarch != "arm" {
+			continue
 		}
+		k := goarmKey{t.Goos, t.Goarm}
+		if prev, ok := seen[k]; ok && prev != t.fullGoarm() {
+			return fmt.Errorf("goarm %s has conflicting ABIs (%q and %q) for %s: only one ABI per GOARM version is supported, drop one", t.Goarm, prev, t.fullGoarm(), t.Goos)
+		}
+		seen[k] = t.fullGoarm()
 	}
 	return nil
 }
 
-func allBuildTargets(build config.Build) []Target {
+func allBuildTargets(build config.Build) ([]Target, error) {
 	var targets []Target
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
@@ -203,12 +218,15 @@ func allBuildTargets(build config.Build) []Target {
 				}
 			case "arm":
 				for _, goarm := range build.Goarm {
-					version, float, _ := strings.Cut(goarm, ",")
+					version, abi, err := splitGoarm(goarm)
+					if err != nil {
+						return nil, err
+					}
 					targets = append(targets, Target{
 						Goos:   goos,
 						Goarch: goarch,
 						Goarm:  version,
-						Abi:    float,
+						Abi:    abi,
 					})
 				}
 			case "mips", "mipsle", "mips64", "mips64le":
@@ -246,7 +264,7 @@ func allBuildTargets(build config.Build) []Target {
 	for i := range targets {
 		targets[i].Target = formatTarget(targets[i])
 	}
-	return targets
+	return targets, nil
 }
 
 func ignored(build config.Build, target Target) bool {
@@ -402,7 +420,7 @@ var (
 
 	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
 	validGo386     = []string{"sse2", "softfloat"}
-	validGoarm     = regexp.MustCompile(`^[567](,softfloat|,hardfloat)?$`)
+	validGoarm     = regexp.MustCompile(`^(5(,softfloat)?|[67](,softfloat|,hardfloat)?)$`)
 	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
 	validGomips    = []string{"hardfloat", "softfloat"}
 	validGoppc64   = []string{"power8", "power9", "power10"}

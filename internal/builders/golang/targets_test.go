@@ -48,11 +48,8 @@ func TestAllBuildTargets(t *testing.T) {
 		},
 		Goarm: []string{
 			"5,softfloat",
-			"5,hardfloat",
-			"6,softfloat",
 			"6,hardfloat",
-			"7,softfloat",
-			"7,hardfloat",
+			"7",
 		},
 		Goarm64: []string{
 			"v8.0",
@@ -122,11 +119,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_amd64_v3",
 			"linux_amd64_v4",
 			"linux_arm_5,softfloat",
-			"linux_arm_5,hardfloat",
-			"linux_arm_6,softfloat",
 			"linux_arm_6,hardfloat",
-			"linux_arm_7,softfloat",
-			"linux_arm_7,hardfloat",
 			"linux_arm64_v9.0",
 			"linux_mips_softfloat",
 			"linux_mips64_softfloat",
@@ -147,11 +140,8 @@ func TestAllBuildTargets(t *testing.T) {
 			"freebsd_amd64_v3",
 			"freebsd_amd64_v4",
 			"freebsd_arm_5,softfloat",
-			"freebsd_arm_5,hardfloat",
-			"freebsd_arm_6,softfloat",
 			"freebsd_arm_6,hardfloat",
-			"freebsd_arm_7,softfloat",
-			"freebsd_arm_7,hardfloat",
+			"freebsd_arm_7",
 			"freebsd_arm64_v9.0",
 			"openbsd_386_softfloat",
 			"openbsd_amd64_v2",
@@ -312,17 +302,14 @@ func TestListTargets(t *testing.T) {
 		targets, err := listTargets(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
-			Goarm:  []string{"5,softfloat", "5,hardfloat", "6,softfloat", "6,hardfloat", "7,softfloat", "7,hardfloat"},
+			Goarm:  []string{"5,softfloat", "6,hardfloat", "7,softfloat"},
 			Tool:   "go",
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_arm_5,softfloat",
-			"linux_arm_5,hardfloat",
-			"linux_arm_6,softfloat",
 			"linux_arm_6,hardfloat",
 			"linux_arm_7,softfloat",
-			"linux_arm_7,hardfloat",
 		}, targets)
 	})
 
@@ -333,7 +320,17 @@ func TestListTargets(t *testing.T) {
 			Goarm:  []string{"7", "7,softfloat"},
 			Tool:   "go",
 		})
-		require.EqualError(t, err, `goarm "7" conflicts with "7,softfloat": make the float explicit ("7,hardfloat") or drop one`)
+		require.EqualError(t, err, `goarm 7 has conflicting ABIs ("7" and "7,softfloat") for linux: only one ABI per GOARM version is supported, drop one`)
+	})
+
+	t.Run("goarm softfloat conflicts with hardfloat", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"7,softfloat", "7,hardfloat"},
+			Tool:   "go",
+		})
+		require.EqualError(t, err, `goarm 7 has conflicting ABIs ("7,softfloat" and "7,hardfloat") for linux: only one ABI per GOARM version is supported, drop one`)
 	})
 
 	t.Run("invalid goarm with invalid softfloat syntax", func(t *testing.T) {
@@ -361,5 +358,23 @@ func TestListTargets(t *testing.T) {
 			Goarm:  []string{",softfloat"},
 		})
 		require.EqualError(t, err, "invalid goarm: ,softfloat")
+	})
+
+	t.Run("invalid goarm 5 with hardfloat", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"5,hardfloat"},
+		})
+		require.EqualError(t, err, "invalid goarm: 5,hardfloat")
+	})
+
+	t.Run("invalid goarm with trailing comma", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"7,"},
+		})
+		require.EqualError(t, err, "invalid goarm: 7,")
 	})
 }
