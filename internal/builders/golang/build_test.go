@@ -84,13 +84,6 @@ func TestParse(t *testing.T) {
 			Goarm:  "5",
 			Abi:    "softfloat",
 		},
-		"linux_arm_5,hardfloat": {
-			Target: "linux_arm_5,hardfloat",
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "5",
-			Abi:    "hardfloat",
-		},
 		"linux_arm_6,softfloat": {
 			Target: "linux_arm_6,softfloat",
 			Goos:   "linux",
@@ -191,6 +184,65 @@ func TestGoarmAbi(t *testing.T) {
 		require.NoError(t, err)
 		a := getBinaryArtifact(target.(Target), config.Build{ID: "foo"}, "foo", "foo", "")
 		require.NotContains(t, a.Extra, keyAbi)
+	})
+
+	t.Run("env reconstructs GOARM with hardfloat suffix", func(t *testing.T) {
+		got, err := Default.Parse("linux_arm_7,hardfloat")
+		require.NoError(t, err)
+		require.Contains(t, got.(Target).env(), "GOARM=7,hardfloat")
+	})
+
+	t.Run("artifact carries hardfloat Abi extra", func(t *testing.T) {
+		target, err := Default.Parse("linux_arm_6,hardfloat")
+		require.NoError(t, err)
+		a := getBinaryArtifact(target.(Target), config.Build{ID: "foo"}, "foo", "foo", "")
+		require.Equal(t, "6", a.Goarm)
+		require.Equal(t, "hardfloat", a.Extra[keyAbi])
+	})
+
+	t.Run("header artifact carries Abi extra", func(t *testing.T) {
+		dir := t.TempDir()
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "foo.h"), nil, 0o644))
+		target, err := Default.Parse("linux_arm_7,softfloat")
+		require.NoError(t, err)
+		a := getHeaderArtifactForLibrary(config.Build{ID: "foo"}, target.(Target), filepath.Join(dir, "foo"))
+		require.NotNil(t, a)
+		require.Equal(t, "7", a.Goarm)
+		require.Equal(t, "softfloat", a.Extra[keyAbi])
+	})
+
+	t.Run("Parse rejects invalid goarm", func(t *testing.T) {
+		_, err := Default.Parse("linux_arm_5,hardfloat")
+		require.EqualError(t, err, "invalid goarm: 5,hardfloat")
+		_, err = Default.Parse("linux_arm_7,")
+		require.EqualError(t, err, "invalid goarm: 7,")
+	})
+}
+
+func TestGoarmExplicitTargetsConflict(t *testing.T) {
+	t.Run("bare and float variant conflict", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Tool:    "go",
+			Targets: []string{"linux_arm_7", "linux_arm_7,softfloat"},
+		})
+		require.EqualError(t, err, `goarm 7 has conflicting ABIs ("7" and "7,softfloat") for linux: only one ABI per GOARM version is supported, drop one`)
+	})
+
+	t.Run("invalid goarm rejected", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Tool:    "go",
+			Targets: []string{"linux_arm_5,hardfloat"},
+		})
+		require.EqualError(t, err, "invalid goarm: 5,hardfloat")
+	})
+
+	t.Run("distinct versions accepted", func(t *testing.T) {
+		b, err := Default.WithDefaults(config.Build{
+			Tool:    "go",
+			Targets: []string{"linux_arm_6,hardfloat", "linux_arm_7,softfloat"},
+		})
+		require.NoError(t, err)
+		require.ElementsMatch(t, []string{"linux_arm_6,hardfloat", "linux_arm_7,softfloat"}, b.Targets)
 	})
 }
 
@@ -437,20 +489,14 @@ func TestWithDefaults(t *testing.T) {
 				Goarch: []string{"arm"},
 				Goarm: []string{
 					"5,softfloat",
-					"5,hardfloat",
-					"6,softfloat",
 					"6,hardfloat",
 					"7,softfloat",
-					"7,hardfloat",
 				},
 			},
 			targets: []string{
 				"linux_arm_5,softfloat",
-				"linux_arm_5,hardfloat",
-				"linux_arm_6,softfloat",
 				"linux_arm_6,hardfloat",
 				"linux_arm_7,softfloat",
-				"linux_arm_7,hardfloat",
 			},
 			tool: "go",
 		},
