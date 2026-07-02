@@ -88,7 +88,12 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		case "386":
 			t.Go386 = extra
 		case "arm":
-			t.Goarm = extra
+			version, abi, err := splitGoarm(extra)
+			if err != nil {
+				return nil, err
+			}
+			t.Goarm = version
+			t.Abi = abi
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
 		case "ppc64":
@@ -102,7 +107,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 }
 
 // WithDefaults sets the defaults for a golang build and returns it.
-func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
+func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if build.Tool == "" {
 		build.Tool = "go"
 	}
@@ -164,6 +169,20 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			targets[fixTarget(target)] = true
 		}
 		build.Targets = slices.Collect(maps.Keys(targets))
+
+		// Explicit targets skip the matrix, so validate their GOARM and run the
+		// same one-ABI-per-version conflict check the matrix path runs.
+		parsed := make([]Target, 0, len(build.Targets))
+		for _, target := range build.Targets {
+			t, err := b.Parse(target)
+			if err != nil {
+				return build, err
+			}
+			parsed = append(parsed, t.(Target))
+		}
+		if err := checkGoarmConflict(parsed); err != nil {
+			return build, err
+		}
 	}
 
 	for _, o := range build.BuildDetailsOverrides {
@@ -483,7 +502,7 @@ func getHeaderArtifactForLibrary(build config.Build, t Target, fullPathWithoutEx
 		return nil
 	}
 
-	return &artifact.Artifact{
+	a := &artifact.Artifact{
 		Type:      artifact.Header,
 		Path:      fullPath,
 		Name:      headerName,
@@ -503,6 +522,10 @@ func getHeaderArtifactForLibrary(build config.Build, t Target, fullPathWithoutEx
 			artifact.ExtraID:     build.ID,
 		},
 	}
+	if t.Abi != "" {
+		a.Extra[keyAbi] = t.Abi
+	}
+	return a
 }
 
 func getBinaryArtifact(
@@ -510,7 +533,7 @@ func getBinaryArtifact(
 	build config.Build,
 	name, path, ext string,
 ) *artifact.Artifact {
-	return &artifact.Artifact{
+	a := &artifact.Artifact{
 		Type:      artifactType(t, build.Buildmode),
 		Path:      path,
 		Name:      name,
@@ -531,6 +554,10 @@ func getBinaryArtifact(
 			artifact.ExtraBuilder: "go",
 		},
 	}
+	if t.Abi != "" {
+		a.Extra[keyAbi] = t.Abi
+	}
+	return a
 }
 
 func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {

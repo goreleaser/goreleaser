@@ -127,6 +127,20 @@ builds:
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
+    # You can also select the floating-point ABI explicitly (since Go 1.22): {{< g_inline_version "v2.17-unreleased" >}}
+    #   - 6,softfloat
+    #   - 6,hardfloat
+    #   - 7,softfloat
+    #   - 7,hardfloat
+    #
+    # Only one ABI per GOARM version is supported: building the same version with
+    # two ABIs (e.g. `7` and `7,softfloat`, or `7,softfloat` and `7,hardfloat`)
+    # is an error, as they are indistinguishable once packaged. GOARM 5 is
+    # soft-float only, so `5,hardfloat` is rejected (plain `5` is already soft).
+    #
+    # When using `ignore`, match the exact form: `goarm: 7` ignores only a bare
+    # `7` target, not `7,softfloat`.
+    #
     # Default: [ 6 ].
     goarm:
       - 6
@@ -385,7 +399,8 @@ following build details are exposed:
 | ------- | --------------------------------- |
 | .Os     | `GOOS`                            |
 | .Arch   | `GOARCH`                          |
-| .Arm    | `GOARM`                           |
+| .Arm    | `GOARM` version, e.g. `7`         |
+| .Abi    | `GOARM` float ABI (`softfloat`/`hardfloat`), empty unless set |
 | .Ext    | Extension, e.g. `.exe`            |
 | .Target | Build target, e.g. `darwin_amd64` |
 
