@@ -51,6 +51,10 @@ type Repo struct {
 	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
 	RawURL string `yaml:"-" json:"-"`
+
+	// Override the default token for this specific repository, e.g. when
+	// releasing to a repository that needs a different token.
+	Token string `yaml:"token,omitempty" json:"token,omitempty"`
 }
 
 // String of the repo, e.g. owner/name.

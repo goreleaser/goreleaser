@@ -18,6 +18,16 @@ release:
     owner: user
     name: repo
 
+    # Token to use for this release, instead of the default one.
+    #
+    # Useful when the release repository requires a different token than the
+    # one used to build from - for instance, when publishing to a repository
+    # in another organization.
+    #
+    # {{< g_inline_version "v2.17-unreleased" >}}
+    # Templates: allowed (environment variables only).
+    token: "{{ .Env.RELEASE_GITHUB_TOKEN }}"
+
   # IDs of the archives to use.
   # Empty means all IDs.
   #
