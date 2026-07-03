@@ -110,4 +110,5 @@ jobs:
           message: |
             goreleaser nightly build finished with status ${{ needs.goreleaser.result }}.
 
-            https://github.com/goreleaser/goreleaser/releases/v${{ needs.goreleaser.outputs.version }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ${{ needs.goreleaser.result == 'success' && format('https://github.com/goreleaser/goreleaser/releases/v{0}', needs.goreleaser.outputs.version) || '' }}
