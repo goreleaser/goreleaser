@@ -199,8 +199,8 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Oleg Balunenko](https://www.mentoring-club.com/the-mentors/oleg-balunenko?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Sidartha Karna](https://github.com/sidarthakarna?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Moti ne tirane](https://www.motijavor.com/shqiperi/tirane/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [Moti ne tirane](https://www.motijavor.com/shqiperi/tirane/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Horoskopi](https://horoskopishqip.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
 
