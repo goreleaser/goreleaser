@@ -147,9 +147,15 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 	}
 }
 
+// NewIfToken returns a client that uses the given token (templated as an
+// environment variable) when it is set. Otherwise it returns cli, or a default
+// client built from the context when cli is nil.
 func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {
 	if token == "" {
-		return cli, nil
+		if cli != nil {
+			return cli, nil
+		}
+		return New(ctx)
 	}
 	token, err := tmpl.New(ctx).ApplySingleEnvOnly(token)
 	if err != nil {

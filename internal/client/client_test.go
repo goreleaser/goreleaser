@@ -171,6 +171,14 @@ func TestNewIfToken(t *testing.T) {
 		require.IsType(t, &gitlabClient{}, client)
 	})
 
+	t.Run("empty, nil fallback", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
+
+		client, err := NewIfToken(ctx, nil, "")
+		require.NoError(t, err)
+		require.IsType(t, &gitlabClient{}, client)
+	})
+
 	t.Run("invalid tmpl", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 		_, err := NewIfToken(ctx, nil, "nope")
