@@ -16,6 +16,8 @@ This includes:
   Twitter, Bluesky, LinkedIn, Discourse, Mattermost, Webhook, OpenCollective,
   and MCP
 - **HTTP uploads** — Artifactory, custom HTTP uploads, and similar
+- **Docker** — image builds and pushes (both `dockers` and `dockers_v2`),
+  including transient base-image pulls and package installs within `RUN` steps
 
 Transient failures (network errors, HTTP 5xx, and 429 Too Many Requests) are
 automatically retried. Permanent failures (4xx, file-not-found, etc.) are not.

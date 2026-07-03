@@ -172,7 +172,7 @@ dockers:
     push_flags:
       - --tls-verify=false
 
-    # Retry configuration for push operations.
+    # Retry configuration for build and push operations.
     #
     # {{< g_inline_version "v2.12" >}}
     retry:

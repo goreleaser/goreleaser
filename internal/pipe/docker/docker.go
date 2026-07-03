@@ -265,7 +265,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	if err := dockerBuild(ctx, docker, tmp, images, buildFlags); err != nil {
 		if isFileNotFoundError(err.Error()) {
 			var files []string
 			_ = filepath.Walk(tmp, func(_ string, info fs.FileInfo, _ error) error {
@@ -312,6 +312,17 @@ files in that dir:
 		})
 	}
 	return nil
+}
+
+func dockerBuild(ctx *context.Context, docker config.Docker, root string, images, buildFlags []string) error {
+	return retryx.Do(
+		ctx,
+		docker.Retry,
+		func() error {
+			return imagers[docker.Use].Build(ctx, root, images, buildFlags)
+		},
+		v2.IsRetriableBuild,
+	)
 }
 
 func isFileNotFoundError(out string) bool {

@@ -279,7 +279,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			}
 			return nil
 		},
-		isRetriableManifestCreate,
+		IsRetriableBuild,
 	); err != nil {
 		return "", err
 	}
@@ -582,11 +582,59 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 	return result, nil
 }
 
-func isRetriableManifestCreate(err error) bool {
-	if de, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
-		return strings.Contains(de.Output(), "manifest verification failed for digest")
+// IsRetriableBuild reports whether a failed docker build is worth retrying.
+//
+// Besides genuine network errors, docker builds routinely fail for transient
+// reasons a retry can recover from: pulling base images may hit registry rate
+// limits or 5xx responses, and installing packages from other sources (apt,
+// apk, ...) inside RUN steps may hit flaky mirrors or DNS hiccups.
+func IsRetriableBuild(err error) bool {
+	if err == nil {
+		return false
 	}
-	return false
+	// For build errors we care about the command output, which docker v2 keeps
+	// in the detailed error; v1 embeds it in the error message itself.
+	var out string
+	if de, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+		out = de.Output()
+	} else {
+		out = err.Error()
+	}
+	if retryx.IsNetworkError(errors.New(out)) {
+		return true
+	}
+	out = strings.ToLower(out)
+	return slices.ContainsFunc(retriableBuildOutputs, func(s string) bool {
+		return strings.Contains(out, s)
+	})
+}
+
+// retriableBuildOutputs are lower-cased substrings that, when found in a docker
+// build output, indicate a transient failure worth retrying.
+var retriableBuildOutputs = []string{
+	// base image pulls / registry
+	"manifest verification failed for digest",
+	"toomanyrequests",
+	"too many requests",
+	"failed to do request",
+	"error pulling image",
+	"internal server error",
+	"bad gateway",
+	"service unavailable",
+	"gateway timeout",
+	"gateway time-out",
+	"unexpected eof",
+	// dns / name resolution
+	"temporary failure in name resolution",
+	"temporary failure resolving",
+	"could not resolve",
+	// package managers (apt, apk, yum, dnf, ...)
+	"failed to fetch",
+	"connection timed out",
+	"could not connect to",
+	"unable to connect to",
+	"hash sum mismatch",
+	"temporary error (try again later)",
 }
 
 func isFileNotFoundError(out string) bool {
