@@ -5101,6 +5101,9 @@
 						},
 						"type": "array"
 					},
+					"verify": {
+						"$ref": "#/$defs/Verify"
+					},
 					"furies": {
 						"items": {
 							"$ref": "#/$defs/Fury"
@@ -5414,6 +5417,9 @@
 						"type": "string"
 					},
 					"name": {
+						"type": "string"
+					},
+					"token": {
 						"type": "string"
 					}
 				},
@@ -6584,6 +6590,67 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"Verify": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"commands": {
+						"items": {
+							"$ref": "#/$defs/VerifyCommand"
+						},
+						"type": "array"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"VerifyCommand": {
+				"properties": {
+					"context": {
+						"type": "string",
+						"enum": [
+							"dir",
+							"asset",
+							"image"
+						],
+						"default": "dir"
+					},
+					"if": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"cmd"
+				]
 			},
 			"Webhook": {
 				"properties": {
