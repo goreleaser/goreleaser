@@ -330,7 +330,7 @@ func TestListTargets(t *testing.T) {
 			Goarm:  []string{"7,softfloat", "7,hardfloat"},
 			Tool:   "go",
 		})
-		require.EqualError(t, err, `goarm 7 has conflicting ABIs ("7,softfloat" and "7,hardfloat") for linux: only one ABI per GOARM version is supported, drop one`)
+		require.EqualError(t, err, `goarm 7 has conflicting ABIs ("7,hardfloat" and "7,softfloat") for linux: only one ABI per GOARM version is supported, drop one`)
 	})
 
 	t.Run("invalid goarm with invalid softfloat syntax", func(t *testing.T) {

@@ -180,7 +180,9 @@ func checkGoarmConflict(targets []Target) error {
 		}
 		k := goarmKey{t.Goos, t.Goarm}
 		if prev, ok := seen[k]; ok && prev != t.fullGoarm() {
-			return fmt.Errorf("goarm %s has conflicting ABIs (%q and %q) for %s: only one ABI per GOARM version is supported, drop one", t.Goarm, prev, t.fullGoarm(), t.Goos)
+			abis := []string{prev, t.fullGoarm()}
+			slices.Sort(abis)
+			return fmt.Errorf("goarm %s has conflicting ABIs (%q and %q) for %s: only one ABI per GOARM version is supported, drop one", t.Goarm, abis[0], abis[1], t.Goos)
 		}
 		seen[k] = t.fullGoarm()
 	}
