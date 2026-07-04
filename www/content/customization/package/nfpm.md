@@ -704,6 +704,11 @@ nfpms:
         pfx_file: ./certs/signing.pfx
 ```
 
+> [!WARNING]
+> If you use `ConventionalFileName`, make sure to replace '~' with some
+> other character. GitHub will replace tilde with a dot, which will render
+> the checksums invalid as filenames will not match.
+
 {{< g_templates >}}
 
 > [!NOTE]
