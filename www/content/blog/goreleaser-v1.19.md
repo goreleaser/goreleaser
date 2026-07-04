@@ -92,7 +92,7 @@ Now that Winget supports installing `zip` packages, GoReleaser added support to
 generate the needed manifests, and you can then PR them to
 `microsoft/winget-pkgs`.
 
-![winget-installed goreleaser on windows](https://carlosbecker.com/posts/goreleaser-v1.19/pic.jpg)
+![winget-installed goreleaser on windows](https://a.goreleaser.com/blog/goreleaser-v1.19/pic.jpg)
 
 Example:
 

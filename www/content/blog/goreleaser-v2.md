@@ -12,7 +12,7 @@ The new major version of [GoReleaser][gorel] is here!
 
 <!--more-->
 
-![GoReelaser banner](https://carlosbecker.com/posts/goreleaser-v2/header.webp)
+![GoReelaser banner](https://a.goreleaser.com/blog/goreleaser-v2/header.webp)
 
 I first launched [GoReleaser v1.0.0][v1] in November 2021 - 2.5 years ago!
 
@@ -26,7 +26,7 @@ You can read it [here][versioning].
 So, after _two and a half years_, it's beyond time for v2 to happen, don't you
 think?
 
-![It's happening!](https://carlosbecker.com/posts/goreleaser-v2/happening.gif)
+![It's happening!](https://a.goreleaser.com/blog/goreleaser-v2/happening.gif)
 
 ## Highlights
 
@@ -34,7 +34,7 @@ GoReleaser v2 is basically the same as the [GoReleaser v1.26.2][last-v1] - the
 latest v1.
 The differences between them should be only the removal of deprecated options.
 
-[goreleaser --version](https://carlosbecker.com/posts/goreleaser-v2/pro.webp)
+[goreleaser --version](https://a.goreleaser.com/blog/goreleaser-v2/pro.webp)
 
 All that being said, we do have a lot of new features since the [first v1][v1].
 Here's an incomplete list with some of my favorites:

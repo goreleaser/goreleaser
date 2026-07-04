@@ -15,7 +15,7 @@ contributors!
 
 <!--more-->
 
-![Mastodon integration](https://carlosbecker.com/posts/goreleaser-v1.13/picture.webp)
+![Mastodon integration](https://a.goreleaser.com/blog/goreleaser-v1.13/picture.webp)
 
 This one also marks the point of 1 year since v1.0.0!
 

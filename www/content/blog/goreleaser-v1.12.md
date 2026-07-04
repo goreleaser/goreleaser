@@ -15,7 +15,7 @@ and this one has 149 since previous feature release!
 
 Definitely a big release, with some big features. Let's dive in!
 
-![GoReleaser Pro release using the new spli/merge feature](https://carlosbecker.com/posts/goreleaser-v1.12/picture.webp)
+![GoReleaser Pro release using the new spli/merge feature](https://a.goreleaser.com/blog/goreleaser-v1.12/picture.webp)
 
 ### Highlights
 

@@ -12,7 +12,7 @@ The Easter release is here!
 
 <!--more-->
 
-![better docker image build error output](https://carlosbecker.com/posts/goreleaser-v1.17/img.webp)
+![better docker image build error output](https://a.goreleaser.com/blog/goreleaser-v1.17/img.webp)
 
 It is packed with some juicy features and tons of bug fixes and quality-of-life
 improvements.
