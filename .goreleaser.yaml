@@ -388,6 +388,27 @@ docker_signs:
       - "${artifact}@${digest}"
       - --yes
 
+verify:
+  commands:
+    - cmd: sha256sum
+      args: ["-c", "checksums.txt"]
+    - context: asset
+      if: '{{ eq .ArtifactName "checksums.txt" }}'
+      cmd: cosign
+      args:
+        - verify-blob
+        - "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
+        - "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
+        - "--bundle={{ .artifact }}.sigstore.json"
+        - "{{ .artifact }}"
+    - context: image
+      cmd: cosign
+      args:
+        - verify
+        - "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
+        - "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
+        - "{{ .artifact }}"
+
 gemfury:
   - account: goreleaser
     disable: "{{ .IsNightly }}"
