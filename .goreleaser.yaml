@@ -286,7 +286,7 @@ npms:
       - docker
 
 nfpms:
-  - file_name_template: "{{ .ConventionalFileName }}"
+  - file_name_template: '{{ replace .ConventionalFileName "~" "-" }}'
     id: packages
     homepage: https://goreleaser.com
     description: |-
