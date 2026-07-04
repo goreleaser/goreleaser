@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/gitlabregistry"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mcp"
@@ -48,6 +49,7 @@ func New() Pipe {
 			blob.Pipe{},
 			upload.Pipe{},
 			artifactory.Pipe{},
+			gitlabregistry.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
 			dockerv2.Publish{},
