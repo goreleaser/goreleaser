@@ -17,7 +17,7 @@ stickers!
 
 We also had a booth on GitHub Universe day 1!
 
-![The GoReleaser booth](https://carlosbecker.com/posts/goreleaser-v2.13/booth.webp)
+![The GoReleaser booth](https://a.goreleaser.com/blog/goreleaser-v2.13/booth.webp)
 
 I don't usually do this kind of thing, but it was pretty fun!
 Thanks to everyone that passed by to chat, and thanks specially to Abby and Lee
@@ -64,8 +64,8 @@ to update your configuration, fixing deprecated options.
 Here's how it looks like on [Charm's Crush](https://charm.land/crush):
 
 ![Choosing the
-prompt](https://carlosbecker.com/posts/goreleaser-v2.13/crush1.webp)
-![Running it](https://carlosbecker.com/posts/goreleaser-v2.13/crush2.webp)
+prompt](https://a.goreleaser.com/blog/goreleaser-v2.13/crush1.webp)
+![Running it](https://a.goreleaser.com/blog/goreleaser-v2.13/crush2.webp)
 
 There's also a prompt to fix all the issues with
 [Cosign v3](https://goreleaser.com/blog/cosign-v3/).

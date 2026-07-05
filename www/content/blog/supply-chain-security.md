@@ -13,7 +13,7 @@ In most basic terms, you can think of **software supply chains are anything that
 
 <!--more-->
 
-![[https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html)](https://cdn-images-1.medium.com/max/2000/1*fYWJfKAY5tdAvTMJnbsQPQ.png)[https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html)
+![[https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html)](https://a.goreleaser.com/blog/supply-chain-security/img1.png)[https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html)
 
 The picture above, taken from [SLSA (Supply Chain Levels for Software
 Artifacts)](https://slsa.dev), **is a security framework**, **a check-list of
@@ -22,7 +22,7 @@ and secure packages and infrastructure in your projects, businesses, or enterpri
 
 Unfortunately, the **new threats** in software development are not only related to the specific company itself. Thanks to [CNCF Security Technical Advisory Group](https://github.com/cncf/tag-security), they made a repository to list all the companies' compromises against supply chain attacks. Trends show that [supply chain attacks are increasing](https://www.sonatype.com/hubfs/Q3%202021-State%20of%20the%20Software%20Supply%20Chain-Report/SSSC-Report-2021_0913_PM_2.pdf?hsLang=en-us) at an **exponential rate of 4–5x per year**, with several thousand last year, the most common being related to dependency confusion or [typosquatting](https://sysdig.com/blog/malicious-python-libraries-jeilyfish-dateutil/), followed by **malicious source code injection**, so, with the rise of software supply chain attacks, it becomes more critical to secure our software supply chains.
 
-![[https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg](https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg)](https://cdn-images-1.medium.com/max/2000/1*tqXzGy9XAM90BUN7cilkiw.jpeg)[https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg](https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg)
+![[https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg](https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg)](https://a.goreleaser.com/blog/supply-chain-security/img2.jpg)[https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg](https://www.memesmonkey.com/images/memesmonkey/43/43b3e5ab9f90a6266a163278c025cba5.jpeg)
 
 Securing the software supply chain is not an easy task.
 So many people and organizations have already working on this specific problem, but luckily we have some tools to make that process a bit easier to deal with for us.
@@ -156,11 +156,11 @@ signs:
 
 Once you have all of these, you will end up having something like the following picture for your release:
 
-![](https://cdn-images-1.medium.com/max/2004/1*cXC_RXowFPRJEIW41olNlg.png)
+![](https://a.goreleaser.com/blog/supply-chain-security/img3.png)
 
 Also, a successful release pipeline:
 
-![](https://cdn-images-1.medium.com/max/5084/1*LUmE7iOj-HLkYT-yGoJMnQ.png)
+![](https://a.goreleaser.com/blog/supply-chain-security/img4.png)
 [A GitHub Actions run](https://github.com/goreleaser/goreleaser-example-supply-chain/actions/workflows/release.yml)
 
 If you verify the container image you pushed to the ghcr.io, a **verify** command of cosign might help you verify the image's signature.

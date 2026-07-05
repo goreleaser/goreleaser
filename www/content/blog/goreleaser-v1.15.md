@@ -12,7 +12,7 @@ Keeping our pace of 1 minor a month, this is the January 2023 release.
 
 <!--more-->
 
-![GoReleaser’s Ko integration documentation](https://carlosbecker.com/posts/goreleaser-v1.15/img.webp)
+![GoReleaser’s Ko integration documentation](https://a.goreleaser.com/blog/goreleaser-v1.15/img.webp)
 
 It is packed with some juicy features and tons of bug fixes and quality-of-life
 improvements.

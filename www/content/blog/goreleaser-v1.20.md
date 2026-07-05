@@ -16,7 +16,7 @@ This is not a flashy release, but I bet you're going to like it anyway 😄
 
 ## Highlights
 
-![Releasing...](https://carlosbecker.com/posts/goreleaser-v1.20/pic.webp)
+![Releasing...](https://a.goreleaser.com/blog/goreleaser-v1.20/pic.webp)
 
 ### Nightlies
 

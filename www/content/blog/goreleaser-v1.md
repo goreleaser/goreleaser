@@ -24,7 +24,7 @@ never happen.
 Therefore, after **467 releases**, **3299 commits**, and almost **5 years** of
 hard work, I'm glad to announce that **v1.0.0 is finally here**!
 
-![It's happening!](https://carlosbecker.com/posts/goreleaser-v1/51e877d4-5114-45e7-8cda-4aa9189701bd.gif)
+![It's happening!](https://a.goreleaser.com/blog/goreleaser-v1/51e877d4-5114-45e7-8cda-4aa9189701bd.gif)
 
 This is a special release, as it marks GoReleaser departing from the school of
 [ZeroVer](https://0ver.org), so I decided to write this quick bit compiling the

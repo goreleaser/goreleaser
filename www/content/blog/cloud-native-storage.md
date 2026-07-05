@@ -17,13 +17,13 @@ It’s just a few additional lines in your `.goreleaser.yaml`.
 To better show this, I created a little demo and use the storage services of the
 big three cloud providers: Azure Blob Storage, AWS S3 and Google Cloud Storage.
 
-![](https://cdn-images-1.medium.com/max/2000/1*4kvgGvBM9--v2rS7nO5c1g.png)
+![](https://a.goreleaser.com/blog/cloud-native-storage/img1.png)
 
 You can use any S3 compatible storage provider too.
 **GoReleaser** support this too! The most prominent (self-hosted) solution is
 **MinIO**.
 
-![](https://cdn-images-1.medium.com/max/4802/1*SH5PQKBDEB0M8mAY7EONeQ.png)
+![](https://a.goreleaser.com/blog/cloud-native-storage/img2.png)
 
 ## The infrastructure code
 
@@ -292,15 +292,15 @@ Let’s check in the consoles of the cloud provider too, If the files are presen
 
 ###### Google Cloud Storage:
 
-![Google Cloud Storage](https://cdn-images-1.medium.com/max/2468/1*OHPaMIOK2YP7HsdgXEPpSw.png)
+![Google Cloud Storage](https://a.goreleaser.com/blog/cloud-native-storage/img3.png)
 
 ###### Azure Blob Storage
 
-![Azure Blob Storage](https://cdn-images-1.medium.com/max/2792/1*K0BMoKe2qH29YHCOtZ8e9A.png)
+![Azure Blob Storage](https://a.goreleaser.com/blog/cloud-native-storage/img4.png)
 
 ###### AWS S3
 
-![AWS S3](https://cdn-images-1.medium.com/max/2868/1*mvgyZMWtZseRabusw_R4Dg.png)
+![AWS S3](https://a.goreleaser.com/blog/cloud-native-storage/img5.png)
 
 Looks very good! Now you can share the URLs of the files for further use!
 
@@ -312,4 +312,4 @@ GoReleaser](https://goreleaser.com/customization/blob/)
 
 And here is the example code: [dirien/quick-bytes](https://github.com/dirien/quick-bites/tree/main/goreleaser-blob)
 
-![Have fun](https://cdn-images-1.medium.com/max/2000/0*kbicxfar7Vo9rUon.jpg)
+![Have fun](https://a.goreleaser.com/blog/cloud-native-storage/img6.jpg)
