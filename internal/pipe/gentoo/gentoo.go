@@ -262,7 +262,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 	for _, art := range arts {
 		cfg := artifact.MustExtra[config.Gentoo](*art, ebuildExtra)
-		if strings.TrimSpace(cfg.SkipUpload) == "true" {
+		skip, err := tmpl.New(ctx).Apply(cfg.SkipUpload)
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(skip) == "true" {
 			log.Debug("gentoo.skip_upload is true")
 			continue
 		}

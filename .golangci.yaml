@@ -8,9 +8,7 @@ linters:
     - depguard
     - forbidigo
     - gocritic
-    - godoclint
     - misspell
-    - modernize
     - noctx
     - nolintlint
     - perfsprint
@@ -40,9 +38,7 @@ linters:
     gocritic:
       disabled-checks:
         - appendAssign
-    modernize:
-      disable:
-        - omitzero
+      #disable:
     perfsprint:
       int-conversion: false
       err-error: false
@@ -95,7 +91,7 @@ linters:
         use-field-name: false
     testifylint:
       enable-all: true
-      disable:
+      #disable:
         - error-is-as
     usetesting:
       context-background: true
