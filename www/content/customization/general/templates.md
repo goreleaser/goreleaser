@@ -202,7 +202,7 @@ On all fields, you have these available functions:
 | `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
 | `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
 | `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read {{< g_inline_version "v2.12" >}}                                             |
-| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string {{< g_inline_version "v2.12" >}}                             |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                             |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
 
