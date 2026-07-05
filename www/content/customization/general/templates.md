@@ -52,7 +52,7 @@ In fields that support templates, these fields are usually available:
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
 | `.Outputs`         | custom outputs {{< g_inline_version "v2.11" >}}                                                            |
-| `.Dist`            | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17-unreleased" >}}           |
+| `.Dist`            | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17" >}}           |
 
 The exception is that any of the Git-related fields will no be available in the
 `env` section.

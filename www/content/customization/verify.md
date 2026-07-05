@@ -5,7 +5,7 @@ weight: 55
 
 {{< g_featpro >}}
 
-{{< g_version "v2.17-unreleased" >}}
+{{< g_version "v2.17" >}}
 
 After a release is published, `verify` re-downloads the published release
 assets from their public URLs into `dist/verify` and runs your verification

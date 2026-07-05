@@ -35,7 +35,7 @@ dockers_v2:
     # When set, it takes precedence over `dockerfile`.
     #
     # Templates: allowed (both the path and the file contents).
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     templated_dockerfile: "Dockerfile.tmpl"
 
     # IDs to filter the binaries/packages.
@@ -84,7 +84,7 @@ dockers_v2:
     # before being copied into the build context.
     #
     # Templates: allowed (source path, destination path, and file contents).
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     templated_extra_files:
       - # Source file path (relative to the project root).
         #
@@ -180,7 +180,7 @@ dockers_v2:
           # Working directory for the command.
           dir: "{{ .ContextDir }}"
           # Only run this hook if the template evaluates to `true`.
-          # {{< g_inline_version "v2.17-unreleased" >}}
+          # {{< g_inline_version "v2.17" >}}
           if: "{{ eq .Runtime.Goarch \"amd64\" }}"
           # Extra env vars to inject into the hook.
           env:

@@ -65,7 +65,7 @@ winget:
     # fields, as well as the locale manifest filename
     # (e.g. `<package>.locale.en-GB.yaml`).
     #
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     # Default: 'en-US'.
     # Templates: allowed.
     default_locale: en-GB

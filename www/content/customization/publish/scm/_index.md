@@ -24,7 +24,7 @@ release:
     # one used to build from - for instance, when publishing to a repository
     # in another organization.
     #
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     # Templates: allowed (environment variables only).
     token: "{{ .Env.RELEASE_GITHUB_TOKEN }}"
 
