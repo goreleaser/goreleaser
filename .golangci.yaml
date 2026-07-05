@@ -92,9 +92,6 @@ linters:
       enable-all: true
       disable:
         - error-is-as
-      os-setenv: true
-      os-create-temp: true
-      os-temp-dir: true
   exclusions:
     generated: lax
     presets:
