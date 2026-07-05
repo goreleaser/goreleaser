@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/blang/semver"
+	"github.com/Masterminds/semver/v3"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -317,10 +317,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 				sort.Slice(ebuilds, func(i, j int) bool {
 					vIStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[i], prefix), ".ebuild")
 					vJStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[j], prefix), ".ebuild")
-					vI, errI := semver.ParseTolerant(vIStr)
-					vJ, errJ := semver.ParseTolerant(vJStr)
+					vI, errI := semver.NewVersion(vIStr)
+					vJ, errJ := semver.NewVersion(vJStr)
 					if errI == nil && errJ == nil {
-						return vI.GT(vJ)
+						return vI.GreaterThan(vJ)
 					}
 					return ebuilds[i] > ebuilds[j]
 				})
