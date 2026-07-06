@@ -149,7 +149,7 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/v') }} # only on tags
         with:
           distribution: goreleaser-pro
-          version: "~> 2"
+          version: nightly
           args: release --clean --timeout 60m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
