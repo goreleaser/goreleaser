@@ -66,10 +66,11 @@ has access to the target project:
 ```
 
 Alternatively, you can use HTTP basic authentication by setting `username`
-(and either `password` or the environment variable
-`GITLAB_REGISTRY_<NAME>_SECRET`, where `<NAME>` is the uppercased `name` of
-the instance — e.g. `GITLAB_REGISTRY_PRODUCTION_SECRET`). For deploy tokens,
-the username must be the deploy token's username.
+(or the environment variable `GITLAB_REGISTRY_<NAME>_USERNAME`) and either
+`password` or the environment variable `GITLAB_REGISTRY_<NAME>_SECRET`, where
+`<NAME>` is the uppercased `name` of the instance — e.g.
+`GITLAB_REGISTRY_PRODUCTION_SECRET`. For deploy tokens, the username must be
+the deploy token's username.
 
 ### Storing packages of multiple projects in one project
 
