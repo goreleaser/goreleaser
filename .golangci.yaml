@@ -37,7 +37,6 @@ linters:
     gocritic:
       disabled-checks:
         - appendAssign
-      disable:
     perfsprint:
       int-conversion: false
       err-error: false
