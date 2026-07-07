@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -1123,7 +1123,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/3" && r.Method == http.MethodPatch {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
-			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "This is an existing release", "prerelease": false}`, string(got))
+			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "This is an existing release", "draft": false, "prerelease": false}`, string(got))
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"id": 3, "name": "v1.0.0", "body": "This is an existing release"}`)
@@ -2285,7 +2285,7 @@ func TestGitHubCreateOrUpdateReleaseUpdate(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	data := &github.RepositoryRelease{
+	data := github.UpdateReleaseRequest{
 		TagName: new("v1.0.0"),
 		Name:    new("v1.0.0"),
 		Body:    new("new body"),
