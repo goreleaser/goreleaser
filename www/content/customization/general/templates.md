@@ -52,7 +52,7 @@ In fields that support templates, these fields are usually available:
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
 | `.Outputs`         | custom outputs {{< g_inline_version "v2.11" >}}                                                            |
-| `.Dist`            | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17" >}}           |
+| `.Dist`            | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17" >}}                      |
 
 The exception is that any of the Git-related fields will no be available in the
 `env` section.
@@ -202,7 +202,7 @@ On all fields, you have these available functions:
 | `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
 | `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< g_inline_version "v2.9" >}}  |
 | `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read {{< g_inline_version "v2.12" >}}                                             |
-| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string {{< g_inline_version "v2.12" >}}                             |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                                |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
 
@@ -214,7 +214,7 @@ On all fields, you have these available functions:
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `in (list "a" "b" "c") "b"`             | checks if a slice contains a value                                                                                                                                                                                                         |
 | `reReplaceAll "(.*)" "foo" "bar-$1"`    | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments {{< g_inline_version "v2.8" >}} |
-| `list "a" "b" "c" \| listExclude "^a$"` | removes items matching the given regular expression from a list {{< g_inline_version "v2.16" >}}                                                                                                                                |
+| `list "a" "b" "c" \| listExclude "^a$"` | removes items matching the given regular expression from a list {{< g_inline_version "v2.16" >}}                                                                                                                                           |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
