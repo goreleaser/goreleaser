@@ -148,6 +148,30 @@ func TestParse(t *testing.T) {
 			Goarch:  "arm64",
 			Goarm64: "v9.0",
 		},
+		"linux_ppc64": {
+			Target:  "linux_ppc64_power8",
+			Goos:    "linux",
+			Goarch:  "ppc64",
+			Goppc64: "power8",
+		},
+		"linux_ppc64le_power9": {
+			Target:  "linux_ppc64le_power9",
+			Goos:    "linux",
+			Goarch:  "ppc64le",
+			Goppc64: "power9",
+		},
+		"linux_riscv64": {
+			Target:    "linux_riscv64_rva20u64",
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva20u64",
+		},
+		"linux_riscv64_rva22u64": {
+			Target:    "linux_riscv64_rva22u64",
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva22u64",
+		},
 	} {
 		t.Run(target, func(t *testing.T) {
 			got, err := Default.Parse(target)

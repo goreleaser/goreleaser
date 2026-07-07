@@ -96,9 +96,9 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 			t.Abi = abi
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
-		case "ppc64":
+		case "ppc64", "ppc64le":
 			t.Goppc64 = extra
-		case "riscv":
+		case "riscv64":
 			t.Goriscv64 = extra
 		}
 	}
