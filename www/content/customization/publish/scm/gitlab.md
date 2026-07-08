@@ -87,8 +87,8 @@ gitlab_urls:
 > This uploads the release artifacts to the package registry of the project
 > being released. To publish artifacts to the generic package registry of
 > another project — e.g. to store all your packages in a single project —
-> use the
-> [GitLab Package Registry publisher](/customization/publish/gitlab_registry/)
+> use the [HTTP upload
+> pipe](/customization/publish/upload/#gitlab-generic-package-registry)
 > instead.
 
 ## Example release

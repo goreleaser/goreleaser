@@ -1363,7 +1363,6 @@ type Project struct {
 	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
 	DockerDigest      DockerDigest      `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
 	Artifactories     []Upload          `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
-	GitLabRegistries  []Upload          `yaml:"gitlab_registries,omitempty" json:"gitlab_registries,omitempty"`
 	Uploads           []Upload          `yaml:"uploads,omitempty" json:"uploads,omitempty"`
 	Blobs             []Blob            `yaml:"blobs,omitempty" json:"blobs,omitempty"`
 	Publishers        []Publisher       `yaml:"publishers,omitempty" json:"publishers,omitempty"`

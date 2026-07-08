@@ -3889,12 +3889,6 @@
 						},
 						"type": "array"
 					},
-					"gitlab_registries": {
-						"items": {
-							"$ref": "#/$defs/Upload"
-						},
-						"type": "array"
-					},
 					"uploads": {
 						"items": {
 							"$ref": "#/$defs/Upload"
