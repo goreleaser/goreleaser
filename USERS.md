@@ -66,6 +66,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Kubescape](https://github.com/kubescape)
 1. [KusionStack](https://kusionstack.io/)
 1. [Kyverno](https://github.com/kyverno)
+1. [Lovable](https://lovable.dev)
 1. [Mage](https://github.com/magefile)
 1. [Mercure](https://mercure.rocks/)
 1. [Meroxa](https://meroxa.com/)
