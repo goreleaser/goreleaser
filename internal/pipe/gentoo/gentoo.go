@@ -337,7 +337,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 		} else if fc, ok := cl.(client.FilesCreator); ok {
-			if err := fc.CreateFiles(ctx, author, repo, msg, g.files); err != nil {
+			err = fc.CreateFiles(ctx, author, repo, msg, g.files)
+			if err != nil {
 				return err
 			}
 		} else {
