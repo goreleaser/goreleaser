@@ -35,6 +35,7 @@ var (
 	_ ReleaseNotesGenerator = &githubClient{}
 	_ PullRequestOpener     = &githubClient{}
 	_ ForkSyncer            = &githubClient{}
+	_ ReleaseChecker        = &githubClient{}
 )
 
 type githubClient struct {
@@ -644,6 +645,13 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.U
 		return release, err
 	}
 
+	// An immutable release cannot be updated, nor can its assets be replaced,
+	// so retrying will never succeed. Fail fast with a clear error instead of
+	// attempting to update the release and upload every artifact.
+	if release.GetImmutable() {
+		return nil, fmt.Errorf("release %s already exists and is immutable, it cannot be updated", release.GetTagName())
+	}
+
 	data.Draft = new(release.Draft)
 	data.Body = new(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
@@ -685,6 +693,45 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data github
 	}
 	l.Debug("release updated")
 	return release, nil
+}
+
+func (c *githubClient) CanRelease(ctx *context.Context) error {
+	c.checkRateLimit(ctx)
+	repo, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
+		return c.client.Repositories.Get(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name)
+	})
+	if err != nil {
+		return fmt.Errorf("could not check release permissions: %w", err)
+	}
+	// The permissions field is only populated when the token has the right
+	// scope; skip the check when it is absent to avoid false negatives with
+	// fine-grained tokens.
+	if perms := repo.GetPermissions(); perms != nil && !perms.GetPush() {
+		return fmt.Errorf("token does not have push permission for %s/%s",
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+		)
+	}
+
+	release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
+		return c.client.Repositories.GetReleaseByTag(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			ctx.Git.CurrentTag,
+		)
+	})
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			// No release exists yet for this tag: nothing blocks creating it.
+			return nil
+		}
+		return fmt.Errorf("could not check for an existing release: %w", err)
+	}
+	if release.GetImmutable() {
+		return fmt.Errorf("release %s already exists and is immutable, it cannot be updated", release.GetTagName())
+	}
+	return nil
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {

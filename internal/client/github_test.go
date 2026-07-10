@@ -1160,6 +1160,104 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 	require.Equal(t, "3", release)
 }
 
+func TestGitHubCreateReleaseImmutable(t *testing.T) {
+	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 3, "name": "v1.0.0", "body": "This is an immutable release", "immutable": true}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "test immutable release")
+	require.ErrorContains(t, err, "immutable")
+}
+
+func TestGitHubCanRelease(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name       string
+		repoStatus int
+		repoBody   string
+		relStatus  int
+		relBody    string
+		wantErr    string
+	}{
+		{"push allowed, no existing release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusNotFound, `{"message":"Not Found"}`, ""},
+		{"push allowed, mutable release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":false}`, ""},
+		{"push allowed, immutable release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":true}`, "immutable"},
+		{"push denied", http.StatusOK, `{"permissions":{"push":false}}`, http.StatusNotFound, `{}`, "push permission"},
+		{"permissions absent", http.StatusOK, `{}`, http.StatusNotFound, `{}`, ""},
+		{"permission check error", http.StatusForbidden, `{"message":"Forbidden"}`, http.StatusOK, `{}`, "could not check release permissions"},
+		{"release lookup error", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusForbidden, `{"message":"Forbidden"}`, "could not check for an existing release"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				switch r.URL.Path {
+				case "/api/v3/repos/goreleaser/test":
+					w.WriteHeader(tt.repoStatus)
+					fmt.Fprint(w, tt.repoBody)
+				case "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0":
+					w.WriteHeader(tt.relStatus)
+					fmt.Fprint(w, tt.relBody)
+				default:
+					t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+				}
+			})
+
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					GitHubURLs: config.GitHubURLs{API: srv.URL},
+					Release: config.Release{
+						GitHub: config.Repo{Owner: "goreleaser", Name: "test"},
+					},
+				},
+				testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.0"}),
+			)
+
+			client, err := newGitHub(ctx, "test-token")
+			require.NoError(t, err)
+
+			err = client.CanRelease(ctx)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {

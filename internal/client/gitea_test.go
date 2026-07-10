@@ -603,6 +603,57 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestGiteaCanRelease(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name    string
+		status  int
+		body    string
+		wantErr string
+	}{
+		{"push allowed", http.StatusOK, `{"permissions":{"push":true}}`, ""},
+		{"push denied", http.StatusOK, `{"permissions":{"push":false}}`, "push permission"},
+		{"permissions absent", http.StatusOK, `{}`, ""},
+		{"api error", http.StatusNotFound, `{}`, "could not check release permissions"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				if strings.HasSuffix(r.URL.Path, "api/v1/version") {
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, `{"version":"1.22.0"}`)
+					return
+				}
+				if r.URL.Path == "/api/v1/repos/someone/something" {
+					w.WriteHeader(tt.status)
+					fmt.Fprint(w, tt.body)
+					return
+				}
+				t.Errorf("unhandled request: %s %s", r.Method, r.URL.Path)
+			}))
+			defer srv.Close()
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				GiteaURLs: config.GiteaURLs{API: srv.URL},
+				Release: config.Release{
+					Gitea: config.Repo{Owner: "someone", Name: "something"},
+				},
+			})
+
+			client, err := newGitea(ctx, "test-token")
+			require.NoError(t, err)
+
+			err = client.CanRelease(ctx)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestGiteaChangelog(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

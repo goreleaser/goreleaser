@@ -107,6 +107,14 @@ type PullRequestOpener interface {
 	OpenPullRequest(ctx *context.Context, base, head Repo, title string, draft bool) error
 }
 
+// ReleaseChecker can check whether a release can be created for the current
+// tag. Implementations should perform read-only checks (no side effects), e.g.
+// verifying the token has permission to publish and that the tag is not already
+// published as an immutable release that cannot be updated.
+type ReleaseChecker interface {
+	CanRelease(ctx *context.Context) error
+}
+
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
 	return newWithToken(ctx, ctx.Token)

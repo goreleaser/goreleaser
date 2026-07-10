@@ -670,6 +670,18 @@ type Release struct {
 	ReleaseNotesMode         ReleaseNotesMode `yaml:"mode,omitempty" json:"mode,omitempty" jsonschema:"enum=keep-existing,enum=append,enum=prepend,enum=replace,default=keep-existing"`
 	ReplaceExistingArtifacts bool             `yaml:"replace_existing_artifacts,omitempty" json:"replace_existing_artifacts,omitempty"`
 	IncludeMeta              bool             `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
+	Preflight                ReleasePreflight `yaml:"preflight,omitempty" json:"preflight,omitempty"`
+}
+
+// ReleasePreflight configures the release preflight checks, which run before
+// the build to surface likely problems (e.g. a tag already published as an
+// immutable release) early.
+type ReleasePreflight struct {
+	// FailOnError aborts the release before building when a preflight check
+	// fails. When false (default), a failed check only logs a warning.
+	//
+	// Templates: allowed.
+	FailOnError string `yaml:"fail_on_error,omitempty" json:"fail_on_error,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Milestone config used for VCS milestone.
