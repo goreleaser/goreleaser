@@ -1,5 +1,4 @@
 // Package gentoo provides a Pipe that builds and publishes gentoo ebuilds.
-// Package gentoo provides a Pipe that builds and publishes gentoo ebuilds.
 package gentoo
 
 import (
@@ -302,8 +301,17 @@ func (Pipe) Publish(ctx *context.Context) error {
 			return err
 		}
 
+		repoClient := cl
+		if g.cfg.Repository.Token != "" {
+			var err error
+			repoClient, err = client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
+			if err != nil {
+				return err
+			}
+		}
+
 		// list existing ebuilds
-		if lister, ok := cl.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
+		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
 			dir := filepath.Dir(g.cfg.Path)
 			names, err := lister.ListDir(ctx, repo, dir)
 			if err == nil {
@@ -336,7 +344,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			if err := client.NewGitUploadClient(repo.Branch).CreateFiles(ctx, author, repo, msg, g.files); err != nil {
 				return err
 			}
-		} else if fc, ok := cl.(client.FilesCreator); ok {
+		} else if fc, ok := repoClient.(client.FilesCreator); ok {
 			err = fc.CreateFiles(ctx, author, repo, msg, g.files)
 			if err != nil {
 				return err
@@ -344,14 +352,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 		} else {
 			for _, f := range g.files {
 				if f.Delete {
-					if d, ok := cl.(client.FileDeleter); ok {
+					if d, ok := repoClient.(client.FileDeleter); ok {
 						if err := d.DeleteFile(ctx, author, repo, f.Path, msg); err != nil {
 							return err
 						}
 					}
 					continue
 				}
-				if err = cl.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+				if err = repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
 					return err
 				}
 			}
@@ -366,13 +374,13 @@ func (Pipe) Publish(ctx *context.Context) error {
 			Owner:  g.cfg.Repository.PullRequest.Base.Owner,
 			Branch: g.cfg.Repository.PullRequest.Base.Branch,
 		}
-		fscli, ok := cl.(client.ForkSyncer)
+		fscli, ok := repoClient.(client.ForkSyncer)
 		if ok {
 			if err := fscli.SyncFork(ctx, repo, base); err != nil {
 				log.WithError(err).Warn("could not sync fork")
 			}
 		}
-		pcl, ok := cl.(client.PullRequestOpener)
+		pcl, ok := repoClient.(client.PullRequestOpener)
 		if !ok {
 			return errors.New("client does not support pull requests")
 		}

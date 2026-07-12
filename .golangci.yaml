@@ -1,6 +1,6 @@
 version: "2"
 run:
-  go: "1.23"
+  go: "1.24"
 linters:
   enable:
     - bodyclose
@@ -8,7 +8,9 @@ linters:
     - depguard
     - forbidigo
     - gocritic
+    - godoclint
     - misspell
+    - modernize
     - noctx
     - nolintlint
     - perfsprint
@@ -19,6 +21,7 @@ linters:
     - tparallel
     - unconvert
     - unparam
+    - usetesting
     - wastedassign
   settings:
     depguard:
@@ -37,6 +40,9 @@ linters:
     gocritic:
       disabled-checks:
         - appendAssign
+    modernize:
+      disable:
+        - omitzero
     perfsprint:
       int-conversion: false
       err-error: false
@@ -91,6 +97,11 @@ linters:
       enable-all: true
       disable:
         - error-is-as
+    usetesting:
+      context-background: true
+      context-todo: true
+      os-chdir: true
+      os-mkdir-temp: true
   exclusions:
     generated: lax
     presets:
