@@ -193,6 +193,7 @@ var validLicenses = []string{
 	"lsof",
 	"miros",
 	"mit",
+	"mit-click",
 	"mit-cmu",
 	"mit-enna",
 	"mit-feh",
