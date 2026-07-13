@@ -168,7 +168,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 			}
 			targets[fixTarget(target)] = true
 		}
-		build.Targets = slices.Collect(maps.Keys(targets))
+		build.Targets = slices.Sorted(maps.Keys(targets))
 
 		// Explicit targets skip the matrix, so validate their GOARM and run the
 		// same one-ABI-per-version conflict check the matrix path runs.
