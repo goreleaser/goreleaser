@@ -1,0 +1,5 @@
+Contact: https://github.com/goreleaser/goreleaser/security/advisories/new
+Policy: https://github.com/goreleaser/goreleaser/blob/main/SECURITY.md
+Preferred-Languages: en
+Canonical: https://goreleaser.com/.well-known/security.txt
+Expires: 2027-01-01T00:00:00.000Z
