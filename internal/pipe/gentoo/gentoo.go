@@ -281,7 +281,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 		}
 		g.files = append(g.files, client.RepoFile{
 			Content: content,
-			Path:    artifact.MustExtra[string](*art, ebuildPathExtra),
+			Path:    filepath.ToSlash(artifact.MustExtra[string](*art, ebuildPathExtra)),
 		})
 	}
 
@@ -334,7 +334,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 				})
 				if len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
-						g.files = append(g.files, client.RepoFile{Path: filepath.Join(dir, n), Delete: true})
+						g.files = append(g.files, client.RepoFile{Path: filepath.ToSlash(filepath.Join(dir, n)), Delete: true})
 					}
 				}
 			}
