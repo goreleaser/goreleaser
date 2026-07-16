@@ -49,6 +49,8 @@ func TestDoRunMultiArch(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
+	require.Contains(t, out, "if use amd64 || use arm64; then")
+	require.Contains(t, out, "doexe \"foo\"")
 }
 
 func TestDoRunCustomBindir(t *testing.T) {
@@ -89,6 +91,8 @@ func TestDoRunCustomBindir(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
+	require.Contains(t, out, "if use amd64 || use arm64; then")
+	require.Contains(t, out, "doexe \"foo\"")
 	require.Contains(t, out, "exeinto /usr/bin")
 }
 

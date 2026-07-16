@@ -56,9 +56,13 @@ src_install() {
 {{- if .Bindir }}
   exeinto {{ .Bindir }}
 {{- end }}
-{{- range .Archs }}
-  if use {{ .Keyword }}; then
-    newexe "{{ $.Name }}" "{{ $.Name }}" || die "Failed to install binary"
+{{- range .Installs }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+    {{- if eq .Source .Target }}
+    doexe "{{ .Source }}" || die "Failed to install binary"
+    {{- else }}
+    newexe "{{ .Source }}" "{{ .Target }}" || die "Failed to install binary"
+    {{- end }}
   fi
 {{- end }}
   if use doc; then
@@ -66,6 +70,12 @@ src_install() {
   fi
 }
 `
+
+type installData struct {
+	Source   string
+	Target   string
+	Keywords []string
+}
 
 // Pipe builds and publishes gentoo ebuilds.
 type Pipe struct{}
@@ -185,6 +195,24 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		slices.Sort(keywords)
 	}
 
+	keywordMap := make(map[string]bool)
+	for _, art := range archInfos {
+		keywordMap[art.Keyword] = true
+	}
+	keywordsList := make([]string, 0, len(keywordMap))
+	for kw := range keywordMap {
+		keywordsList = append(keywordsList, kw)
+	}
+	slices.Sort(keywordsList)
+
+	installs := []installData{
+		{
+			Source:   cfg.Name,
+			Target:   cfg.Name,
+			Keywords: keywordsList,
+		},
+	}
+
 	data := struct {
 		Name        string
 		Description string
@@ -193,6 +221,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Keywords    string
 		Bindir      string
 		Archs       []archData
+		Installs    []installData
 	}{
 		Name:        cfg.Name,
 		Description: cfg.Description,
@@ -201,6 +230,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Keywords:    strings.Join(keywords, " "),
 		Bindir:      cfg.Bindir,
 		Archs:       archInfos,
+		Installs:    installs,
 	}
 	var buf bytes.Buffer
 	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {
