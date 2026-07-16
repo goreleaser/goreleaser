@@ -51,6 +51,47 @@ func TestDoRunMultiArch(t *testing.T) {
 	require.Contains(t, out, "arm64? (")
 }
 
+func TestDoRunCustomBindir(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			Bindir:     "/usr/bin",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_1.0.0_linux_amd64.tar.gz",
+		Path:    "amd64.tar.gz",
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_arm64.tar.gz",
+		Path:   "arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+	out := string(bts)
+	require.Contains(t, out, "amd64? (")
+	require.Contains(t, out, "arm64? (")
+	require.Contains(t, out, "exeinto /usr/bin")
+}
+
 func TestDoRunWithFiles(t *testing.T) {
 	dist := t.TempDir()
 	svc := "foo.service"

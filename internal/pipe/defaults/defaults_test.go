@@ -1,6 +1,7 @@
 package defaults
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -101,7 +102,7 @@ func TestFillPartial(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goarm)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goamd64)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
-	require.Equal(t, "app-misc/test-bin/test-bin-{{ .Version }}.ebuild", ctx.Config.Gentoos[0].Path)
+	require.Equal(t, filepath.ToSlash(filepath.Join("app-misc", "test-bin", "test-bin-{{ .Version }}.ebuild")), filepath.ToSlash(ctx.Config.Gentoos[0].Path))
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 	require.Equal(t, uint(10), ctx.Config.Retry.Attempts)
