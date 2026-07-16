@@ -1,0 +1,19 @@
+<<<<<<< SEARCH
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+	out := string(bts)
+	require.Contains(t, out, "amd64? (")
+	require.Contains(t, out, "arm64? (")
+	require.Contains(t, out, "exeinto /opt/bin")
+}
+=======
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+	out := string(bts)
+	require.Contains(t, out, "amd64? (")
+	require.Contains(t, out, "arm64? (")
+	require.Contains(t, out, "exeinto /usr/bin")
+}
+>>>>>>> REPLACE

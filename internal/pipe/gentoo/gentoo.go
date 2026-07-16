@@ -53,7 +53,9 @@ src_unpack() {
 }
 
 src_install() {
+{{- if .Bindir }}
   exeinto {{ .Bindir }}
+{{- end }}
 {{- range .Archs }}
   if use {{ .Keyword }}; then
     newexe "{{ $.Name }}" "{{ $.Name }}" || die "Failed to install binary"
@@ -88,7 +90,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			g.Type = "bin"
 		}
 		if g.Bindir == "" {
-			g.Bindir = "/usr/bin"
+			g.Bindir = "/opt/bin"
 		}
 		if len(g.Keywords) == 0 {
 			g.Keywords = config.StringArray{"~amd64"}

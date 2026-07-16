@@ -1,0 +1,11 @@
+<<<<<<< SEARCH
+src_install() {
+  exeinto {{ .Bindir }}
+{{- range .Archs }}
+=======
+src_install() {
+{{- if .Bindir }}
+  exeinto {{ .Bindir }}
+{{- end }}
+{{- range .Archs }}
+>>>>>>> REPLACE
