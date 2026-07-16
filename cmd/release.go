@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/logging"
@@ -14,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -97,6 +99,136 @@ func newReleaseCmd() *releaseCmd {
 	return root
 }
 
+func printReleaseSummary(ctx *context.Context) {
+	log.Infof(boldStyle.Render("release summary"))
+
+	log.IncreasePadding()
+
+	assets := ctx.Artifacts.Filter(artifact.ByTypes(artifact.ReleaseUploadableTypes()...)).List()
+	if len(assets) > 0 {
+		log.Infof("Published %s to %s with %d assets.", ctx.Git.CurrentTag, ctx.Git.URL, len(assets))
+	}
+
+	if !skips.Any(ctx, skips.Homebrew) && len(ctx.Config.Casks) > 0 {
+		for _, brew := range ctx.Config.Casks {
+			log.Infof("Published %s to %s/%s", brew.Name, brew.Repository.Owner, brew.Repository.Name)
+		}
+	}
+
+	// Docker v1 is deprecated, but we check it just in case
+	if !skips.Any(ctx, skips.Docker) && len(ctx.Config.Dockers) > 0 {
+		for _, docker := range ctx.Config.Dockers {
+			// Show the image templates if available, otherwise the ID
+			if len(docker.ImageTemplates) > 0 {
+				log.Infof("Pushed docker images: %s", docker.ImageTemplates[0])
+			} else {
+				log.Infof("Pushed Docker images (%s)", docker.ID)
+			}
+		}
+	}
+
+	if !skips.Any(ctx, skips.Docker) && len(ctx.Config.DockersV2) > 0 {
+		for _, docker := range ctx.Config.DockersV2 {
+			if len(docker.Images) > 0 {
+				log.Infof("Pushed docker images: %s", docker.Images[0])
+			} else {
+				log.Infof("Pushed docker images (%s)", docker.ID)
+			}
+		}
+	}
+
+	if !skips.Any(ctx, skips.Ko) && len(ctx.Config.Kos) > 0 {
+		for _, ko := range ctx.Config.Kos {
+			if len(ko.Repositories) > 0 {
+				log.Infof("Pushed Ko images to %s", ko.Repositories[0])
+			} else {
+				log.Infof("Pushed Ko images (%s)", ko.ID)
+			}
+		}
+	}
+
+	if !skips.Any(ctx, skips.Winget) && len(ctx.Config.Winget) > 0 {
+		for _, winget := range ctx.Config.Winget {
+			log.Infof("Opened PR to %s/%s", winget.Repository.Owner, winget.Repository.Name)
+		}
+	}
+
+	if !skips.Any(ctx, skips.Chocolatey) && len(ctx.Config.Chocolateys) > 0 {
+		for _, choc := range ctx.Config.Chocolateys {
+			log.Infof("Published %s to Chocolatey", choc.Name)
+		}
+	}
+
+	if !skips.Any(ctx, skips.AUR) && len(ctx.Config.AURs) > 0 {
+		for _, aur := range ctx.Config.AURs {
+			log.Infof("Pushed %s to AUR", aur.Name)
+		}
+	}
+
+	if !skips.Any(ctx, skips.Nix) && len(ctx.Config.Nix) > 0 {
+		for _, nix := range ctx.Config.Nix {
+			log.Infof("Published nix package in %s/%s", nix.Repository.Owner, nix.Repository.Name)
+		}
+	}
+
+	if !skips.Any(ctx, skips.Scoop) && len(ctx.Config.Scoops) > 0 {
+		for _, scoop := range ctx.Config.Scoops {
+			log.Infof("Updated scoop manifest in %s/%s", scoop.Repository.Owner, scoop.Repository.Name)
+		}
+	}
+
+	// There doesn't appear to be a skip for Krew, so we just check if the config is not empty.
+	if len(ctx.Config.Krews) > 0 {
+		for _, krew := range ctx.Config.Krews {
+			log.Infof("Updated krew manifest in %s/%s", krew.Repository.Owner, krew.Repository.Name)
+		}
+	}
+
+	if !skips.Any(ctx, skips.MCP) && ctx.Config.MCP.Name != "" {
+		log.Infof("Published to MCP registry: %s", ctx.Config.MCP.Name)
+	}
+
+	if len(ctx.Config.Blobs) > 0 {
+		for _, blob := range ctx.Config.Blobs {
+			log.Infof("Uploaded artifacts to blob storage: %s", blob.Bucket)
+		}
+	}
+
+	if len(ctx.Config.Artifactories) > 0 {
+		for _, art := range ctx.Config.Artifactories {
+			target, err := tmpl.New(ctx).Apply(art.Target)
+			if err != nil {
+				target = art.Target // fallback to raw template if rendering fails
+			}
+			log.Infof("Uploaded artifacts to Artifactory: %s", target)
+		}
+	}
+
+	if len(ctx.Config.Uploads) > 0 {
+		for _, upload := range ctx.Config.Uploads {
+			target, err := tmpl.New(ctx).Apply(upload.Target)
+			if err != nil {
+				target = upload.Target // fallback to raw template if rendering fails
+			}
+			log.Infof("Uploaded %s to %s", upload.Name, target)
+		}
+	}
+
+	if len(ctx.Config.Publishers) > 0 {
+		for _, pub := range ctx.Config.Publishers {
+			log.Infof("Executed custom publisher: %s", pub.Name)
+		}
+	}
+
+	if len(ctx.Config.Milestones) > 0 {
+		for _, milestone := range ctx.Config.Milestones {
+			log.Infof("Closed milestone in %s/%s", milestone.Repo.Owner, milestone.Repo.Name)
+		}
+	}
+
+	log.DecreasePadding()
+}
+
 func releaseProject(parent stdctx.Context, options releaseOpts) error {
 	start := time.Now()
 	log.Infof(boldStyle.Render("starting release"))
@@ -125,6 +257,7 @@ func releaseProject(parent stdctx.Context, options releaseOpts) error {
 
 	deprecateWarn(ctx)
 	log.Infof(boldStyle.Render(fmt.Sprintf("release succeeded after %s", after(start))))
+	printReleaseSummary(ctx)
 	return nil
 }
 
