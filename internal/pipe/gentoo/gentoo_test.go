@@ -49,7 +49,6 @@ func TestDoRunMultiArch(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "exeinto /opt/bin")
 }
 
 func TestDoRunCustomBindir(t *testing.T) {

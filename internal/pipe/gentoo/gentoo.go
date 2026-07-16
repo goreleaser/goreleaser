@@ -89,9 +89,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if g.Type == "" {
 			g.Type = "bin"
 		}
-		if g.Bindir == "" {
-			g.Bindir = "/opt/bin"
-		}
 		if len(g.Keywords) == 0 {
 			g.Keywords = config.StringArray{"~amd64"}
 		}
