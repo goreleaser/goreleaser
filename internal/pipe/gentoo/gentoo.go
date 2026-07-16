@@ -195,14 +195,22 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		slices.Sort(keywords)
 	}
 
+	keywordMap := make(map[string]bool)
+	for _, art := range archInfos {
+		keywordMap[art.Keyword] = true
+	}
+	keywordsList := make([]string, 0, len(keywordMap))
+	for kw := range keywordMap {
+		keywordsList = append(keywordsList, kw)
+	}
+	slices.Sort(keywordsList)
+
 	installs := []installData{
 		{
-			Source: cfg.Name,
-			Target: cfg.Name,
+			Source:   cfg.Name,
+			Target:   cfg.Name,
+			Keywords: keywordsList,
 		},
-	}
-	for _, art := range archInfos {
-		installs[0].Keywords = append(installs[0].Keywords, art.Keyword)
 	}
 
 	data := struct {
