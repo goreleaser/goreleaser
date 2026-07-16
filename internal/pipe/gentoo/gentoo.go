@@ -97,11 +97,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			g.Name = ctx.Config.ProjectName
 		}
 		if g.Path == "" {
-			suffix := ""
-			if g.Type == "bin" {
-				suffix = "-bin"
-			}
-			g.Path = filepath.Join("app-misc", g.Name+suffix, fmt.Sprintf("%s%s-{{ .Version }}.ebuild", g.Name, suffix))
+			g.Path = defaultPath(g.Name, g.Type)
+			log.Warnf("no gentoo category configured for %q; defaulting path to %q", g.Name, filepath.ToSlash(g.Path))
+		} else if !hasCategory(g.Path) {
+			log.Warnf("gentoo.path %q does not include a category/package path; Gentoo ebuild paths usually look like %q", g.Path, filepath.ToSlash(defaultPath(g.Name, g.Type)))
 		}
 	}
 	return nil
@@ -124,6 +123,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	tp := tmpl.New(ctx)
 	if err := tp.ApplyAll(&cfg.Name, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
 		return err
+	}
+	if strings.TrimSpace(cfg.Path) == "" {
+		return errors.New("gentoo.path is required and must include the category/package ebuild path")
 	}
 
 	path := filepath.Join(ctx.Config.Dist, "gentoo", cfg.Path)
@@ -398,6 +400,19 @@ func gentooArch(goarch string) string {
 	default:
 		return goarch
 	}
+}
+
+func defaultPath(name, typ string) string {
+	suffix := ""
+	if typ == "bin" {
+		suffix = "-bin"
+	}
+	return filepath.Join("app-misc", name+suffix, fmt.Sprintf("%s%s-{{ .Version }}.ebuild", name, suffix))
+}
+
+func hasCategory(path string) bool {
+	parts := strings.Split(filepath.ToSlash(filepath.Clean(path)), "/")
+	return len(parts) >= 3 && parts[0] != "." && parts[0] != "" && parts[1] != "" && parts[2] != ""
 }
 
 func copyFile(src, dst string) error {

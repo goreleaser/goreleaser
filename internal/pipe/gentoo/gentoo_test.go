@@ -91,3 +91,28 @@ func TestDefaultRequiresBin(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Gentoos: []config.Gentoo{{}}}, testctx.WithVersion("1.0.0"))
 	require.Error(t, Pipe{}.Default(ctx))
 }
+
+func TestDefaultSetsPath(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Bin: true,
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, filepath.Join("app-misc", "foo-bin", "foo-bin-{{ .Version }}.ebuild"), ctx.Config.Gentoos[0].Path)
+}
+
+func TestDoRunRequiresPath(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+	require.EqualError(t, err, "gentoo.path is required and must include the category/package ebuild path")
+}
