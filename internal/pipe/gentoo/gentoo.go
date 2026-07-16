@@ -53,7 +53,7 @@ src_unpack() {
 }
 
 src_install() {
-  exeinto /opt/bin
+  exeinto {{ .Bindir }}
 {{- range .Archs }}
   if use {{ .Keyword }}; then
     newexe "{{ $.Name }}" "{{ $.Name }}" || die "Failed to install binary"
@@ -86,6 +86,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if g.Type == "" {
 			g.Type = "bin"
+		}
+		if g.Bindir == "" {
+			g.Bindir = "/usr/bin"
 		}
 		if len(g.Keywords) == 0 {
 			g.Keywords = config.StringArray{"~amd64"}
@@ -189,6 +192,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Homepage    string
 		License     string
 		Keywords    string
+		Bindir      string
 		Archs       []archData
 	}{
 		Name:        cfg.Name,
@@ -196,6 +200,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Homepage:    cfg.Homepage,
 		License:     cfg.License,
 		Keywords:    strings.Join(keywords, " "),
+		Bindir:      cfg.Bindir,
 		Archs:       archInfos,
 	}
 	var buf bytes.Buffer

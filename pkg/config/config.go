@@ -458,6 +458,7 @@ type Gentoo struct {
 	Type                  string       `yaml:"type,omitempty" json:"type,omitempty"`
 	KeepVersions          int          `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Bindir                string       `yaml:"bindir,omitempty" json:"bindir,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit.
