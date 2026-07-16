@@ -1,9 +1,0 @@
-<<<<<<< SEARCH
-	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "exeinto /usr/bin")
-}
-=======
-	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "exeinto /opt/bin")
-}
->>>>>>> REPLACE

@@ -1,9 +1,0 @@
-<<<<<<< SEARCH
-		if g.Bindir == "" {
-			g.Bindir = "/usr/bin"
-		}
-=======
-		if g.Bindir == "" {
-			g.Bindir = "/opt/bin"
-		}
->>>>>>> REPLACE
