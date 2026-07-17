@@ -487,12 +487,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 							}
 						}
 					}
-				} else {
-					if len(ebuilds) > g.cfg.KeepVersions-1 {
+					} else if len(ebuilds) > g.cfg.KeepVersions-1 {
 						for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
 							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
 							deletedEbuilds = append(deletedEbuilds, n)
-						}
 					}
 				}
 			}
