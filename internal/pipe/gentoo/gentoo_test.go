@@ -112,7 +112,6 @@ func TestDoRunWithFiles(t *testing.T) {
 			License:    "MIT",
 			Files: []config.ExtraFile{{
 				Glob:         "./foo.service",
-				NameTemplate: "files/foo.service",
 			}},
 		}},
 	}, testctx.WithVersion("1.0.0"))
