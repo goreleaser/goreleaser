@@ -50,15 +50,12 @@ SLOT="0"
 KEYWORDS="{{ .Keywords }}"
 IUSE="doc"
 
-src_unpack() {
-{{- range .Archs }}
-  if use {{ .Keyword }}; then
-    unpack "${DISTDIR}/{{ .File }}" || die "Can't unpack archive file"
-  fi
-{{- end }}
-}
+S="${WORKDIR}"
 
 src_install() {
+{{- if .ExtraInstall }}
+{{ .ExtraInstall }}
+{{- end }}
 {{- if .Bindir }}
   exeinto {{ .Bindir }}
 {{- end }}
@@ -219,24 +216,31 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		},
 	}
 
+	extraInstall, err := tp.Apply(cfg.ExtraInstall)
+	if err != nil {
+		return err
+	}
+
 	data := struct {
-		Name        string
-		Description string
-		Homepage    string
-		License     string
-		Keywords    string
-		Bindir      string
-		Archs       []archData
-		Installs    []installData
+		Name         string
+		Description  string
+		Homepage     string
+		License      string
+		Keywords     string
+		Bindir       string
+		ExtraInstall string
+		Archs        []archData
+		Installs     []installData
 	}{
-		Name:        cfg.Name,
-		Description: cfg.Description,
-		Homepage:    cfg.Homepage,
-		License:     cfg.License,
-		Keywords:    strings.Join(keywords, " "),
-		Bindir:      cfg.Bindir,
-		Archs:       archInfos,
-		Installs:    installs,
+		Name:         cfg.Name,
+		Description:  cfg.Description,
+		Homepage:     cfg.Homepage,
+		License:      cfg.License,
+		Keywords:     strings.Join(keywords, " "),
+		Bindir:       cfg.Bindir,
+		ExtraInstall: extraInstall,
+		Archs:        archInfos,
+		Installs:     installs,
 	}
 	var buf bytes.Buffer
 	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {
