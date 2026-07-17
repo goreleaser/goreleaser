@@ -103,7 +103,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			g.Keywords = config.StringArray{"~amd64"}
 		}
 		if g.License == "" {
-			g.License = "MIT"
+			return errors.New("gentoo.license is required")
 		}
 		if g.Name == "" {
 			g.Name = ctx.Config.ProjectName

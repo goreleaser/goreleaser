@@ -20,6 +20,7 @@ func TestDoRunMultiArch(t *testing.T) {
 		Gentoos: []config.Gentoo{{
 			Repository: config.RepoRef{Name: "overlay"},
 			Bin:        true,
+			License:    "MIT",
 		}},
 	}, testctx.WithVersion("1.0.0"))
 
@@ -62,6 +63,7 @@ func TestDoRunCustomBindir(t *testing.T) {
 			Repository: config.RepoRef{Name: "overlay"},
 			Bin:        true,
 			Bindir:     "/usr/bin",
+			License:    "MIT",
 		}},
 	}, testctx.WithVersion("1.0.0"))
 
@@ -107,6 +109,7 @@ func TestDoRunWithFiles(t *testing.T) {
 		Gentoos: []config.Gentoo{{
 			Repository: config.RepoRef{Name: "overlay"},
 			Bin:        true,
+			License:    "MIT",
 			Files: []config.ExtraFile{{
 				Glob:         "./foo.service",
 				NameTemplate: "files/foo.service",
@@ -141,11 +144,22 @@ func TestDefaultSetsPath(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Gentoos: []config.Gentoo{{
-			Bin: true,
+			Bin:     true,
+			License: "MIT",
 		}},
 	}, testctx.WithVersion("1.0.0"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, filepath.Join("app-misc", "foo-bin", "foo-bin-{{ .Version }}.ebuild"), ctx.Config.Gentoos[0].Path)
+}
+
+func TestDefaultRequiresLicense(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Bin: true,
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	require.EqualError(t, Pipe{}.Default(ctx), "gentoo.license is required")
 }
 
 func TestDoRunRequiresPath(t *testing.T) {
