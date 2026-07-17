@@ -254,8 +254,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	for name, src := range extraFiles {
 		destName := name
-		if !strings.HasPrefix(filepath.ToSlash(destName), "files/") && !strings.HasPrefix(filepath.ToSlash(destName), "FILES/") {
-			destName = "files/" + destName
+		if !strings.HasPrefix(strings.ToLower(filepath.ToSlash(destName)), "files/") {
+			destName = filepath.Join("files", destName)
 		}
 		dst := filepath.Join(filepath.Dir(path), destName)
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
