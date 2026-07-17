@@ -154,7 +154,7 @@ func (c *githubClient) DownloadFile(ctx *context.Context, repo Repo, path string
 		return nil, err
 	}
 	if file == nil {
-		return nil, fmt.Errorf("not a file")
+		return nil, errors.New("not a file")
 	}
 	content, err := file.GetContent()
 	if err != nil {

@@ -53,7 +53,7 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 }
 
 func (c *gitlabClient) DownloadFile(_ *context.Context, repo Repo, path string) ([]byte, error) {
-	file, _, err := c.client.RepositoryFiles.GetRawFile(repo.String(), path, &gitlab.GetRawFileOptions{Ref: gitlab.Ptr(repo.Branch)})
+	file, _, err := c.client.RepositoryFiles.GetRawFile(repo.String(), path, &gitlab.GetRawFileOptions{Ref: &repo.Branch})
 	if err != nil {
 		return nil, err
 	}

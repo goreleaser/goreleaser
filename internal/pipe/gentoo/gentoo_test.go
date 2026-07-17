@@ -190,7 +190,7 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	}
 
 	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
-	os.WriteFile(artPath, []byte("test content"), 0644)
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_1.0.0_linux_amd64.tar.gz",

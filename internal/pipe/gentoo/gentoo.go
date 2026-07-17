@@ -476,20 +476,20 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		for _, m := range cfg.Maintainers {
 			buf.WriteString("\t<maintainer type=\"person\">\n")
 			if m.Email != "" {
-				buf.WriteString(fmt.Sprintf("\t\t<email>%s</email>\n", m.Email))
+				fmt.Fprintf(&buf, "\t\t<email>%s</email>\n", m.Email)
 			}
 			if m.Name != "" {
-				buf.WriteString(fmt.Sprintf("\t\t<name>%s</name>\n", m.Name))
+				fmt.Fprintf(&buf, "\t\t<name>%s</name>\n", m.Name)
 			}
 			buf.WriteString("\t</maintainer>\n")
 		}
 		if cfg.BugsTo != "" || cfg.Homepage != "" {
 			buf.WriteString("\t<upstream>\n")
 			if cfg.BugsTo != "" {
-				buf.WriteString(fmt.Sprintf("\t\t<bugs-to>%s</bugs-to>\n", cfg.BugsTo))
+				fmt.Fprintf(&buf, "\t\t<bugs-to>%s</bugs-to>\n", cfg.BugsTo)
 			}
 			if cfg.Homepage != "" {
-				buf.WriteString(fmt.Sprintf("\t\t<doc>%s</doc>\n", cfg.Homepage))
+				fmt.Fprintf(&buf, "\t\t<doc>%s</doc>\n", cfg.Homepage)
 			}
 			buf.WriteString("\t</upstream>\n")
 		}
@@ -503,7 +503,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
-			for _, line := range strings.Split(string(content), "\n") {
+			for _, lineB := range bytes.Split(content, []byte("\n")) {
+				line := string(lineB)
 				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
 					parts := strings.Split(line, "=")
 					if len(parts) == 2 {
@@ -517,7 +518,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
-			for _, line := range strings.Split(string(content), "\n") {
+			for _, lineB := range bytes.Split(content, []byte("\n")) {
+				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
 					manifestLines = append(manifestLines, line)
 				}
@@ -581,12 +583,13 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		line := fmt.Sprintf("DIST %s %d", art.Name, size)
 		for _, algo := range manifestHashes {
 			algo = strings.ToUpper(algo)
-			if algo == "BLAKE2B" {
+			switch algo {
+			case "BLAKE2B":
 				sum := blake2b.Sum512(b)
-				line += fmt.Sprintf(" BLAKE2B %x", sum)
-			} else if algo == "SHA512" {
+				line = fmt.Sprintf("%s BLAKE2B %x", line, sum)
+			case "SHA512":
 				sum := sha512.Sum512(b)
-				line += fmt.Sprintf(" SHA512 %x", sum)
+				line = fmt.Sprintf("%s SHA512 %x", line, sum)
 			}
 		}
 		newManifestLines = append(newManifestLines, line)
