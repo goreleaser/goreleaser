@@ -93,6 +93,11 @@ type FilesCreator interface {
 	CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) (err error)
 }
 
+// FileDownloader can download files from a repository.
+type FileDownloader interface {
+	DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error)
+}
+
 // DirectoryLister can list directory contents.
 type DirectoryLister interface {
 	ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error)

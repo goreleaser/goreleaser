@@ -147,6 +147,22 @@ func (c *githubClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]s
 	return names, nil
 }
 
+func (c *githubClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	c.checkRateLimit(ctx)
+	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: repo.Branch})
+	if err != nil {
+		return nil, err
+	}
+	if file == nil {
+		return nil, fmt.Errorf("not a file")
+	}
+	content, err := file.GetContent()
+	if err != nil {
+		return nil, err
+	}
+	return []byte(content), nil
+}
+
 func (c *githubClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error {
 	c.checkRateLimit(ctx)
 	branch := repo.Branch

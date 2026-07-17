@@ -3,6 +3,7 @@ package gentoo
 
 import (
 	"bytes"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/semver/v3"
+	"golang.org/x/crypto/blake2b"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -346,6 +348,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			}
 		}
 
+		var deletedEbuilds []string
 		// list existing ebuilds
 		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
 			dir := filepath.Dir(g.cfg.Path)
@@ -371,9 +374,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 				if len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
 						g.files = append(g.files, client.RepoFile{Path: filepath.ToSlash(filepath.Join(dir, n)), Delete: true})
+						deletedEbuilds = append(deletedEbuilds, n)
 					}
 				}
 			}
+		}
+
+		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, repo, &g.files, deletedEbuilds); err != nil {
+			return err
 		}
 
 		if g.cfg.Repository.Git.URL != "" {
@@ -455,4 +463,142 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	return os.WriteFile(dst, in, 0o644)
+}
+
+func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
+	dir := filepath.Dir(cfg.Path)
+
+	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
+		var buf bytes.Buffer
+		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+		buf.WriteString("<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
+		buf.WriteString("<pkgmetadata>\n")
+		for _, m := range cfg.Maintainers {
+			buf.WriteString("\t<maintainer type=\"person\">\n")
+			if m.Email != "" {
+				buf.WriteString(fmt.Sprintf("\t\t<email>%s</email>\n", m.Email))
+			}
+			if m.Name != "" {
+				buf.WriteString(fmt.Sprintf("\t\t<name>%s</name>\n", m.Name))
+			}
+			buf.WriteString("\t</maintainer>\n")
+		}
+		if cfg.BugsTo != "" || cfg.Homepage != "" {
+			buf.WriteString("\t<upstream>\n")
+			if cfg.BugsTo != "" {
+				buf.WriteString(fmt.Sprintf("\t\t<bugs-to>%s</bugs-to>\n", cfg.BugsTo))
+			}
+			if cfg.Homepage != "" {
+				buf.WriteString(fmt.Sprintf("\t\t<doc>%s</doc>\n", cfg.Homepage))
+			}
+			buf.WriteString("\t</upstream>\n")
+		}
+		buf.WriteString("</pkgmetadata>\n")
+		*files = append(*files, client.RepoFile{
+			Content: buf.Bytes(),
+			Path:    filepath.ToSlash(filepath.Join(dir, "metadata.xml")),
+		})
+	}
+
+	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
+			for _, line := range strings.Split(string(content), "\n") {
+				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+			}
+		}
+	}
+
+	var manifestLines []string
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
+			for _, line := range strings.Split(string(content), "\n") {
+				if strings.TrimSpace(line) != "" {
+					manifestLines = append(manifestLines, line)
+				}
+			}
+		}
+	}
+
+	var deletedVersions []string
+	prefix := cfg.Name + "-"
+	for _, e := range deletedEbuilds {
+		v := strings.TrimSuffix(strings.TrimPrefix(e, prefix), ".ebuild")
+		deletedVersions = append(deletedVersions, v)
+	}
+
+	var newManifestLines []string
+	for _, line := range manifestLines {
+		if !strings.HasPrefix(line, "DIST ") {
+			newManifestLines = append(newManifestLines, line)
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) > 1 {
+			filename := fields[1]
+			removed := false
+			for _, dv := range deletedVersions {
+				if strings.Contains(filename, dv) {
+					removed = true
+					break
+				}
+			}
+			if !removed {
+				newManifestLines = append(newManifestLines, line)
+			}
+		} else {
+			newManifestLines = append(newManifestLines, line)
+		}
+	}
+
+	filters := []artifact.Filter{
+		artifact.ByGoos("linux"),
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
+		artifact.OnlyReplacingUnibins,
+	}
+	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+
+	for _, art := range arches {
+		info, err := os.Stat(art.Path)
+		if err != nil {
+			return err
+		}
+		size := info.Size()
+
+		b, err := os.ReadFile(art.Path)
+		if err != nil {
+			return err
+		}
+
+		line := fmt.Sprintf("DIST %s %d", art.Name, size)
+		for _, algo := range manifestHashes {
+			algo = strings.ToUpper(algo)
+			if algo == "BLAKE2B" {
+				sum := blake2b.Sum512(b)
+				line += fmt.Sprintf(" BLAKE2B %x", sum)
+			} else if algo == "SHA512" {
+				sum := sha512.Sum512(b)
+				line += fmt.Sprintf(" SHA512 %x", sum)
+			}
+		}
+		newManifestLines = append(newManifestLines, line)
+	}
+
+	if len(newManifestLines) > 0 {
+		slices.Sort(newManifestLines)
+		newManifestLines = slices.Compact(newManifestLines)
+		*files = append(*files, client.RepoFile{
+			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
+			Path:    filepath.ToSlash(filepath.Join(dir, "Manifest")),
+		})
+	}
+	return nil
 }
