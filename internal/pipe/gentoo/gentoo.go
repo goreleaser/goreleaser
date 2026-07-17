@@ -253,7 +253,11 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 	for name, src := range extraFiles {
-		dst := filepath.Join(filepath.Dir(path), name)
+		destName := name
+		if !strings.HasPrefix(strings.ToLower(filepath.ToSlash(destName)), "files/") {
+			destName = filepath.Join("files", destName)
+		}
+		dst := filepath.Join(filepath.Dir(path), destName)
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 			return err
 		}
@@ -261,12 +265,12 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			return err
 		}
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: name,
+			Name: destName,
 			Path: dst,
 			Type: artifact.GentooFile,
 			Extra: map[string]any{
 				ebuildExtra:     cfg,
-				ebuildPathExtra: filepath.Join(filepath.Dir(cfg.Path), name),
+				ebuildPathExtra: filepath.Join(filepath.Dir(cfg.Path), destName),
 			},
 		})
 	}
