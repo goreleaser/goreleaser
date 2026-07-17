@@ -10,6 +10,7 @@ import (
 	"hash"
 	"io"
 	"os"
+	pathlib "path"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -270,7 +271,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			Type: artifact.GentooFile,
 			Extra: map[string]any{
 				ebuildExtra:     cfg,
-				ebuildPathExtra: filepath.ToSlash(filepath.Dir(cfg.Path)) + "/" + filepath.ToSlash(destName),
+				ebuildPathExtra: pathlib.Join(filepath.ToSlash(filepath.Dir(cfg.Path)), filepath.ToSlash(destName)),
 			},
 		})
 	}
@@ -380,7 +381,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 				})
 				if len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
-						g.files = append(g.files, client.RepoFile{Path: dir + "/" + n, Delete: true})
+						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
 						deletedEbuilds = append(deletedEbuilds, n)
 					}
 				}
@@ -475,6 +476,9 @@ func copyFile(src, dst string) error {
 func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
 	dir := filepath.ToSlash(filepath.Dir(cfg.Path))
 
+	metadataPath := pathlib.Join(dir, "metadata.xml")
+	manifestPath := pathlib.Join(dir, "Manifest")
+
 	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
 		type gentooMaintainer struct {
 			Type  string `xml:"type,attr"`
@@ -511,7 +515,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			},
 		}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
-			if content, err := dl.DownloadFile(ctx, repo, dir+"/metadata.xml"); err == nil {
+			if content, err := dl.DownloadFile(ctx, repo, metadataPath); err == nil {
 				_ = xml.Unmarshal(content, &meta)
 			}
 		}
@@ -560,7 +564,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 		*files = append(*files, client.RepoFile{
 			Content: buf.Bytes(),
-			Path:    dir + "/metadata.xml",
+			Path:    metadataPath,
 		})
 	}
 
@@ -581,7 +585,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
-		if content, err := dl.DownloadFile(ctx, repo, dir+"/Manifest"); err == nil {
+		if content, err := dl.DownloadFile(ctx, repo, manifestPath); err == nil {
 			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
@@ -712,7 +716,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		newManifestLines = slices.Compact(newManifestLines)
 		*files = append(*files, client.RepoFile{
 			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
-			Path:    dir + "/Manifest",
+			Path:    manifestPath,
 		})
 	}
 	return nil
