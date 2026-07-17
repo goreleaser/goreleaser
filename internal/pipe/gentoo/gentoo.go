@@ -606,10 +606,11 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 		for _, algo := range manifestHashes {
 			algo = strings.ToUpper(algo)
-			if algo == "BLAKE2B" {
+			switch algo {
+			case "BLAKE2B":
 				b2b, _ = blake2b.New512(nil)
 				writers = append(writers, b2b)
-			} else if algo == "SHA512" {
+			case "SHA512":
 				s512 = sha512.New()
 				writers = append(writers, s512)
 			}
