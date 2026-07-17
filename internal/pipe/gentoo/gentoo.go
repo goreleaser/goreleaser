@@ -624,10 +624,15 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		line := fmt.Sprintf("DIST %s %d", art.Name, size)
 		for _, algo := range manifestHashes {
 			algo = strings.ToUpper(algo)
-			if algo == "BLAKE2B" && b2b != nil {
-				line += fmt.Sprintf(" BLAKE2B %x", b2b.Sum(nil))
-			} else if algo == "SHA512" && s512 != nil {
-				line += fmt.Sprintf(" SHA512 %x", s512.Sum(nil))
+			switch algo {
+			case "BLAKE2B":
+				if b2b != nil {
+					line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+				}
+			case "SHA512":
+				if s512 != nil {
+					line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+				}
 			}
 		}
 		newManifestLines = append(newManifestLines, line)
