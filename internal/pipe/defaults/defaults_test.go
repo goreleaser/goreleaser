@@ -90,7 +90,8 @@ func TestFillPartial(t *testing.T) {
 		},
 		Gentoos: []config.Gentoo{
 			{
-				Bin: true,
+				Bin:     true,
+				License: "MIT",
 			},
 		},
 	})
