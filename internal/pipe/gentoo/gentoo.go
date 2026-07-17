@@ -369,29 +369,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 						ebuilds = append(ebuilds, n)
 					}
 				}
-				sort.Slice(ebuilds, func(i, j int) bool {
-					vIStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[i], prefix), ".ebuild")
-					vJStr := strings.TrimSuffix(strings.TrimPrefix(ebuilds[j], prefix), ".ebuild")
-					vI, errI := semver.NewVersion(strings.ReplaceAll(vIStr, "_", "-"))
-					vJ, errJ := semver.NewVersion(strings.ReplaceAll(vJStr, "_", "-"))
-					if errI == nil && errJ == nil {
-						return vI.GreaterThan(vJ)
-					}
-					return ebuilds[i] > ebuilds[j]
-				})
-
-				getBucket := func(v *semver.Version) string {
-					pr := v.Prerelease()
-					if strings.Contains(pr, "rc") {
-						return "rc"
-					} else if strings.Contains(pr, "beta") {
-						return "beta"
-					} else if strings.Contains(pr, "alpha") {
-						return "alpha"
-					}
-					return "stable"
-				}
-
 				parseVersion := func(n string) *semver.Version {
 					vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
 					vStr = strings.ReplaceAll(vStr, "_", "-")
@@ -400,6 +377,29 @@ func (Pipe) Publish(ctx *context.Context) error {
 						return nil
 					}
 					return v
+				}
+
+				sort.Slice(ebuilds, func(i, j int) bool {
+					vI := parseVersion(ebuilds[i])
+					vJ := parseVersion(ebuilds[j])
+					if vI != nil && vJ != nil {
+						return vI.GreaterThan(vJ)
+					}
+					return ebuilds[i] > ebuilds[j]
+				})
+
+				getBucket := func(v *semver.Version) string {
+					pr := v.Prerelease()
+					switch {
+					case strings.Contains(pr, "rc"):
+						return "rc"
+					case strings.Contains(pr, "beta"):
+						return "beta"
+					case strings.Contains(pr, "alpha"):
+						return "alpha"
+					default:
+						return "stable"
+					}
 				}
 
 				var allEbuilds []string
@@ -432,18 +432,19 @@ func (Pipe) Publish(ctx *context.Context) error {
 					b := getBucket(v)
 
 					violates := false
-					if b == "alpha" {
+					switch b {
+					case "alpha":
 						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
 							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
 							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
-					} else if b == "beta" {
+					case "beta":
 						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
 							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
-					} else if b == "rc" {
+					case "rc":
 						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
 							violates = true
 						}
@@ -468,10 +469,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 
 				for b, bucketEbuilds := range groups {
-					allowedToKeep := g.cfg.KeepVersions - newCounts[b]
-					if allowedToKeep < 0 {
-						allowedToKeep = 0
-					}
+					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
 					if len(bucketEbuilds) > allowedToKeep {
 						for _, n := range bucketEbuilds[allowedToKeep:] {
 							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
