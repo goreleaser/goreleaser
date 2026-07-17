@@ -270,7 +270,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			Type: artifact.GentooFile,
 			Extra: map[string]any{
 				ebuildExtra:     cfg,
-				ebuildPathExtra: filepath.Join(filepath.Dir(cfg.Path), destName),
+				ebuildPathExtra: filepath.ToSlash(filepath.Dir(cfg.Path)) + "/" + filepath.ToSlash(destName),
 			},
 		})
 	}
@@ -314,7 +314,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			log.Debug("gentoo.skip_upload is true")
 			continue
 		}
-		key := fmt.Sprintf("%s/%s|%s|%s", cfg.Repository.Owner, cfg.Repository.Name, cfg.Repository.Git.URL, filepath.Dir(cfg.Path))
+		key := fmt.Sprintf("%s/%s|%s|%s", cfg.Repository.Owner, cfg.Repository.Name, cfg.Repository.Git.URL, filepath.ToSlash(filepath.Dir(cfg.Path)))
 		g := groups[key]
 		if g == nil {
 			g = &group{cfg: cfg}
@@ -358,7 +358,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 		var deletedEbuilds []string
 		// list existing ebuilds
 		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
-			dir := filepath.Dir(g.cfg.Path)
+			dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
 			names, err := lister.ListDir(ctx, repo, dir)
 			if err == nil {
 				var ebuilds []string
@@ -380,7 +380,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 				})
 				if len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
-						g.files = append(g.files, client.RepoFile{Path: filepath.ToSlash(filepath.Join(dir, n)), Delete: true})
+						g.files = append(g.files, client.RepoFile{Path: dir + "/" + n, Delete: true})
 						deletedEbuilds = append(deletedEbuilds, n)
 					}
 				}
@@ -473,7 +473,7 @@ func copyFile(src, dst string) error {
 }
 
 func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
-	dir := filepath.Dir(cfg.Path)
+	dir := filepath.ToSlash(filepath.Dir(cfg.Path))
 
 	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
 		type gentooMaintainer struct {
@@ -511,7 +511,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			},
 		}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
-			if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "metadata.xml"))); err == nil {
+			if content, err := dl.DownloadFile(ctx, repo, dir+"/metadata.xml"); err == nil {
 				_ = xml.Unmarshal(content, &meta)
 			}
 		}
@@ -560,7 +560,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 		*files = append(*files, client.RepoFile{
 			Content: buf.Bytes(),
-			Path:    filepath.ToSlash(filepath.Join(dir, "metadata.xml")),
+			Path:    dir + "/metadata.xml",
 		})
 	}
 
@@ -581,7 +581,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
-		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
+		if content, err := dl.DownloadFile(ctx, repo, dir+"/Manifest"); err == nil {
 			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
@@ -712,7 +712,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		newManifestLines = slices.Compact(newManifestLines)
 		*files = append(*files, client.RepoFile{
 			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
-			Path:    filepath.ToSlash(filepath.Join(dir, "Manifest")),
+			Path:    dir + "/Manifest",
 		})
 	}
 	return nil
