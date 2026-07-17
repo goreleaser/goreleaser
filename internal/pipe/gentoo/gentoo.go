@@ -6,6 +6,8 @@ import (
 	"crypto/sha512"
 	"errors"
 	"fmt"
+	"hash"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -545,9 +547,26 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			filename := fields[1]
 			removed := false
 			for _, dv := range deletedVersions {
-				if strings.Contains(filename, dv) {
-					removed = true
-					break
+				if idx := strings.Index(filename, dv); idx != -1 {
+					isMatch := true
+					if idx > 0 && filename[idx-1] != '_' && filename[idx-1] != '-' {
+						isMatch = false
+					}
+					endIdx := idx + len(dv)
+					if endIdx < len(filename) {
+						next := filename[endIdx]
+						if next == '.' {
+							if endIdx+1 < len(filename) && filename[endIdx+1] >= '0' && filename[endIdx+1] <= '9' {
+								isMatch = false
+							}
+						} else if next != '_' && next != '-' {
+							isMatch = false
+						}
+					}
+					if isMatch {
+						removed = true
+						break
+					}
 				}
 			}
 			if !removed {
@@ -575,21 +594,40 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		}
 		size := info.Size()
 
-		b, err := os.ReadFile(art.Path)
+		f, err := os.Open(art.Path)
 		if err != nil {
 			return err
+		}
+		defer f.Close()
+
+		var writers []io.Writer
+		var b2b hash.Hash
+		var s512 hash.Hash
+
+		for _, algo := range manifestHashes {
+			algo = strings.ToUpper(algo)
+			if algo == "BLAKE2B" {
+				b2b, _ = blake2b.New512(nil)
+				writers = append(writers, b2b)
+			} else if algo == "SHA512" {
+				s512 = sha512.New()
+				writers = append(writers, s512)
+			}
+		}
+
+		if len(writers) > 0 {
+			if _, err := io.Copy(io.MultiWriter(writers...), f); err != nil {
+				return err
+			}
 		}
 
 		line := fmt.Sprintf("DIST %s %d", art.Name, size)
 		for _, algo := range manifestHashes {
 			algo = strings.ToUpper(algo)
-			switch algo {
-			case "BLAKE2B":
-				sum := blake2b.Sum512(b)
-				line = fmt.Sprintf("%s BLAKE2B %x", line, sum)
-			case "SHA512":
-				sum := sha512.Sum512(b)
-				line = fmt.Sprintf("%s SHA512 %x", line, sum)
+			if algo == "BLAKE2B" && b2b != nil {
+				line += fmt.Sprintf(" BLAKE2B %x", b2b.Sum(nil))
+			} else if algo == "SHA512" && s512 != nil {
+				line += fmt.Sprintf(" SHA512 %x", s512.Sum(nil))
 			}
 		}
 		newManifestLines = append(newManifestLines, line)
