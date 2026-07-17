@@ -385,93 +385,111 @@ func (Pipe) Publish(ctx *context.Context) error {
 					if vI != nil && vJ != nil {
 						return vI.GreaterThan(vJ)
 					}
+					if vI != nil {
+						return true
+					}
+					if vJ != nil {
+						return false
+					}
 					return ebuilds[i] > ebuilds[j]
 				})
 
-				getBucket := func(v *semver.Version) string {
-					pr := v.Prerelease()
-					switch {
-					case strings.Contains(pr, "rc"):
-						return "rc"
-					case strings.Contains(pr, "beta"):
-						return "beta"
-					case strings.Contains(pr, "alpha"):
-						return "alpha"
-					default:
-						return "stable"
-					}
-				}
-
-				var allEbuilds []string
-				allEbuilds = append(allEbuilds, ebuilds...)
-				var newFiles []string
-				for _, f := range g.files {
-					newFiles = append(newFiles, filepath.Base(f.Path))
-				}
-				allEbuilds = append(allEbuilds, newFiles...)
-
-				maxVersions := map[string]*semver.Version{}
-				for _, n := range allEbuilds {
-					v := parseVersion(n)
-					if v == nil {
-						continue
-					}
-					b := getBucket(v)
-					if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
-						maxVersions[b] = v
-					}
-				}
-
-				groups := map[string][]string{}
-				for _, n := range ebuilds {
-					v := parseVersion(n)
-					if v == nil {
-						groups["stable"] = append(groups["stable"], n)
-						continue
-					}
-					b := getBucket(v)
-
-					violates := false
-					switch b {
-					case "alpha":
-						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
-							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
-							violates = true
-						}
-					case "beta":
-						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
-							violates = true
-						}
-					case "rc":
-						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
-							violates = true
+				if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
+					getBucket := func(v *semver.Version) string {
+						pr := v.Prerelease()
+						switch {
+						case strings.Contains(pr, "rc"):
+							return "rc"
+						case strings.Contains(pr, "beta"):
+							return "beta"
+						case strings.Contains(pr, "alpha"):
+							return "alpha"
+						default:
+							return "stable"
 						}
 					}
 
-					if violates {
-						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-						deletedEbuilds = append(deletedEbuilds, n)
-					} else {
-						groups[b] = append(groups[b], n)
+					var allEbuilds []string
+					allEbuilds = append(allEbuilds, ebuilds...)
+					var newFiles []string
+					for _, f := range g.files {
+						name := filepath.Base(f.Path)
+						if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
+							newFiles = append(newFiles, name)
+						}
 					}
-				}
+					allEbuilds = append(allEbuilds, newFiles...)
 
-				newCounts := map[string]int{}
-				for _, f := range newFiles {
-					v := parseVersion(f)
-					b := "stable"
-					if v != nil {
-						b = getBucket(v)
+					maxVersions := map[string]*semver.Version{}
+					for _, n := range allEbuilds {
+						v := parseVersion(n)
+						if v == nil {
+							continue
+						}
+						b := getBucket(v)
+						if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
+							maxVersions[b] = v
+						}
 					}
-					newCounts[b]++
-				}
 
-				for b, bucketEbuilds := range groups {
-					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
-					if len(bucketEbuilds) > allowedToKeep {
-						for _, n := range bucketEbuilds[allowedToKeep:] {
+					groups := map[string][]string{}
+					for _, n := range ebuilds {
+						v := parseVersion(n)
+						if v == nil {
+							groups["stable"] = append(groups["stable"], n)
+							continue
+						}
+						b := getBucket(v)
+
+						violates := false
+						switch b {
+						case "alpha":
+							if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
+								(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+								(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+								violates = true
+							}
+						case "beta":
+							if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+								(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+								violates = true
+							}
+						case "rc":
+							if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
+								violates = true
+							}
+						}
+
+						if violates {
+							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
+							deletedEbuilds = append(deletedEbuilds, n)
+						} else {
+							groups[b] = append(groups[b], n)
+						}
+					}
+
+					newCounts := map[string]int{}
+					for _, f := range newFiles {
+						v := parseVersion(f)
+						b := "stable"
+						if v != nil {
+							b = getBucket(v)
+						}
+						newCounts[b]++
+					}
+
+					for b, bucketEbuilds := range groups {
+						allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
+						if len(bucketEbuilds) > allowedToKeep {
+							for _, n := range bucketEbuilds[allowedToKeep:] {
+								g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
+								deletedEbuilds = append(deletedEbuilds, n)
+							}
+						}
+					}
+				} else {
+					if len(ebuilds) > g.cfg.KeepVersions-1 {
+						for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
 							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
 							deletedEbuilds = append(deletedEbuilds, n)
 						}
