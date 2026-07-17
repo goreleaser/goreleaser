@@ -4,6 +4,7 @@ package gentoo
 import (
 	"bytes"
 	"crypto/sha512"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"hash"
@@ -471,31 +472,70 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	dir := filepath.Dir(cfg.Path)
 
 	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
+		type gentooMaintainer struct {
+			Type  string `xml:"type,attr"`
+			Email string `xml:"email,omitempty"`
+			Name  string `xml:"name,omitempty"`
+		}
+		type gentooUpstream struct {
+			BugsTo string `xml:"bugs-to,omitempty"`
+			Doc    string `xml:"doc,omitempty"`
+		}
+		type gentooMetadata struct {
+			XMLName     xml.Name           `xml:"pkgmetadata"`
+			Maintainers []gentooMaintainer `xml:"maintainer"`
+			Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
+		}
+
+		meta := gentooMetadata{}
+		if dl, ok := repoClient.(client.FileDownloader); ok {
+			if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "metadata.xml"))); err == nil {
+				_ = xml.Unmarshal(content, &meta)
+			}
+		}
+
+		for _, m := range cfg.Maintainers {
+			if m.Email == "" {
+				return errors.New("gentoo maintainer email is required")
+			}
+			exists := false
+			for _, em := range meta.Maintainers {
+				if em.Email == m.Email {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				meta.Maintainers = append(meta.Maintainers, gentooMaintainer{
+					Type:  "person",
+					Email: m.Email,
+					Name:  m.Name,
+				})
+			}
+		}
+		if cfg.BugsTo != "" || cfg.Homepage != "" {
+			if meta.Upstream == nil {
+				meta.Upstream = &gentooUpstream{}
+			}
+			if cfg.BugsTo != "" {
+				meta.Upstream.BugsTo = cfg.BugsTo
+			}
+			if cfg.Homepage != "" {
+				meta.Upstream.Doc = cfg.Homepage
+			}
+		}
+
+		marshaled, err := xml.MarshalIndent(meta, "", "\t")
+		if err != nil {
+			return err
+		}
+
 		var buf bytes.Buffer
 		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 		buf.WriteString("<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
-		buf.WriteString("<pkgmetadata>\n")
-		for _, m := range cfg.Maintainers {
-			buf.WriteString("\t<maintainer type=\"person\">\n")
-			if m.Email != "" {
-				fmt.Fprintf(&buf, "\t\t<email>%s</email>\n", m.Email)
-			}
-			if m.Name != "" {
-				fmt.Fprintf(&buf, "\t\t<name>%s</name>\n", m.Name)
-			}
-			buf.WriteString("\t</maintainer>\n")
-		}
-		if cfg.BugsTo != "" || cfg.Homepage != "" {
-			buf.WriteString("\t<upstream>\n")
-			if cfg.BugsTo != "" {
-				fmt.Fprintf(&buf, "\t\t<bugs-to>%s</bugs-to>\n", cfg.BugsTo)
-			}
-			if cfg.Homepage != "" {
-				fmt.Fprintf(&buf, "\t\t<doc>%s</doc>\n", cfg.Homepage)
-			}
-			buf.WriteString("\t</upstream>\n")
-		}
-		buf.WriteString("</pkgmetadata>\n")
+		buf.Write(marshaled)
+		buf.WriteString("\n")
+
 		*files = append(*files, client.RepoFile{
 			Content: buf.Bytes(),
 			Path:    filepath.ToSlash(filepath.Join(dir, "metadata.xml")),
@@ -505,7 +545,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
-			for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
 					parts := strings.Split(line, "=")
@@ -520,7 +560,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
-			for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
 					manifestLines = append(manifestLines, line)
@@ -588,55 +628,61 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 
 	for _, art := range arches {
-		info, err := os.Stat(art.Path)
-		if err != nil {
-			return err
-		}
-		size := info.Size()
-
-		f, err := os.Open(art.Path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		var writers []io.Writer
-		var b2b hash.Hash
-		var s512 hash.Hash
-
-		for _, algo := range manifestHashes {
-			algo = strings.ToUpper(algo)
-			switch algo {
-			case "BLAKE2B":
-				b2b, _ = blake2b.New512(nil)
-				writers = append(writers, b2b)
-			case "SHA512":
-				s512 = sha512.New()
-				writers = append(writers, s512)
-			}
-		}
-
-		if len(writers) > 0 {
-			if _, err := io.Copy(io.MultiWriter(writers...), f); err != nil {
+		err := func() error {
+			info, err := os.Stat(art.Path)
+			if err != nil {
 				return err
 			}
-		}
+			size := info.Size()
 
-		line := fmt.Sprintf("DIST %s %d", art.Name, size)
-		for _, algo := range manifestHashes {
-			algo = strings.ToUpper(algo)
-			switch algo {
-			case "BLAKE2B":
-				if b2b != nil {
-					line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
-				}
-			case "SHA512":
-				if s512 != nil {
-					line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+			f, err := os.Open(art.Path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			var writers []io.Writer
+			var b2b hash.Hash
+			var s512 hash.Hash
+
+			for _, algo := range manifestHashes {
+				algo = strings.ToUpper(algo)
+				switch algo {
+				case "BLAKE2B":
+					b2b, _ = blake2b.New512(nil)
+					writers = append(writers, b2b)
+				case "SHA512":
+					s512 = sha512.New()
+					writers = append(writers, s512)
 				}
 			}
+
+			if len(writers) > 0 {
+				if _, err := io.Copy(io.MultiWriter(writers...), f); err != nil {
+					return err
+				}
+			}
+
+			line := fmt.Sprintf("DIST %s %d", art.Name, size)
+			for _, algo := range manifestHashes {
+				algo = strings.ToUpper(algo)
+				switch algo {
+				case "BLAKE2B":
+					if b2b != nil {
+						line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+					}
+				case "SHA512":
+					if s512 != nil {
+						line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+					}
+				}
+			}
+			newManifestLines = append(newManifestLines, line)
+			return nil
+		}()
+		if err != nil {
+			return err
 		}
-		newManifestLines = append(newManifestLines, line)
 	}
 
 	if len(newManifestLines) > 0 {
