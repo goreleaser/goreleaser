@@ -481,13 +481,31 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			BugsTo string `xml:"bugs-to,omitempty"`
 			Doc    string `xml:"doc,omitempty"`
 		}
+		type gentooUseFlag struct {
+			Name  string `xml:"name,attr"`
+			Value string `xml:",chardata"`
+		}
+		type gentooUse struct {
+			Flags []gentooUseFlag `xml:"flag"`
+		}
 		type gentooMetadata struct {
 			XMLName     xml.Name           `xml:"pkgmetadata"`
 			Maintainers []gentooMaintainer `xml:"maintainer"`
+			Use         *gentooUse         `xml:"use,omitempty"`
 			Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
 		}
 
 		meta := gentooMetadata{}
+		// Currently we only support the "doc" use flag, but this is structured
+		// for future flexibility to allow users to configure their own flags.
+		meta.Use = &gentooUse{
+			Flags: []gentooUseFlag{
+				{
+					Name:  "doc",
+					Value: "Install README man page and other docs",
+				},
+			},
+		}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
 			if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "metadata.xml"))); err == nil {
 				_ = xml.Unmarshal(content, &meta)
