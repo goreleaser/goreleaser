@@ -175,3 +175,42 @@ func TestDoRunRequiresPath(t *testing.T) {
 	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
 	require.EqualError(t, err, "gentoo.path is required and must include the category/package ebuild path")
 }
+
+func TestHandleGentooManifestAndMetadata(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name: "foo",
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+		Maintainers: []config.GentooMaintainer{
+			{Name: "M", Email: "m@m.com"},
+		},
+		BugsTo:   "https://bug",
+		Homepage: "https://home",
+	}
+
+	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   artPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	var files []client.RepoFile
+	err := handleGentooManifestAndMetadata(ctx, cfg, nil, client.Repo{}, &files, []string{"foo-0.9.0.ebuild"})
+	require.NoError(t, err)
+	require.Len(t, files, 2)
+
+	// Check metadata.xml
+	require.Contains(t, string(files[0].Content), "<email>m@m.com</email>")
+	require.Contains(t, string(files[0].Content), "<bugs-to>https://bug</bugs-to>")
+
+	// Check Manifest
+	require.Contains(t, string(files[1].Content), "DIST foo_1.0.0_linux_amd64.tar.gz")
+	require.Contains(t, string(files[1].Content), "BLAKE2B")
+	require.Contains(t, string(files[1].Content), "SHA512")
+}

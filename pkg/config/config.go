@@ -444,21 +444,28 @@ type Scoop struct {
 
 // Gentoo contains the gentoo ebuild section.
 type Gentoo struct {
-	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
-	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
-	Keywords              StringArray  `yaml:"keywords,omitempty" json:"keywords,omitempty"`
-	Files                 []ExtraFile  `yaml:"files,omitempty" json:"files,omitempty"`
-	Bin                   bool         `yaml:"bin" json:"bin"`
-	Type                  string       `yaml:"type,omitempty" json:"type,omitempty"`
-	KeepVersions          int          `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	Bindir                string       `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
+	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
+	Path                  string             `yaml:"path,omitempty" json:"path,omitempty"`
+	Repository            RepoRef            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor       `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string             `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Homepage              string             `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Description           string             `yaml:"description,omitempty" json:"description,omitempty"`
+	License               string             `yaml:"license,omitempty" json:"license,omitempty"`
+	Keywords              StringArray        `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	Files                 []ExtraFile        `yaml:"files,omitempty" json:"files,omitempty"`
+	Bin                   bool               `yaml:"bin" json:"bin"`
+	Type                  string             `yaml:"type,omitempty" json:"type,omitempty"`
+	KeepVersions          int                `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
+	SkipUpload            string             `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Bindir                string             `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
+	Maintainers           []GentooMaintainer `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	BugsTo                string             `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
+}
+
+type GentooMaintainer struct {
+	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
+	Email string `yaml:"email,omitempty" json:"email,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit.

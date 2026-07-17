@@ -3,8 +3,12 @@ package gentoo
 
 import (
 	"bytes"
+	"crypto/sha512"
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"hash"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -13,6 +17,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/semver/v3"
+	"golang.org/x/crypto/blake2b"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -346,6 +351,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			}
 		}
 
+		var deletedEbuilds []string
 		// list existing ebuilds
 		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
 			dir := filepath.Dir(g.cfg.Path)
@@ -371,9 +377,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 				if len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
 						g.files = append(g.files, client.RepoFile{Path: filepath.ToSlash(filepath.Join(dir, n)), Delete: true})
+						deletedEbuilds = append(deletedEbuilds, n)
 					}
 				}
 			}
+		}
+
+		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, repo, &g.files, deletedEbuilds); err != nil {
+			return err
 		}
 
 		if g.cfg.Repository.Git.URL != "" {
@@ -455,4 +466,250 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	return os.WriteFile(dst, in, 0o644)
+}
+
+func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
+	dir := filepath.Dir(cfg.Path)
+
+	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
+		type gentooMaintainer struct {
+			Type  string `xml:"type,attr"`
+			Email string `xml:"email,omitempty"`
+			Name  string `xml:"name,omitempty"`
+		}
+		type gentooUpstream struct {
+			BugsTo string `xml:"bugs-to,omitempty"`
+			Doc    string `xml:"doc,omitempty"`
+		}
+		type gentooUseFlag struct {
+			Name  string `xml:"name,attr"`
+			Value string `xml:",chardata"`
+		}
+		type gentooUse struct {
+			Flags []gentooUseFlag `xml:"flag"`
+		}
+		type gentooMetadata struct {
+			XMLName     xml.Name           `xml:"pkgmetadata"`
+			Maintainers []gentooMaintainer `xml:"maintainer"`
+			Use         *gentooUse         `xml:"use,omitempty"`
+			Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
+		}
+
+		meta := gentooMetadata{}
+		// Currently we only support the "doc" use flag, but this is structured
+		// for future flexibility to allow users to configure their own flags.
+		meta.Use = &gentooUse{
+			Flags: []gentooUseFlag{
+				{
+					Name:  "doc",
+					Value: "Install README man page and other docs",
+				},
+			},
+		}
+		if dl, ok := repoClient.(client.FileDownloader); ok {
+			if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "metadata.xml"))); err == nil {
+				_ = xml.Unmarshal(content, &meta)
+			}
+		}
+
+		for _, m := range cfg.Maintainers {
+			if m.Email == "" {
+				return errors.New("gentoo maintainer email is required")
+			}
+			exists := false
+			for _, em := range meta.Maintainers {
+				if em.Email == m.Email {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				meta.Maintainers = append(meta.Maintainers, gentooMaintainer{
+					Type:  "person",
+					Email: m.Email,
+					Name:  m.Name,
+				})
+			}
+		}
+		if cfg.BugsTo != "" || cfg.Homepage != "" {
+			if meta.Upstream == nil {
+				meta.Upstream = &gentooUpstream{}
+			}
+			if cfg.BugsTo != "" {
+				meta.Upstream.BugsTo = cfg.BugsTo
+			}
+			if cfg.Homepage != "" {
+				meta.Upstream.Doc = cfg.Homepage
+			}
+		}
+
+		marshaled, err := xml.MarshalIndent(meta, "", "\t")
+		if err != nil {
+			return err
+		}
+
+		var buf bytes.Buffer
+		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+		buf.WriteString("<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
+		buf.Write(marshaled)
+		buf.WriteString("\n")
+
+		*files = append(*files, client.RepoFile{
+			Content: buf.Bytes(),
+			Path:    filepath.ToSlash(filepath.Join(dir, "metadata.xml")),
+		})
+	}
+
+	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+				line := string(lineB)
+				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+			}
+		}
+	}
+
+	var manifestLines []string
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+				line := string(lineB)
+				if strings.TrimSpace(line) != "" {
+					manifestLines = append(manifestLines, line)
+				}
+			}
+		}
+	}
+
+	var deletedVersions []string
+	prefix := cfg.Name + "-"
+	for _, e := range deletedEbuilds {
+		v := strings.TrimSuffix(strings.TrimPrefix(e, prefix), ".ebuild")
+		deletedVersions = append(deletedVersions, v)
+	}
+
+	var newManifestLines []string
+	for _, line := range manifestLines {
+		if !strings.HasPrefix(line, "DIST ") {
+			newManifestLines = append(newManifestLines, line)
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) > 1 {
+			filename := fields[1]
+			removed := false
+			for _, dv := range deletedVersions {
+				if idx := strings.Index(filename, dv); idx != -1 {
+					isMatch := true
+					if idx > 0 && filename[idx-1] != '_' && filename[idx-1] != '-' {
+						isMatch = false
+					}
+					endIdx := idx + len(dv)
+					if endIdx < len(filename) {
+						next := filename[endIdx]
+						if next == '.' {
+							if endIdx+1 < len(filename) && filename[endIdx+1] >= '0' && filename[endIdx+1] <= '9' {
+								isMatch = false
+							}
+						} else if next != '_' && next != '-' {
+							isMatch = false
+						}
+					}
+					if isMatch {
+						removed = true
+						break
+					}
+				}
+			}
+			if !removed {
+				newManifestLines = append(newManifestLines, line)
+			}
+		} else {
+			newManifestLines = append(newManifestLines, line)
+		}
+	}
+
+	filters := []artifact.Filter{
+		artifact.ByGoos("linux"),
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
+		artifact.OnlyReplacingUnibins,
+	}
+	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+
+	for _, art := range arches {
+		err := func() error {
+			info, err := os.Stat(art.Path)
+			if err != nil {
+				return err
+			}
+			size := info.Size()
+
+			f, err := os.Open(art.Path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			var writers []io.Writer
+			var b2b hash.Hash
+			var s512 hash.Hash
+
+			for _, algo := range manifestHashes {
+				algo = strings.ToUpper(algo)
+				switch algo {
+				case "BLAKE2B":
+					b2b, _ = blake2b.New512(nil)
+					writers = append(writers, b2b)
+				case "SHA512":
+					s512 = sha512.New()
+					writers = append(writers, s512)
+				}
+			}
+
+			if len(writers) > 0 {
+				if _, err := io.Copy(io.MultiWriter(writers...), f); err != nil {
+					return err
+				}
+			}
+
+			line := fmt.Sprintf("DIST %s %d", art.Name, size)
+			for _, algo := range manifestHashes {
+				algo = strings.ToUpper(algo)
+				switch algo {
+				case "BLAKE2B":
+					if b2b != nil {
+						line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+					}
+				case "SHA512":
+					if s512 != nil {
+						line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+					}
+				}
+			}
+			newManifestLines = append(newManifestLines, line)
+			return nil
+		}()
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(newManifestLines) > 0 {
+		slices.Sort(newManifestLines)
+		newManifestLines = slices.Compact(newManifestLines)
+		*files = append(*files, client.RepoFile{
+			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
+			Path:    filepath.ToSlash(filepath.Join(dir, "Manifest")),
+		})
+	}
+	return nil
 }

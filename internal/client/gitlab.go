@@ -52,6 +52,22 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 	return result, resp, err
 }
 
+func (c *gitlabClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	branch := repo.Branch
+	if branch == "" {
+		var err error
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	file, _, err := c.client.RepositoryFiles.GetRawFile(repo.String(), path, &gitlab.GetRawFileOptions{Ref: &branch})
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
 func (c *gitlabClient) ListDir(_ *context.Context, _ Repo, _ string) ([]string, error) {
 	return nil, ErrNotImplemented
 }
