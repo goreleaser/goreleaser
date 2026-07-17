@@ -503,7 +503,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
-			for _, lineB := range bytes.Split(content, []byte("\n")) {
+			for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
 				line := string(lineB)
 				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
 					parts := strings.Split(line, "=")
@@ -518,7 +518,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		if content, err := dl.DownloadFile(ctx, repo, filepath.ToSlash(filepath.Join(dir, "Manifest"))); err == nil {
-			for _, lineB := range bytes.Split(content, []byte("\n")) {
+			for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
 				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
 					manifestLines = append(manifestLines, line)
