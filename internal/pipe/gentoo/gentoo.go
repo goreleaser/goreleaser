@@ -358,7 +358,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 		var deletedEbuilds []string
 		// list existing ebuilds
-		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 {
+		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 && g.cfg.VersionRetentionStrategy != "" {
 			dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
 			names, err := lister.ListDir(ctx, repo, dir)
 			if err == nil {
@@ -487,7 +487,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 							}
 						}
 					}
-				} else if len(ebuilds) > g.cfg.KeepVersions-1 {
+				} else if g.cfg.VersionRetentionStrategy == "keep_latest" && len(ebuilds) > g.cfg.KeepVersions-1 {
 					for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
 						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
 						deletedEbuilds = append(deletedEbuilds, n)
