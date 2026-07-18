@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -96,6 +97,39 @@ func TestDoRunCustomBindir(t *testing.T) {
 	require.Contains(t, out, "if use amd64 || use arm64; then")
 	require.Contains(t, out, "doexe \"foo\"")
 	require.Contains(t, out, "exeinto /usr/bin")
+}
+
+func TestDoRunWithExtraInstall(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository:   config.RepoRef{Name: "overlay"},
+			Bin:          true,
+			License:      "MIT",
+			ExtraInstall: `dobin "${DISTDIR}/foo"`,
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_1.0.0_linux_amd64.tar.gz",
+		Path:    "amd64.tar.gz",
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, bts)
 }
 
 func TestDoRunWithFiles(t *testing.T) {

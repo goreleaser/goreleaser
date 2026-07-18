@@ -459,6 +459,7 @@ type Gentoo struct {
 	KeepVersions          int                `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
 	SkipUpload            string             `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Bindir                string             `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
+	ExtraInstall          string             `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	Maintainers           []GentooMaintainer `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 	BugsTo                string             `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
 }
