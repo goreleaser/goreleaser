@@ -53,12 +53,12 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
-{{- if .ExtraInstall }}
+{{ if .ExtraInstall }}
 {{ .ExtraInstall }}
-{{- end }}
-{{- if .Bindir }}
+{{ end }}
+{{ if .Bindir }}
   exeinto {{ .Bindir }}
-{{- end }}
+{{ end }}
 {{- range .Installs }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
     {{- if eq .Source .Target }}

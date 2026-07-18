@@ -128,7 +128,7 @@ func TestDoRunWithExtraInstall(t *testing.T) {
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 	out := string(bts)
-	require.Contains(t, out, `dobin "${DISTDIR}/foo"`)
+	require.Contains(t, out, "src_install() {\n\ndobin \"${DISTDIR}/foo\"\n\n\n  if use amd64; then")
 }
 
 func TestDoRunWithFiles(t *testing.T) {
