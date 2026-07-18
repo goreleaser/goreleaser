@@ -42,8 +42,9 @@ DESCRIPTION="{{ .Description }}"
 HOMEPAGE="{{ .Homepage }}"
 SRC_URI="
 {{- range .Archs }}
-{{ .Keyword }}? ( {{ .URI }} -> {{ .File }} )
-{{- end }}"
+  {{ .Keyword }}? ( {{ .URI }} -> {{ .File }} )
+{{- end }}
+"
 
 LICENSE="{{ .License }}"
 SLOT="0"
@@ -53,12 +54,12 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
-{{ if .ExtraInstall }}
-{{ .ExtraInstall }}
-{{ end }}
-{{ if .Bindir }}
-  exeinto {{ .Bindir }}
-{{ end }}
+{{- with .ExtraInstall }}
+  {{ . }}
+{{- end }}
+{{- with .Bindir }}
+  exeinto {{ . }}
+{{- end }}
 {{- range .Installs }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
     {{- if eq .Source .Target }}
