@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -127,8 +128,8 @@ func TestDoRunWithExtraInstall(t *testing.T) {
 	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
-	out := string(bts)
-	require.Contains(t, out, "src_install() {\n\ndobin \"${DISTDIR}/foo\"\n\n\n  if use amd64; then")
+
+	golden.RequireEqual(t, bts)
 }
 
 func TestDoRunWithFiles(t *testing.T) {
