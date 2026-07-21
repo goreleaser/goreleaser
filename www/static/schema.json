@@ -3,6 +3,122 @@
 		"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/project",
 		"$ref": "#/$defs/Project",
 		"$defs": {
+			"APKBuild": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"maintainers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"contributors": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"provides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"depends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"makedepends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"replaces": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"options": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"rel": {
+						"type": "string"
+					},
+					"package": {
+						"type": "string"
+					},
+					"git_url": {
+						"type": "string"
+					},
+					"git_ssh_command": {
+						"type": "string"
+					},
+					"private_key": {
+						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"AUR": {
 				"properties": {
 					"name": {
@@ -3814,6 +3930,12 @@
 					"aur_sources": {
 						"items": {
 							"$ref": "#/$defs/AURSource"
+						},
+						"type": "array"
+					},
+					"apkbuilds": {
+						"items": {
+							"$ref": "#/$defs/APKBuild"
 						},
 						"type": "array"
 					},
