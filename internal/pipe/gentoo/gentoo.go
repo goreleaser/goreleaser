@@ -61,6 +61,7 @@ src_install() {
   exeinto {{ . }}
 {{- end }}
 {{- range .Installs }}
+{{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
     {{- if eq .Source .Target }}
     doexe "{{ .Source }}" || die "Failed to install binary"
@@ -68,6 +69,13 @@ src_install() {
     newexe "{{ .Source }}" "{{ .Target }}" || die "Failed to install binary"
     {{- end }}
   fi
+{{- else }}
+  {{- if eq .Source .Target }}
+  doexe "{{ .Source }}" || die "Failed to install binary"
+  {{- else }}
+  newexe "{{ .Source }}" "{{ .Target }}" || die "Failed to install binary"
+  {{- end }}
+{{- end }}
 {{- end }}
   if use doc; then
     dodoc README* || die
@@ -209,11 +217,15 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	slices.Sort(keywordsList)
 
+	var instKeywords []string
+	if len(keywordsList) > 1 {
+		instKeywords = keywordsList
+	}
 	installs := []installData{
 		{
 			Source:   cfg.Name,
 			Target:   cfg.Name,
-			Keywords: keywordsList,
+			Keywords: instKeywords,
 		},
 	}
 

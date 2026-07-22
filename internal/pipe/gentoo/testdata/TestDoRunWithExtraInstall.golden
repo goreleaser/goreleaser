@@ -16,9 +16,7 @@ S="${WORKDIR}"
 
 src_install() {
   dobin "${DISTDIR}/foo"
-  if use amd64; then
-    doexe "foo" || die "Failed to install binary"
-  fi
+  doexe "foo" || die "Failed to install binary"
   if use doc; then
     dodoc README* || die
   fi
