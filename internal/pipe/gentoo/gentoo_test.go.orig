@@ -94,7 +94,7 @@ func TestDoRunSingleArch(t *testing.T) {
 	require.Contains(t, out, "amd64? (")
 	require.NotContains(t, out, "arm64? (")
 	require.NotContains(t, out, "if use amd64")
-	require.NotContains(t, out, "if use amd64;") // the binary wrap
+	require.NotContains(t, out, "if use ") // the binary wrap
 	require.Contains(t, out, "doexe \"foo\"")
 }
 

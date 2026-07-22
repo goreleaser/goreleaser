@@ -1,0 +1,10 @@
+--- internal/pipe/gentoo/gentoo_test.go
++++ internal/pipe/gentoo/gentoo_test.go
+@@ -58,6 +58,7 @@
+ func TestDoRunSingleArch(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
++		Env:         []string{"GITHUB_TOKEN=token"},
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
