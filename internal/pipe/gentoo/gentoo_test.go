@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"bytes"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -51,7 +53,6 @@ func TestDoRunMultiArch(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "if use amd64 || use arm64; then")
 	require.Contains(t, out, "doexe \"foo\"")
 }
 
@@ -137,7 +138,6 @@ func TestDoRunCustomBindir(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "if use amd64 || use arm64; then")
 	require.Contains(t, out, "doexe \"foo\"")
 	require.Contains(t, out, "exeinto /usr/bin")
 }
@@ -332,5 +332,66 @@ func TestDoRunDifferentBinaries(t *testing.T) {
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 	out := string(bts)
-	require.Contains(t, out, "if use amd64 || use arm64; then")
+	require.Contains(t, out, "doexe \"foo\"")
+}
+
+func TestTemplateScenarios(t *testing.T) {
+	tmplStr := ebuildTemplate
+
+	testCases := []struct {
+		name     string
+		installs []installData
+		expected string
+	}{
+		{
+			name: "Scenario 1: 2 archs, same filename",
+			installs: []installData{
+				{Source: "prog1", Target: "prog1"},
+				{Source: "prog2", Target: "prog2"},
+			},
+			expected: "  doexe \"prog1\" || die \"Failed to install binary\"\n  doexe \"prog2\" || die \"Failed to install binary\"\n",
+		},
+		{
+			name: "Scenario 2: 2 archs, different filenames",
+			installs: []installData{
+				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
+				{Source: "prog2_x86", Target: "prog2", Keywords: []string{"amd64"}},
+				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
+				{Source: "prog2_arm", Target: "prog2", Keywords: []string{"arm64"}},
+			},
+			expected: "  if use amd64; then\n    newexe \"prog1_x86\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use amd64; then\n    newexe \"prog2_x86\" \"prog2\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog1_arm\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog2_arm\" \"prog2\" || die \"Failed to install binary\"\n  fi\n",
+		},
+		{
+			name: "Scenario 3: hybrid",
+			installs: []installData{
+				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
+				{Source: "prog2", Target: "prog2"},
+				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
+				{Source: "prog3", Target: "prog2", Keywords: []string{"arm64"}},
+			},
+			expected: "  if use amd64; then\n    newexe \"prog1_x86\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  doexe \"prog2\" || die \"Failed to install binary\"\n  if use arm64; then\n    newexe \"prog1_arm\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog3\" \"prog2\" || die \"Failed to install binary\"\n  fi\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := struct {
+				Description  string
+				Homepage     string
+				License      string
+				Keywords     string
+				Bindir       string
+				ExtraInstall string
+				Archs        []interface{}
+				Installs     []installData
+			}{
+				Installs: tc.installs,
+			}
+			var buf bytes.Buffer
+			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
+			require.NoError(t, err)
+			out := buf.String()
+			require.Contains(t, out, tc.expected)
+		})
+	}
 }

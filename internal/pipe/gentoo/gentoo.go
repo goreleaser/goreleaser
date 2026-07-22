@@ -61,7 +61,7 @@ src_install() {
   exeinto {{ . }}
 {{- end }}
 {{- range .Installs }}
-{{- if and .Keywords (gt (len .Keywords) 1) }}
+{{- if and .Keywords (gt (len $.Installs) 1) }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
     {{- if eq .Source .Target }}
     doexe "{{ .Source }}" || die "Failed to install binary"
