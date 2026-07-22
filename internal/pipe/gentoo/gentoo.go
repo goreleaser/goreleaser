@@ -217,15 +217,11 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	slices.Sort(keywordsList)
 
-	var instKeywords []string
-	if len(keywordsList) > 1 {
-		instKeywords = keywordsList
-	}
 	installs := []installData{
 		{
 			Source:   cfg.Name,
 			Target:   cfg.Name,
-			Keywords: instKeywords,
+			Keywords: keywordsList,
 		},
 	}
 
