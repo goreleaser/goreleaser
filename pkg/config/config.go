@@ -108,6 +108,7 @@ type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Base    PullRequestBase `yaml:"base,omitempty" json:"base,omitempty"`
 	Draft   bool            `yaml:"draft,omitempty" json:"draft,omitempty"`
+	Token   string          `yaml:"token,omitempty" json:"token,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
