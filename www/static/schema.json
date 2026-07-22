@@ -4106,6 +4106,9 @@
 					},
 					"draft": {
 						"type": "boolean"
+					},
+					"token": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
