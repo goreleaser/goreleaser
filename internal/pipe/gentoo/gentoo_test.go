@@ -91,12 +91,7 @@ func TestDoRunSingleArch(t *testing.T) {
 
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
-	out := string(bts)
-	require.Contains(t, out, "amd64? (")
-	require.NotContains(t, out, "arm64? (")
-	require.NotContains(t, out, "if use amd64")
-	require.NotContains(t, out, "if use amd64; then") // the binary wrap
-	require.Contains(t, out, "doexe \"foo\"")
+	golden.RequireEqual(t, bts)
 }
 
 func TestDoRunCustomBindir(t *testing.T) {
@@ -331,8 +326,7 @@ func TestDoRunDifferentBinaries(t *testing.T) {
 	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
-	out := string(bts)
-	require.Contains(t, out, "doexe \"foo\"")
+	golden.RequireEqual(t, bts)
 }
 
 func TestTemplateScenarios(t *testing.T) {
