@@ -1,10 +1,10 @@
 package gentoo
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
-	"bytes"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -382,7 +382,7 @@ func TestTemplateScenarios(t *testing.T) {
 				Keywords     string
 				Bindir       string
 				ExtraInstall string
-				Archs        []interface{}
+				Archs        []any
 				Installs     []installData
 			}{
 				Installs: tc.installs,
