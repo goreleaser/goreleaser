@@ -335,35 +335,31 @@ func TestTemplateScenarios(t *testing.T) {
 	testCases := []struct {
 		name     string
 		installs []installData
-		expected string
 	}{
 		{
-			name: "Scenario 1: 2 archs, same filename",
+			name: "scenario_1",
 			installs: []installData{
 				{Source: "prog1", Target: "prog1"},
 				{Source: "prog2", Target: "prog2"},
 			},
-			expected: "  doexe \"prog1\" || die \"Failed to install binary\"\n  doexe \"prog2\" || die \"Failed to install binary\"\n",
 		},
 		{
-			name: "Scenario 2: 2 archs, different filenames",
+			name: "scenario_2",
 			installs: []installData{
 				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
 				{Source: "prog2_x86", Target: "prog2", Keywords: []string{"amd64"}},
 				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
 				{Source: "prog2_arm", Target: "prog2", Keywords: []string{"arm64"}},
 			},
-			expected: "  if use amd64; then\n    newexe \"prog1_x86\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use amd64; then\n    newexe \"prog2_x86\" \"prog2\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog1_arm\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog2_arm\" \"prog2\" || die \"Failed to install binary\"\n  fi\n",
 		},
 		{
-			name: "Scenario 3: hybrid",
+			name: "scenario_3",
 			installs: []installData{
 				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
 				{Source: "prog2", Target: "prog2"},
 				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
 				{Source: "prog3", Target: "prog2", Keywords: []string{"arm64"}},
 			},
-			expected: "  if use amd64; then\n    newexe \"prog1_x86\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  doexe \"prog2\" || die \"Failed to install binary\"\n  if use arm64; then\n    newexe \"prog1_arm\" \"prog1\" || die \"Failed to install binary\"\n  fi\n  if use arm64; then\n    newexe \"prog3\" \"prog2\" || die \"Failed to install binary\"\n  fi\n",
 		},
 	}
 
@@ -384,8 +380,7 @@ func TestTemplateScenarios(t *testing.T) {
 			var buf bytes.Buffer
 			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
 			require.NoError(t, err)
-			out := buf.String()
-			require.Contains(t, out, tc.expected)
+			golden.RequireEqualTxt(t, buf.Bytes())
 		})
 	}
 }
