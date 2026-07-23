@@ -71,19 +71,6 @@ These are the companies and individuals that help make GoReleaser happen:
     <div class="goreleaser-sponsors-tier-label">Silver</div>
     <div class="goreleaser-sponsors-grid">
         <a class="goreleaser-sponsor-item" 
-          href="https://depot.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://images.opencollective.com/depot/39125a1/logo.png?height=80" 
-            alt="Depot" 
-            width="80" 
-            height="80"
-          />
-          Depot
-        </a>
-        <a class="goreleaser-sponsor-item" 
           href="https://www.n-ix.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" 
           target="_blank" 
           rel="noopener sponsored"
@@ -160,7 +147,6 @@ These are the companies and individuals that help make GoReleaser happen:
 ### Backers
 
 - [Dharsan Baskar](https://github.com/dharsanb?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Chatpong Voranartaksorn](https://github.com/psychv/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Automatio AI](https://automatio.ai/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Bruno P](https://brunopaz.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Calculators](https://calculator.now/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
