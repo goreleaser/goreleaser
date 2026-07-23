@@ -16,14 +16,10 @@ S="${WORKDIR}"
 src_install() {
   if use amd64; then
     newexe "prog1_x86" "prog1" || die "Failed to install binary"
-  fi
-  if use amd64; then
     newexe "prog2_x86" "prog2" || die "Failed to install binary"
   fi
   if use arm64; then
     newexe "prog1_arm" "prog1" || die "Failed to install binary"
-  fi
-  if use arm64; then
     newexe "prog2_arm" "prog2" || die "Failed to install binary"
   fi
   if use doc; then

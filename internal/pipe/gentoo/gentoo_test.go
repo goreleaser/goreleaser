@@ -333,32 +333,61 @@ func TestTemplateScenarios(t *testing.T) {
 	tmplStr := ebuildTemplate
 
 	testCases := []struct {
-		name     string
-		installs []installData
+		name          string
+		installGroups []installGroup
 	}{
 		{
 			name: "scenario_1",
-			installs: []installData{
-				{Source: "prog1", Target: "prog1"},
-				{Source: "prog2", Target: "prog2"},
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64", "arm64"},
+					Installs: []installData{
+						{Source: "prog1", Target: "prog1"},
+						{Source: "prog2", Target: "prog2"},
+					},
+				},
 			},
 		},
 		{
 			name: "scenario_2",
-			installs: []installData{
-				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
-				{Source: "prog2_x86", Target: "prog2", Keywords: []string{"amd64"}},
-				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
-				{Source: "prog2_arm", Target: "prog2", Keywords: []string{"arm64"}},
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64"},
+					Installs: []installData{
+						{Source: "prog1_x86", Target: "prog1"},
+						{Source: "prog2_x86", Target: "prog2"},
+					},
+				},
+				{
+					Keywords: []string{"arm64"},
+					Installs: []installData{
+						{Source: "prog1_arm", Target: "prog1"},
+						{Source: "prog2_arm", Target: "prog2"},
+					},
+				},
 			},
 		},
 		{
 			name: "scenario_3",
-			installs: []installData{
-				{Source: "prog1_x86", Target: "prog1", Keywords: []string{"amd64"}},
-				{Source: "prog2", Target: "prog2"},
-				{Source: "prog1_arm", Target: "prog1", Keywords: []string{"arm64"}},
-				{Source: "prog3", Target: "prog2", Keywords: []string{"arm64"}},
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64"},
+					Installs: []installData{
+						{Source: "prog1_x86", Target: "prog1"},
+					},
+				},
+				{
+					Installs: []installData{
+						{Source: "prog2", Target: "prog2"},
+					},
+				},
+				{
+					Keywords: []string{"arm64"},
+					Installs: []installData{
+						{Source: "prog1_arm", Target: "prog1"},
+						{Source: "prog3", Target: "prog2"},
+					},
+				},
 			},
 		},
 	}
@@ -366,16 +395,16 @@ func TestTemplateScenarios(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			data := struct {
-				Description  string
-				Homepage     string
-				License      string
-				Keywords     string
-				Bindir       string
-				ExtraInstall string
-				Archs        []any
-				Installs     []installData
+				Description   string
+				Homepage      string
+				License       string
+				Keywords      string
+				Bindir        string
+				ExtraInstall  string
+				Archs         []any
+				InstallGroups []installGroup
 			}{
-				Installs: tc.installs,
+				InstallGroups: tc.installGroups,
 			}
 			var buf bytes.Buffer
 			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)

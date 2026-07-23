@@ -60,21 +60,25 @@ src_install() {
 {{- with .Bindir }}
   exeinto {{ . }}
 {{- end }}
-{{- range .Installs }}
-{{- if and .Keywords (gt (len $.Installs) 1) }}
+{{- range .InstallGroups }}
+{{- if and .Keywords (gt (len $.InstallGroups) 1) }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+{{- range .Installs }}
     {{- if eq .Source .Target }}
     doexe "{{ .Source }}" || die "Failed to install binary"
     {{- else }}
     newexe "{{ .Source }}" "{{ .Target }}" || die "Failed to install binary"
     {{- end }}
+{{- end }}
   fi
 {{- else }}
+{{- range .Installs }}
   {{- if eq .Source .Target }}
   doexe "{{ .Source }}" || die "Failed to install binary"
   {{- else }}
   newexe "{{ .Source }}" "{{ .Target }}" || die "Failed to install binary"
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
   if use doc; then
@@ -87,6 +91,11 @@ type installData struct {
 	Source   string
 	Target   string
 	Keywords []string
+}
+
+type installGroup struct {
+	Keywords []string
+	Installs []installData
 }
 
 // Pipe builds and publishes gentoo ebuilds.
@@ -217,11 +226,16 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	slices.Sort(keywordsList)
 
-	installs := []installData{
+	installGroups := []installGroup{
 		{
-			Source:   cfg.Name,
-			Target:   cfg.Name,
 			Keywords: keywordsList,
+			Installs: []installData{
+				{
+					Source:   cfg.Name,
+					Target:   cfg.Name,
+					Keywords: keywordsList,
+				},
+			},
 		},
 	}
 
@@ -231,25 +245,25 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	data := struct {
-		Name         string
-		Description  string
-		Homepage     string
-		License      string
-		Keywords     string
-		Bindir       string
-		ExtraInstall string
-		Archs        []archData
-		Installs     []installData
+		Name          string
+		Description   string
+		Homepage      string
+		License       string
+		Keywords      string
+		Bindir        string
+		ExtraInstall  string
+		Archs         []archData
+		InstallGroups []installGroup
 	}{
-		Name:         cfg.Name,
-		Description:  cfg.Description,
-		Homepage:     cfg.Homepage,
-		License:      cfg.License,
-		Keywords:     strings.Join(keywords, " "),
-		Bindir:       cfg.Bindir,
-		ExtraInstall: extraInstall,
-		Archs:        archInfos,
-		Installs:     installs,
+		Name:          cfg.Name,
+		Description:   cfg.Description,
+		Homepage:      cfg.Homepage,
+		License:       cfg.License,
+		Keywords:      strings.Join(keywords, " "),
+		Bindir:        cfg.Bindir,
+		ExtraInstall:  extraInstall,
+		Archs:         archInfos,
+		InstallGroups: installGroups,
 	}
 	var buf bytes.Buffer
 	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {
