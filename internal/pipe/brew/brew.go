@@ -188,7 +188,11 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	log.Info("brews.pull_request enabled, creating a PR")
-	pcl, ok := cl.(client.PullRequestOpener)
+	prcl, err := client.NewIfToken(ctx, cl, brew.Repository.PullRequest.Token)
+	if err != nil {
+		return err
+	}
+	pcl, ok := prcl.(client.PullRequestOpener)
 	if !ok {
 		return errors.New("client does not support pull requests")
 	}
