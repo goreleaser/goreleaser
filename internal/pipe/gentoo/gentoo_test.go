@@ -179,7 +179,7 @@ func TestDoRunWithDoinsAndDoman(t *testing.T) {
 			Repository: config.RepoRef{Name: "overlay"},
 			Bin:        true,
 			License:    "MIT",
-			Doins: []config.Doin{
+			Doins: []config.GentooInstallItem{
 				{Src: "config.yaml", Dst: "/etc/foo/foo.conf"},
 				{Src: "simple.yaml"},
 			},
@@ -439,8 +439,20 @@ func TestTemplateScenarios(t *testing.T) {
 				ExtraInstall  string
 				Archs         []any
 				InstallGroups []installGroup
-				Doins         []doinData
+				UseFlags      []config.GentooUseFlag
+				Dobin         []installItemData
+				Doconfd       []installItemData
+				Dodir         []string
+				Dodoc         []string
+				Doenvd        []installItemData
+				Doexe         []installItemData
+				Doheader      []installItemData
+				Doinitd       []installItemData
+				Doins         []installItemData
 				Doman         []string
+				Dosbin        []installItemData
+				Dosym         []installItemData
+				Systemd       []installItemData
 			}{
 				InstallGroups: tc.installGroups,
 			}
@@ -450,4 +462,47 @@ func TestTemplateScenarios(t *testing.T) {
 			golden.RequireEqualTxt(t, buf.Bytes())
 		})
 	}
+}
+
+func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			License:    "MIT",
+			UseFlags: []config.GentooUseFlag{
+				{Flag: "systemd", Description: "Enable systemd support"},
+			},
+			Systemd: []config.GentooInstallItem{
+				{Src: "foo.service", Use: []string{"systemd"}},
+			},
+			Doinitd: []config.GentooInstallItem{
+				{Src: "foo.init", Dst: "/etc/init.d/foo", Use: []string{"!systemd"}},
+			},
+			Dosym: []config.GentooInstallItem{
+				{Src: "/usr/bin/foo", Dst: "/usr/bin/bar"},
+			},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   "amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, bts)
 }

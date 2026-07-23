@@ -463,13 +463,31 @@ type Gentoo struct {
 	ExtraInstall             string             `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	Maintainers              []GentooMaintainer `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 	BugsTo                   string             `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
-	Doins                    []Doin             `yaml:"doins,omitempty" json:"doins,omitempty"`
+	UseFlags                 []GentooUseFlag    `yaml:"useflags,omitempty" json:"useflags,omitempty"`
+	Dobin                    []GentooInstallItem `yaml:"dobin,omitempty" json:"dobin,omitempty"`
+	Doconfd                  []GentooInstallItem `yaml:"doconfd,omitempty" json:"doconfd,omitempty"`
+	Dodir                    []string           `yaml:"dodir,omitempty" json:"dodir,omitempty"`
+	Dodoc                    []string           `yaml:"dodoc,omitempty" json:"dodoc,omitempty"`
+	Doenvd                   []GentooInstallItem `yaml:"doenvd,omitempty" json:"doenvd,omitempty"`
+	Doexe                    []GentooInstallItem `yaml:"doexe,omitempty" json:"doexe,omitempty"`
+	Doheader                 []GentooInstallItem `yaml:"doheader,omitempty" json:"doheader,omitempty"`
+	Doinitd                  []GentooInstallItem `yaml:"doinitd,omitempty" json:"doinitd,omitempty"`
+	Doins                    []GentooInstallItem `yaml:"doins,omitempty" json:"doins,omitempty"`
 	Doman                    []string           `yaml:"doman,omitempty" json:"doman,omitempty"`
+	Dosbin                   []GentooInstallItem `yaml:"dosbin,omitempty" json:"dosbin,omitempty"`
+	Dosym                    []GentooInstallItem `yaml:"dosym,omitempty" json:"dosym,omitempty"`
+	Systemd                  []GentooInstallItem `yaml:"systemd,omitempty" json:"systemd,omitempty"`
 }
 
-type Doin struct {
-	Src string `yaml:"src" json:"src"`
-	Dst string `yaml:"dst,omitempty" json:"dst,omitempty"`
+type GentooUseFlag struct {
+	Flag        string `yaml:"flag" json:"flag"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
+}
+
+type GentooInstallItem struct {
+	Src string   `yaml:"src" json:"src"`
+	Dst string   `yaml:"dst,omitempty" json:"dst,omitempty"`
+	Use []string `yaml:"use,omitempty" json:"use,omitempty"`
 }
 
 type GentooMaintainer struct {
