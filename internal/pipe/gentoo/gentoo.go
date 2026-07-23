@@ -224,7 +224,7 @@ func buildInstallItems(cfgItems []config.GentooInstallItem, extraFiles map[strin
 	for _, d := range cfgItems {
 		src := d.Src
 		if _, ok := extraFiles[d.Src]; ok {
-			src = "${FILESDIR}/" + d.Src
+			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
 		}
 		items = append(items, installItemData{
 			Source: src,
@@ -392,7 +392,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		var out []string
 		for _, s := range arr {
 			if _, ok := extraFiles[s]; ok {
-				out = append(out, "${FILESDIR}/"+s)
+				out = append(out, "${FILESDIR}/"+strings.TrimPrefix(s, "files/"))
 			} else {
 				out = append(out, s)
 			}
