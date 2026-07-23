@@ -5,6 +5,7 @@ DESCRIPTION=""
 HOMEPAGE=""
 SRC_URI="
   amd64? ( https://dummyhost/download//foo_1.0.0_linux_amd64.tar.gz -> foo_1.0.0_linux_amd64.tar.gz )
+  arm64? ( https://dummyhost/download//foo_1.0.0_linux_arm64.tar.gz -> foo_1.0.0_linux_arm64.tar.gz )
 "
 
 LICENSE="MIT"
@@ -15,7 +16,6 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
-  dobin "${DISTDIR}/foo"
   doexe "foo" || die "Failed to install binary"
   if use doc; then
     dodoc README* || die

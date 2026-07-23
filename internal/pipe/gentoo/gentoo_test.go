@@ -1,9 +1,11 @@
 package gentoo
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -51,8 +53,45 @@ func TestDoRunMultiArch(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "if use amd64 || use arm64; then")
 	require.Contains(t, out, "doexe \"foo\"")
+}
+
+func TestDoRunSingleArch(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+			},
+		},
+		Env:         []string{"GITHUB_TOKEN=token"},
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			License:    "MIT",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   "foo_1.0.0_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	cli := client.NewMock()
+	err := doRun(ctx, ctx.Config.Gentoos[0], cli)
+	require.NoError(t, err)
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	require.FileExists(t, ebuild)
+
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+	golden.RequireEqual(t, bts)
 }
 
 func TestDoRunCustomBindir(t *testing.T) {
@@ -94,7 +133,6 @@ func TestDoRunCustomBindir(t *testing.T) {
 	out := string(bts)
 	require.Contains(t, out, "amd64? (")
 	require.Contains(t, out, "arm64? (")
-	require.Contains(t, out, "if use amd64 || use arm64; then")
 	require.Contains(t, out, "doexe \"foo\"")
 	require.Contains(t, out, "exeinto /usr/bin")
 }
@@ -246,4 +284,132 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	require.Contains(t, string(files[1].Content), "DIST foo_1.0.0_linux_amd64.tar.gz")
 	require.Contains(t, string(files[1].Content), "BLAKE2B")
 	require.Contains(t, string(files[1].Content), "SHA512")
+}
+
+func TestDoRunDifferentBinaries(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+			},
+		},
+		Env:         []string{"GITHUB_TOKEN=token"},
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			License:    "MIT",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_1.0.0_linux_amd64.tar.gz",
+		Path:    "amd64.tar.gz",
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_arm64.tar.gz",
+		Path:   "arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+	golden.RequireEqual(t, bts)
+}
+
+func TestTemplateScenarios(t *testing.T) {
+	tmplStr := ebuildTemplate
+
+	testCases := []struct {
+		name          string
+		installGroups []installGroup
+	}{
+		{
+			name: "scenario_1",
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64", "arm64"},
+					Installs: []installData{
+						{Source: "prog1", Target: "prog1"},
+						{Source: "prog2", Target: "prog2"},
+					},
+				},
+			},
+		},
+		{
+			name: "scenario_2",
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64"},
+					Installs: []installData{
+						{Source: "prog1_x86", Target: "prog1"},
+						{Source: "prog2_x86", Target: "prog2"},
+					},
+				},
+				{
+					Keywords: []string{"arm64"},
+					Installs: []installData{
+						{Source: "prog1_arm", Target: "prog1"},
+						{Source: "prog2_arm", Target: "prog2"},
+					},
+				},
+			},
+		},
+		{
+			name: "scenario_3",
+			installGroups: []installGroup{
+				{
+					Keywords: []string{"amd64"},
+					Installs: []installData{
+						{Source: "prog1_x86", Target: "prog1"},
+					},
+				},
+				{
+					Installs: []installData{
+						{Source: "prog2", Target: "prog2"},
+					},
+				},
+				{
+					Keywords: []string{"arm64"},
+					Installs: []installData{
+						{Source: "prog1_arm", Target: "prog1"},
+						{Source: "prog3", Target: "prog2"},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := struct {
+				Description   string
+				Homepage      string
+				License       string
+				Keywords      string
+				Bindir        string
+				ExtraInstall  string
+				Archs         []any
+				InstallGroups []installGroup
+			}{
+				InstallGroups: tc.installGroups,
+			}
+			var buf bytes.Buffer
+			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
+			require.NoError(t, err)
+			golden.RequireEqualTxt(t, buf.Bytes())
+		})
+	}
 }
