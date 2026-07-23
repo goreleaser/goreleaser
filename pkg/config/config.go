@@ -444,25 +444,50 @@ type Scoop struct {
 
 // Gentoo contains the gentoo ebuild section.
 type Gentoo struct {
-	Name                     string             `yaml:"name,omitempty" json:"name,omitempty"`
-	Path                     string             `yaml:"path,omitempty" json:"path,omitempty"`
-	Repository               RepoRef            `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CommitAuthor             CommitAuthor       `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate    string             `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Homepage                 string             `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	Description              string             `yaml:"description,omitempty" json:"description,omitempty"`
-	License                  string             `yaml:"license,omitempty" json:"license,omitempty"`
-	Keywords                 StringArray        `yaml:"keywords,omitempty" json:"keywords,omitempty"`
-	Files                    []ExtraFile        `yaml:"files,omitempty" json:"files,omitempty"`
-	Bin                      bool               `yaml:"bin" json:"bin"`
-	Type                     string             `yaml:"type,omitempty" json:"type,omitempty"`
-	KeepVersions             int                `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
-	VersionRetentionStrategy string             `yaml:"version_retention_strategy,omitempty" json:"version_retention_strategy,omitempty"`
-	SkipUpload               string             `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	Bindir                   string             `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
-	ExtraInstall             string             `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
-	Maintainers              []GentooMaintainer `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
-	BugsTo                   string             `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
+	Name                     string              `yaml:"name,omitempty" json:"name,omitempty"`
+	Path                     string              `yaml:"path,omitempty" json:"path,omitempty"`
+	Repository               RepoRef             `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor             CommitAuthor        `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate    string              `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Homepage                 string              `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Description              string              `yaml:"description,omitempty" json:"description,omitempty"`
+	License                  string              `yaml:"license,omitempty" json:"license,omitempty"`
+	Keywords                 StringArray         `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	Files                    []ExtraFile         `yaml:"files,omitempty" json:"files,omitempty"`
+	Bin                      bool                `yaml:"bin" json:"bin"`
+	Type                     string              `yaml:"type,omitempty" json:"type,omitempty"`
+	KeepVersions             int                 `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
+	VersionRetentionStrategy string              `yaml:"version_retention_strategy,omitempty" json:"version_retention_strategy,omitempty"`
+	SkipUpload               string              `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Bindir                   string              `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
+	ExtraInstall             string              `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
+	Maintainers              []GentooMaintainer  `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	BugsTo                   string              `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
+	UseFlags                 []GentooUseFlag     `yaml:"useflags,omitempty" json:"useflags,omitempty"`
+	Dobin                    []GentooInstallItem `yaml:"dobin,omitempty" json:"dobin,omitempty"`
+	Doconfd                  []GentooInstallItem `yaml:"doconfd,omitempty" json:"doconfd,omitempty"`
+	Dodir                    []string            `yaml:"dodir,omitempty" json:"dodir,omitempty"`
+	Dodoc                    []string            `yaml:"dodoc,omitempty" json:"dodoc,omitempty"`
+	Doenvd                   []GentooInstallItem `yaml:"doenvd,omitempty" json:"doenvd,omitempty"`
+	Doexe                    []GentooInstallItem `yaml:"doexe,omitempty" json:"doexe,omitempty"`
+	Doheader                 []GentooInstallItem `yaml:"doheader,omitempty" json:"doheader,omitempty"`
+	Doinitd                  []GentooInstallItem `yaml:"doinitd,omitempty" json:"doinitd,omitempty"`
+	Doins                    []GentooInstallItem `yaml:"doins,omitempty" json:"doins,omitempty"`
+	Doman                    []string            `yaml:"doman,omitempty" json:"doman,omitempty"`
+	Dosbin                   []GentooInstallItem `yaml:"dosbin,omitempty" json:"dosbin,omitempty"`
+	Dosym                    []GentooInstallItem `yaml:"dosym,omitempty" json:"dosym,omitempty"`
+	Systemd                  []GentooInstallItem `yaml:"systemd,omitempty" json:"systemd,omitempty"`
+}
+
+type GentooUseFlag struct {
+	Flag        string `yaml:"flag" json:"flag"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
+}
+
+type GentooInstallItem struct {
+	Src string   `yaml:"src" json:"src"`
+	Dst string   `yaml:"dst,omitempty" json:"dst,omitempty"`
+	Use []string `yaml:"use,omitempty" json:"use,omitempty"`
 }
 
 type GentooMaintainer struct {
