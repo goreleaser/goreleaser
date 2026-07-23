@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/announce"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/apkbuild"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
@@ -145,6 +146,8 @@ var Pipeline = append(
 	aur.Pipe{},
 	// create arch linux aur pkgbuild (sources)
 	aursources.Pipe{},
+	// create Alpine Linux APKBUILDs
+	apkbuild.Pipe{},
 	// create nixpkgs
 	nix.New(),
 	// winget installers
