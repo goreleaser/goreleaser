@@ -81,6 +81,17 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- end }}
+{{- range .Doins }}
+{{- if .Target }}
+  insinto "{{ .Dir }}"
+  newins "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+  doins "{{ .Source }}"
+{{- end }}
+{{- end }}
+{{- range .Doman }}
+  doman "{{ . }}"
+{{- end }}
   if use doc; then
     dodoc README* || die
   fi
@@ -96,6 +107,13 @@ type installData struct {
 type installGroup struct {
 	Keywords []string
 	Installs []installData
+}
+
+type doinData struct {
+	Source string
+	Target string
+	Dir    string
+	Base   string
 }
 
 // Pipe builds and publishes gentoo ebuilds.
@@ -244,6 +262,16 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
+	var doins []doinData
+	for _, d := range cfg.Doins {
+		doins = append(doins, doinData{
+			Source: d.Src,
+			Target: d.Dst,
+			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
+			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
+		})
+	}
+
 	data := struct {
 		Name          string
 		Description   string
@@ -254,6 +282,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		ExtraInstall  string
 		Archs         []archData
 		InstallGroups []installGroup
+		Doins         []doinData
+		Doman         []string
 	}{
 		Name:          cfg.Name,
 		Description:   cfg.Description,
@@ -264,6 +294,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		ExtraInstall:  extraInstall,
 		Archs:         archInfos,
 		InstallGroups: installGroups,
+		Doins:         doins,
+		Doman:         cfg.Doman,
 	}
 	var buf bytes.Buffer
 	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {

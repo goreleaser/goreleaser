@@ -170,6 +170,42 @@ func TestDoRunWithExtraInstall(t *testing.T) {
 	golden.RequireEqual(t, bts)
 }
 
+func TestDoRunWithDoinsAndDoman(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			License:    "MIT",
+			Doins: []config.Doin{
+				{Src: "config.yaml", Dst: "/etc/foo/foo.conf"},
+				{Src: "simple.yaml"},
+			},
+			Doman: []string{"foo.1"},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   "amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, bts)
+}
+
 func TestDoRunWithFiles(t *testing.T) {
 	dist := t.TempDir()
 	svc := "foo.service"
@@ -403,6 +439,8 @@ func TestTemplateScenarios(t *testing.T) {
 				ExtraInstall  string
 				Archs         []any
 				InstallGroups []installGroup
+				Doins         []doinData
+				Doman         []string
 			}{
 				InstallGroups: tc.installGroups,
 			}

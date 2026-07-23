@@ -463,6 +463,13 @@ type Gentoo struct {
 	ExtraInstall             string             `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	Maintainers              []GentooMaintainer `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 	BugsTo                   string             `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
+	Doins                    []Doin             `yaml:"doins,omitempty" json:"doins,omitempty"`
+	Doman                    []string           `yaml:"doman,omitempty" json:"doman,omitempty"`
+}
+
+type Doin struct {
+	Src string `yaml:"src" json:"src"`
+	Dst string `yaml:"dst,omitempty" json:"dst,omitempty"`
 }
 
 type GentooMaintainer struct {
