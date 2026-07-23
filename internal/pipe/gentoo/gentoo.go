@@ -219,11 +219,15 @@ type installItemData struct {
 	Use    []string
 }
 
-func buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
+func buildInstallItems(cfgItems []config.GentooInstallItem, extraFiles map[string]string) []installItemData {
 	var items []installItemData
 	for _, d := range cfgItems {
+		src := d.Src
+		if _, ok := extraFiles[d.Src]; ok {
+			src = "${FILESDIR}/" + d.Src
+		}
 		items = append(items, installItemData{
-			Source: d.Src,
+			Source: src,
 			Target: d.Dst,
 			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
 			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
@@ -379,6 +383,23 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
+	extraFiles, err := extrafiles.Find(ctx, cfg.Files)
+	if err != nil {
+		return err
+	}
+
+	processStringArray := func(arr []string) []string {
+		var out []string
+		for _, s := range arr {
+			if _, ok := extraFiles[s]; ok {
+				out = append(out, "${FILESDIR}/"+s)
+			} else {
+				out = append(out, s)
+			}
+		}
+		return out
+	}
+
 	data := struct {
 		Name          string
 		Description   string
@@ -414,20 +435,27 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      cfg.UseFlags,
-		Dobin:         buildInstallItems(cfg.Dobin),
-		Doconfd:       buildInstallItems(cfg.Doconfd),
+		Dobin:         buildInstallItems(cfg.Dobin, extraFiles),
+		Doconfd:       buildInstallItems(cfg.Doconfd, extraFiles),
 		Dodir:         cfg.Dodir,
-		Dodoc:         cfg.Dodoc,
-		Doenvd:        buildInstallItems(cfg.Doenvd),
-		Doexe:         buildInstallItems(cfg.Doexe),
-		Doheader:      buildInstallItems(cfg.Doheader),
-		Doinitd:       buildInstallItems(cfg.Doinitd),
-		Doins:         buildInstallItems(cfg.Doins),
-		Doman:         cfg.Doman,
-		Dosbin:        buildInstallItems(cfg.Dosbin),
-		Dosym:         buildInstallItems(cfg.Dosym),
-		Systemd:       buildInstallItems(cfg.Systemd),
+		Dodoc:         processStringArray(cfg.Dodoc),
+		Doenvd:        buildInstallItems(cfg.Doenvd, extraFiles),
+		Doexe:         buildInstallItems(cfg.Doexe, extraFiles),
+		Doheader:      buildInstallItems(cfg.Doheader, extraFiles),
+		Doinitd:       buildInstallItems(cfg.Doinitd, extraFiles),
+		Doins:         buildInstallItems(cfg.Doins, extraFiles),
+		Doman:         processStringArray(cfg.Doman),
+		Dosbin:        buildInstallItems(cfg.Dosbin, extraFiles),
+		Dosym:         buildInstallItems(cfg.Dosym, extraFiles),
+		Systemd:       buildInstallItems(cfg.Systemd, extraFiles),
 	}
+
+	for _, sym := range data.Dosym {
+		if sym.Target == "" {
+			return errors.New("gentoo.dosym requires a destination")
+		}
+	}
+
 	var buf bytes.Buffer
 	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {
 		return err
@@ -439,10 +467,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	extraFiles, err := extrafiles.Find(ctx, cfg.Files)
-	if err != nil {
-		return err
-	}
 	for name, src := range extraFiles {
 		destName := name
 		if !strings.HasPrefix(strings.ToLower(filepath.ToSlash(destName)), "files/") {
@@ -777,7 +801,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	metadataPath := pathlib.Join(dir, "metadata.xml")
 	manifestPath := pathlib.Join(dir, "Manifest")
 
-	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" {
+	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" || len(cfg.UseFlags) > 0 {
 		type gentooMaintainer struct {
 			Type  string `xml:"type,attr"`
 			Email string `xml:"email,omitempty"`
@@ -802,19 +826,43 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		}
 
 		meta := gentooMetadata{}
-		// Currently we only support the "doc" use flag, but this is structured
-		// for future flexibility to allow users to configure their own flags.
-		meta.Use = &gentooUse{
-			Flags: []gentooUseFlag{
-				{
-					Name:  "doc",
-					Value: "Install README man page and other docs",
-				},
-			},
-		}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
 			if content, err := dl.DownloadFile(ctx, repo, metadataPath); err == nil {
 				_ = xml.Unmarshal(content, &meta)
+			}
+		}
+		if meta.Use == nil {
+			meta.Use = &gentooUse{}
+		}
+
+		configuredFlags := make(map[string]string)
+		configuredFlags["doc"] = "Install README man page and other docs"
+		for _, flag := range cfg.UseFlags {
+			if flag.Description != "" {
+				configuredFlags[flag.Flag] = flag.Description
+			}
+		}
+
+		var configuredFlagNames []string
+		for k := range configuredFlags {
+			configuredFlagNames = append(configuredFlagNames, k)
+		}
+		sort.Strings(configuredFlagNames)
+
+		for _, k := range configuredFlagNames {
+			v := configuredFlags[k]
+			exists := false
+			for _, ef := range meta.Use.Flags {
+				if ef.Name == k {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				meta.Use.Flags = append(meta.Use.Flags, gentooUseFlag{
+					Name:  k,
+					Value: v,
+				})
 			}
 		}
 
