@@ -1386,6 +1386,7 @@ type Project struct {
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 	MCP               MCP               `yaml:"mcp,omitempty" json:"mcp,omitempty"`
+	Iru               Iru               `yaml:"iru,omitempty" json:"iru,omitempty"`
 	Retry             Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 
 	// force the SCM token to use when multiple are set
@@ -1672,4 +1673,24 @@ type MCPPackage struct {
 
 type MCPTransport struct {
 	Type string `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=stdio,enum=streamable-http,enum=sse"`
+}
+
+// Iru publishes artifacts as Custom Apps to iru.com (formerly Kandji).
+type Iru struct {
+	URL                    string   `yaml:"url,omitempty" json:"url,omitempty"`
+	Name                   string   `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                    []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	APIToken               string   `yaml:"api_token,omitempty" json:"api_token,omitempty"`
+	LibraryItemID          string   `yaml:"library_item_id,omitempty" json:"library_item_id,omitempty"`
+	InstallType            string   `yaml:"install_type,omitempty" json:"install_type,omitempty" jsonschema:"enum=package,enum=zip,enum=image,default=package"`
+	InstallEnforcement     string   `yaml:"install_enforcement,omitempty" json:"install_enforcement,omitempty" jsonschema:"enum=install_once,enum=continuously_enforce,enum=no_enforcement,default=install_once"`
+	UnzipLocation          string   `yaml:"unzip_location,omitempty" json:"unzip_location,omitempty"`
+	AuditScript            string   `yaml:"audit_script,omitempty" json:"audit_script,omitempty"`
+	PreinstallScript       string   `yaml:"preinstall_script,omitempty" json:"preinstall_script,omitempty"`
+	PostinstallScript      string   `yaml:"postinstall_script,omitempty" json:"postinstall_script,omitempty"`
+	ShowInSelfService      *bool    `yaml:"show_in_self_service,omitempty" json:"show_in_self_service,omitempty"`
+	SelfServiceCategoryID  string   `yaml:"self_service_category_id,omitempty" json:"self_service_category_id,omitempty"`
+	SelfServiceRecommended *bool    `yaml:"self_service_recommended,omitempty" json:"self_service_recommended,omitempty"`
+	Restart                *bool    `yaml:"restart,omitempty" json:"restart,omitempty"`
+	Disable                string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }

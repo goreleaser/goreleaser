@@ -37,6 +37,7 @@ const (
 	Notarize       Key = "notarize"
 	Archive        Key = "archive"
 	MCP            Key = "mcp"
+	Iru            Key = "iru"
 	SRPM           Key = "srpm"
 )
 
@@ -134,6 +135,7 @@ var Release = Keys{
 	Notarize,
 	Archive,
 	MCP,
+	Iru,
 }
 
 var Build = Keys{

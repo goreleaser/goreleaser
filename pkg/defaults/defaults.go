@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/iru"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/linkedin"
@@ -112,6 +113,7 @@ var Defaulters = []Defaulter{
 	ko.Pipe{},
 	scoop.Pipe{},
 	mcp.Pipe{},
+	iru.Pipe{},
 	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
