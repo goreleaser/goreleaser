@@ -42,6 +42,7 @@ type Mock struct {
 	ReleaseNotesParams   []string
 	OpenedPullRequest    bool
 	SyncedFork           bool
+	DeletedFiles         []string
 }
 
 func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
@@ -51,6 +52,15 @@ func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
 
 func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {
 	c.OpenedPullRequest = true
+	return nil
+}
+
+func (c *Mock) ListDir(_ *context.Context, _ Repo, _ string) ([]string, error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *Mock) DeleteFile(_ *context.Context, _ config.CommitAuthor, _ Repo, path, _ string) error {
+	c.DeletedFiles = append(c.DeletedFiles, path)
 	return nil
 }
 

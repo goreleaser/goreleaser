@@ -26,6 +26,8 @@ const DefaultGitLabDownloadURL = "https://gitlab.com"
 var (
 	_ Client            = &gitlabClient{}
 	_ PullRequestOpener = &gitlabClient{}
+	_ DirectoryLister   = &gitlabClient{}
+	_ FileDeleter       = &gitlabClient{}
 )
 
 type gitlabClient struct {
@@ -48,6 +50,30 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 		return nil
 	}, retryx.IsRetriable)
 	return result, resp, err
+}
+
+func (c *gitlabClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	branch := repo.Branch
+	if branch == "" {
+		var err error
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	file, _, err := c.client.RepositoryFiles.GetRawFile(repo.String(), path, &gitlab.GetRawFileOptions{Ref: &branch})
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+func (c *gitlabClient) ListDir(_ *context.Context, _ Repo, _ string) ([]string, error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *gitlabClient) DeleteFile(_ *context.Context, _ config.CommitAuthor, _ Repo, _ string, _ string) error {
+	return ErrNotImplemented
 }
 
 // newGitLab returns a gitlab client implementation.
