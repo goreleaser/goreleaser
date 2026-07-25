@@ -839,7 +839,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		configuredFlags["doc"] = "Install README man page and other docs"
 		for _, flag := range cfg.UseFlags {
 			if flag.Description != "" {
-				configuredFlags[flag.Flag] = flag.Description
+				configuredFlags[strings.TrimLeft(flag.Flag, "+-")] = flag.Description
 			}
 		}
 
