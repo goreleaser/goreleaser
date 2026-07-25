@@ -421,7 +421,7 @@ var (
 	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
 	validGo386     = []string{"sse2", "softfloat"}
 	validGoarm     = regexp.MustCompile(`^(5(,softfloat)?|[67](,softfloat|,hardfloat)?)$`)
-	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
+	validGoarm64   = regexp.MustCompile(`^(v8\.[0-9]|v9\.[0-5])(,lse|,crypto)*$`)
 	validGomips    = []string{"hardfloat", "softfloat"}
 	validGoppc64   = []string{"power8", "power9", "power10"}
 	validGoriscv64 = []string{"rva20u64", "rva22u64", "rva23u64"}
