@@ -3,3 +3,8 @@
 # https://github.com/caarlos0/svu
 verbose: true
 always: true
+tag:
+  # Only consider proper release tags: this ignores the `*-nightly` tags
+  # (e.g. `v2.18.0-abc1234-nightly`, `nightly`), which would otherwise make
+  # `svu next` compute the version from a nightly instead of the last release.
+  pattern: "v*.*.*[0-9]"
