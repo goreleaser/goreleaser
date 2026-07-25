@@ -294,6 +294,10 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 		},
 		BugsTo:   "https://bug",
 		Homepage: "https://home",
+		UseFlags: []config.GentooUseFlag{
+			{Flag: "+systemd", Description: "Enable systemd support"},
+			{Flag: "-X", Description: "Disable X"},
+		},
 	}
 
 	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
@@ -315,6 +319,10 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	// Check metadata.xml
 	require.Contains(t, string(files[0].Content), "<email>m@m.com</email>")
 	require.Contains(t, string(files[0].Content), "<bugs-to>https://bug</bugs-to>")
+	require.Contains(t, string(files[0].Content), "<flag name=\"systemd\">Enable systemd support</flag>")
+	require.Contains(t, string(files[0].Content), "<flag name=\"X\">Disable X</flag>")
+	require.NotContains(t, string(files[0].Content), "+systemd")
+	require.NotContains(t, string(files[0].Content), "-X")
 
 	// Check Manifest
 	require.Contains(t, string(files[1].Content), "DIST foo_1.0.0_linux_amd64.tar.gz")
@@ -474,7 +482,7 @@ func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
 			Bin:        true,
 			License:    "MIT",
 			UseFlags: []config.GentooUseFlag{
-				{Flag: "systemd", Description: "Enable systemd support"},
+				{Flag: "+systemd", Description: "Enable systemd support"},
 			},
 			Systemd: []config.GentooInstallItem{
 				{Src: "foo.service", Use: []string{"systemd"}},
