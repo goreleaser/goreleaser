@@ -230,6 +230,7 @@ var validLicenses = []string{
 	"ocamlpro_nc",
 	"odbl",
 	"ofl",
+	"ogluk30",
 	"oml",
 	"openldap",
 	"openssl",
