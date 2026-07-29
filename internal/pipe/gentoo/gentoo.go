@@ -724,6 +724,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 		} else {
+			var filesToCreate []client.RepoFile
 			for _, f := range g.files {
 				if f.Delete {
 					if d, ok := repoClient.(client.FileDeleter); ok {
@@ -733,8 +734,19 @@ func (Pipe) Publish(ctx *context.Context) error {
 					}
 					continue
 				}
-				if err = repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
-					return err
+				filesToCreate = append(filesToCreate, f)
+			}
+			if len(filesToCreate) > 0 {
+				if fc, ok := repoClient.(client.FilesCreator); ok {
+					if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
+						return err
+					}
+				} else {
+					for _, f := range filesToCreate {
+						if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
