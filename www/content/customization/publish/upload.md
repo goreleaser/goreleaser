@@ -290,4 +290,35 @@ uploads:
 These settings should allow you to push your artifacts into multiple HTTP
 servers.
 
+## GitLab generic package registry
+
+You can use the HTTP upload pipe to publish your artifacts to a [GitLab
+generic package
+registry](https://docs.gitlab.com/user/packages/generic_packages/):
+
+```yaml {filename=".goreleaser.yaml"}
+uploads:
+  - name: gitlab
+    target: https://gitlab.com/api/v4/projects/<project>/packages/generic/{{ .ProjectName }}/{{ .Version }}/
+    custom_headers:
+      PRIVATE-TOKEN: "{{ .Env.REGISTRY_TOKEN }}"
+```
+
+`<project>` is either the project ID or the URL-encoded path of the project
+(e.g. `mygroup%2Freleases`). The registry can belong to any project you can
+write to — including a project other than the one being released, which allows
+you to [store all of your packages in one GitLab
+project](https://docs.gitlab.com/user/packages/workflows/project_registry/).
+
+The token needs the `write_package_registry` scope (project or group [access
+tokens](https://docs.gitlab.com/user/project/settings/project_access_tokens/),
+[deploy tokens](https://docs.gitlab.com/user/project/deploy_tokens/), and
+personal access tokens are all supported). Use the `DEPLOY-TOKEN` header for
+deploy tokens, or, when running in GitLab CI/CD with a [job
+token](https://docs.gitlab.com/ci/jobs/ci_job_token/) that has access to the
+target project, `JOB-TOKEN: "{{ .Env.CI_JOB_TOKEN }}"`.
+
+If you only want the artifacts in the registry and not attached to the release
+of the project being built, you can also set `release.skip_upload: true`.
+
 {{< g_templates >}}

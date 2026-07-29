@@ -83,6 +83,14 @@ gitlab_urls:
   use_package_registry: true
 ```
 
+> [!TIP]
+> This uploads the release artifacts to the package registry of the project
+> being released. To publish artifacts to the generic package registry of
+> another project — e.g. to store all your packages in a single project —
+> use the [HTTP upload
+> pipe](/customization/publish/upload/#gitlab-generic-package-registry)
+> instead.
+
 ## Example release
 
 You can check [this example repository](https://gitlab.com/goreleaser/example/-/releases) for a real world example.

@@ -34,6 +34,13 @@ dockers_v2:
     # the Dockerfile for the build.
     # When set, it takes precedence over `dockerfile`.
     #
+    # When rendering the file contents, `.Binary` (the name of the binary being
+    # copied into the image) and `.Binaries` (the sorted list of all binary
+    # names, useful when copying more than one) are available - handy for things
+    # like `ENTRYPOINT ["/usr/bin/{{ .Binary }}"]`. Since a single image is built
+    # for all its platforms, per-platform fields (such as `.Os` and `.Arch`) are
+    # not available.
+    #
     # Templates: allowed (both the path and the file contents).
     # {{< g_inline_version "v2.17" >}}
     templated_dockerfile: "Dockerfile.tmpl"
@@ -82,6 +89,9 @@ dockers_v2:
 
     # Same as `extra_files`, but the source files are rendered as templates
     # before being copied into the build context.
+    #
+    # As with `templated_dockerfile`, `.Binary` and `.Binaries` are available
+    # when rendering the file contents.
     #
     # Templates: allowed (source path, destination path, and file contents).
     # {{< g_inline_version "v2.17" >}}
