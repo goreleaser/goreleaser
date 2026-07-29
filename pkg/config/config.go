@@ -1331,7 +1331,7 @@ type Project struct {
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
-	Gentoos           []Gentoo          `yaml:"gentoos,omitempty" json:"gentoos,omitempty"`
+	Gentoos           []Gentoo          `yaml:"gentoo_overlay,omitempty" json:"gentoo_overlay,omitempty"`
 	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
