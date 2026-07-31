@@ -297,6 +297,11 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	if err := tp.ApplyAll(&cfg.Name, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
 		return err
 	}
+	var err error
+	cfg.Repository, err = client.TemplateRef(tp.Apply, cfg.Repository)
+	if err != nil {
+		return err
+	}
 	if strings.TrimSpace(cfg.Path) == "" {
 		return errors.New("gentoo.path is required and must include the category/package ebuild path")
 	}
