@@ -1570,6 +1570,12 @@
 					"id": {
 						"type": "string"
 					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"name": {
 						"type": "string"
 					},

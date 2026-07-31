@@ -330,6 +330,29 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	require.Contains(t, string(files[1].Content), "SHA512")
 }
 
+func TestDoRunByIDs(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: folder,
+		Gentoos: []config.Gentoo{{
+			IDs: []string{"foo"},
+			Path: "app-misc/foo/foo.ebuild",
+		}},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bar-bin.tar.gz",
+		Path:   "doesnt matter",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "bar",
+		},
+	})
+	err := doRun(ctx, ctx.Config.Gentoos[0], nil)
+	require.ErrorContains(t, err, "no linux archives found")
+}
+
 func TestDoRunDifferentBinaries(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
