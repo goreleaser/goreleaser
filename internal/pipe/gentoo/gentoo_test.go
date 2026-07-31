@@ -47,7 +47,7 @@ func TestDoRunMultiArch(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 	out := string(bts)
@@ -86,7 +86,7 @@ func TestDoRunSingleArch(t *testing.T) {
 	err := doRun(ctx, ctx.Config.Gentoos[0], cli)
 	require.NoError(t, err)
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	require.FileExists(t, ebuild)
 
 	bts, err := os.ReadFile(ebuild)
@@ -127,7 +127,7 @@ func TestDoRunCustomBindir(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 	out := string(bts)
@@ -163,7 +163,7 @@ func TestDoRunWithExtraInstall(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 
@@ -199,7 +199,7 @@ func TestDoRunWithDoinsAndDoman(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 
@@ -236,7 +236,7 @@ func TestDoRunWithFiles(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	target := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "files", "foo.service")
+	target := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "files", "foo.service")
 	_, err := os.Stat(target)
 	os.Remove(svc)
 	require.NoError(t, err)
@@ -367,7 +367,7 @@ func TestDoRunDifferentBinaries(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 	golden.RequireEqual(t, bts)
@@ -508,7 +508,7 @@ func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
 
-	ebuild := filepath.Join(dist, "gentoo", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
 	bts, err := os.ReadFile(ebuild)
 	require.NoError(t, err)
 
