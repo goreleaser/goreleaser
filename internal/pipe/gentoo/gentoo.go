@@ -325,6 +325,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		),
 		artifact.OnlyReplacingUnibins,
 	}
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
+	}
 
 	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(arches) == 0 {
