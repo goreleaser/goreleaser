@@ -544,7 +544,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			log.Debug("gentoo.skip_upload is true")
 			continue
 		}
-		key := fmt.Sprintf("%s/%s|%s|%s", cfg.Repository.Owner, cfg.Repository.Name, cfg.Repository.Git.URL, filepath.ToSlash(filepath.Dir(cfg.Path)))
+		key := cfg.ID
 		g := groups[key]
 		if g == nil {
 			g = &group{cfg: cfg}
