@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -248,6 +249,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	ids := ids.New("gentoos")
 	for i := range ctx.Config.Gentoos {
 		g := &ctx.Config.Gentoos[i]
 		g.CommitAuthor = commitauthor.Default(g.CommitAuthor)
@@ -278,8 +280,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		} else if !hasCategory(g.Path) {
 			log.Warnf("gentoo.path %q does not include a category/package path; Gentoo ebuild paths usually look like %q", g.Path, filepath.ToSlash(defaultPath(g.Name, g.Type)))
 		}
+		ids.Inc(g.ID)
 	}
-	return nil
+	return ids.Validate()
 }
 
 func (Pipe) Run(ctx *context.Context) error {
