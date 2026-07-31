@@ -444,6 +444,7 @@ type Scoop struct {
 
 // Gentoo contains the gentoo ebuild section.
 type Gentoo struct {
+	ID                       string              `yaml:"id,omitempty" json:"id,omitempty"`
 	Name                     string              `yaml:"name,omitempty" json:"name,omitempty"`
 	Path                     string              `yaml:"path,omitempty" json:"path,omitempty"`
 	Repository               RepoRef             `yaml:"repository,omitempty" json:"repository,omitempty"`

@@ -251,6 +251,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Gentoos {
 		g := &ctx.Config.Gentoos[i]
 		g.CommitAuthor = commitauthor.Default(g.CommitAuthor)
+		if g.ID == "" {
+			g.ID = "default"
+		}
 		if !g.Bin {
 			return errors.New("gentoo.bin must be true")
 		}
@@ -306,7 +309,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("gentoo.path is required and must include the category/package ebuild path")
 	}
 
-	path := filepath.Join(ctx.Config.Dist, "gentoo", cfg.Path)
+	path := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, cfg.Path)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
