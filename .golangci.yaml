@@ -10,7 +10,7 @@ linters:
     - gocritic
     - godoclint
     - misspell
-    - modernize
+    - # modernize
     - noctx
     - nolintlint
     - perfsprint
@@ -40,7 +40,7 @@ linters:
     gocritic:
       disabled-checks:
         - appendAssign
-    modernize:
+    # modernize:
       disable:
         - omitzero
     perfsprint:

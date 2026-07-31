@@ -335,7 +335,7 @@ func TestDoRunByIDs(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: folder,
 		Gentoos: []config.Gentoo{{
-			IDs: []string{"foo"},
+			IDs:  []string{"foo"},
 			Path: "app-misc/foo/foo.ebuild",
 		}},
 	})
@@ -345,7 +345,7 @@ func TestDoRunByIDs(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
