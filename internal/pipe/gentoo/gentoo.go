@@ -876,27 +876,45 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	manifestPath := pathlib.Join(dir, "Manifest")
 
 	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" || len(cfg.UseFlags) > 0 {
+		type innerNode struct {
+			XMLName xml.Name
+			Content string     `xml:",innerxml"`
+			Attrs   []xml.Attr `xml:",any,attr"`
+		}
 		type gentooMaintainer struct {
-			Type  string `xml:"type,attr"`
-			Email string `xml:"email,omitempty"`
-			Name  string `xml:"name,omitempty"`
+			XMLName xml.Name    `xml:"maintainer"`
+			Type    string      `xml:"type,attr,omitempty"`
+			Email   string      `xml:"email,omitempty"`
+			Name    string      `xml:"name,omitempty"`
+			Attrs   []xml.Attr  `xml:",any,attr"`
+			Nodes   []innerNode `xml:",any"`
 		}
 		type gentooUpstream struct {
-			BugsTo string `xml:"bugs-to,omitempty"`
-			Doc    string `xml:"doc,omitempty"`
+			XMLName xml.Name    `xml:"upstream"`
+			BugsTo  string      `xml:"bugs-to,omitempty"`
+			Doc     string      `xml:"doc,omitempty"`
+			Attrs   []xml.Attr  `xml:",any,attr"`
+			Nodes   []innerNode `xml:",any"`
 		}
 		type gentooUseFlag struct {
-			Name  string `xml:"name,attr"`
-			Value string `xml:",chardata"`
+			XMLName xml.Name   `xml:"flag"`
+			Name    string     `xml:"name,attr"`
+			Value   string     `xml:",chardata"`
+			Attrs   []xml.Attr `xml:",any,attr"`
 		}
 		type gentooUse struct {
-			Flags []gentooUseFlag `xml:"flag"`
+			XMLName xml.Name        `xml:"use"`
+			Flags   []gentooUseFlag `xml:"flag"`
+			Attrs   []xml.Attr      `xml:",any,attr"`
+			Nodes   []innerNode     `xml:",any"`
 		}
 		type gentooMetadata struct {
 			XMLName     xml.Name           `xml:"pkgmetadata"`
+			Attrs       []xml.Attr         `xml:",any,attr"`
 			Maintainers []gentooMaintainer `xml:"maintainer"`
 			Use         *gentooUse         `xml:"use,omitempty"`
 			Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
+			InnerNodes  []innerNode        `xml:",any"`
 		}
 
 		meta := gentooMetadata{}
