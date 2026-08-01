@@ -651,6 +651,7 @@ func TestGentooArch(t *testing.T) {
 }
 
 func TestGentooVersion(t *testing.T) {
+	// Reference: https://projects.gentoo.org/pms/8/pms.html#x1-250003.2
 	tests := []struct {
 		in   string
 		want string
@@ -663,6 +664,25 @@ func TestGentooVersion(t *testing.T) {
 		{"1.0.0-beta.2", "1.0.0_beta2"},
 		{"1.0.0-pre3", "1.0.0_pre3"},
 		{"1.0.0-p1", "1.0.0_p1"},
+		// PMS 3.2 based examples
+		{"1.2-alpha", "1.2_alpha"},
+		{"1.2-alpha.1", "1.2_alpha1"},
+		{"1.2-alpha-1", "1.2_alpha1"},
+		{"1.2-beta", "1.2_beta"},
+		{"1.2-beta.2", "1.2_beta2"},
+		{"1.2-pre", "1.2_pre"},
+		{"1.2-pre.3", "1.2_pre3"},
+		{"1.2-rc", "1.2_rc"},
+		{"1.2-rc.4", "1.2_rc4"},
+		{"1.2-p", "1.2_p"},
+		{"1.2-p.5", "1.2_p5"},
+		// Invented edge cases
+		{"1.0.0-alpha0", "1.0.0_alpha0"},
+		{"1.0.0-beta00", "1.0.0_beta00"},
+		{"1.0.0-rc", "1.0.0_rc"},
+		{"1.0.0-pre", "1.0.0_pre"},
+		{"1.0.0-p", "1.0.0_p"},
+		{"2.0.0-rc-10", "2.0.0_rc10"},
 	}
 
 	for _, tt := range tests {
