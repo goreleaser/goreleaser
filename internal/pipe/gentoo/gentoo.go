@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"slices"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/semver/v3"
