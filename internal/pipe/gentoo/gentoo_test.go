@@ -649,3 +649,26 @@ func TestGentooArch(t *testing.T) {
 		})
 	}
 }
+
+func TestGentooVersion(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"1.0.0", "1.0.0"},
+		{"1.0.0-rc1", "1.0.0_rc1"},
+		{"1.0.0-rc-1", "1.0.0_rc1"},
+		{"1.0.0-rc.1", "1.0.0_rc1"},
+		{"1.0.0-alpha", "1.0.0_alpha"},
+		{"1.0.0-beta.2", "1.0.0_beta2"},
+		{"1.0.0-pre3", "1.0.0_pre3"},
+		{"1.0.0-p1", "1.0.0_p1"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			got := gentooVersion(tt.in)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
