@@ -628,3 +628,24 @@ func TestParseGentooVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestGentooArch(t *testing.T) {
+	tests := []struct {
+		name     string
+		goarch   string
+		expected string
+	}{
+		{"386", "386", "x86"},
+		{"amd64", "amd64", "amd64"},
+		{"arm64", "arm64", "arm64"},
+		{"riscv64", "riscv64", "riscv"},
+		{"ppc64le", "ppc64le", "ppc64"},
+		{"s390x", "s390x", "s390"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, gentooArch(tt.goarch))
+		})
+	}
+}
