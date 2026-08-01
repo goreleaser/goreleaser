@@ -5,6 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Masterminds/semver/v3"
+	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -536,4 +540,91 @@ func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, bts)
+}
+
+func TestIsGreaterThan(t *testing.T) {
+	parseV := func(s string) *semver.Version {
+		v, _ := semver.NewVersion(s)
+		return v
+	}
+
+	type gentooVersion struct {
+		version  *semver.Version
+		revision int
+	}
+
+	isGreaterThan := func(vI, vJ *gentooVersion) bool {
+		if vI.version.Equal(vJ.version) {
+			return vI.revision > vJ.revision
+		}
+		return vI.version.GreaterThan(vJ.version)
+	}
+
+	tests := []struct {
+		name string
+		vI   *gentooVersion
+		vJ   *gentooVersion
+		want bool
+	}{
+		{"1.0 > 0.9", &gentooVersion{parseV("1.0.0"), 0}, &gentooVersion{parseV("0.9.0"), 0}, true},
+		{"0.9 < 1.0", &gentooVersion{parseV("0.9.0"), 0}, &gentooVersion{parseV("1.0.0"), 0}, false},
+		{"1.0-r1 > 1.0", &gentooVersion{parseV("1.0.0"), 1}, &gentooVersion{parseV("1.0.0"), 0}, true},
+		{"1.0-r2 > 1.0-r1", &gentooVersion{parseV("1.0.0"), 2}, &gentooVersion{parseV("1.0.0"), 1}, true},
+		{"1.0 < 1.0-r1", &gentooVersion{parseV("1.0.0"), 0}, &gentooVersion{parseV("1.0.0"), 1}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isGreaterThan(tt.vI, tt.vJ)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestParseGentooVersion(t *testing.T) {
+	type gentooVersion struct {
+		version  *semver.Version
+		revision int
+	}
+
+	parseGentooVersion := func(n, prefix string) *gentooVersion {
+		vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
+		var rev int
+		if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
+			if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
+				rev = parsedRev
+				vStr = vStr[:idx]
+			}
+		}
+		vStr = strings.ReplaceAll(vStr, "_", "-")
+		v, err := semver.NewVersion(vStr)
+		if err != nil {
+			return nil
+		}
+		return &gentooVersion{
+			version:  v,
+			revision: rev,
+		}
+	}
+
+	tests := []struct {
+		name   string
+		n      string
+		prefix string
+		wantV  string
+		wantR  int
+	}{
+		{"1.0-r1", "foo-bin-1.0.0-r1.ebuild", "foo-bin-", "1.0.0", 1},
+		{"1.0", "foo-bin-1.0.0.ebuild", "foo-bin-", "1.0.0", 0},
+		{"1.0_rc1-r2", "foo-bin-1.0.0_rc1-r2.ebuild", "foo-bin-", "1.0.0-rc1", 2},
+		{"1.0_rc1", "foo-bin-1.0.0_rc1.ebuild", "foo-bin-", "1.0.0-rc1", 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseGentooVersion(tt.n, tt.prefix)
+			require.NotNil(t, got)
+			require.Equal(t, tt.wantV, got.version.String())
+			require.Equal(t, tt.wantR, got.revision)
+		})
+	}
 }
