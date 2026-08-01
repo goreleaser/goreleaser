@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -594,27 +595,49 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 			var ebuilds []string
-			prefix := g.cfg.Name + "-"
+			prefix := filepath.Base(dir) + "-"
 			for _, n := range names {
 				if strings.HasPrefix(n, prefix) && strings.HasSuffix(n, ".ebuild") {
 					ebuilds = append(ebuilds, n)
 				}
 			}
-			parseVersion := func(n string) *semver.Version {
+			type gentooVersion struct {
+				version  *semver.Version
+				revision int
+			}
+
+			isGreaterThan := func(vI, vJ *gentooVersion) bool {
+				if vI.version.Equal(vJ.version) {
+					return vI.revision > vJ.revision
+				}
+				return vI.version.GreaterThan(vJ.version)
+			}
+
+			parseVersion := func(n string) *gentooVersion {
 				vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
+				var rev int
+				if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
+					if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
+						rev = parsedRev
+						vStr = vStr[:idx]
+					}
+				}
 				vStr = strings.ReplaceAll(vStr, "_", "-")
 				v, err := semver.NewVersion(vStr)
 				if err != nil {
 					return nil
 				}
-				return v
+				return &gentooVersion{
+					version:  v,
+					revision: rev,
+				}
 			}
 
 			sort.Slice(ebuilds, func(i, j int) bool {
 				vI := parseVersion(ebuilds[i])
 				vJ := parseVersion(ebuilds[j])
 				if vI != nil && vJ != nil {
-					return vI.GreaterThan(vJ)
+					return isGreaterThan(vI, vJ)
 				}
 				if vI != nil {
 					return true
@@ -626,8 +649,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 			})
 
 			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
-				getBucket := func(v *semver.Version) string {
-					pr := v.Prerelease()
+				getBucket := func(v *gentooVersion) string {
+					pr := v.version.Prerelease()
 					switch {
 					case strings.Contains(pr, "rc"):
 						return "rc"
@@ -651,14 +674,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 				allEbuilds = append(allEbuilds, newFiles...)
 
-				maxVersions := map[string]*semver.Version{}
+				maxVersions := map[string]*gentooVersion{}
 				for _, n := range allEbuilds {
 					v := parseVersion(n)
 					if v == nil {
 						continue
 					}
 					b := getBucket(v)
-					if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
+					if maxVersions[b] == nil || isGreaterThan(v, maxVersions[b]) {
 						maxVersions[b] = v
 					}
 				}
@@ -675,18 +698,18 @@ func (Pipe) Publish(ctx *context.Context) error {
 					violates := false
 					switch b {
 					case "alpha":
-						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
-							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+						if (maxVersions["beta"] != nil && !isGreaterThan(v, maxVersions["beta"])) ||
+							(maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
 							violates = true
 						}
 					case "beta":
-						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+						if (maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
 							violates = true
 						}
 					case "rc":
-						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
+						if maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"]) {
 							violates = true
 						}
 					}
@@ -970,7 +993,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	}
 
 	var deletedVersions []string
-	prefix := cfg.Name + "-"
+	prefix := filepath.Base(dir) + "-"
 	for _, e := range deletedEbuilds {
 		v := strings.TrimSuffix(strings.TrimPrefix(e, prefix), ".ebuild")
 		deletedVersions = append(deletedVersions, v)
