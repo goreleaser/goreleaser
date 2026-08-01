@@ -12,6 +12,7 @@ import (
 	"os"
 	pathlib "path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -299,8 +300,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
+var gentooPrereleaseRe = regexp.MustCompile(`-(alpha|beta|pre|rc|p)[.\-]?(\d*)`)
+
+func gentooVersion(v string) string {
+	return gentooPrereleaseRe.ReplaceAllString(v, "_${1}${2}")
+}
+
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
-	tp := tmpl.New(ctx)
+	tp := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"Version": gentooVersion(ctx.Version),
+	})
 	if err := tp.ApplyAll(&cfg.Name, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
 		return err
 	}
