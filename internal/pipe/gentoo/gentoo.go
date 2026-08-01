@@ -586,6 +586,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 			}
 		}
 
+		if g.cfg.Repository.PullRequest.Enabled {
+			base := client.Repo{
+				Name:   g.cfg.Repository.PullRequest.Base.Name,
+				Owner:  g.cfg.Repository.PullRequest.Base.Owner,
+				Branch: g.cfg.Repository.PullRequest.Base.Branch,
+			}
+			fscli, ok := repoClient.(client.ForkSyncer)
+			if ok {
+				if err := fscli.SyncFork(ctx, repo, base); err != nil {
+					log.WithError(err).Warn("could not sync fork")
+				}
+			}
+		}
+
 		var deletedEbuilds []string
 		// list existing ebuilds
 		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 && g.cfg.VersionRetentionStrategy != "" {
@@ -798,12 +812,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 			Name:   g.cfg.Repository.PullRequest.Base.Name,
 			Owner:  g.cfg.Repository.PullRequest.Base.Owner,
 			Branch: g.cfg.Repository.PullRequest.Base.Branch,
-		}
-		fscli, ok := repoClient.(client.ForkSyncer)
-		if ok {
-			if err := fscli.SyncFork(ctx, repo, base); err != nil {
-				log.WithError(err).Warn("could not sync fork")
-			}
 		}
 		pcl, ok := repoClient.(client.PullRequestOpener)
 		if !ok {
