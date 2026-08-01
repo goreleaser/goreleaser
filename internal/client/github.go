@@ -151,6 +151,10 @@ func (c *githubClient) DownloadFile(ctx *context.Context, repo Repo, path string
 	c.checkRateLimit(ctx)
 	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: repo.Branch})
 	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	if file == nil {

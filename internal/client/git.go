@@ -300,3 +300,18 @@ func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string)
 func nameFromURL(url string) string {
 	return strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
 }
+
+
+func (g *gitClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	parent := filepath.Join(ctx.Config.Dist, "git")
+	name := repo.Name + "-" + g.branch
+	cwd := filepath.Join(parent, name, path)
+	content, err := os.ReadFile(cwd)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return content, nil
+}

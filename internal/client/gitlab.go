@@ -63,6 +63,10 @@ func (c *gitlabClient) DownloadFile(ctx *context.Context, repo Repo, path string
 	}
 	file, _, err := c.client.RepositoryFiles.GetRawFile(repo.String(), path, &gitlab.GetRawFileOptions{Ref: &branch})
 	if err != nil {
+		var rerr *gitlab.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return file, nil

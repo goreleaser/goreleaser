@@ -22,6 +22,9 @@ const (
 )
 
 // ErrNotImplemented is returned when a client does not implement certain feature.
+// ErrNotFound is returned when a file is not found.
+var ErrNotFound = errors.New("file not found")
+
 var ErrNotImplemented = errors.New("not implemented")
 
 // ErrReleaseDisabled happens when a configuration tries to use the default
