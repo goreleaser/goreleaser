@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"testing"
-
-	"github.com/Masterminds/semver/v3"
 	"strconv"
 	"strings"
+	"testing"
 	"text/template"
+
+	"github.com/Masterminds/semver/v3"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
