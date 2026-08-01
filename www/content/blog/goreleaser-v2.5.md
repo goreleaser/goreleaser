@@ -14,7 +14,7 @@ This is hopefully the last big release of the year, and I think it's a good one!
 
 ## Rust and Zig joined the party!
 
-![mascot party!](https://raw.githubusercontent.com/goreleaser/artwork/refs/heads/master/goreleaser_rust_zig_16_9.png)
+![mascot party!](https://a.goreleaser.com/blog/goreleaser-v2.5/goreleaser_rust_zig_16_9.png)
 
 The biggest highlight of this release surely is the start of the multi-language
 support!
@@ -125,7 +125,7 @@ Our current logo is very good, in my opinion: it is playful, recognizable, looks
 cute, all that good stuff.
 
 <figure>
-  <img src="https://github.com/user-attachments/assets/4f744ee9-895f-4ff2-a372-78fe3c418b0b" width="300px"/>
+  <img src="https://a.goreleaser.com/blog/goreleaser-v2.5/img1.png" width="300px"/>
 </figure>
 
 Still, I tried some ideas to see how they would look like, but I didn't
@@ -136,7 +136,7 @@ Our [homepage](https://goreleaser.com) got a relatively new look, though.
 We reorganized some things, improved others, changed some colors, and, overall,
 I think it looks better.
 
-![New homepage design](https://github.com/user-attachments/assets/4c06ed2d-fb1b-48b6-9862-ad7a1cf28382)
+![New homepage design](https://a.goreleaser.com/blog/goreleaser-v2.5/img2.png)
 
 All the artwork GoReleaser uses is made by [Carine Becker][carine], and is
 available [here][artwork].

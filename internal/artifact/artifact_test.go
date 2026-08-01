@@ -1116,6 +1116,7 @@ func TestReleaseUploadableTypes(t *testing.T) {
 		UploadableSourceArchive,
 		Makeself,
 		LinuxPackage,
+		MSIX,
 		Flatpak,
 		SourceRPM,
 		SBOM,

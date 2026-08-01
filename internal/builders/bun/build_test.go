@@ -109,6 +109,13 @@ func TestWithDefaults(t *testing.T) {
 		})
 		require.Error(t, err)
 	})
+
+	t.Run("empty target", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{""},
+		})
+		require.ErrorContains(t, err, "invalid target")
+	})
 }
 
 func TestBuild(t *testing.T) {

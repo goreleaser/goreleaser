@@ -40,8 +40,10 @@ tasks:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+      RACE: '{{if eq (default "true" .RACE) "true"}}-race{{end}}'
+      COVER: '{{if eq (default "true" .COVER) "true"}}-coverpkg=./... -covermode=atomic -coverprofile=coverage.txt{{end}}'
     cmds:
-      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
+      - go test {{.TEST_OPTIONS}} -failfast {{.RACE}} {{.COVER}} {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
 
   fuzz:tmpl:
     cmds:
@@ -143,7 +145,6 @@ tasks:
   docs:sponsors:
     desc: Update OpenCollective and GitHub sponsors list
     cmds:
-      - which sponsors || go install github.com/goreleaser/sponsors@main
       - sponsors generate --config gh://goreleaser/.github/sponsors.yml sponsors.json
       - sponsors apply sponsors.json gh://goreleaser/.github/sponsors.tpl.md ./README.md
       - sponsors apply sponsors.json ./.github/templates/sponsors.tpl.md ./www/content/sponsors.md

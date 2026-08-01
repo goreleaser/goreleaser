@@ -85,8 +85,9 @@ func (t targetStatus) String() string {
 
 func checkTarget(target string) targetStatus {
 	targetsOnce.Do(func() {
-		allTargets = strings.Split(string(allTargetsBts), "\n")
-		errTargets = strings.Split(string(errTargetsBts), "\n")
+		isEmpty := func(s string) bool { return s == "" }
+		allTargets = slices.DeleteFunc(strings.Split(string(allTargetsBts), "\n"), isEmpty)
+		errTargets = slices.DeleteFunc(strings.Split(string(errTargetsBts), "\n"), isEmpty)
 	})
 
 	if slices.Contains(errTargets, target) {

@@ -9,6 +9,7 @@ sidebar:
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
 - Smart [SemVer tag sorting](/customization/general/git/#semver-sorting);
@@ -154,7 +155,7 @@ GoReleaser will automatically detect the offline license and verify it locally.
 
 ### Fallback keys
 
-{{< g_version "v2.17-unreleased" >}}
+{{< g_version "v2.17" >}}
 
 The `--key` flag can be set multiple times to provide fallbacks. GoReleaser
 tries each key in order and uses the first one that validates.

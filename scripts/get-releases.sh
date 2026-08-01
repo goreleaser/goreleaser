@@ -1,42 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-get_last_page() {
-	local url="$1"
-	curl -sSf -I -H "Authorization: Bearer $GITHUB_TOKEN" \
-		"$url" |
-		grep -E '^link: ' |
-		sed -e 's/^link:.*page=//g' -e 's/>.*$//g' || echo "1"
+latest() {
+	local repo="$1"
+	local file="$2"
+	gh api "repos/$repo/releases/latest" --jq ".tag_name" >"$file"
+	wc -c "$file"
 }
 
 generate() {
-	local url="$1"
+	local repo="$1"
 	local file="$2"
-	last_page="$(get_last_page "$url")"
-	tmp="$(mktemp -d)"
-
-	for i in $(seq -w 1 "$last_page"); do
-		page="$(echo "$i" | awk '$0*=1')" # removes leading zeroes
-		echo "page: $page file: $tmp/$i.json"
-		curl \
-			-H "Authorization: Bearer $GITHUB_TOKEN" \
-			-sSf "$url?page=$page" |
-			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name | contains("nightly") | not)]' >"$tmp/$i.json"
-
-	done
-
-	jq -s 'add' "$tmp"/*.json >"$file"
+	gh api --paginate "repos/$repo/releases" \
+		--jq '.[] | select(.tag_name | contains("nightly") | not) | {tag_name}' |
+		jq -s '.' >"$file"
 	wc -c "$file"
 }
 
-latest() {
-	local url="$1"
-	local file="$2"
-	curl -sfL "$url/latest" | jq -r ".tag_name" >"$file"
-	wc -c "$file"
-}
-
-latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/static/latest"
-latest "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/static/latest-pro"
-generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/static/releases.json"
-generate "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/static/releases-pro.json"
+latest "goreleaser/goreleaser" "www/static/latest"
+latest "goreleaser/goreleaser-pro" "www/static/latest-pro"
+generate "goreleaser/goreleaser" "www/static/releases.json"
+generate "goreleaser/goreleaser-pro" "www/static/releases-pro.json"

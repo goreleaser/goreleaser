@@ -1,6 +1,9 @@
 name: generate
 on:
   workflow_dispatch: {}
+  release:
+    types:
+      - published
   schedule:
     - cron: "0 8 * * *"
 permissions: read-all
@@ -10,10 +13,10 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: true
@@ -38,6 +41,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
+      - name: "install sponsors"
+        run: npm install -g @goreleaser/sponsors@latest
       - run: task docs:sponsors
         env:
           GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
@@ -70,19 +75,15 @@ jobs:
       - docs
     permissions:
       contents: read
-      actions: read
     if: ${{ failure() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7 # v1
+        uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3 # v1.0.1
         with:
-          github-token: ${{ secrets.github_token }}
-          title: "generate job failed"
-          description: |
-            this may cause goreleaser-action to fail, please check:
+          to: ${{ secrets.TELEGRAM_NIGHTLY_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          disable_web_page_preview: true
+          message: |
+            generate job failed, this may cause goreleaser-action to fail, please check:
 
             https://github.com/goreleaser/goreleaser/actions/workflows/generate.yml
-          discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
-          username: GoReleaser
-          avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
-          include-details: false

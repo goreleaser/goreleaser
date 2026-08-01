@@ -25,7 +25,7 @@ New release coming in hot!
       use: appbundle
   ```
   <figure>
-    <img src="https://carlosbecker.com/posts/goreleaser-v2.4/img.jpg"/>
+    <img src="https://a.goreleaser.com/blog/goreleaser-v2.4/img.jpg"/>
     <figcaption>DMG with GoReleaser Pro's App Bundle.</figcaption>
   </figure>
 - **new**: `nfpms` and `dmgs` get an `if` field, which allows to further filter

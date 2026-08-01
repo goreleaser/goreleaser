@@ -18,6 +18,12 @@ func RepoFromRef(ref config.RepoRef) Repo {
 
 // TemplateRef templates a config.RepoFromRef
 func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (config.RepoRef, error) {
+	// Default to a per-release branch when opening a PR and the user set none,
+	// so releases don't stack onto the repo's default branch (some registries,
+	// e.g. winget-pkgs, reject PRs that touch more than one version).
+	if ref.Branch == "" && ref.PullRequest.Enabled {
+		ref.Branch = "{{ .ProjectName }}-{{ .Version }}"
+	}
 	name, err := apply(ref.Name)
 	if err != nil {
 		return ref, err

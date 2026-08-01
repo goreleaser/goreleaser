@@ -25,8 +25,8 @@ jobs:
   license-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
@@ -45,31 +45,25 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
+        include:
+          # the race detector is OS-independent and coverage is only uploaded
+          # from ubuntu, so skip both on windows to speed up the slowest job.
+          - os: windows-latest
+            test-args: RACE=false COVER=false
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - run: df -h
-        if: matrix.os == 'ubuntu-latest'
-      - name: "node-cleanup"
-        # this should increase free space from ~21gb to ~38gb
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force
-          sudo docker builder prune -a
-      - run: df -h
-        if: matrix.os == 'ubuntu-latest'
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
         if: matrix.os == 'ubuntu-latest'
         with:
           driver-opts: network=host
@@ -79,29 +73,41 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - name: setup-makeself-flatpak
+      - name: install-flatpak-makeself
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update -q
           sudo apt install -yq makeself flatpak flatpak-builder
-          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
-      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+      - name: cache-flatpak
+        id: cache-flatpak
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/flatpak
+          key: flatpak-${{ runner.os }}-freedesktop-24.08
+      - name: setup-flatpak
+        # runtimes are installed --user so the cache (runner-owned) can restore
+        # them without sudo; only download on a cache miss.
+        if: matrix.os == 'ubuntu-latest' && steps.cache-flatpak.outputs.cache-hit != 'true'
+        run: |
+          flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix profile add nixpkgs#pkgs.nixfmt nixpkgs#alejandra
         if: matrix.os == 'ubuntu-latest'
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "25"
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
-      - uses: cargo-bins/cargo-binstall@30b5ca8b54e1dcffd9548bc87ede1531310fdc67 # v1.20.0
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+      - uses: cargo-bins/cargo-binstall@ead08b90bd7b2e6d81963fb9cf0b7239f66d5db4 # v1.21.0
       - name: setup-cargo
         run: |
           rustup default stable
@@ -109,14 +115,14 @@ jobs:
       - uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
       - if: matrix.os == 'windows-latest'
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
           cosign-release: "v3.0.3"
       - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
       - run: task setup
       - run: task build
-      - run: task test
+      - run: task test ${{ matrix.test-args }}
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: matrix.os == 'ubuntu-latest'
         with:
@@ -125,15 +131,13 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - run: git diff
         if: ${{ always() }}
-      - run: df -h
-        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
           distribution: goreleaser-pro
           version: "~> 2"

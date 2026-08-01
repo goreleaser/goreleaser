@@ -8,21 +8,9 @@ on:
 permissions:
   contents: read
 jobs:
-  trigger-generate:
-    runs-on: ubuntu-latest
-    needs: [goreleaser]
-    if: ${{ always() }}
-    steps:
-      - uses: benc-uk/workflow-dispatch@31e2b3319479a63f0ab15bf800eff9e913504e26 # v1.3.2
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          repo: goreleaser/goreleaser
-          ref: main
-          token: ${{ secrets.GH_PAT }}
-          workflow: generate.yml
   notify-goreleaser-cross:
     runs-on: ubuntu-latest
-    needs: [trigger-generate]
+    needs: [goreleaser]
     steps:
       - name: get version
         if: startsWith(github.ref, 'refs/tags/v')
@@ -79,15 +67,15 @@ jobs:
       matrix:
         format: [deb, rpm, apk]
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ./dist/*.deb
@@ -105,23 +93,15 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - run: df -h
-      - name: "node-cleanup"
-        # this should increase free space from ~21gb to ~38gb
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force
-          sudo docker builder prune -a
-      - run: df -h
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
-      - uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - name: setup-snapcraft
         run: sudo snap install snapcraft --classic
       - name: setup-flatpak
@@ -130,10 +110,10 @@ jobs:
           sudo apt install -yq flatpak flatpak-builder
           sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ./dist/*.deb
@@ -145,31 +125,31 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+      - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         if: ${{ startsWith(github.ref, 'refs/tags/v') }} # only on tags
         with:
           distribution: goreleaser-pro
-          version: "~> 2"
+          version: nightly
           args: release --clean --timeout 60m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -197,13 +177,11 @@ jobs:
           ./goreleaser release --clean --timeout 60m --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      - uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         if: ${{ always() }}
         with:
           subject-checksums: ./dist/checksums.txt
-      - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      - uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         if: ${{ always() && startsWith(github.ref, 'refs/tags/v') }} # snapshots won't push docker images
         with:
           subject-checksums: ./dist/digests.txt
-      - run: df -h
-        if: ${{ always() }}

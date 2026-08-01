@@ -46,6 +46,49 @@ func TestReleaseRepo(t *testing.T) {
 	})
 }
 
+func TestReleaseClient(t *testing.T) {
+	t.Run("no custom token", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "foo", Name: "bar"},
+			},
+		}, testctx.GitHubTokenType)
+		c, err := releaseClient(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, c)
+	})
+
+	t.Run("custom token", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Env: []string{"TK=token"},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "foo",
+					Name:  "bar",
+					Token: "{{ .Env.TK }}",
+				},
+			},
+		}, testctx.GitHubTokenType)
+		c, err := releaseClient(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, c)
+	})
+
+	t.Run("invalid custom token", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "foo",
+					Name:  "bar",
+					Token: "plain-text-token",
+				},
+			},
+		}, testctx.GitHubTokenType)
+		_, err := releaseClient(ctx)
+		require.Error(t, err)
+	})
+}
+
 func createTmpFile(tb testing.TB, folder, path string) string {
 	tb.Helper()
 	f, err := os.Create(filepath.Join(folder, path))

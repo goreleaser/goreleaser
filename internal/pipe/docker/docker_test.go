@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -1516,4 +1517,51 @@ func TestValidateImager(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+type countingImager struct {
+	failures int32
+	err      error
+	calls    atomic.Int32
+}
+
+func (i *countingImager) Build(*context.Context, string, []string, []string) error {
+	if i.calls.Add(1) <= i.failures {
+		return i.err
+	}
+	return nil
+}
+
+func (i *countingImager) Push(*context.Context, string, []string) (string, error) {
+	return "", nil
+}
+
+func TestDockerBuildRetries(t *testing.T) {
+	retry := config.Retry{Attempts: 5, Delay: time.Millisecond, MaxDelay: time.Millisecond}
+
+	t.Run("retries transient failures", func(t *testing.T) {
+		im := &countingImager{failures: 2, err: errors.New("toomanyrequests: too many requests")}
+		registerImager("test-build-retriable", im)
+		require.NoError(t, dockerBuild(
+			testctx.Wrap(t.Context()),
+			config.Docker{Use: "test-build-retriable", Retry: retry},
+			t.TempDir(),
+			[]string{"img"},
+			nil,
+		))
+		require.Equal(t, int32(3), im.calls.Load())
+	})
+
+	t.Run("does not retry fatal failures", func(t *testing.T) {
+		im := &countingImager{failures: 5, err: errors.New("COPY failed: file not found")}
+		registerImager("test-build-fatal", im)
+		require.Error(t, dockerBuild(
+			testctx.Wrap(t.Context()),
+			config.Docker{Use: "test-build-fatal", Retry: retry},
+			t.TempDir(),
+			[]string{"img"},
+			nil,
+		))
+		require.Equal(t, int32(1), im.calls.Load())
+	})
 }

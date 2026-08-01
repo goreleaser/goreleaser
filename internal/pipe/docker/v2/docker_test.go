@@ -406,11 +406,33 @@ func TestContextArtifacts(t *testing.T) {
 	require.Len(t, arts, 3)
 }
 
-func TestIsRetriableManifestCreate(t *testing.T) {
-	require.True(t, isRetriableManifestCreate(gerrors.Wrap(nil, gerrors.WithOutput("manifest verification failed for digest"))))
-	require.False(t, isRetriableManifestCreate(gerrors.Wrap(nil, gerrors.WithOutput("some other error"))))
-	require.False(t, isRetriableManifestCreate(errors.New("some other error")))
-	require.False(t, isRetriableManifestCreate(nil))
+func TestIsRetriableBuild(t *testing.T) {
+	t.Run("retriable", func(t *testing.T) {
+		for _, out := range []string{
+			"manifest verification failed for digest",
+			"toomanyrequests: You have reached your pull rate limit",
+			"failed to do request: connection reset by peer",
+			"received unexpected HTTP status: 503 Service Unavailable",
+			"error pulling image configuration: unexpected EOF",
+			"Temporary failure resolving 'deb.debian.org'",
+			"E: Failed to fetch http://deb.debian.org/... Connection timed out",
+			"WARNING: fetching https://dl-cdn.alpinelinux.org: temporary error (try again later)",
+			"context deadline exceeded",
+		} {
+			t.Run(out, func(t *testing.T) {
+				require.True(t, IsRetriableBuild(gerrors.Wrap(errors.New("exit status 1"), gerrors.WithOutput(out))))
+			})
+		}
+	})
+	t.Run("not retriable", func(t *testing.T) {
+		require.False(t, IsRetriableBuild(gerrors.Wrap(nil, gerrors.WithOutput("some other error"))))
+		require.False(t, IsRetriableBuild(gerrors.Wrap(nil, gerrors.WithOutput(">>> COPY failed: file not found"))))
+		require.False(t, IsRetriableBuild(errors.New("some other error")))
+		require.False(t, IsRetriableBuild(nil))
+	})
+	t.Run("output embedded in error message", func(t *testing.T) {
+		require.True(t, IsRetriableBuild(errors.New("failed to build: toomanyrequests")))
+	})
 }
 
 func TestTagSuffix(t *testing.T) {
