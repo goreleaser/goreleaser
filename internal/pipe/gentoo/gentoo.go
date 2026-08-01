@@ -828,6 +828,12 @@ func gentooArch(goarch string) string {
 	switch goarch {
 	case "386":
 		return "x86"
+	case "riscv64":
+		return "riscv"
+	case "ppc64le":
+		return "ppc64"
+	case "s390x":
+		return "s390"
 	default:
 		return goarch
 	}
