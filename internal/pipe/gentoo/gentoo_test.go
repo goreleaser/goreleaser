@@ -340,7 +340,7 @@ type mockFileDownloader struct {
 	content []byte
 }
 
-func (m mockFileDownloader) DownloadFile(ctx *import_context.Context, repo client.Repo, path string) ([]byte, error) {
+func (m mockFileDownloader) DownloadFile(_ *import_context.Context, _ client.Repo, path string) ([]byte, error) {
 	if path == "metadata/layout.conf" {
 		return m.content, nil
 	}
@@ -373,7 +373,7 @@ func TestHandleGentooManifestUnsupportedHash(t *testing.T) {
 
 	var files []client.RepoFile
 	err := handleGentooManifestAndMetadata(ctx, cfg, mockClient, client.Repo{}, &files, nil)
-	require.ErrorContains(t, err, "unsupported manifest hash algorithm: SHA256")
+	require.ErrorContains(t, err, "unsupported manifest hash algorithm: WHIRLPOOL")
 }
 
 func TestDoRunByIDs(t *testing.T) {
