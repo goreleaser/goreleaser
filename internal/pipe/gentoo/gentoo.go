@@ -1077,7 +1077,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		recordType := fields[0]
 		filename := fields[1]
 
-		if recordType == "DIST" {
+		switch recordType {
+		case "DIST":
 			removed := false
 			for _, dv := range deletedVersions {
 				if idx := strings.Index(filename, dv); idx != -1 {
@@ -1105,7 +1106,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			if !removed {
 				newManifestLines = append(newManifestLines, line)
 			}
-		} else if recordType == "EBUILD" || recordType == "AUX" || recordType == "MISC" {
+		case "EBUILD", "AUX", "MISC":
 			if thinManifests {
 				continue
 			}
@@ -1116,18 +1117,13 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					break
 				}
 			}
-			if !removed {
-				for _, nb := range newFilesBaseNames {
-					if filename == nb {
-						removed = true
-						break
-					}
-				}
+			if !removed && slices.Contains(newFilesBaseNames, filename) {
+				removed = true
 			}
 			if !removed {
 				newManifestLines = append(newManifestLines, line)
 			}
-		} else {
+		default:
 			newManifestLines = append(newManifestLines, line)
 		}
 	}
