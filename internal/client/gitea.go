@@ -390,3 +390,22 @@ func (c *giteaClient) Upload(
 		return retryx.HTTP(err, must(resp).Response)
 	}, retryx.IsRetriable)
 }
+
+func (c *giteaClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	branch := repo.Branch
+	if branch == "" {
+		var err error
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	content, resp, err := c.client.GetFile(repo.Owner, repo.Name, branch, path)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return content, nil
+}

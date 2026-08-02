@@ -21,6 +21,9 @@ const (
 	ellipsis = "..."
 )
 
+// ErrNotFound is returned when a file is not found.
+var ErrNotFound = errors.New("file not found")
+
 // ErrNotImplemented is returned when a client does not implement certain feature.
 var ErrNotImplemented = errors.New("not implemented")
 

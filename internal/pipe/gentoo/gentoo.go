@@ -919,8 +919,11 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 		meta := gentooMetadata{}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
-			if content, err := dl.DownloadFile(ctx, repo, metadataPath); err == nil {
+			content, err := dl.DownloadFile(ctx, repo, metadataPath)
+			if err == nil {
 				_ = xml.Unmarshal(content, &meta)
+			} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+				return fmt.Errorf("failed to download metadata.xml: %w", err)
 			}
 		}
 		if meta.Use == nil {
@@ -1008,7 +1011,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
 	if dl, ok := repoClient.(client.FileDownloader); ok {
-		if content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf"); err == nil {
+		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
+		if err == nil {
 			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
@@ -1018,18 +1022,23 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					}
 				}
 			}
+		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+			return fmt.Errorf("failed to download layout.conf: %w", err)
 		}
 	}
 
 	var manifestLines []string
 	if dl, ok := repoClient.(client.FileDownloader); ok {
-		if content, err := dl.DownloadFile(ctx, repo, manifestPath); err == nil {
+		content, err := dl.DownloadFile(ctx, repo, manifestPath)
+		if err == nil {
 			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 				line := string(lineB)
 				if strings.TrimSpace(line) != "" {
 					manifestLines = append(manifestLines, line)
 				}
 			}
+		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+			return fmt.Errorf("failed to download Manifest: %w", err)
 		}
 	}
 
