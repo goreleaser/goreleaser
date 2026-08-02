@@ -3,6 +3,7 @@ package gentoo
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/xml"
 	"errors"
@@ -1117,6 +1118,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			var writers []io.Writer
 			var b2b hash.Hash
 			var s512 hash.Hash
+			var s256 hash.Hash
 
 			for _, algo := range manifestHashes {
 				algo = strings.ToUpper(algo)
@@ -1127,6 +1129,11 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 				case "SHA512":
 					s512 = sha512.New()
 					writers = append(writers, s512)
+				case "SHA256":
+					s256 = sha256.New()
+					writers = append(writers, s256)
+				default:
+					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
 				}
 			}
 
@@ -1148,6 +1155,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					if s512 != nil {
 						line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
 					}
+				case "SHA256":
+					if s256 != nil {
+						line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
+					}
+				default:
+					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
 				}
 			}
 			newManifestLines = append(newManifestLines, line)

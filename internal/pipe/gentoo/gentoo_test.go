@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	import_context "github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -332,6 +333,47 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	require.Contains(t, string(files[1].Content), "DIST foo_1.0.0_linux_amd64.tar.gz")
 	require.Contains(t, string(files[1].Content), "BLAKE2B")
 	require.Contains(t, string(files[1].Content), "SHA512")
+}
+
+type mockFileDownloader struct {
+	client.Client
+	content []byte
+}
+
+func (m mockFileDownloader) DownloadFile(_ *import_context.Context, _ client.Repo, path string) ([]byte, error) {
+	if path == "metadata/layout.conf" {
+		return m.content, nil
+	}
+	return nil, client.ErrNotFound
+}
+
+func TestHandleGentooManifestUnsupportedHash(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name: "foo",
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+	}
+
+	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   artPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	mockClient := mockFileDownloader{
+		Client:  client.NewMock(),
+		content: []byte("manifest-hashes = SHA256 WHIRLPOOL\n"),
+	}
+
+	var files []client.RepoFile
+	err := handleGentooManifestAndMetadata(ctx, cfg, mockClient, client.Repo{}, &files, nil)
+	require.ErrorContains(t, err, "unsupported manifest hash algorithm: WHIRLPOOL")
 }
 
 func TestDoRunByIDs(t *testing.T) {
