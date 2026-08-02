@@ -1127,6 +1127,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 				case "SHA512":
 					s512 = sha512.New()
 					writers = append(writers, s512)
+				default:
+					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
 				}
 			}
 
@@ -1148,6 +1150,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					if s512 != nil {
 						line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
 					}
+				default:
+					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
 				}
 			}
 			newManifestLines = append(newManifestLines, line)
