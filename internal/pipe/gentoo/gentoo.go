@@ -1011,6 +1011,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	}
 
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	thinManifests := false
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
 		if err == nil {
@@ -1020,6 +1021,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					parts := strings.Split(line, "=")
 					if len(parts) == 2 {
 						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+				if strings.HasPrefix(strings.TrimSpace(line), "thin-manifests") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						thinManifests = strings.TrimSpace(parts[1]) == "true"
 					}
 				}
 			}
@@ -1050,15 +1057,27 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		deletedVersions = append(deletedVersions, v)
 	}
 
+	var newFilesBaseNames []string
+	if !thinManifests {
+		for _, f := range *files {
+			if !f.Delete {
+				newFilesBaseNames = append(newFilesBaseNames, filepath.Base(f.Path))
+			}
+		}
+	}
+
 	var newManifestLines []string
 	for _, line := range manifestLines {
-		if !strings.HasPrefix(line, "DIST ") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
 			newManifestLines = append(newManifestLines, line)
 			continue
 		}
-		fields := strings.Fields(line)
-		if len(fields) > 1 {
-			filename := fields[1]
+
+		recordType := fields[0]
+		filename := fields[1]
+
+		if recordType == "DIST" {
 			removed := false
 			for _, dv := range deletedVersions {
 				if idx := strings.Index(filename, dv); idx != -1 {
@@ -1078,6 +1097,28 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 						}
 					}
 					if isMatch {
+						removed = true
+						break
+					}
+				}
+			}
+			if !removed {
+				newManifestLines = append(newManifestLines, line)
+			}
+		} else if recordType == "EBUILD" || recordType == "AUX" || recordType == "MISC" {
+			if thinManifests {
+				continue
+			}
+			removed := false
+			for _, dv := range deletedVersions {
+				if recordType == "EBUILD" && filename == filepath.Base(dir)+"-"+dv+".ebuild" {
+					removed = true
+					break
+				}
+			}
+			if !removed {
+				for _, nb := range newFilesBaseNames {
+					if filename == nb {
 						removed = true
 						break
 					}
@@ -1168,6 +1209,78 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		}()
 		if err != nil {
 			return err
+		}
+	}
+
+	if !thinManifests {
+		for _, f := range *files {
+			if f.Delete {
+				continue
+			}
+			err := func() error {
+				content := f.Content
+				if content == nil && f.Path != "" {
+					var err error
+					content, err = os.ReadFile(f.Path)
+					if err != nil {
+						return err
+					}
+				}
+				size := int64(len(content))
+
+				var b2b hash.Hash
+				var s512 hash.Hash
+				var s256 hash.Hash
+
+				for _, algo := range manifestHashes {
+					algo = strings.ToUpper(algo)
+					switch algo {
+					case "BLAKE2B":
+						b2b, _ = blake2b.New512(nil)
+						b2b.Write(content)
+					case "SHA512":
+						s512 = sha512.New()
+						s512.Write(content)
+					case "SHA256":
+						s256 = sha256.New()
+						s256.Write(content)
+					default:
+						return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
+					}
+				}
+
+				recordType := "MISC"
+				basename := filepath.Base(f.Path)
+				if strings.HasSuffix(f.Path, ".ebuild") {
+					recordType = "EBUILD"
+				} else if strings.Contains(f.Path, "/files/") || strings.HasPrefix(f.Path, "files/") {
+					recordType = "AUX"
+				}
+
+				line := fmt.Sprintf("%s %s %d", recordType, basename, size)
+				for _, algo := range manifestHashes {
+					algo = strings.ToUpper(algo)
+					switch algo {
+					case "BLAKE2B":
+						if b2b != nil {
+							line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+						}
+					case "SHA512":
+						if s512 != nil {
+							line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+						}
+					case "SHA256":
+						if s256 != nil {
+							line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
+						}
+					}
+				}
+				newManifestLines = append(newManifestLines, line)
+				return nil
+			}()
+			if err != nil {
+				return err
+			}
 		}
 	}
 

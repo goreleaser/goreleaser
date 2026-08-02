@@ -1,0 +1,97 @@
+<<<<<<< SEARCH
+	if len(newManifestLines) > 0 {
+		slices.Sort(newManifestLines)
+		newManifestLines = slices.Compact(newManifestLines)
+		*files = append(*files, client.RepoFile{
+			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
+			Path:    manifestPath,
+		})
+	}
+	return nil
+=======
+	if !thinManifests {
+		for _, f := range *files {
+			if f.Delete {
+				continue
+			}
+			err := func() error {
+				content := f.Content
+				if content == nil && f.Path != "" {
+					var err error
+					content, err = os.ReadFile(f.Path)
+					if err != nil {
+						// For files already in repo that were downloaded and modified
+						// Actually, `files` contains the content in `f.Content` for metadata.xml
+						// For ebuilds and files/* it also has it, or we can read from disk.
+						// Wait, `*files` is built in `Publish`, reading from `art.Path`. So `Content` is populated.
+						return err
+					}
+				}
+				size := int64(len(content))
+
+				var b2b hash.Hash
+				var s512 hash.Hash
+				var s256 hash.Hash
+
+				for _, algo := range manifestHashes {
+					algo = strings.ToUpper(algo)
+					switch algo {
+					case "BLAKE2B":
+						b2b, _ = blake2b.New512(nil)
+						b2b.Write(content)
+					case "SHA512":
+						s512 = sha512.New()
+						s512.Write(content)
+					case "SHA256":
+						s256 = sha256.New()
+						s256.Write(content)
+					default:
+						return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
+					}
+				}
+
+				recordType := "MISC"
+				basename := filepath.Base(f.Path)
+				if strings.HasSuffix(f.Path, ".ebuild") {
+					recordType = "EBUILD"
+				} else if strings.Contains(f.Path, "/files/") || strings.HasPrefix(f.Path, "files/") {
+					recordType = "AUX"
+				}
+
+				line := fmt.Sprintf("%s %s %d", recordType, basename, size)
+				for _, algo := range manifestHashes {
+					algo = strings.ToUpper(algo)
+					switch algo {
+					case "BLAKE2B":
+						if b2b != nil {
+							line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+						}
+					case "SHA512":
+						if s512 != nil {
+							line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+						}
+					case "SHA256":
+						if s256 != nil {
+							line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
+						}
+					}
+				}
+				newManifestLines = append(newManifestLines, line)
+				return nil
+			}()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(newManifestLines) > 0 {
+		slices.Sort(newManifestLines)
+		newManifestLines = slices.Compact(newManifestLines)
+		*files = append(*files, client.RepoFile{
+			Content: []byte(strings.Join(newManifestLines, "\n") + "\n"),
+			Path:    manifestPath,
+		})
+	}
+	return nil
+>>>>>>> REPLACE

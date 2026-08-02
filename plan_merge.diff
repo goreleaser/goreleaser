@@ -1,0 +1,44 @@
+<<<<<<< SEARCH
+	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
+		if err == nil {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+				line := string(lineB)
+				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+			}
+		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+			return fmt.Errorf("failed to download layout.conf: %w", err)
+		}
+	}
+=======
+	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	thinManifests := false
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
+		if err == nil {
+			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+				line := string(lineB)
+				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+				if strings.HasPrefix(strings.TrimSpace(line), "thin-manifests") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						thinManifests = strings.TrimSpace(parts[1]) == "true"
+					}
+				}
+			}
+		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+			return fmt.Errorf("failed to download layout.conf: %w", err)
+		}
+	}
+>>>>>>> REPLACE
