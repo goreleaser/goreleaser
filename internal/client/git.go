@@ -301,7 +301,6 @@ func nameFromURL(url string) string {
 	return strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
 }
 
-
 func (g *gitClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
 	parent := filepath.Join(ctx.Config.Dist, "git")
 	name := repo.Name + "-" + g.branch

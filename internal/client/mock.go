@@ -134,7 +134,6 @@ func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact)
 	return nil
 }
 
-
 func (c *Mock) DownloadFile(_ *context.Context, _ Repo, _ string) ([]byte, error) {
 	return nil, ErrNotFound
 }

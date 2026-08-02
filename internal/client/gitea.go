@@ -391,7 +391,6 @@ func (c *giteaClient) Upload(
 	}, retryx.IsRetriable)
 }
 
-
 func (c *giteaClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
 	branch := repo.Branch
 	if branch == "" {
