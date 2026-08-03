@@ -103,6 +103,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if g.CommitMessageTemplate == "" {
 			g.CommitMessageTemplate = "{{ .ProjectName }}: bump to {{ .Tag }}"
 		}
+		if g.Type == "bin" || g.Type == "" {
+			if g.Bindir == "" {
+				g.Bindir = "/opt/bin"
+			}
+		} else {
+			if g.Bindir == "" {
+				g.Bindir = "/usr/bin"
+			}
+		}
 		if g.Type == "" {
 			g.Type = "bin"
 		}
