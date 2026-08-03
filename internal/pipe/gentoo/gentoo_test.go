@@ -333,83 +333,83 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	require.Contains(t, string(files[1].Content), "DIST foo_1.0.0_linux_amd64.tar.gz")
 	require.Contains(t, string(files[1].Content), "BLAKE2B")
 	require.Contains(t, string(files[1].Content), "SHA512")
-		require.Contains(t, string(files[1].Content), "MISC metadata.xml")
+	require.Contains(t, string(files[1].Content), "MISC metadata.xml")
+}
+
+func TestHandleGentooManifestThick(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name: "foo",
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
 	}
 
-	func TestHandleGentooManifestThick(t *testing.T) {
-		dist := t.TempDir()
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
-		cfg := config.Gentoo{
-			Name: "foo",
-			Path: "app-misc/foo/foo-1.0.0.ebuild",
-		}
+	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
 
-		artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
-		require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   artPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
 
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   "foo_1.0.0_linux_amd64.tar.gz",
-			Path:   artPath,
-			Goos:   "linux",
-			Goarch: "amd64",
-			Type:   artifact.UploadableArchive,
-		})
-
-		files := []client.RepoFile{
-			{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0.ebuild"},
-			{Content: []byte("patch content"), Path: "app-misc/foo/files/foo.patch"},
-			{Content: []byte("<pkgmetadata></pkgmetadata>"), Path: "app-misc/foo/metadata.xml"},
-		}
-
-		err := handleGentooManifestAndMetadata(ctx, cfg, nil, client.Repo{}, &files, nil)
-		require.NoError(t, err)
-
-		manifestIdx := len(files) - 1
-		manifestContent := string(files[manifestIdx].Content)
-		require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
-		require.Contains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
-		require.Contains(t, manifestContent, "AUX foo.patch")
-		require.Contains(t, manifestContent, "MISC metadata.xml")
+	files := []client.RepoFile{
+		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0.ebuild"},
+		{Content: []byte("patch content"), Path: "app-misc/foo/files/foo.patch"},
+		{Content: []byte("<pkgmetadata></pkgmetadata>"), Path: "app-misc/foo/metadata.xml"},
 	}
 
-	func TestHandleGentooManifestThin(t *testing.T) {
-		dist := t.TempDir()
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
-		cfg := config.Gentoo{
-			Name: "foo",
-			Path: "app-misc/foo/foo-1.0.0.ebuild",
-		}
+	err := handleGentooManifestAndMetadata(ctx, cfg, nil, client.Repo{}, &files, nil)
+	require.NoError(t, err)
 
-		artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
-		require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
+	manifestIdx := len(files) - 1
+	manifestContent := string(files[manifestIdx].Content)
+	require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
+	require.Contains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
+	require.Contains(t, manifestContent, "AUX foo.patch")
+	require.Contains(t, manifestContent, "MISC metadata.xml")
+}
 
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   "foo_1.0.0_linux_amd64.tar.gz",
-			Path:   artPath,
-			Goos:   "linux",
-			Goarch: "amd64",
-			Type:   artifact.UploadableArchive,
-		})
+func TestHandleGentooManifestThin(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name: "foo",
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+	}
 
-		files := []client.RepoFile{
-			{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0.ebuild"},
-			{Content: []byte("patch content"), Path: "app-misc/foo/files/foo.patch"},
-			{Content: []byte("<pkgmetadata></pkgmetadata>"), Path: "app-misc/foo/metadata.xml"},
-		}
+	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
 
-		downloader := mockFileDownloader{
-			content: []byte("manifest-hashes = SHA256\nthin-manifests = true\n"),
-		}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   artPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
 
-		err := handleGentooManifestAndMetadata(ctx, cfg, downloader, client.Repo{}, &files, nil)
-		require.NoError(t, err)
+	files := []client.RepoFile{
+		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0.ebuild"},
+		{Content: []byte("patch content"), Path: "app-misc/foo/files/foo.patch"},
+		{Content: []byte("<pkgmetadata></pkgmetadata>"), Path: "app-misc/foo/metadata.xml"},
+	}
 
-		manifestIdx := len(files) - 1
-		manifestContent := string(files[manifestIdx].Content)
-		require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
-		require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
-		require.NotContains(t, manifestContent, "AUX foo.patch")
-		require.NotContains(t, manifestContent, "MISC metadata.xml")
+	downloader := mockFileDownloader{
+		content: []byte("manifest-hashes = SHA256\nthin-manifests = true\n"),
+	}
+
+	err := handleGentooManifestAndMetadata(ctx, cfg, downloader, client.Repo{}, &files, nil)
+	require.NoError(t, err)
+
+	manifestIdx := len(files) - 1
+	manifestContent := string(files[manifestIdx].Content)
+	require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
+	require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
+	require.NotContains(t, manifestContent, "AUX foo.patch")
+	require.NotContains(t, manifestContent, "MISC metadata.xml")
 }
 
 type mockFileDownloader struct {

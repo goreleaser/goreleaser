@@ -870,6 +870,78 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, in, 0o644)
 }
 
+func generateManifestLine(recordType, filename, path string, content []byte, manifestHashes []string) (string, error) {
+	var r io.Reader
+	var size int64
+
+	if content == nil && path != "" {
+		info, err := os.Stat(path)
+		if err != nil {
+			return "", err
+		}
+		size = info.Size()
+
+		f, err := os.Open(path)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+		r = f
+	} else {
+		size = int64(len(content))
+		r = bytes.NewReader(content)
+	}
+
+	var writers []io.Writer
+	var b2b hash.Hash
+	var s512 hash.Hash
+	var s256 hash.Hash
+
+	for _, algo := range manifestHashes {
+		algo = strings.ToUpper(algo)
+		switch algo {
+		case "BLAKE2B":
+			b2b, _ = blake2b.New512(nil)
+			writers = append(writers, b2b)
+		case "SHA512":
+			s512 = sha512.New()
+			writers = append(writers, s512)
+		case "SHA256":
+			s256 = sha256.New()
+			writers = append(writers, s256)
+		default:
+			return "", fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
+		}
+	}
+
+	if len(writers) > 0 {
+		if _, err := io.Copy(io.MultiWriter(writers...), r); err != nil {
+			return "", err
+		}
+	}
+
+	line := fmt.Sprintf("%s %s %d", recordType, filename, size)
+	for _, algo := range manifestHashes {
+		algo = strings.ToUpper(algo)
+		switch algo {
+		case "BLAKE2B":
+			if b2b != nil {
+				line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+			}
+		case "SHA512":
+			if s512 != nil {
+				line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+			}
+		case "SHA256":
+			if s256 != nil {
+				line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
+			}
+		}
+	}
+
+	return line, nil
+}
+
 func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
 	dir := filepath.ToSlash(filepath.Dir(cfg.Path))
 
@@ -1138,75 +1210,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	}
 	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 
-	hashAndAppend := func(recordType, filename string, r io.Reader, size int64) error {
-		var writers []io.Writer
-		var b2b hash.Hash
-		var s512 hash.Hash
-		var s256 hash.Hash
-
-		for _, algo := range manifestHashes {
-			algo = strings.ToUpper(algo)
-			switch algo {
-			case "BLAKE2B":
-				b2b, _ = blake2b.New512(nil)
-				writers = append(writers, b2b)
-			case "SHA512":
-				s512 = sha512.New()
-				writers = append(writers, s512)
-			case "SHA256":
-				s256 = sha256.New()
-				writers = append(writers, s256)
-			default:
-				return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
-			}
-		}
-
-		if len(writers) > 0 {
-			if _, err := io.Copy(io.MultiWriter(writers...), r); err != nil {
-				return err
-			}
-		}
-
-		line := fmt.Sprintf("%s %s %d", recordType, filename, size)
-		for _, algo := range manifestHashes {
-			algo = strings.ToUpper(algo)
-			switch algo {
-			case "BLAKE2B":
-				if b2b != nil {
-					line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
-				}
-			case "SHA512":
-				if s512 != nil {
-					line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
-				}
-			case "SHA256":
-				if s256 != nil {
-					line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
-				}
-			}
-		}
-		newManifestLines = append(newManifestLines, line)
-		return nil
-	}
-
 	for _, art := range arches {
-		err := func() error {
-			info, err := os.Stat(art.Path)
-			if err != nil {
-				return err
-			}
-
-			f, err := os.Open(art.Path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-
-			return hashAndAppend("DIST", art.Name, f, info.Size())
-		}()
+		line, err := generateManifestLine("DIST", art.Name, art.Path, nil, manifestHashes)
 		if err != nil {
 			return err
 		}
+		newManifestLines = append(newManifestLines, line)
 	}
 
 	if !thinManifests {
@@ -1214,14 +1223,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			if f.Delete {
 				continue
 			}
-			content := f.Content
-			if content == nil && f.Path != "" {
-				var err error
-				content, err = os.ReadFile(f.Path)
-				if err != nil {
-					return err
-				}
-			}
+
 			recordType := "MISC"
 			basename := filepath.Base(f.Path)
 			if strings.HasSuffix(f.Path, ".ebuild") {
@@ -1229,9 +1231,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			} else if strings.Contains(f.Path, "/files/") || strings.HasPrefix(f.Path, "files/") {
 				recordType = "AUX"
 			}
-			if err := hashAndAppend(recordType, basename, bytes.NewReader(content), int64(len(content))); err != nil {
+
+			line, err := generateManifestLine(recordType, basename, f.Path, f.Content, manifestHashes)
+			if err != nil {
 				return err
 			}
+			newManifestLines = append(newManifestLines, line)
 		}
 	}
 
