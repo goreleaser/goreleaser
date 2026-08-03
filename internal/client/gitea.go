@@ -229,6 +229,18 @@ func (c *giteaClient) CreateFile(
 		return err
 	}
 
+	if currentFile != nil && currentFile.Content != nil {
+		decodedContent, decodeErr := base64.StdEncoding.DecodeString(*currentFile.Content)
+		if decodeErr == nil && string(decodedContent) == string(content) {
+			log.
+				WithField("repository", repo.String()).
+				WithField("name", repo.Name).
+				WithField("file", path).
+				Info("file already exists with the same content, skipping update")
+			return nil
+		}
+	}
+
 	// update file
 	_, _, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
 		return c.client.UpdateFile(repo.Owner, repo.Name, path, gitea.UpdateFileOptions{
