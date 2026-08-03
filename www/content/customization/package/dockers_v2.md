@@ -232,6 +232,31 @@ dockers_v2:
 
 {{< g_templates >}}
 
+## Building and pushing are a single step
+
+Docker buildx builds and pushes the manifest in a single `docker buildx build
+--push` run, as it can't create a multi-platform manifest locally without
+pushing it.
+
+Because of that, `dockers_v2` images are built in the **publish** phase, not in
+the build phase (which is what `dockers` used to do).
+
+In practice, this means that anything that skips publishing will also not build
+your images:
+
+- `goreleaser build`
+- `goreleaser release --skip=publish` (as well as `--skip=docker`)
+- `goreleaser release --prepare`{{< g_inline_pro >}}
+- `goreleaser release --split`{{< g_inline_pro >}}
+- `goreleaser release --single-target`{{< g_inline_pro >}}
+
+The images are then built and pushed later, when you run `goreleaser publish`,
+`goreleaser continue`, or `goreleaser continue --merge`{{< g_inline_pro >}}.
+
+> [!TIP]
+> If you want to build the images without pushing them, e.g. to verify that your
+> `Dockerfile` works, run a [snapshot build](#testing-locally).
+
 ## Testing locally
 
 Docker buildx won't allow us to build a manifest without pushing it.
