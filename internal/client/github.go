@@ -565,6 +565,15 @@ func (c *githubClient) CreateFile(
 
 	if file != nil {
 		options.SHA = file.SHA
+		fileContent, err := file.GetContent()
+		if err == nil && fileContent == string(content) {
+			log.
+				WithField("repository", repo.String()).
+				WithField("branch", repo.Branch).
+				WithField("file", path).
+				Info("file already exists with the same content, skipping update")
+			return nil
+		}
 	}
 	if _, _, err := githubDo(ctx, func() (*github.RepositoryContentResponse, *github.Response, error) {
 		return c.client.Repositories.UpdateFile(

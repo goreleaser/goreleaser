@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"cmp"
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -328,7 +330,8 @@ func (c *gitlabClient) CreateFile(
 
 	// Check if the file already exists
 	var res *gitlab.Response
-	_, res, err = gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
+	var file *gitlab.File
+	file, res, err = gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
 		return c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	})
 	if err != nil && (res == nil || res.StatusCode != 404) {
@@ -396,6 +399,18 @@ func (c *gitlabClient) CreateFile(
 			WithField("filePath", fileInfo.FilePath).
 			Debug("created file")
 		return nil
+	}
+
+	if file != nil {
+		decodedContent, decodeErr := base64.StdEncoding.DecodeString(file.Content)
+		if decodeErr == nil && bytes.Equal(decodedContent, content) {
+			log.
+				WithField("projectID", projectID).
+				WithField("branch", branch).
+				WithField("fileName", fileName).
+				Info("file already exists with the same content, skipping update")
+			return nil
+		}
 	}
 
 	// Update the existing file

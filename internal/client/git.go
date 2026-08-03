@@ -181,12 +181,26 @@ func (g *gitClient) CreateFiles(
 
 	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
-		{"commit", "-m", message},
 	}); err != nil {
-		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("git: failed to add files to commit %q (%q): %w", repo.Name, url, err)
 	}
-	if err := pushRepo(ctx, cwd, env); err != nil {
-		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
+
+	if err := runGitCmds(ctx, cwd, env, [][]string{
+		{"diff", "--cached", "--quiet"},
+	}); err != nil {
+		if err := runGitCmds(ctx, cwd, env, [][]string{
+			{"commit", "-m", message},
+		}); err != nil {
+			return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
+		}
+		if err := pushRepo(ctx, cwd, env); err != nil {
+			return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
+		}
+	} else {
+		log.
+			WithField("repository", url).
+			WithField("name", repo.Name).
+			Info("no changes to commit")
 	}
 
 	return nil
