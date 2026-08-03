@@ -161,7 +161,7 @@ func newTestServer(tb testing.TB) *testServer {
 		assert.NotEmpty(tb, body.Name)
 		if ts.emptyUploadRes {
 			w.WriteHeader(http.StatusCreated)
-			_, _ = w.Write([]byte("{}"))
+			_, _ = io.WriteString(w, "{}")
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
@@ -222,7 +222,7 @@ func newTestServer(tb testing.TB) *testServer {
 		if ts.failSaveTimes > 0 {
 			ts.failSaveTimes--
 			w.WriteHeader(http.StatusServiceUnavailable)
-			_, _ = w.Write([]byte(`{"detail":"The upload is still being processed."}`))
+			_, _ = io.WriteString(w, `{"detail":"The upload is still being processed."}`)
 			return
 		}
 		ts.saveMethod = r.Method
