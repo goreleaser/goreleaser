@@ -9,6 +9,9 @@ weight: 125
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and
 publish an [`APKBUILD`][apkbuild] that packages prebuilt Linux binaries.
 
+Binary artifacts and archives in `tar`, `tgz`, `tar.gz`, `tar.xz`, and `zip`
+formats are supported.
+
 This integration does not create `.apk` packages. To create those directly,
 use [nFPM][nfpm] instead.
 
@@ -32,13 +35,16 @@ apkbuilds:
       - bar
 
     # Your app's homepage.
+    # Required.
     homepage: "https://example.com/"
 
     # Your app's description.
+    # Required.
     # Templates: allowed.
     description: "Software to create fast and easy drum rolls."
 
-    # Package maintainers.
+    # Package maintainer.
+    # At most one entry is allowed.
     maintainers:
       - "Foo Bar <foo@example.com>"
 
@@ -47,6 +53,7 @@ apkbuilds:
       - "Foo Zaz <zaz@example.com>"
 
     # SPDX identifier of your app's license.
+    # Required.
     license: "MIT"
 
     # SSH private key used to commit to the Git repository.

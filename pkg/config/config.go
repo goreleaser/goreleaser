@@ -189,12 +189,12 @@ type APKBuild struct {
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	Description           string       `yaml:"description" json:"description"`
+	Homepage              string       `yaml:"homepage" json:"homepage"`
+	License               string       `yaml:"license" json:"license"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty" jsonschema:"maxItems=1"`
 	Contributors          []string     `yaml:"contributors,omitempty" json:"contributors,omitempty"`
 	Provides              []string     `yaml:"provides,omitempty" json:"provides,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`

@@ -73,6 +73,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	skipped := pipe.SkipMemento{}
+	generated := map[string]int{}
 	for _, apk := range ctx.Config.APKBuilds {
 		disable, err := tmpl.New(ctx).Bool(apk.Disable)
 		if err != nil {
@@ -82,18 +83,21 @@ func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 			skipped.Remember(pipe.Skip("configuration is disabled"))
 			continue
 		}
-		if err := doRun(ctx, apk, cli); err != nil {
+		if err := doRun(ctx, apk, cli, generated); err != nil {
 			return err
 		}
 	}
 	return skipped.Evaluate()
 }
 
-func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTemplater) error {
+func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTemplater, generated map[string]int) error {
 	if err := tmpl.New(ctx).ApplyAll(
 		&apk.Name,
 		&apk.Directory,
 		&apk.SkipUpload,
+		&apk.Description,
+		&apk.Homepage,
+		&apk.License,
 	); err != nil {
 		return err
 	}
@@ -113,9 +117,12 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 			),
 			artifact.ByGoarches("ppc64le", "s390x", "riscv64"),
 		),
-		artifact.ByTypes(
-			artifact.UploadableArchive,
-			artifact.UploadableBinary,
+		artifact.Or(
+			artifact.ByType(artifact.UploadableBinary),
+			artifact.And(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByFormats("tar", "tgz", "tar.gz", "tar.xz", "zip"),
+			),
 		),
 	}
 	if len(apk.IDs) > 0 {
@@ -125,6 +132,9 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound
+	}
+	if err := validate(apk); err != nil {
+		return err
 	}
 	slices.SortFunc(archives, func(a, b *artifact.Artifact) int {
 		return cmp.Or(
@@ -139,8 +149,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		return err
 	}
 	if strings.TrimSpace(pkg) == "" {
-		pkg = defaultPackage(archives[0])
-		log.Warnf("guessing package to be %q", pkg)
+		log.Warn("guessing package instructions")
 	}
 	apk.Package = pkg
 
@@ -149,7 +158,14 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		return err
 	}
 
+	occurrence := generated[apk.Name]
+	generated[apk.Name]++
+	id := apk.Name
 	file := filepath.Join(ctx.Config.Dist, "apkbuild", apk.Name+".apkbuild")
+	if occurrence > 0 {
+		id = fmt.Sprintf("%s-%d", apk.Name, occurrence+1)
+		file = filepath.Join(ctx.Config.Dist, "apkbuild", fmt.Sprintf("%d", occurrence+1), apk.Name+".apkbuild")
+	}
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return fmt.Errorf("failed to write APKBUILD: %w", err)
 	}
@@ -164,7 +180,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		Type: artifact.APKBuild,
 		Extra: map[string]any{
 			apkbuildExtra:    apk,
-			artifact.ExtraID: apk.Name,
+			artifact.ExtraID: id,
 		},
 	})
 	return nil
@@ -174,18 +190,33 @@ func defaultPackage(art *artifact.Artifact) string {
 	switch art.Type {
 	case artifact.UploadableBinary:
 		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-		return fmt.Sprintf("install -Dm755 %q %q", "$srcdir/$_source", "$pkgdir/usr/bin/"+bin)
+		return fmt.Sprintf("install -Dm755 %q %q", "$srcdir/$_source", "$pkgdir/usr/bin/"+filepath.Base(bin))
 	case artifact.UploadableArchive:
 		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 		var commands []string
 		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 			src := filepath.ToSlash(filepath.Clean(filepath.Join("$srcdir", folder, bin)))
-			commands = append(commands, fmt.Sprintf("install -Dm755 %q %q", src, "$pkgdir/usr/bin/"+bin))
+			commands = append(commands, fmt.Sprintf("install -Dm755 %q %q", src, "$pkgdir/usr/bin/"+filepath.Base(bin)))
 		}
 		return strings.Join(commands, "\n")
 	default:
 		return ""
 	}
+}
+
+func validate(cfg config.APKBuild) error {
+	switch {
+	case strings.TrimSpace(cfg.Description) == "":
+		return errors.New("apkbuild.description is required")
+	case strings.TrimSpace(cfg.Homepage) == "":
+		return errors.New("apkbuild.homepage is required")
+	case strings.TrimSpace(cfg.License) == "":
+		return errors.New("apkbuild.license is required")
+	}
+	if len(cfg.Maintainers) > 1 {
+		return errors.New("apkbuild.maintainers must contain at most one entry")
+	}
+	return nil
 }
 
 func buildAPKBuild(ctx *context.Context, pkg config.APKBuild, cli client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
@@ -268,12 +299,20 @@ func toAPKArch(goarch, goarm string) string {
 	return ""
 }
 
+func toAPKVersion(version string) string {
+	base, prerelease, ok := strings.Cut(version, "-")
+	if !ok {
+		return version
+	}
+	return base + "_" + strings.ReplaceAll(prerelease, ".", "")
+}
+
 func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
 		Description:  cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
+		Version:      toAPKVersion(ctx.Version),
 		License:      cfg.License,
 		Maintainers:  cfg.Maintainers,
 		Contributors: cfg.Contributors,
@@ -319,12 +358,17 @@ func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTem
 		if format := art.Format(); format != "" && format != "binary" {
 			sourceName += "." + strings.TrimPrefix(format, ".")
 		}
+		packageCommand := ""
+		if cfg.Package == "" {
+			packageCommand = defaultPackage(art)
+		}
 		result.Arches = append(result.Arches, arch)
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage{
 			DownloadURL: url,
 			SHA512:      sum,
 			Arch:        arch,
 			SourceName:  sourceName,
+			Package:     packageCommand,
 		})
 	}
 
@@ -338,8 +382,8 @@ func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTem
 // Publish commits the generated APKBUILD files to their configured repositories.
 func (Pipe) Publish(ctx *context.Context) error {
 	skipped := pipe.SkipMemento{}
-	for _, files := range ctx.Artifacts.Filter(artifact.ByType(artifact.APKBuild)).GroupByID() {
-		err := doPublish(ctx, files)
+	for _, file := range ctx.Artifacts.Filter(artifact.ByType(artifact.APKBuild)).List() {
+		err := doPublish(ctx, file)
 		if err != nil && pipe.IsSkip(err) {
 			skipped.Remember(err)
 			continue
@@ -351,8 +395,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return skipped.Evaluate()
 }
 
-func doPublish(ctx *context.Context, files []*artifact.Artifact) error {
-	cfg := artifact.MustExtra[config.APKBuild](*files[0], apkbuildExtra)
+func doPublish(ctx *context.Context, file *artifact.Artifact) error {
+	cfg := artifact.MustExtra[config.APKBuild](*file, apkbuildExtra)
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("apkbuild.skip_upload is set")
 	}
@@ -369,7 +413,7 @@ func doPublish(ctx *context.Context, files []*artifact.Artifact) error {
 		return err
 	}
 
-	uploader := client.NewGitUploadClient("master")
+	uploader := client.NewGitUploadClient("")
 	repo := client.RepoFromRef(config.RepoRef{
 		Git: config.GitRepoRef{
 			PrivateKey: cfg.PrivateKey,
@@ -379,16 +423,12 @@ func doPublish(ctx *context.Context, files []*artifact.Artifact) error {
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
 
-	repoFiles := make([]client.RepoFile, 0, len(files))
-	for _, file := range files {
-		content, err := os.ReadFile(file.Path)
-		if err != nil {
-			return err
-		}
-		repoFiles = append(repoFiles, client.RepoFile{
-			Path:    path.Join(cfg.Directory, file.Name),
-			Content: content,
-		})
+	content, err := os.ReadFile(file.Path)
+	if err != nil {
+		return err
 	}
-	return uploader.CreateFiles(ctx, author, repo, message, repoFiles)
+	return uploader.CreateFiles(ctx, author, repo, message, []client.RepoFile{{
+		Path:    path.Join(cfg.Directory, file.Name),
+		Content: content,
+	}})
 }

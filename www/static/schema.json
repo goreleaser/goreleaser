@@ -46,7 +46,8 @@
 						"items": {
 							"type": "string"
 						},
-						"type": "array"
+						"type": "array",
+						"maxItems": 1
 					},
 					"contributors": {
 						"items": {
@@ -114,7 +115,12 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"description",
+					"homepage",
+					"license"
+				]
 			},
 			"AUR": {
 				"properties": {

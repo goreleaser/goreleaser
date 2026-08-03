@@ -62,6 +62,59 @@ func TestToAPKArch(t *testing.T) {
 	})
 }
 
+func TestToAPKVersion(t *testing.T) {
+	for input, expected := range map[string]string{
+		"1.2.3":        "1.2.3",
+		"1.2.3-beta.1": "1.2.3_beta1",
+		"1.2.3-rc.2":   "1.2.3_rc2",
+	} {
+		t.Run(input, func(t *testing.T) {
+			require.Equal(t, expected, toAPKVersion(input))
+		})
+	}
+}
+
+func TestDefaultPackage(t *testing.T) {
+	for name, tt := range map[string]struct {
+		artifact artifact.Artifact
+		expect   string
+	}{
+		"binary path": {
+			artifact: artifact.Artifact{
+				Type: artifact.UploadableBinary,
+				Extra: map[string]any{
+					artifact.ExtraBinary: "bin/foo",
+				},
+			},
+			expect: `install -Dm755 "$srcdir/$_source" "$pkgdir/usr/bin/foo"`,
+		},
+		"archive path": {
+			artifact: artifact.Artifact{
+				Type: artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraWrappedIn: "wrapped",
+					artifact.ExtraBinaries:  []string{"bin/foo"},
+				},
+			},
+			expect: `install -Dm755 "$srcdir/wrapped/bin/foo" "$pkgdir/usr/bin/foo"`,
+		},
+		"stripped archive path": {
+			artifact: artifact.Artifact{
+				Type: artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraWrappedIn: "wrapped",
+					artifact.ExtraBinaries:  []string{"foo"},
+				},
+			},
+			expect: `install -Dm755 "$srcdir/wrapped/foo" "$pkgdir/usr/bin/foo"`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tt.expect, defaultPackage(&tt.artifact))
+		})
+	}
+}
+
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
@@ -144,9 +197,10 @@ func TestRunAllArchitectures(t *testing.T) {
 			Goamd64: arch.goamd,
 			Type:    artifact.UploadableArchive,
 			Extra: map[string]any{
-				artifact.ExtraID:       "foo",
-				artifact.ExtraFormat:   "tar.gz",
-				artifact.ExtraBinaries: []string{"foo"},
+				artifact.ExtraID:        "foo",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraWrappedIn: "wrapped-" + arch.alpine,
+				artifact.ExtraBinaries:  []string{"foo"},
 			},
 		})
 	}
@@ -173,7 +227,7 @@ func TestRunAllArchitectures(t *testing.T) {
 	require.Contains(t, string(content), `pkgdesc='It'"'"'s "$HOME"'`)
 	require.Contains(t, string(content), `arch='aarch64 armhf armv7 ppc64le riscv64 s390x x86 x86_64'`)
 	require.Contains(t, string(content), `options='!check' # prebuilt binaries`)
-	require.Contains(t, string(content), `install -Dm755 "$srcdir/foo" "$pkgdir/usr/bin/foo"`)
+	require.Contains(t, string(content), `install -Dm755 "$srcdir/wrapped-x86_64/foo" "$pkgdir/usr/bin/foo"`)
 	require.NotContains(t, string(content), "ignored_v3")
 
 	cmd := exec.Command("sh", "-n", file)
@@ -191,6 +245,16 @@ func TestRunAllArchitectures(t *testing.T) {
 			require.Contains(t, lines[1], "https://example.com/releases/foo_")
 			require.Len(t, strings.Fields(lines[2])[0], 128)
 			require.Equal(t, lines[0], strings.Fields(lines[2])[1])
+
+			cmd = exec.Command("sh", "-c", `. "$1"; install() { printf '%s\n' "$@"; }; package`, "sh", file)
+			cmd.Env = append(os.Environ(), "CARCH="+arch.alpine, "srcdir=/src", "pkgdir=/pkg")
+			out, err = cmd.CombinedOutput()
+			require.NoError(t, err, string(out))
+			require.Equal(t, []string{
+				"-Dm755",
+				"/src/wrapped-" + arch.alpine + "/foo",
+				"/pkg/usr/bin/foo",
+			}, strings.Split(strings.TrimSpace(string(out)), "\n"))
 		})
 	}
 
@@ -249,6 +313,170 @@ func TestRunAndPublish(t *testing.T) {
 	require.Contains(t, string(content), `install -Dm755 "$srcdir/$_source" "$pkgdir/usr/bin/foo"`)
 }
 
+func TestDuplicateNamesPublishIndependentlyToDefaultBranches(t *testing.T) {
+	masterRepo := testlib.GitMakeBareRepository(t)
+	mainRepo := testlib.GitMakeBareRepository(t)
+	_, err := git.Run(t.Context(), "-C", mainRepo, "symbolic-ref", "HEAD", "refs/heads/main")
+	require.NoError(t, err)
+
+	key := testlib.MakeNewSSHKey(t, "")
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        t.TempDir(),
+			ProjectName: "foo",
+			APKBuilds: []config.APKBuild{
+				{
+					Description: "Master package",
+					Homepage:    "https://example.com/master",
+					License:     "MIT",
+					URLTemplate: "https://example.com/{{ .ArtifactName }}",
+					GitURL:      masterRepo,
+					PrivateKey:  key,
+					Directory:   "testing/foo",
+				},
+				{
+					Description: "Main package",
+					Homepage:    "https://example.com/main",
+					License:     "Apache-2.0",
+					URLTemplate: "https://example.com/{{ .ArtifactName }}",
+					GitURL:      mainRepo,
+					PrivateKey:  key,
+					Directory:   "community/foo",
+				},
+			},
+		},
+		testctx.WithCurrentTag("v1.0.0"),
+		testctx.WithVersion("1.0.0"),
+	)
+	addArtifact(t, ctx, artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	generated := ctx.Artifacts.Filter(artifact.ByType(artifact.APKBuild)).List()
+	require.Len(t, generated, 2)
+	require.NotEqual(t, generated[0].Path, generated[1].Path)
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	masterContent := testlib.CatFileFromBareRepositoryOnBranch(t, masterRepo, "master", "testing/foo/APKBUILD")
+	require.Contains(t, string(masterContent), `pkgdesc='Master package'`)
+	mainContent := testlib.CatFileFromBareRepositoryOnBranch(t, mainRepo, "main", "community/foo/APKBUILD")
+	require.Contains(t, string(mainContent), `pkgdesc='Main package'`)
+}
+
+func TestArchiveFormats(t *testing.T) {
+	for _, tt := range []struct {
+		format  string
+		wantErr bool
+	}{
+		{format: "tar"},
+		{format: "tgz"},
+		{format: "tar.gz"},
+		{format: "tar.xz"},
+		{format: "zip"},
+		{format: "gz", wantErr: true},
+		{format: "xz", wantErr: true},
+		{format: "txz", wantErr: true},
+		{format: "tzst", wantErr: true},
+	} {
+		t.Run(tt.format, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        t.TempDir(),
+				ProjectName: "foo",
+				APKBuilds: []config.APKBuild{{
+					Description: "Foo",
+					Homepage:    "https://example.com",
+					License:     "MIT",
+					URLTemplate: "https://example.com/{{ .ArtifactName }}",
+				}},
+			}, testctx.WithVersion("1.0.0"))
+			addArtifact(t, ctx, artifact.Artifact{
+				Name:    "foo." + tt.format,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraFormat:   tt.format,
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			err := runAll(ctx, client.NewMock())
+			if tt.wantErr {
+				require.ErrorIs(t, err, ErrNoArchivesFound)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestRequiredMetadata(t *testing.T) {
+	for name, tt := range map[string]struct {
+		setup   func(*config.APKBuild)
+		wantErr string
+	}{
+		"description": {
+			setup:   func(cfg *config.APKBuild) { cfg.Description = "" },
+			wantErr: "apkbuild.description is required",
+		},
+		"homepage": {
+			setup:   func(cfg *config.APKBuild) { cfg.Homepage = "" },
+			wantErr: "apkbuild.homepage is required",
+		},
+		"license": {
+			setup:   func(cfg *config.APKBuild) { cfg.License = "" },
+			wantErr: "apkbuild.license is required",
+		},
+		"maintainers": {
+			setup: func(cfg *config.APKBuild) {
+				cfg.Maintainers = []string{"One <one@example.com>", "Two <two@example.com>"}
+			},
+			wantErr: "apkbuild.maintainers must contain at most one entry",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			cfg := config.APKBuild{
+				Description: "Foo",
+				Homepage:    "https://example.com",
+				License:     "MIT",
+				URLTemplate: "https://example.com/{{ .ArtifactName }}",
+			}
+			tt.setup(&cfg)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        t.TempDir(),
+				ProjectName: "foo",
+				APKBuilds:   []config.APKBuild{cfg},
+			}, testctx.WithVersion("1.0.0"))
+			addArtifact(t, ctx, artifact.Artifact{
+				Name:    "foo",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableBinary,
+				Extra: map[string]any{
+					artifact.ExtraFormat: "binary",
+					artifact.ExtraBinary: "foo",
+				},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.EqualError(t, runAll(ctx, client.NewMock()), tt.wantErr)
+		})
+	}
+}
+
 func TestRunErrors(t *testing.T) {
 	t.Run("no artifacts", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -265,6 +493,9 @@ func TestRunErrors(t *testing.T) {
 			Dist:        dist,
 			ProjectName: "foo",
 			APKBuilds: []config.APKBuild{{
+				Description: "Foo",
+				Homepage:    "https://example.com",
+				License:     "MIT",
 				URLTemplate: "https://example.com/{{ .ArtifactName }}",
 			}},
 		}, testctx.WithVersion("1.0.0"))
@@ -331,6 +562,9 @@ func TestPublishSkip(t *testing.T) {
 				Dist:        dist,
 				ProjectName: "foo",
 				APKBuilds: []config.APKBuild{{
+					Description: "Foo",
+					Homepage:    "https://example.com",
+					License:     "MIT",
 					URLTemplate: "https://example.com/{{ .ArtifactName }}",
 				}},
 			}, testctx.WithVersion("1.0.0"), testctx.WithSemver(1, 0, 0, ""))
