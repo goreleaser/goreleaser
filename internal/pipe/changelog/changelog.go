@@ -554,13 +554,13 @@ const (
 // between returns the text enclosed by the open and close markers, or an empty
 // string if either is missing. The close marker is looked up after the open one
 // so a commit message containing a literal marker cannot make the bounds cross.
-func between(line, open, close string) string {
+func between(line, open, closee string) string {
 	start := strings.Index(line, open)
 	if start < 0 {
 		return ""
 	}
 	start += len(open)
-	end := strings.Index(line[start:], close)
+	end := strings.Index(line[start:], closee)
 	if end < 0 {
 		return ""
 	}
