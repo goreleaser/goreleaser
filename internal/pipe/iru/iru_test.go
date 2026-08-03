@@ -50,34 +50,6 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestDefault(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		ProjectName: "myapp",
-		Iru:         config.Iru{URL: "https://acme.api.kandji.io"},
-	})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "myapp", ctx.Config.Iru.Name)
-	require.Equal(t, "package", ctx.Config.Iru.InstallType)
-	require.Equal(t, "install_once", ctx.Config.Iru.InstallEnforcement)
-}
-
-func TestDefaultKeepsUserValues(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		ProjectName: "myapp",
-		Iru: config.Iru{
-			Name:               "Custom Name",
-			APIToken:           "token",
-			InstallType:        "zip",
-			InstallEnforcement: "no_enforcement",
-		},
-	})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "Custom Name", ctx.Config.Iru.Name)
-	require.Equal(t, "token", ctx.Config.Iru.APIToken)
-	require.Equal(t, "zip", ctx.Config.Iru.InstallType)
-	require.Equal(t, "no_enforcement", ctx.Config.Iru.InstallEnforcement)
-}
-
 func TestPublishDisabled(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
@@ -336,12 +308,9 @@ func TestPublishUpdate(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myapp",
 		Iru: config.Iru{
-			URL:                srv.URL,
-			Name:               "My App",
-			APIToken:           "token",
-			LibraryItemID:      "some-lib-id",
-			InstallType:        "package",
-			InstallEnforcement: "install_once",
+			URL:           srv.URL,
+			APIToken:      "token",
+			LibraryItemID: "some-lib-id",
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -351,6 +320,33 @@ func TestPublishUpdate(t *testing.T) {
 	require.Equal(t, http.MethodPatch, srv.saveMethod)
 	require.Equal(t, "/api/v1/library/custom-apps/some-lib-id", srv.savePath)
 	require.Equal(t, "companies/xyz/myapp.pkg", srv.saveForm["file_key"])
+	// Updates only send explicitly configured fields, so settings managed
+	// in the Iru dashboard are kept.
+	require.NotContains(t, srv.saveForm, "name")
+	require.NotContains(t, srv.saveForm, "install_type")
+	require.NotContains(t, srv.saveForm, "install_enforcement")
+}
+
+func TestPublishUpdateSendsExplicitFields(t *testing.T) {
+	srv := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "myapp",
+		Iru: config.Iru{
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			LibraryItemID: "some-lib-id",
+			InstallType:   "package",
+		},
+	})
+	ctx.Artifacts.Add(testArtifact(t))
+
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	require.Equal(t, http.MethodPatch, srv.saveMethod)
+	require.Equal(t, "My App", srv.saveForm["name"])
+	require.Equal(t, "package", srv.saveForm["install_type"])
+	require.NotContains(t, srv.saveForm, "install_enforcement")
 }
 
 func TestPublishInitUploadError(t *testing.T) {
@@ -377,6 +373,12 @@ func TestPublishValidation(t *testing.T) {
 		"continuously_enforce without audit_script": {
 			InstallEnforcement: "continuously_enforce",
 		},
+		"audit_script without continuously_enforce": {
+			AuditScript: "#!/bin/zsh",
+		},
+		"no_enforcement without self service": {
+			InstallEnforcement: "no_enforcement",
+		},
 		"self service without category": {
 			ShowInSelfService: new(true),
 		},
@@ -385,9 +387,26 @@ func TestPublishValidation(t *testing.T) {
 			cfg.URL = "https://acme.api.kandji.io"
 			cfg.APIToken = "token"
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Iru: cfg})
-			require.ErrorContains(t, Pipe{}.Publish(ctx), "is not set")
+			require.Error(t, Pipe{}.Publish(ctx))
 		})
 	}
+}
+
+func TestPublishArtifactInstallTypeMismatch(t *testing.T) {
+	srv := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:      srv.URL,
+			APIToken: "token",
+		},
+	})
+	// Default install_type is package, but the artifact is a tarball.
+	art := testArtifact(t)
+	art.Name = "myapp_linux_amd64.tar.gz"
+	ctx.Artifacts.Add(art)
+
+	require.ErrorContains(t, Pipe{}.Publish(ctx), "not compatible with install_type package")
+	require.Equal(t, 0, srv.uploadInits)
 }
 
 func TestPublishEmptyTemplatedURL(t *testing.T) {

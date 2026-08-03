@@ -40,14 +40,6 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Iru) || ctx.Config.Iru.URL == ""
 }
 
-func (Pipe) Default(ctx *context.Context) error {
-	iru := &ctx.Config.Iru
-	iru.Name = cmp.Or(iru.Name, ctx.Config.ProjectName)
-	iru.InstallType = cmp.Or(iru.InstallType, defaultInstallType)
-	iru.InstallEnforcement = cmp.Or(iru.InstallEnforcement, defaultInstallEnforcement)
-	return nil
-}
-
 func (p Pipe) Publish(ctx *context.Context) error {
 	cfg := ctx.Config.Iru
 
@@ -97,6 +89,11 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			len(artifacts),
 		)
 	}
+	for _, art := range artifacts {
+		if err := validateArtifact(cfg, art); err != nil {
+			return err
+		}
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, art := range artifacts {
@@ -107,23 +104,81 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	return g.Wait()
 }
 
-// validate checks the conditionally required field combinations documented
-// by the Iru API, so misconfigurations fail before anything is uploaded.
+// effectiveInstallType and effectiveInstallEnforcement return the values the
+// API will end up with: creating applies the documented defaults, updating an
+// existing library item keeps unset fields as they are (returning "").
+func effectiveInstallType(cfg config.Iru) string {
+	if cfg.LibraryItemID == "" {
+		return cmp.Or(cfg.InstallType, defaultInstallType)
+	}
+	return cfg.InstallType
+}
+
+func effectiveInstallEnforcement(cfg config.Iru) string {
+	if cfg.LibraryItemID == "" {
+		return cmp.Or(cfg.InstallEnforcement, defaultInstallEnforcement)
+	}
+	return cfg.InstallEnforcement
+}
+
+// validate checks the field combinations required by the Iru API, so
+// misconfigurations fail before anything is uploaded.
 func validate(cfg config.Iru) error {
-	if cfg.InstallType == "zip" && cfg.UnzipLocation == "" {
+	installType := effectiveInstallType(cfg)
+	enforcement := effectiveInstallEnforcement(cfg)
+	selfService := cfg.ShowInSelfService != nil && *cfg.ShowInSelfService
+
+	if installType == "zip" && cfg.UnzipLocation == "" {
 		return errors.New("install_type is zip, but unzip_location is not set")
 	}
-	if cfg.InstallEnforcement == "continuously_enforce" && cfg.AuditScript == "" {
+	if enforcement == "continuously_enforce" && cfg.AuditScript == "" {
 		return errors.New("install_enforcement is continuously_enforce, but audit_script is not set")
 	}
-	if cfg.ShowInSelfService != nil && *cfg.ShowInSelfService && cfg.SelfServiceCategoryID == "" {
+	if enforcement != "" && enforcement != "continuously_enforce" && cfg.AuditScript != "" {
+		return fmt.Errorf("audit_script is set, but install_enforcement is %s instead of continuously_enforce", enforcement)
+	}
+	if enforcement == "no_enforcement" && !selfService {
+		return errors.New("install_enforcement is no_enforcement, but show_in_self_service is not enabled")
+	}
+	if selfService && cfg.SelfServiceCategoryID == "" {
 		return errors.New("show_in_self_service is enabled, but self_service_category_id is not set")
 	}
 	return nil
 }
 
+// installTypeExts maps each install type to the file extension the Iru API
+// accepts for it.
+var installTypeExts = map[string]string{
+	"package": ".pkg",
+	"zip":     ".zip",
+	"image":   ".dmg",
+}
+
+// validateArtifact ensures the artifact matches the install type, so
+// incompatible files (e.g. Linux binaries or tarballs from a cross-platform
+// release) fail before anything is uploaded.
+func validateArtifact(cfg config.Iru, art *artifact.Artifact) error {
+	installType := effectiveInstallType(cfg)
+	if installType == "" {
+		// Updating with install_type unset keeps the type configured on the
+		// existing library item, which is not known here.
+		return nil
+	}
+	ext, ok := installTypeExts[installType]
+	if !ok {
+		return fmt.Errorf("invalid install_type: %s", installType)
+	}
+	if !strings.HasSuffix(strings.ToLower(art.Name), ext) {
+		return fmt.Errorf(
+			"artifact %q is not compatible with install_type %s: use iru.ids to select only %s artifacts",
+			art.Name, installType, ext,
+		)
+	}
+	return nil
+}
+
 func (p Pipe) publishArtifact(ctx *context.Context, cfg config.Iru, art *artifact.Artifact) error {
-	name, err := tmpl.New(ctx).WithArtifact(art).Apply(cfg.Name)
+	name, err := tmpl.New(ctx).WithArtifact(art).Apply(cmp.Or(cfg.Name, ctx.Config.ProjectName))
 	if err != nil {
 		return fmt.Errorf("could not apply templates to iru.name: %w", err)
 	}
@@ -238,14 +293,27 @@ type customApp struct {
 
 // createOrUpdate creates a new Custom App library item, or, if
 // library_item_id is set, updates the existing one to point at the newly
-// uploaded file. Optional fields are only sent when configured, so updates
-// do not reset settings managed in the Iru dashboard.
+// uploaded file. Creating applies the documented defaults; updates only send
+// the new file plus explicitly configured fields, so they do not reset
+// settings managed in the Iru dashboard.
 func (p Pipe) createOrUpdate(ctx *context.Context, cfg config.Iru, name, fileKey string) (*customApp, error) {
 	form := url.Values{}
-	form.Set("name", name)
 	form.Set("file_key", fileKey)
-	form.Set("install_type", cfg.InstallType)
-	form.Set("install_enforcement", cfg.InstallEnforcement)
+	if cfg.LibraryItemID == "" {
+		form.Set("name", name)
+		form.Set("install_type", effectiveInstallType(cfg))
+		form.Set("install_enforcement", effectiveInstallEnforcement(cfg))
+	} else {
+		if cfg.Name != "" {
+			form.Set("name", name)
+		}
+		if cfg.InstallType != "" {
+			form.Set("install_type", cfg.InstallType)
+		}
+		if cfg.InstallEnforcement != "" {
+			form.Set("install_enforcement", cfg.InstallEnforcement)
+		}
+	}
 	for key, value := range map[string]string{
 		"unzip_location":           cfg.UnzipLocation,
 		"audit_script":             cfg.AuditScript,

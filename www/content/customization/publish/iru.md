@@ -69,12 +69,15 @@ iru:
   # ID of an existing Custom App library item to update instead of creating
   # a new one on every release.
   #
-  # When set, exactly one artifact must match the given ids.
+  # When set, exactly one artifact must match the given ids. Updates only
+  # send the new file plus explicitly set fields, so unset fields keep
+  # whatever is configured in the Iru dashboard.
   #
   # Templates: allowed.
   library_item_id: 58429143-b55c-42d3-a9a3-7c699ddd0ce1
 
-  # How the file should be installed.
+  # How the file should be installed. All selected artifacts must have the
+  # matching file extension (.pkg, .zip, or .dmg).
   #
   # Valid options: package, zip, image.
   # Default: package.
