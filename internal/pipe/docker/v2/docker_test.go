@@ -55,6 +55,18 @@ func TestSkip(t *testing.T) {
 		})
 		require.True(t, Snapshot{}.Skip(ctx))
 	})
+	t.Run("snapshot skip non snapshot with publish skipped", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockersV2: []config.DockerV2{{}},
+		}, testctx.Skip(skips.Publish))
+		require.True(t, Snapshot{}.Skip(ctx))
+	})
+	t.Run("snapshot skip docker skipped", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockersV2: []config.DockerV2{{}},
+		}, testctx.Skip(skips.Docker), testctx.Snapshot)
+		require.True(t, Snapshot{}.Skip(ctx))
+	})
 }
 
 func TestDefault(t *testing.T) {
