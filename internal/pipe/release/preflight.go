@@ -26,11 +26,10 @@ func (Preflight) Skip(ctx *context.Context) (bool, error) {
 	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 }
 
-// Run checks that the configured SCM token has permission to create a release.
 func (Preflight) Run(ctx *context.Context) error {
 	cli, err := releaseClient(ctx)
 	if err != nil {
-		return err
+		return handlePreflightError(ctx, err)
 	}
 	return runPreflight(ctx, cli)
 }
@@ -40,15 +39,21 @@ func runPreflight(ctx *context.Context, cli client.Client) error {
 	if !ok {
 		return nil
 	}
-	if err := checker.CanRelease(ctx); err != nil {
-		failOnError, terr := tmpl.New(ctx).Bool(ctx.Config.Release.Preflight.FailOnError)
-		if terr != nil {
-			return terr
-		}
-		if failOnError {
-			return err
-		}
-		log.WithError(err).Warn("release preflight check failed, continuing anyway (set release.preflight.fail_on_error to abort)")
+	return handlePreflightError(ctx, checker.CanRelease(ctx))
+}
+
+func handlePreflightError(ctx *context.Context, err error) error {
+	if err == nil {
+		return nil
 	}
+
+	failOnError, terr := tmpl.New(ctx).Bool(ctx.Config.Release.Preflight.FailOnError)
+	if terr != nil {
+		return terr
+	}
+	if failOnError {
+		return err
+	}
+	log.WithError(err).Warn("release preflight check failed, continuing anyway (set release.preflight.fail_on_error to abort)")
 	return nil
 }

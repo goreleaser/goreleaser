@@ -1210,13 +1210,11 @@ func TestGitHubCanRelease(t *testing.T) {
 		relBody    string
 		wantErr    string
 	}{
-		{"push allowed, no existing release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusNotFound, `{"message":"Not Found"}`, ""},
-		{"push allowed, mutable release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":false}`, ""},
-		{"push allowed, immutable release", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":true}`, "immutable"},
-		{"push denied", http.StatusOK, `{"permissions":{"push":false}}`, http.StatusNotFound, `{}`, "push permission"},
-		{"permissions absent", http.StatusOK, `{}`, http.StatusNotFound, `{}`, ""},
-		{"permission check error", http.StatusForbidden, `{"message":"Forbidden"}`, http.StatusOK, `{}`, "could not check release permissions"},
-		{"release lookup error", http.StatusOK, `{"permissions":{"push":true}}`, http.StatusForbidden, `{"message":"Forbidden"}`, "could not check for an existing release"},
+		{"push field is ignored", http.StatusOK, `{"permissions":{"push":false}}`, http.StatusNotFound, `{"message":"Not Found"}`, ""},
+		{"mutable release", http.StatusOK, `{}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":false}`, ""},
+		{"immutable release", http.StatusOK, `{}`, http.StatusOK, `{"tag_name":"v1.0.0","immutable":true}`, "immutable"},
+		{"repository lookup error", http.StatusNotFound, `{"message":"Not Found"}`, http.StatusOK, `{}`, "could not access release repository"},
+		{"release lookup error", http.StatusOK, `{}`, http.StatusForbidden, `{"message":"Forbidden"}`, "could not check for an existing release"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()

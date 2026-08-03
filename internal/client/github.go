@@ -697,20 +697,10 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data github
 
 func (c *githubClient) CanRelease(ctx *context.Context) error {
 	c.checkRateLimit(ctx)
-	repo, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
+	if _, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
 		return c.client.Repositories.Get(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name)
-	})
-	if err != nil {
-		return fmt.Errorf("could not check release permissions: %w", err)
-	}
-	// The permissions field is only populated when the token has the right
-	// scope; skip the check when it is absent to avoid false negatives with
-	// fine-grained tokens.
-	if perms := repo.GetPermissions(); perms != nil && !perms.GetPush() {
-		return fmt.Errorf("token does not have push permission for %s/%s",
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-		)
+	}); err != nil {
+		return fmt.Errorf("could not access release repository: %w", err)
 	}
 
 	release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {

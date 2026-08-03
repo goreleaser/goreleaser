@@ -70,6 +70,25 @@ func TestPreflightSkip(t *testing.T) {
 }
 
 func TestPreflightRun(t *testing.T) {
+	t.Run("client setup fails, warn by default", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{Token: "{{ .Env.MISSING }}"},
+			},
+		}, testctx.GitHubTokenType)
+		require.NoError(t, Preflight{}.Run(ctx))
+	})
+
+	t.Run("client setup fails, fail_on_error aborts", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				GitHub:    config.Repo{Token: "{{ .Env.MISSING }}"},
+				Preflight: config.ReleasePreflight{FailOnError: "true"},
+			},
+		}, testctx.GitHubTokenType)
+		require.Error(t, Preflight{}.Run(ctx))
+	})
+
 	t.Run("check passes", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		mock := client.NewMock()
