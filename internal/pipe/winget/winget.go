@@ -23,18 +23,18 @@ import (
 )
 
 var (
-	errNoRepoName               = pipe.Skip("winget.repository.name is required")
-	errNoPublisher              = pipe.Skip("winget.publisher is required")
-	errNoLicense                = pipe.Skip("winget.license is required")
-	errNoShortDescription       = pipe.Skip("winget.short_description is required")
-	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier is invalid")
-	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
-	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
-	errMultipleArchives            = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
-	errMixedFormats                = pipe.Skip("found archives with multiple formats (.exe and .zip)")
-	errAdditionalLocaleEmpty       = pipe.Skip("winget.additional_locales.locale is empty")
-	errAdditionalLocaleDuplicate   = pipe.Skip("winget.additional_locales contains duplicate locales")
-	errAdditionalLocaleIsDefault   = pipe.Skip("winget.additional_locales.locale must not equal default_locale")
+	errNoRepoName                = pipe.Skip("winget.repository.name is required")
+	errNoPublisher               = pipe.Skip("winget.publisher is required")
+	errNoLicense                 = pipe.Skip("winget.license is required")
+	errNoShortDescription        = pipe.Skip("winget.short_description is required")
+	errInvalidPackageIdentifier  = pipe.Skip("winget.package_identifier is invalid")
+	errSkipUpload                = pipe.Skip("winget.skip_upload is set")
+	errSkipUploadAuto            = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
+	errMultipleArchives          = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
+	errMixedFormats              = pipe.Skip("found archives with multiple formats (.exe and .zip)")
+	errAdditionalLocaleEmpty     = pipe.Skip("winget.additional_locales.locale is empty")
+	errAdditionalLocaleDuplicate = pipe.Skip("winget.additional_locales contains duplicate locales")
+	errAdditionalLocaleIsDefault = pipe.Skip("winget.additional_locales.locale must not equal default_locale")
 
 	// copied from winget src
 	packageIdentifierValid = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
@@ -49,8 +49,10 @@ func (e errNoArchivesFound) Error() string {
 	return fmt.Sprintf("no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
-const wingetConfigExtra = "WingetConfig"
-const wingetLocaleExtra = "WingetLocale"
+const (
+	wingetConfigExtra = "WingetConfig"
+	wingetLocaleExtra = "WingetLocale"
+)
 
 type Pipe struct{}
 
@@ -219,6 +221,14 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		}
 	}
 
+	// Preflight the additional locales before creating any artifact so an
+	// invalid locale cannot leave a partially registered (and published) set
+	// of manifests behind.
+	winget, err = p.prepareAdditionalLocales(ctx, winget)
+	if err != nil {
+		return err
+	}
+
 	if err := createYAML(ctx, winget, Version{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
@@ -269,31 +279,29 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	return p.doAdditionalLocales(ctx, winget)
 }
 
-func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) error {
-	if len(winget.AdditionalLocales) == 0 {
-		return nil
-	}
-
+// prepareAdditionalLocales templates and validates every additional locale up
+// front (before any artifact is created). It returns the prepared winget so an
+// invalid locale cannot leave a partial set of manifests registered.
+func (p Pipe) prepareAdditionalLocales(ctx *context.Context, winget config.Winget) (config.Winget, error) {
 	tp := tmpl.New(ctx)
-	var err error
 	seen := map[string]bool{}
 	for i := range winget.AdditionalLocales {
 		aloc := &winget.AdditionalLocales[i]
 
 		if err := tp.ApplyAll(&aloc.Locale); err != nil {
-			return err
+			return winget, err
 		}
 
 		if aloc.Locale == "" {
-			return errAdditionalLocaleEmpty
+			return winget, errAdditionalLocaleEmpty
 		}
 
 		if aloc.Locale == winget.DefaultLocale {
-			return errAdditionalLocaleIsDefault
+			return winget, errAdditionalLocaleIsDefault
 		}
 
 		if seen[aloc.Locale] {
-			return errAdditionalLocaleDuplicate
+			return winget, errAdditionalLocaleDuplicate
 		}
 		seen[aloc.Locale] = true
 
@@ -314,8 +322,32 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 			&aloc.ReleaseNotesURL,
 			&aloc.InstallationNotes,
 		); err != nil {
-			return err
+			return winget, err
 		}
+
+		if aloc.ReleaseNotes != "" {
+			releaseNotes, err := tp.WithExtraFields(tmpl.Fields{
+				"Changelog": ctx.ReleaseNotes,
+			}).Apply(aloc.ReleaseNotes)
+			if err != nil {
+				return winget, err
+			}
+			aloc.ReleaseNotes = releaseNotes
+		}
+	}
+
+	return winget, nil
+}
+
+// doAdditionalLocales renders the already validated additional locale
+// manifests. It must only be called after prepareAdditionalLocales succeeded.
+func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) error {
+	if len(winget.AdditionalLocales) == 0 {
+		return nil
+	}
+
+	for i := range winget.AdditionalLocales {
+		aloc := &winget.AdditionalLocales[i]
 
 		description := ""
 		if aloc.Description != "" {
@@ -324,12 +356,7 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 
 		releaseNotes := winget.ReleaseNotes
 		if aloc.ReleaseNotes != "" {
-			releaseNotes, err = tp.WithExtraFields(tmpl.Fields{
-				"Changelog": ctx.ReleaseNotes,
-			}).Apply(aloc.ReleaseNotes)
-			if err != nil {
-				return err
-			}
+			releaseNotes = aloc.ReleaseNotes
 		}
 
 		tags := aloc.Tags

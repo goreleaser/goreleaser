@@ -42,9 +42,9 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 		extra[wingetLocaleExtra] = locale
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
-		Path: path,
-		Type: tp,
+		Name:  filename,
+		Path:  path,
+		Type:  tp,
 		Extra: extra,
 	})
 

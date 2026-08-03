@@ -960,6 +960,73 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Winget: []config.Winget{{
+				Name:             "foo",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "pt-BR"},
+					{Locale: "pt-BR"},
+				},
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, "rc1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
+	createFakeArtifact := func(id, goos, goarch, goamd64 string) {
+		path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+".zip")
+		art := artifact.Artifact{
+			Name:    "foo_" + goos + "_" + goarch + goamd64 + ".zip",
+			Path:    path,
+			Goos:    goos,
+			Goarch:  goarch,
+			Goamd64: goamd64,
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        id,
+				artifact.ExtraFormat:    "zip",
+				artifact.ExtraBinaries:  []string{"foo.exe"},
+				artifact.ExtraWrappedIn: "",
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+	createFakeArtifact("foo", "windows", "amd64", "v1")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+
+	err := pipe.runAll(ctx, client.NewMock())
+	require.ErrorIs(t, err, errAdditionalLocaleDuplicate)
+
+	// When a later additional locale is invalid, no winget artifact (version,
+	// installer, default locale, or any additional locale) may be registered.
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
+	)).List())
+}
+
 func TestErrNoArchivesFound(t *testing.T) {
 	require.EqualError(t, errNoArchivesFound{
 		goamd64: "v1",
