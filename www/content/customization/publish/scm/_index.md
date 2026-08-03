@@ -193,6 +193,20 @@ release:
   # Templates: allowed.
   skip_upload: true
 
+  # Preflight checks run before the build, to surface likely problems early
+  # instead of after a full build.
+  #
+  # {{< g_inline_version "v2.18-unreleased" >}}
+  preflight:
+    # Abort the release before building if a preflight check fails — for
+    # instance, when the token lacks permission to publish, or the current tag
+    # is already published as an immutable release that cannot be updated.
+    #
+    # When false (default), a failed check only logs a warning.
+    #
+    # Templates: allowed.
+    fail_on_error: true
+
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
