@@ -99,9 +99,6 @@
 					"private_key": {
 						"type": "string"
 					},
-					"goamd64": {
-						"type": "string"
-					},
 					"directory": {
 						"type": "string"
 					},

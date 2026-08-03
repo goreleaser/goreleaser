@@ -4,6 +4,8 @@ linkTitle: APKBUILD
 weight: 125
 ---
 
+{{< g_version "v2.18" >}}
+
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and
 publish an [`APKBUILD`][apkbuild] that packages prebuilt Linux binaries.
 
@@ -103,11 +105,6 @@ apkbuilds:
     # Default: 'Update to {{ .Tag }}'.
     # Templates: allowed.
     commit_msg_template: "apkbuild updates"
-
-    # GOAMD64 version to package when multiple versions are built.
-    #
-    # Default: 'v1'.
-    goamd64: v2
 
     # Value passed to GIT_SSH_COMMAND.
     #

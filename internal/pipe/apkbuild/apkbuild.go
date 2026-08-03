@@ -56,9 +56,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Rel == "" {
 			pkg.Rel = "0"
 		}
-		if pkg.Goamd64 == "" {
-			pkg.Goamd64 = "v1"
-		}
 		if len(pkg.Options) == 0 {
 			pkg.Options = []string{"!check"}
 		}
@@ -106,7 +103,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64(apk.Goamd64),
+				artifact.ByGoamd64("v1"),
 			),
 			artifact.ByGoarch("386"),
 			artifact.ByGoarch("arm64"),

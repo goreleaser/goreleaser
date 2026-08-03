@@ -72,7 +72,6 @@ func TestDefault(t *testing.T) {
 	got := ctx.Config.APKBuilds[0]
 	require.Equal(t, "foo", got.Name)
 	require.Equal(t, "0", got.Rel)
-	require.Equal(t, "v1", got.Goamd64)
 	require.Equal(t, []string{"!check"}, got.Options)
 	require.Equal(t, defaultCommitMsg, got.CommitMessageTemplate)
 	require.Equal(t, "goreleaserbot", got.CommitAuthor.Name)
