@@ -870,6 +870,78 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, in, 0o644)
 }
 
+func generateManifestLine(recordType, filename, path string, content []byte, manifestHashes []string) (string, error) {
+	var r io.Reader
+	var size int64
+
+	if content == nil && path != "" {
+		info, err := os.Stat(path)
+		if err != nil {
+			return "", err
+		}
+		size = info.Size()
+
+		f, err := os.Open(path)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+		r = f
+	} else {
+		size = int64(len(content))
+		r = bytes.NewReader(content)
+	}
+
+	var writers []io.Writer
+	var b2b hash.Hash
+	var s512 hash.Hash
+	var s256 hash.Hash
+
+	for _, algo := range manifestHashes {
+		algo = strings.ToUpper(algo)
+		switch algo {
+		case "BLAKE2B":
+			b2b, _ = blake2b.New512(nil)
+			writers = append(writers, b2b)
+		case "SHA512":
+			s512 = sha512.New()
+			writers = append(writers, s512)
+		case "SHA256":
+			s256 = sha256.New()
+			writers = append(writers, s256)
+		default:
+			return "", fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
+		}
+	}
+
+	if len(writers) > 0 {
+		if _, err := io.Copy(io.MultiWriter(writers...), r); err != nil {
+			return "", err
+		}
+	}
+
+	line := fmt.Sprintf("%s %s %d", recordType, filename, size)
+	for _, algo := range manifestHashes {
+		algo = strings.ToUpper(algo)
+		switch algo {
+		case "BLAKE2B":
+			if b2b != nil {
+				line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
+			}
+		case "SHA512":
+			if s512 != nil {
+				line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
+			}
+		case "SHA256":
+			if s256 != nil {
+				line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
+			}
+		}
+	}
+
+	return line, nil
+}
+
 func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
 	dir := filepath.ToSlash(filepath.Dir(cfg.Path))
 
@@ -1011,6 +1083,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	}
 
 	manifestHashes := []string{"BLAKE2B", "SHA512"}
+	thinManifests := false
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
 		if err == nil {
@@ -1020,6 +1093,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					parts := strings.Split(line, "=")
 					if len(parts) == 2 {
 						manifestHashes = strings.Fields(parts[1])
+					}
+				}
+				if strings.HasPrefix(strings.TrimSpace(line), "thin-manifests") {
+					parts := strings.Split(line, "=")
+					if len(parts) == 2 {
+						thinManifests = strings.TrimSpace(parts[1]) == "true"
 					}
 				}
 			}
@@ -1050,15 +1129,28 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		deletedVersions = append(deletedVersions, v)
 	}
 
+	var newFilesBaseNames []string
+	if !thinManifests {
+		for _, f := range *files {
+			if !f.Delete {
+				newFilesBaseNames = append(newFilesBaseNames, filepath.Base(f.Path))
+			}
+		}
+	}
+
 	var newManifestLines []string
 	for _, line := range manifestLines {
-		if !strings.HasPrefix(line, "DIST ") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
 			newManifestLines = append(newManifestLines, line)
 			continue
 		}
-		fields := strings.Fields(line)
-		if len(fields) > 1 {
-			filename := fields[1]
+
+		recordType := fields[0]
+		filename := fields[1]
+
+		switch recordType {
+		case "DIST":
 			removed := false
 			for _, dv := range deletedVersions {
 				if idx := strings.Index(filename, dv); idx != -1 {
@@ -1086,7 +1178,24 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			if !removed {
 				newManifestLines = append(newManifestLines, line)
 			}
-		} else {
+		case "EBUILD", "AUX", "MISC":
+			if thinManifests {
+				continue
+			}
+			removed := false
+			for _, dv := range deletedVersions {
+				if recordType == "EBUILD" && filename == filepath.Base(dir)+"-"+dv+".ebuild" {
+					removed = true
+					break
+				}
+			}
+			if !removed && slices.Contains(newFilesBaseNames, filename) {
+				removed = true
+			}
+			if !removed {
+				newManifestLines = append(newManifestLines, line)
+			}
+		default:
 			newManifestLines = append(newManifestLines, line)
 		}
 	}
@@ -1102,72 +1211,32 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 
 	for _, art := range arches {
-		err := func() error {
-			info, err := os.Stat(art.Path)
-			if err != nil {
-				return err
-			}
-			size := info.Size()
-
-			f, err := os.Open(art.Path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-
-			var writers []io.Writer
-			var b2b hash.Hash
-			var s512 hash.Hash
-			var s256 hash.Hash
-
-			for _, algo := range manifestHashes {
-				algo = strings.ToUpper(algo)
-				switch algo {
-				case "BLAKE2B":
-					b2b, _ = blake2b.New512(nil)
-					writers = append(writers, b2b)
-				case "SHA512":
-					s512 = sha512.New()
-					writers = append(writers, s512)
-				case "SHA256":
-					s256 = sha256.New()
-					writers = append(writers, s256)
-				default:
-					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
-				}
-			}
-
-			if len(writers) > 0 {
-				if _, err := io.Copy(io.MultiWriter(writers...), f); err != nil {
-					return err
-				}
-			}
-
-			line := fmt.Sprintf("DIST %s %d", art.Name, size)
-			for _, algo := range manifestHashes {
-				algo = strings.ToUpper(algo)
-				switch algo {
-				case "BLAKE2B":
-					if b2b != nil {
-						line = fmt.Sprintf("%s BLAKE2B %x", line, b2b.Sum(nil))
-					}
-				case "SHA512":
-					if s512 != nil {
-						line = fmt.Sprintf("%s SHA512 %x", line, s512.Sum(nil))
-					}
-				case "SHA256":
-					if s256 != nil {
-						line = fmt.Sprintf("%s SHA256 %x", line, s256.Sum(nil))
-					}
-				default:
-					return fmt.Errorf("unsupported manifest hash algorithm: %s", algo)
-				}
-			}
-			newManifestLines = append(newManifestLines, line)
-			return nil
-		}()
+		line, err := generateManifestLine("DIST", art.Name, art.Path, nil, manifestHashes)
 		if err != nil {
 			return err
+		}
+		newManifestLines = append(newManifestLines, line)
+	}
+
+	if !thinManifests {
+		for _, f := range *files {
+			if f.Delete {
+				continue
+			}
+
+			recordType := "MISC"
+			basename := filepath.Base(f.Path)
+			if strings.HasSuffix(f.Path, ".ebuild") {
+				recordType = "EBUILD"
+			} else if strings.Contains(f.Path, "/files/") || strings.HasPrefix(f.Path, "files/") {
+				recordType = "AUX"
+			}
+
+			line, err := generateManifestLine(recordType, basename, f.Path, f.Content, manifestHashes)
+			if err != nil {
+				return err
+			}
+			newManifestLines = append(newManifestLines, line)
 		}
 	}
 
