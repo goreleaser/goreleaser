@@ -16,6 +16,7 @@ S="${WORKDIR}"
 
 src_install() {
   dobin "${DISTDIR}/foo"
+  exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
   if use doc; then
     dodoc README* || die

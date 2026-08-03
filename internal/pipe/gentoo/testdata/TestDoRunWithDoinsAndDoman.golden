@@ -15,6 +15,7 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
+  exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
   insinto "/etc/foo"
   newins "config.yaml" "foo.conf"

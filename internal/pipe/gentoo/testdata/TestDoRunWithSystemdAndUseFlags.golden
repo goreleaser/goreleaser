@@ -16,6 +16,7 @@ IUSE="doc +systemd"
 S="${WORKDIR}"
 
 src_install() {
+  exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
   if ! use systemd; then
   newinitd "foo.init" "foo"
