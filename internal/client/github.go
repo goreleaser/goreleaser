@@ -179,6 +179,11 @@ func (c *githubClient) DeleteFile(ctx *context.Context, commitAuthor config.Comm
 	}
 	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: branch})
 	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			log.WithField("file", path).Debug("file does not exist, skipping deletion")
+			return nil
+		}
 		return err
 	}
 	opts := &github.RepositoryContentFileOptions{
