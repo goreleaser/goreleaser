@@ -818,8 +818,8 @@ func TestDefaultValidation(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
 	ctx.Config.Gentoos = []config.Gentoo{
 		{
-			Bin: true,
-			License: "MIT",
+			Bin:          true,
+			License:      "MIT",
 			KeepVersions: -1,
 		},
 	}
@@ -827,9 +827,9 @@ func TestDefaultValidation(t *testing.T) {
 
 	ctx.Config.Gentoos = []config.Gentoo{
 		{
-			Bin: true,
-			License: "MIT",
-			KeepVersions: 1,
+			Bin:                      true,
+			License:                  "MIT",
+			KeepVersions:             1,
 			VersionRetentionStrategy: "invalid",
 		},
 	}
@@ -837,9 +837,9 @@ func TestDefaultValidation(t *testing.T) {
 
 	ctx.Config.Gentoos = []config.Gentoo{
 		{
-			Bin: true,
-			License: "MIT",
-			KeepVersions: 1,
+			Bin:                      true,
+			License:                  "MIT",
+			KeepVersions:             1,
 			VersionRetentionStrategy: "",
 		},
 	}
