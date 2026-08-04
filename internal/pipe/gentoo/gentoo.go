@@ -121,6 +121,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if g.License == "" {
 			return errors.New("gentoo.license is required")
 		}
+		if g.KeepVersions < 0 {
+			return errors.New("gentoo.keep_versions must be greater than or equal to 0")
+		}
+		if g.VersionRetentionStrategy != "" && g.VersionRetentionStrategy != "keep_latest" && g.VersionRetentionStrategy != "keep_prereleases" {
+			return fmt.Errorf("gentoo.version_retention_strategy %q is not valid, must be one of [keep_latest, keep_prereleases]", g.VersionRetentionStrategy)
+		}
+		if g.KeepVersions > 0 && g.VersionRetentionStrategy == "" {
+			return errors.New("gentoo.version_retention_strategy must be provided if gentoo.keep_versions > 0")
+		}
 		if g.Name == "" {
 			g.Name = ctx.Config.ProjectName
 		}
@@ -461,7 +470,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 		// list existing ebuilds
 		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 && g.cfg.VersionRetentionStrategy != "" {
 			dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
-			names, err := lister.ListDir(ctx, repo, dir)
+			listRepo := repo
+			if g.cfg.Repository.PullRequest.Enabled {
+				listRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
+			}
+			names, err := lister.ListDir(ctx, listRepo, dir)
 			if err != nil {
 				return err
 			}
@@ -519,6 +532,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return ebuilds[i] > ebuilds[j]
 			})
 
+			var newFiles []string
+			for _, f := range g.files {
+				name := filepath.Base(f.Path)
+				if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
+					newFiles = append(newFiles, name)
+				}
+			}
+
 			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
 				getBucket := func(v *gentooVersion) string {
 					pr := v.version.Prerelease()
@@ -536,13 +557,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 				var allEbuilds []string
 				allEbuilds = append(allEbuilds, ebuilds...)
-				var newFiles []string
-				for _, f := range g.files {
-					name := filepath.Base(f.Path)
-					if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
-						newFiles = append(newFiles, name)
-					}
-				}
 				allEbuilds = append(allEbuilds, newFiles...)
 
 				maxVersions := map[string]*gentooVersion{}
@@ -612,10 +626,19 @@ func (Pipe) Publish(ctx *context.Context) error {
 						}
 					}
 				}
-			} else if g.cfg.VersionRetentionStrategy == "keep_latest" && len(ebuilds) > g.cfg.KeepVersions-1 {
-				for _, n := range ebuilds[g.cfg.KeepVersions-1:] {
-					g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-					deletedEbuilds = append(deletedEbuilds, n)
+			} else if g.cfg.VersionRetentionStrategy == "keep_latest" {
+				newUniqueCount := 0
+				for _, n := range newFiles {
+					if !slices.Contains(ebuilds, n) {
+						newUniqueCount++
+					}
+				}
+				allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
+				if len(ebuilds) > allowedToKeep {
+					for _, n := range ebuilds[allowedToKeep:] {
+						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
+						deletedEbuilds = append(deletedEbuilds, n)
+					}
 				}
 			}
 		}

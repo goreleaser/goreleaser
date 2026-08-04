@@ -290,7 +290,9 @@ func TestDoRunRequiresPath(t *testing.T) {
 
 func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	dist := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	})
 	cfg := config.Gentoo{
 		Name: "foo",
 		Path: "app-misc/foo/foo-1.0.0.ebuild",
@@ -810,4 +812,36 @@ func TestGentooVersion(t *testing.T) {
 			require.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestDefaultValidation(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	ctx.Config.Gentoos = []config.Gentoo{
+		{
+			Bin: true,
+			License: "MIT",
+			KeepVersions: -1,
+		},
+	}
+	require.ErrorContains(t, Pipe{}.Default(ctx), "gentoo.keep_versions must be greater than or equal to 0")
+
+	ctx.Config.Gentoos = []config.Gentoo{
+		{
+			Bin: true,
+			License: "MIT",
+			KeepVersions: 1,
+			VersionRetentionStrategy: "invalid",
+		},
+	}
+	require.ErrorContains(t, Pipe{}.Default(ctx), "gentoo.version_retention_strategy \"invalid\" is not valid, must be one of [keep_latest, keep_prereleases]")
+
+	ctx.Config.Gentoos = []config.Gentoo{
+		{
+			Bin: true,
+			License: "MIT",
+			KeepVersions: 1,
+			VersionRetentionStrategy: "",
+		},
+	}
+	require.ErrorContains(t, Pipe{}.Default(ctx), "gentoo.version_retention_strategy must be provided if gentoo.keep_versions > 0")
 }
