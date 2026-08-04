@@ -635,6 +635,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 				allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
 				if len(ebuilds) > allowedToKeep {
+					log.WithField("keep_versions", g.cfg.KeepVersions).
+						WithField("new_unique", newUniqueCount).
+						WithField("allowed_to_keep", allowedToKeep).
+						WithField("total_old", len(ebuilds)).
+						Debug("keeping latest versions")
 					for _, n := range ebuilds[allowedToKeep:] {
 						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
 						deletedEbuilds = append(deletedEbuilds, n)
