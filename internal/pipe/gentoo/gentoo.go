@@ -261,6 +261,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("no linux archives found")
 	}
 
+	validator := &extraFileValidator{cfg: cfg, arches: arches}
+
 	type archData struct {
 		Keyword string
 		File    string
@@ -330,7 +332,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	validator := &extraFileValidator{cfg: cfg, arches: arches}
 	for name, src := range extraFiles {
 		if validator.inArchives(name) {
 			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
