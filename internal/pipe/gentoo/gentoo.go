@@ -270,6 +270,64 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
+	inArchives := func(fileName string) bool {
+		for _, art := range arches {
+			found := false
+			if files, ok := art.Extra[artifact.ExtraFiles].([]string); ok {
+				for _, f := range files {
+					if filepath.Base(f) == fileName {
+						found = true
+						break
+					}
+				}
+			}
+			if !found {
+				if bins, ok := art.Extra[artifact.ExtraBinaries].([]string); ok {
+					for _, b := range bins {
+						if filepath.Base(b) == fileName {
+							found = true
+							break
+						}
+					}
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+		return true
+	}
+
+	for name, src := range extraFiles {
+		if inArchives(name) {
+			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
+			delete(extraFiles, name)
+			continue
+		}
+
+		info, err := os.Stat(src)
+		if err != nil {
+			return fmt.Errorf("failed to stat extra file %s: %w", name, err)
+		}
+		if info.Size() > 20*1024 {
+			return fmt.Errorf("extra file %s is larger than 20KB. Gentoo policy forbids large files in the files/ directory. Please add it to a release asset instead", name)
+		}
+
+		f, err := os.Open(src)
+		if err != nil {
+			return fmt.Errorf("failed to open extra file %s: %w", name, err)
+		}
+		buf := make([]byte, 512)
+		n, err := f.Read(buf)
+		f.Close()
+		if err != nil && err != io.EOF {
+			return fmt.Errorf("failed to read extra file %s: %w", name, err)
+		}
+		if bytes.IndexByte(buf[:n], 0) != -1 {
+			return fmt.Errorf("extra file %s appears to be a binary file. Gentoo policy forbids binary files in the files/ directory", name)
+		}
+	}
+
 	processStringArray := func(arr []string) []string {
 		var out []string
 		for _, s := range arr {
@@ -1004,6 +1062,44 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		deletedVersions = append(deletedVersions, v)
 	}
 
+	var allEbuildContents [][]byte
+	failedToDownloadEbuilds := false
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		// New files
+		for _, f := range *files {
+			if !f.Delete && strings.HasSuffix(f.Path, ".ebuild") {
+				allEbuildContents = append(allEbuildContents, f.Content)
+			}
+		}
+
+		// Kept ebuilds
+		for _, line := range manifestLines {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 && fields[0] == "EBUILD" {
+				filename := fields[1]
+				isDeleted := false
+				for _, dv := range deletedVersions {
+					if filename == prefix+dv+".ebuild" {
+						isDeleted = true
+						break
+					}
+				}
+				if !isDeleted {
+					content, err := dl.DownloadFile(ctx, repo, pathlib.Join(dir, filename))
+					if err == nil {
+						allEbuildContents = append(allEbuildContents, content)
+					} else {
+						failedToDownloadEbuilds = true
+						log.WithError(err).Warnf("failed to download kept ebuild %s, disabling files/ pruning", filename)
+						break
+					}
+				}
+			}
+		}
+	} else {
+		failedToDownloadEbuilds = true
+	}
+
 	var newFilesBaseNames []string
 	if !thinManifests {
 		for _, f := range *files {
@@ -1066,6 +1162,23 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			}
 			if !removed && slices.Contains(newFilesBaseNames, filename) {
 				removed = true
+			}
+			if !removed && recordType == "AUX" && !failedToDownloadEbuilds {
+				// prune unused aux files
+				used := false
+				for _, ebc := range allEbuildContents {
+					if bytes.Contains(ebc, []byte(filename)) {
+						used = true
+						break
+					}
+				}
+				if !used {
+					removed = true
+					*files = append(*files, client.RepoFile{
+						Path:   pathlib.Join(dir, "files", filename),
+						Delete: true,
+					})
+				}
 			}
 			if !removed {
 				newManifestLines = append(newManifestLines, line)
