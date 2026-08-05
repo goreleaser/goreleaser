@@ -163,8 +163,13 @@ func gentooVersion(v string) string {
 	return gentooPrereleaseRe.ReplaceAllString(v, "_${1}${2}")
 }
 
-func inArchives(fileName string, arches []*artifact.Artifact) bool {
-	for _, art := range arches {
+type extraFileValidator struct {
+	cfg    config.Gentoo
+	arches []*artifact.Artifact
+}
+
+func (v *extraFileValidator) inArchives(fileName string) bool {
+	for _, art := range v.arches {
 		found := false
 		if files, ok := art.Extra[artifact.ExtraFiles].([]string); ok {
 			for _, f := range files {
@@ -189,6 +194,33 @@ func inArchives(fileName string, arches []*artifact.Artifact) bool {
 		}
 	}
 	return true
+}
+
+func (v *extraFileValidator) validate(name, src string) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("failed to stat extra file %s: %w", name, err)
+	}
+	if !v.cfg.DisableIgnoreSizeToBinaryFiles {
+		if info.Size() > 20*1024 {
+			return fmt.Errorf("extra file %s is larger than 20KB. Gentoo policy forbids large files in the files/ directory. Please add it to a release asset instead", name)
+		}
+
+		f, err := os.Open(src)
+		if err != nil {
+			return fmt.Errorf("failed to open extra file %s: %w", name, err)
+		}
+		defer f.Close()
+		buf := make([]byte, 512)
+		n, err := f.Read(buf)
+		if err != nil && err != io.EOF {
+			return fmt.Errorf("failed to read extra file %s: %w", name, err)
+		}
+		if bytes.IndexByte(buf[:n], 0) != -1 {
+			return fmt.Errorf("extra file %s appears to be a binary file. Gentoo policy forbids binary files in the files/ directory", name)
+		}
+	}
+	return nil
 }
 
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
@@ -298,35 +330,15 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
+	validator := &extraFileValidator{cfg: cfg, arches: arches}
 	for name, src := range extraFiles {
-		if inArchives(name, arches) {
+		if validator.inArchives(name) {
 			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
 			delete(extraFiles, name)
 			continue
 		}
-
-		info, err := os.Stat(src)
-		if err != nil {
-			return fmt.Errorf("failed to stat extra file %s: %w", name, err)
-		}
-		if !cfg.DisableIgnoreSizeToBinaryFiles {
-			if info.Size() > 20*1024 {
-				return fmt.Errorf("extra file %s is larger than 20KB. Gentoo policy forbids large files in the files/ directory. Please add it to a release asset instead", name)
-			}
-
-			f, err := os.Open(src)
-			if err != nil {
-				return fmt.Errorf("failed to open extra file %s: %w", name, err)
-			}
-			buf := make([]byte, 512)
-			n, err := f.Read(buf)
-			f.Close()
-			if err != nil && err != io.EOF {
-				return fmt.Errorf("failed to read extra file %s: %w", name, err)
-			}
-			if bytes.IndexByte(buf[:n], 0) != -1 {
-				return fmt.Errorf("extra file %s appears to be a binary file. Gentoo policy forbids binary files in the files/ directory", name)
-			}
+		if err := validator.validate(name, src); err != nil {
+			return err
 		}
 	}
 
