@@ -816,3 +816,139 @@ func (c *gitlabClient) OpenPullRequest(
 	log.WithField("url", pr.WebURL).Info("pull request created")
 	return nil
 }
+
+// CreateFiles implements FilesCreator
+func (c *gitlabClient) CreateFiles(
+	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo Repo,
+	message string,
+	files []RepoFile,
+) error {
+	if err := c.checkIsPrivateToken(); err != nil {
+		return fmt.Errorf("create files: %w", err)
+	}
+
+	projectID := repo.Name
+	if repo.Owner != "" {
+		projectID = repo.Owner + "/" + projectID
+	}
+
+	log.
+		WithField("projectID", projectID).
+		Debug("project id")
+
+	var branch, defaultBranch string
+	var branchExists bool
+	var err error
+	// Use the branch if given one
+	if repo.Branch != "" {
+		branch = repo.Branch
+		branchExists, err = c.checkBranchExists(ctx, repo, branch)
+		if err != nil {
+			return err
+		}
+
+		// Retrieving default branch because we need it for `start_branch`
+		if !branchExists {
+			defaultBranch, err = c.getDefaultBranch(ctx, repo)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// Try to get the default branch from the Git provider
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return err
+		}
+
+		defaultBranch = branch
+		branchExists = true
+	}
+
+	opts := &gitlab.GetFileOptions{Ref: &defaultBranch}
+	if branchExists {
+		opts.Ref = &branch
+	}
+
+	var actions []*gitlab.CommitActionOptions
+	for _, f := range files {
+		file, res, err := gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
+			return c.client.RepositoryFiles.GetFile(projectID, f.Path, opts)
+		})
+
+		if err != nil && (res == nil || res.StatusCode != 404) {
+			return fmt.Errorf("could not get file %s: %w", f.Path, err)
+		}
+
+		if f.Delete {
+			if res.StatusCode != 404 {
+				action := gitlab.FileDelete
+				actions = append(actions, &gitlab.CommitActionOptions{
+					Action:   &action,
+					FilePath: &f.Path,
+				})
+			}
+			continue
+		}
+
+		stringContents := string(f.Content)
+		if res.StatusCode == 404 {
+			action := gitlab.FileCreate
+			actions = append(actions, &gitlab.CommitActionOptions{
+				Action:   &action,
+				FilePath: &f.Path,
+				Content:  &stringContents,
+			})
+		} else {
+			decodedContent, decodeErr := base64.StdEncoding.DecodeString(file.Content)
+			if decodeErr == nil && bytes.Equal(decodedContent, f.Content) {
+				log.WithField("projectID", projectID).
+					WithField("branch", branch).
+					WithField("fileName", f.Path).
+					Info("file already exists with the same content, skipping update")
+				continue
+			}
+
+			action := gitlab.FileUpdate
+			actions = append(actions, &gitlab.CommitActionOptions{
+				Action:   &action,
+				FilePath: &f.Path,
+				Content:  &stringContents,
+			})
+		}
+	}
+
+	if len(actions) == 0 {
+		return nil
+	}
+
+	commitOpts := &gitlab.CreateCommitOptions{
+		Branch:        &branch,
+		CommitMessage: &message,
+		Actions:       actions,
+		AuthorName:    &commitAuthor.Name,
+		AuthorEmail:   &commitAuthor.Email,
+	}
+
+	if !branchExists {
+		commitOpts.StartBranch = &defaultBranch
+	}
+
+	_, res, err := gitlabDo(ctx, func() (*gitlab.Commit, *gitlab.Response, error) {
+		return c.client.Commits.CreateCommit(projectID, commitOpts)
+	})
+	if err != nil {
+		log := log.
+			WithField("branch", branch).
+			WithField("projectID", projectID)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.WithError(err).Error("error creating commit")
+		return err
+	}
+
+	return nil
+}
