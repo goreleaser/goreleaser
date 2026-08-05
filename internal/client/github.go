@@ -1064,11 +1064,13 @@ func (c *githubClient) CreateFiles(
 	var entries []*github.TreeEntry
 	for _, f := range files {
 		path := f.Path
+		mode := "100644"
+		typ := "blob"
 		if f.Delete {
 			entries = append(entries, &github.TreeEntry{
 				Path: &path,
-				Mode: github.String("100644"),
-				Type: github.String("blob"),
+				Mode: &mode,
+				Type: &typ,
 				SHA:  nil, // This acts as delete
 			})
 			continue
@@ -1077,8 +1079,8 @@ func (c *githubClient) CreateFiles(
 		content := string(f.Content)
 		entries = append(entries, &github.TreeEntry{
 			Path:    &path,
-			Mode:    github.String("100644"),
-			Type:    github.String("blob"),
+			Mode:    &mode,
+			Type:    &typ,
 			Content: &content,
 		})
 	}
@@ -1127,9 +1129,10 @@ func (c *githubClient) CreateFiles(
 	}
 
 	_, _, err = githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+		force := false
 		return c.client.Git.UpdateRef(ctx, repo.Owner, repo.Name, "refs/heads/"+branch, github.UpdateRef{
 			SHA:   newCommit.GetSHA(),
-			Force: github.Bool(false),
+			Force: &force,
 		})
 	})
 	if err != nil {
