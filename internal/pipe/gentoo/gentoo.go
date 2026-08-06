@@ -145,13 +145,13 @@ func gentooVersion(v string) string {
 	return gentooPrereleaseRe.ReplaceAllString(v, "_${1}${2}")
 }
 
-type extraFileValidator struct {
+type extraFilesProcessor struct {
 	cfg        config.Gentoo
 	arches     []*artifact.Artifact
 	extraFiles map[string]string
 }
 
-func (v *extraFileValidator) inArchives(fileName string) bool {
+func (v *extraFilesProcessor) inArchives(fileName string) bool {
 	if len(v.arches) == 0 {
 		return false
 	}
@@ -182,15 +182,15 @@ func (v *extraFileValidator) inArchives(fileName string) bool {
 	return true
 }
 
-func newExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact, extraFiles map[string]string) *extraFileValidator {
-	return &extraFileValidator{
+func newExtraFilesProcessor(cfg config.Gentoo, arches []*artifact.Artifact, extraFiles map[string]string) *extraFilesProcessor {
+	return &extraFilesProcessor{
 		cfg:        cfg,
 		arches:     arches,
 		extraFiles: extraFiles,
 	}
 }
 
-func (v *extraFileValidator) Filter() error {
+func (v *extraFilesProcessor) Filter() error {
 	for name, src := range v.extraFiles {
 		if v.inArchives(name) {
 			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
@@ -204,7 +204,7 @@ func (v *extraFileValidator) Filter() error {
 	return nil
 }
 
-func (v *extraFileValidator) validate(name, src string) error {
+func (v *extraFilesProcessor) validate(name, src string) error {
 	info, err := os.Stat(src)
 	if err != nil {
 		return fmt.Errorf("failed to stat extra file %s: %w", name, err)
@@ -231,7 +231,7 @@ func (v *extraFileValidator) validate(name, src string) error {
 	return nil
 }
 
-func (v *extraFileValidator) processStringArray(arr []string) []string {
+func (v *extraFilesProcessor) processStringArray(arr []string) []string {
 	var out []string
 	for _, s := range arr {
 		if _, ok := v.extraFiles[s]; ok {
@@ -243,7 +243,7 @@ func (v *extraFileValidator) processStringArray(arr []string) []string {
 	return out
 }
 
-func (v *extraFileValidator) buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
+func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
 	var items []installItemData
 	for _, d := range cfgItems {
 		src := d.Src
@@ -368,9 +368,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	validator := newExtraFileValidator(cfg, arches, extraFiles)
+	ef := newExtraFilesProcessor(cfg, arches, extraFiles)
 
-	if err := validator.Filter(); err != nil {
+	if err := ef.Filter(); err != nil {
 		return err
 	}
 
@@ -409,19 +409,19 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      cfg.UseFlags,
-		Dobin:         validator.buildInstallItems(cfg.Dobin),
-		Doconfd:       validator.buildInstallItems(cfg.Doconfd),
+		Dobin:         ef.buildInstallItems(cfg.Dobin),
+		Doconfd:       ef.buildInstallItems(cfg.Doconfd),
 		Dodir:         cfg.Dodir,
-		Dodoc:         validator.processStringArray(cfg.Dodoc),
-		Doenvd:        validator.buildInstallItems(cfg.Doenvd),
-		Doexe:         validator.buildInstallItems(cfg.Doexe),
-		Doheader:      validator.buildInstallItems(cfg.Doheader),
-		Doinitd:       validator.buildInstallItems(cfg.Doinitd),
-		Doins:         validator.buildInstallItems(cfg.Doins),
-		Doman:         validator.processStringArray(cfg.Doman),
-		Dosbin:        validator.buildInstallItems(cfg.Dosbin),
-		Dosym:         validator.buildInstallItems(cfg.Dosym),
-		Systemd:       validator.buildInstallItems(cfg.Systemd),
+		Dodoc:         ef.processStringArray(cfg.Dodoc),
+		Doenvd:        ef.buildInstallItems(cfg.Doenvd),
+		Doexe:         ef.buildInstallItems(cfg.Doexe),
+		Doheader:      ef.buildInstallItems(cfg.Doheader),
+		Doinitd:       ef.buildInstallItems(cfg.Doinitd),
+		Doins:         ef.buildInstallItems(cfg.Doins),
+		Doman:         ef.processStringArray(cfg.Doman),
+		Dosbin:        ef.buildInstallItems(cfg.Dosbin),
+		Dosym:         ef.buildInstallItems(cfg.Dosym),
+		Systemd:       ef.buildInstallItems(cfg.Systemd),
 	}
 
 	for _, sym := range data.Dosym {

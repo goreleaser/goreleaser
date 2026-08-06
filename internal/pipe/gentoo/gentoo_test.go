@@ -860,9 +860,9 @@ func TestExtraFileValidator(t *testing.T) {
 				},
 			},
 		}
-		validator := newExtraFileValidator(config.Gentoo{}, arches, nil)
-		require.True(t, validator.inArchives("foo.service"))
-		require.False(t, validator.inArchives("bar.service"))
+		ef := newExtraFilesProcessor(config.Gentoo{}, arches, nil)
+		require.True(t, ef.inArchives("foo.service"))
+		require.False(t, ef.inArchives("bar.service"))
 	})
 
 	t.Run("Filter_valid", func(t *testing.T) {
@@ -874,8 +874,8 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.service": fooPath,
 		}
-		validator := newExtraFileValidator(config.Gentoo{}, nil, extraFiles)
-		err = validator.Filter()
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
 		require.NoError(t, err)
 		require.Contains(t, extraFiles, "foo.service")
 	})
@@ -889,8 +889,8 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.bin": binPath,
 		}
-		validator := newExtraFileValidator(config.Gentoo{}, nil, extraFiles)
-		err = validator.Filter()
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
 		require.ErrorContains(t, err, "appears to be a binary file")
 	})
 
@@ -903,8 +903,8 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.large": largePath,
 		}
-		validator := newExtraFileValidator(config.Gentoo{}, nil, extraFiles)
-		err = validator.Filter()
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
 		require.ErrorContains(t, err, "larger than 20KB")
 	})
 
@@ -917,8 +917,8 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.bin": binPath,
 		}
-		validator := newExtraFileValidator(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil, extraFiles)
-		err = validator.Filter()
+		ef := newExtraFilesProcessor(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil, extraFiles)
+		err = ef.Filter()
 		require.NoError(t, err)
 		require.Contains(t, extraFiles, "foo.bin")
 	})
