@@ -5,4 +5,4 @@
 - [x] Task 3: Decompose `Publish` method into `publishGroup` struct and receiver methods (`collectPublishGroups`, `applyVersionRetention`, `publish`). Commit & push.
 - [x] Task 4: Replace `metadata.xml.tmpl` text template with native Go `gentooMetadata` XML struct marshaling, methods (`AddMaintainers`, `AddUseFlags`, `SetUpstream`, `Marshal`), and `TestGentooMetadata` unit test. Commit & push.
 - [x] Task 5: Split `gentoo.go` into domain files (`ebuild.go`, `metadata.go`, `retention.go`, `gentoo.go`). Commit & push.
-- [ ] Task 6: Finalize PR (ready for review).
+- [x] Task 6: Finalize PR (ready for review).
