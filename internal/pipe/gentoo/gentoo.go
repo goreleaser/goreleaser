@@ -966,7 +966,16 @@ func gentooExtraFilePath(name string) (string, error) {
 }
 
 func gentooUseFlags(cfg config.Gentoo) []config.GentooUseFlag {
-	flags := append([]config.GentooUseFlag(nil), cfg.UseFlags...)
+	docFlag := config.GentooUseFlag{Flag: "doc"}
+	flags := make([]config.GentooUseFlag, 1, len(cfg.UseFlags)+1)
+	for _, flag := range cfg.UseFlags {
+		if strings.TrimLeft(flag.Flag, "+-") == "doc" {
+			docFlag = flag
+			continue
+		}
+		flags = append(flags, flag)
+	}
+	flags[0] = docFlag
 	configured := make(map[string]struct{}, len(flags))
 	for _, flag := range flags {
 		configured[strings.TrimLeft(flag.Flag, "+-")] = struct{}{}

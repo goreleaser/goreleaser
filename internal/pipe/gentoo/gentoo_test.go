@@ -782,7 +782,10 @@ func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
 
 func TestGentooUseFlagsIncludesInstallConditions(t *testing.T) {
 	flags := gentooUseFlags(config.Gentoo{
-		UseFlags: []config.GentooUseFlag{{Flag: "+systemd"}},
+		UseFlags: []config.GentooUseFlag{
+			{Flag: "+systemd"},
+			{Flag: "doc", Description: "Install documentation"},
+		},
 		Dobin: []config.GentooInstallItem{{
 			Use: []string{"!systemd", "zsh"},
 		}},
@@ -792,6 +795,7 @@ func TestGentooUseFlagsIncludesInstallConditions(t *testing.T) {
 	})
 
 	require.Equal(t, []config.GentooUseFlag{
+		{Flag: "doc", Description: "Install documentation"},
 		{Flag: "+systemd"},
 		{Flag: "bash"},
 		{Flag: "zsh"},
