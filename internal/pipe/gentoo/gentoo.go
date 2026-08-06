@@ -1124,7 +1124,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		})
 	}
 
-	manifestHashes, thinManifests, err := loadManifestSettings(ctx, repoClient, repo)
+	manifestHashes, thinManifests, err := loadManifestSettings(ctx, repoClient, repo, cfg)
 	if err != nil {
 		return err
 	}
@@ -1260,9 +1260,21 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	return nil
 }
 
-func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, bool, error) {
+func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo client.Repo, cfg config.Gentoo) ([]string, bool, error) {
 	hashes := []string{"BLAKE2B", "SHA512"}
 	thin := false
+
+	if len(cfg.ManifestHashes) > 0 {
+		hashes = cfg.ManifestHashes
+	}
+	if cfg.ThinManifests != nil {
+		thin = *cfg.ThinManifests
+	}
+
+	if len(cfg.ManifestHashes) > 0 && cfg.ThinManifests != nil {
+		return hashes, thin, nil
+	}
+
 	dl, ok := repoClient.(client.FileDownloader)
 	if !ok {
 		return hashes, thin, nil
@@ -1281,9 +1293,13 @@ func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo c
 		}
 		switch strings.TrimSpace(key) {
 		case "manifest-hashes":
-			hashes = strings.Fields(value)
+			if len(cfg.ManifestHashes) == 0 {
+				hashes = strings.Fields(value)
+			}
 		case "thin-manifests":
-			thin = strings.TrimSpace(value) == "true"
+			if cfg.ThinManifests == nil {
+				thin = strings.TrimSpace(value) == "true"
+			}
 		}
 	}
 	return hashes, thin, nil

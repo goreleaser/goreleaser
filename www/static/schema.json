@@ -1579,6 +1579,9 @@
 					"name": {
 						"type": "string"
 					},
+					"category": {
+						"type": "string"
+					},
 					"path": {
 						"type": "string"
 					},
@@ -1636,6 +1639,15 @@
 					},
 					"bindir": {
 						"type": "string"
+					},
+					"manifest_hashes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"thin_manifests": {
+						"type": "boolean"
 					},
 					"extra_install": {
 						"type": "string"

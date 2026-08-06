@@ -108,6 +108,18 @@ gentoo_overlay:
     # Default: "/opt/bin" if type is "bin", otherwise "/usr/bin".
     bindir: "/usr/bin"
 
+    # Overrides for manifest hashes. Usually derived from metadata/layout.conf.
+    #
+    # Default: null (defers to layout.conf or ["BLAKE2B", "SHA512"]).
+    # manifest_hashes:
+    #   - BLAKE2B
+    #   - SHA512
+
+    # Overrides thin manifests generation. Usually derived from metadata/layout.conf.
+    #
+    # Default: null (defers to layout.conf or false).
+    # thin_manifests: false
+
     # The Gentoo maintainers of the ebuild.
     maintainers:
       - name: "John Doe"
