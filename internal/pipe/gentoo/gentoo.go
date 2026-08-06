@@ -126,6 +126,7 @@ func getVersionBucket(v *parsedGentooVersion) string {
 type ebuildDeleter struct {
 	dir            string
 	category       string
+	metaCache      bool
 	files          *[]client.RepoFile
 	deletedEbuilds *[]string
 }
@@ -133,6 +134,9 @@ type ebuildDeleter struct {
 func (d *ebuildDeleter) Delete(ebuildName string) {
 	*d.files = append(*d.files, client.RepoFile{Path: pathlib.Join(d.dir, ebuildName), Delete: true})
 	*d.deletedEbuilds = append(*d.deletedEbuilds, ebuildName)
+	if !d.metaCache {
+		return
+	}
 	md5Name := strings.TrimSuffix(ebuildName, ".ebuild")
 	md5CachePath := pathlib.Join("metadata", "md5-cache", d.category, md5Name)
 	*d.files = append(*d.files, client.RepoFile{Path: md5CachePath, Delete: true})
@@ -713,6 +717,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			deleter := &ebuildDeleter{
 				dir:            dir,
 				category:       strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0],
+				metaCache:      g.cfg.MetaCache,
 				files:          &g.files,
 				deletedEbuilds: &deletedEbuilds,
 			}
