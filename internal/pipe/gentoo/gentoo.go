@@ -159,7 +159,7 @@ func (v *extraFilesProcessor) inArchives(fileName string) bool {
 		found := false
 		if files, ok := art.Extra[artifact.ExtraFiles].([]string); ok {
 			for _, f := range files {
-				if filepath.Base(f) == fileName {
+				if archiveDestination(*art, f) == normalizeArchivePath(fileName) {
 					found = true
 					break
 				}
@@ -168,7 +168,7 @@ func (v *extraFilesProcessor) inArchives(fileName string) bool {
 		if !found {
 			if bins, ok := art.Extra[artifact.ExtraBinaries].([]string); ok {
 				for _, b := range bins {
-					if filepath.Base(b) == fileName {
+					if archiveDestination(*art, b) == normalizeArchivePath(fileName) {
 						found = true
 						break
 					}
@@ -180,6 +180,14 @@ func (v *extraFilesProcessor) inArchives(fileName string) bool {
 		}
 	}
 	return true
+}
+
+func archiveDestination(art artifact.Artifact, destination string) string {
+	return normalizeArchivePath(filepath.Join(artifact.ExtraOr(art, artifact.ExtraWrappedIn, ""), destination))
+}
+
+func normalizeArchivePath(path string) string {
+	return strings.TrimPrefix(filepath.ToSlash(filepath.Clean(path)), "./")
 }
 
 func newExtraFilesProcessor(cfg config.Gentoo, arches []*artifact.Artifact, extraFiles map[string]string) *extraFilesProcessor {

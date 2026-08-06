@@ -945,18 +945,27 @@ func TestExtraFileValidator(t *testing.T) {
 		arches := []*artifact.Artifact{
 			{
 				Extra: map[string]any{
-					artifact.ExtraFiles: []string{"/tmp/files/foo.service"},
+					artifact.ExtraFiles: []string{"foo.service"},
 				},
 			},
 			{
 				Extra: map[string]any{
-					artifact.ExtraFiles: []string{"/tmp/files/foo.service"},
+					artifact.ExtraFiles: []string{"foo.service"},
 				},
 			},
 		}
 		ef := newExtraFilesProcessor(config.Gentoo{}, arches, nil)
 		require.True(t, ef.inArchives("foo.service"))
 		require.False(t, ef.inArchives("bar.service"))
+
+		arches[0].Extra[artifact.ExtraFiles] = []string{"share/foo.service"}
+		require.False(t, ef.inArchives("foo.service"))
+
+		arches[0].Extra[artifact.ExtraFiles] = []string{"foo.service"}
+		arches[0].Extra[artifact.ExtraWrappedIn] = "release"
+		arches[1].Extra[artifact.ExtraWrappedIn] = "release"
+		require.False(t, ef.inArchives("foo.service"))
+		require.True(t, ef.inArchives("release/foo.service"))
 	})
 
 	t.Run("Filter_valid", func(t *testing.T) {
