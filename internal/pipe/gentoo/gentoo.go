@@ -276,6 +276,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	if strings.TrimSpace(cfg.Path) == "" {
 		return errors.New("gentoo.path is required and must include the category/package ebuild path")
 	}
+	if !isValidGentooPath(cfg.Path) {
+		return fmt.Errorf("gentoo.path %q must be a relative category/package/file.ebuild path", cfg.Path)
+	}
 
 	path := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, cfg.Path)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -370,6 +373,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	if err := ef.Filter(); err != nil {
 		return err
 	}
+	useFlags := gentooUseFlags(cfg)
 
 	data := struct {
 		Name          string
@@ -405,7 +409,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		ExtraInstall:  extraInstall,
 		Archs:         archInfos,
 		InstallGroups: installGroups,
-		UseFlags:      cfg.UseFlags,
+		UseFlags:      useFlags,
 		Dobin:         ef.buildInstallItems(cfg.Dobin),
 		Doconfd:       ef.buildInstallItems(cfg.Doconfd),
 		Dodir:         cfg.Dodir,
@@ -826,6 +830,50 @@ func defaultPath(name, typ string) string {
 func hasCategory(path string) bool {
 	parts := strings.Split(filepath.ToSlash(filepath.Clean(path)), "/")
 	return len(parts) >= 3 && parts[0] != "." && parts[0] != "" && parts[1] != "" && parts[2] != ""
+}
+
+func isValidGentooPath(filePath string) bool {
+	path := filepath.ToSlash(filePath)
+	if pathlib.IsAbs(path) || path != pathlib.Clean(path) {
+		return false
+	}
+	parts := strings.Split(path, "/")
+	return len(parts) == 3 &&
+		parts[0] != "" && parts[0] != "." &&
+		parts[1] != "" && parts[1] != "." &&
+		strings.HasSuffix(parts[2], ".ebuild")
+}
+
+func gentooUseFlags(cfg config.Gentoo) []config.GentooUseFlag {
+	flags := append([]config.GentooUseFlag(nil), cfg.UseFlags...)
+	configured := make(map[string]struct{}, len(flags))
+	for _, flag := range flags {
+		configured[strings.TrimLeft(flag.Flag, "+-")] = struct{}{}
+	}
+
+	items := [][]config.GentooInstallItem{
+		cfg.Dobin, cfg.Doconfd, cfg.Doenvd, cfg.Doexe, cfg.Doheader, cfg.Doinitd,
+		cfg.Doins, cfg.Dosbin, cfg.Dosym, cfg.Systemd,
+	}
+	var additional []string
+	for _, group := range items {
+		for _, item := range group {
+			for _, condition := range item.Use {
+				flag := strings.TrimLeft(condition, "!+-")
+				if flag != "" {
+					if _, ok := configured[flag]; !ok {
+						configured[flag] = struct{}{}
+						additional = append(additional, flag)
+					}
+				}
+			}
+		}
+	}
+	slices.Sort(additional)
+	for _, flag := range additional {
+		flags = append(flags, config.GentooUseFlag{Flag: flag})
+	}
+	return flags
 }
 
 func copyFile(src, dst string) error {
