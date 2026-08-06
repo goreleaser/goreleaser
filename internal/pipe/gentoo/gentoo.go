@@ -217,7 +217,7 @@ func (v *extraFilesProcessor) validate(name, src string) error {
 	if err != nil {
 		return fmt.Errorf("failed to stat extra file %s: %w", name, err)
 	}
-	if !v.cfg.DisableIgnoreSizeToBinaryFiles {
+	if !v.cfg.SkipFilesValidation {
 		if info.Size() > 20*1024 {
 			return fmt.Errorf("extra file %s is larger than 20KB. Gentoo policy forbids large files in the files/ directory. Please add it to a release asset instead", name)
 		}
@@ -773,17 +773,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 				filesToCreate = append(filesToCreate, f)
 			}
-			if len(filesToCreate) > 0 {
-				if fc, ok := repoClient.(client.FilesCreator); ok {
-					if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
-						return err
-					}
-				} else {
-					for _, f := range filesToCreate {
-						if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
-							return err
-						}
-					}
+			for _, f := range filesToCreate {
+				if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+					return err
 				}
 			}
 		}
@@ -1104,44 +1096,13 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		})
 	}
 
-	manifestHashes := []string{"BLAKE2B", "SHA512"}
-	thinManifests := false
-	if dl, ok := repoClient.(client.FileDownloader); ok {
-		content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
-		if err == nil {
-			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
-				line := string(lineB)
-				if strings.HasPrefix(strings.TrimSpace(line), "manifest-hashes") {
-					parts := strings.Split(line, "=")
-					if len(parts) == 2 {
-						manifestHashes = strings.Fields(parts[1])
-					}
-				}
-				if strings.HasPrefix(strings.TrimSpace(line), "thin-manifests") {
-					parts := strings.Split(line, "=")
-					if len(parts) == 2 {
-						thinManifests = strings.TrimSpace(parts[1]) == "true"
-					}
-				}
-			}
-		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
-			return fmt.Errorf("failed to download layout.conf: %w", err)
-		}
+	manifestHashes, thinManifests, err := loadManifestSettings(ctx, repoClient, repo)
+	if err != nil {
+		return err
 	}
-
-	var manifestLines []string
-	if dl, ok := repoClient.(client.FileDownloader); ok {
-		content, err := dl.DownloadFile(ctx, repo, manifestPath)
-		if err == nil {
-			for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
-				line := string(lineB)
-				if strings.TrimSpace(line) != "" {
-					manifestLines = append(manifestLines, line)
-				}
-			}
-		} else if !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
-			return fmt.Errorf("failed to download Manifest: %w", err)
-		}
+	manifestLines, err := loadManifestLines(ctx, repoClient, repo, manifestPath)
+	if err != nil {
+		return err
 	}
 
 	var deletedVersions []string
@@ -1266,6 +1227,50 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		})
 	}
 	return nil
+}
+
+func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, bool, error) {
+	hashes := []string{"BLAKE2B", "SHA512"}
+	thin := false
+	dl, ok := repoClient.(client.FileDownloader)
+	if !ok {
+		return hashes, thin, nil
+	}
+	content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
+	if errors.Is(err, client.ErrNotFound) || errors.Is(err, client.ErrNotImplemented) {
+		return hashes, thin, nil
+	}
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to download layout.conf: %w", err)
+	}
+	for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+		key, value, ok := strings.Cut(strings.TrimSpace(string(lineB)), "=")
+		if !ok {
+			continue
+		}
+		switch strings.TrimSpace(key) {
+		case "manifest-hashes":
+			hashes = strings.Fields(value)
+		case "thin-manifests":
+			thin = strings.TrimSpace(value) == "true"
+		}
+	}
+	return hashes, thin, nil
+}
+
+func loadManifestLines(ctx *context.Context, repoClient client.Client, repo client.Repo, manifestPath string) ([]string, error) {
+	dl, ok := repoClient.(client.FileDownloader)
+	if !ok {
+		return nil, nil
+	}
+	content, err := dl.DownloadFile(ctx, repo, manifestPath)
+	if errors.Is(err, client.ErrNotFound) || errors.Is(err, client.ErrNotImplemented) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to download Manifest: %w", err)
+	}
+	return strings.FieldsFunc(string(content), func(r rune) bool { return r == '\n' || r == '\r' }), nil
 }
 
 func manifestFileInfo(filePath, packageDir string) (string, string) {
