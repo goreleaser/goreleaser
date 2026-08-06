@@ -1020,7 +1020,7 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.bin": binPath,
 		}
-		ef := newExtraFilesProcessor(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil, extraFiles)
+		ef := newExtraFilesProcessor(config.Gentoo{SkipFilesValidation: true}, nil, extraFiles)
 		err = ef.Filter()
 		require.NoError(t, err)
 		require.Contains(t, extraFiles, "foo.bin")
