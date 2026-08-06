@@ -1026,3 +1026,51 @@ func TestExtraFileValidator(t *testing.T) {
 		require.Contains(t, extraFiles, "foo.bin")
 	})
 }
+
+func TestSkipUpload(t *testing.T) {
+	t.Run("skip_upload true", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Gentoos: []config.Gentoo{
+				{
+					ID:         "default",
+					SkipUpload: "true",
+				},
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "foo.ebuild",
+			Path: "dist/foo.ebuild",
+			Type: artifact.GentooEbuild,
+			Extra: map[string]any{
+				ebuildExtra:     ctx.Config.Gentoos[0],
+				ebuildPathExtra: "app-misc/foo/foo-1.0.0.ebuild",
+			},
+		})
+		err := Pipe{}.Publish(ctx)
+		require.NoError(t, err)
+	})
+
+	t.Run("skip_upload auto prerelease", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Gentoos: []config.Gentoo{
+				{
+					ID:         "default",
+					SkipUpload: "auto",
+				},
+			},
+		})
+		ctx.Semver = import_context.Semver{Prerelease: "beta.1"}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "foo.ebuild",
+			Path: "dist/foo.ebuild",
+			Type: artifact.GentooEbuild,
+			Extra: map[string]any{
+				ebuildExtra:     ctx.Config.Gentoos[0],
+				ebuildPathExtra: "app-misc/foo/foo-1.0.0.ebuild",
+			},
+		})
+		err := Pipe{}.Publish(ctx)
+		require.NoError(t, err)
+	})
+}
+

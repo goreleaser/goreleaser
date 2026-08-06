@@ -87,7 +87,10 @@ gentoo_overlay:
     # Required if keep_versions > 0.
     version_retention_strategy: keep_latest
 
-    # Whether to skip uploading the ebuild to the repository.
+    # Setting this will prevent GoReleaser from committing and pushing the generated ebuild
+    # to the repository — instead, the ebuild file will be saved in the dist directory only.
+    #
+    # If set to "auto", the ebuild will not be uploaded if the release tag is a prerelease (e.g. v1.0.0-rc1).
     #
     # Valid options: true, false, auto.
     # Default: false.

@@ -486,10 +486,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 }
 
 func (Pipe) Publish(ctx *context.Context) error {
-	cl, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
 	arts := ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.GentooEbuild),
 		artifact.ByType(artifact.GentooFile),
@@ -512,6 +508,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 			log.Debug("gentoo.skip_upload is true")
 			continue
 		}
+		if strings.TrimSpace(skip) == "auto" && ctx.Semver.Prerelease != "" {
+			log.Debug("gentoo.skip_upload is auto and version is a prerelease")
+			continue
+		}
 		key := cfg.ID
 		g := groups[key]
 		if g == nil {
@@ -526,6 +526,15 @@ func (Pipe) Publish(ctx *context.Context) error {
 			Content: content,
 			Path:    filepath.ToSlash(artifact.MustExtra[string](*art, ebuildPathExtra)),
 		})
+	}
+
+	if len(groups) == 0 {
+		return nil
+	}
+
+	cl, err := client.New(ctx)
+	if err != nil {
+		return err
 	}
 
 	for _, g := range groups {
