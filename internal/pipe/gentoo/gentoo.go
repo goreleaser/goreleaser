@@ -116,10 +116,12 @@ func (Pipe) Default(ctx *context.Context) error {
 			g.Name = ctx.Config.ProjectName
 		}
 		if g.Path == "" {
-			g.Path = defaultPath(g.Name, g.Type)
-			log.Warnf("no gentoo category configured for %q; defaulting path to %q", g.Name, filepath.ToSlash(g.Path))
+			g.Path = defaultPath(g.Name, g.Category, g.Type)
+			if g.Category == "" {
+				log.Warnf("no gentoo category configured for %q; defaulting path to %q", g.Name, filepath.ToSlash(g.Path))
+			}
 		} else if !hasCategory(g.Path) {
-			log.Warnf("gentoo.path %q does not include a category/package path; Gentoo ebuild paths usually look like %q", g.Path, filepath.ToSlash(defaultPath(g.Name, g.Type)))
+			log.Warnf("gentoo.path %q does not include a category/package path; Gentoo ebuild paths usually look like %q", g.Path, filepath.ToSlash(defaultPath(g.Name, g.Category, g.Type)))
 		}
 		ids.Inc(g.ID)
 	}
@@ -271,9 +273,11 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
 	tp := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"Version": gentooVersion(ctx.Version),
+		"Version":  gentooVersion(ctx.Version),
+		"Name":     cfg.Name,
+		"Category": cfg.Category,
 	})
-	if err := tp.ApplyAll(&cfg.Name, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
+	if err := tp.ApplyAll(&cfg.Name, &cfg.Category, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
 		return err
 	}
 	var err error
@@ -486,10 +490,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 }
 
 func (Pipe) Publish(ctx *context.Context) error {
-	cl, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
 	arts := ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.GentooEbuild),
 		artifact.ByType(artifact.GentooFile),
@@ -512,6 +512,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 			log.Debug("gentoo.skip_upload is true")
 			continue
 		}
+		if strings.TrimSpace(skip) == "auto" && ctx.Semver.Prerelease != "" {
+			log.Debug("gentoo.skip_upload is auto and version is a prerelease")
+			continue
+		}
 		key := cfg.ID
 		g := groups[key]
 		if g == nil {
@@ -526,6 +530,15 @@ func (Pipe) Publish(ctx *context.Context) error {
 			Content: content,
 			Path:    filepath.ToSlash(artifact.MustExtra[string](*art, ebuildPathExtra)),
 		})
+	}
+
+	if len(groups) == 0 {
+		return nil
+	}
+
+	cl, err := client.New(ctx)
+	if err != nil {
+		return err
 	}
 
 	for _, g := range groups {
@@ -773,9 +786,17 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 				filesToCreate = append(filesToCreate, f)
 			}
-			for _, f := range filesToCreate {
-				if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
-					return err
+			if len(filesToCreate) > 0 {
+				if fc, ok := repoClient.(client.FilesCreator); ok {
+					if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
+						return err
+					}
+				} else {
+					for _, f := range filesToCreate {
+						if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
@@ -819,12 +840,15 @@ func gentooArch(goarch string) string {
 	}
 }
 
-func defaultPath(name, typ string) string {
+func defaultPath(name, category, typ string) string {
+	if category == "" {
+		category = "app-misc"
+	}
 	suffix := ""
 	if typ == "bin" {
 		suffix = "-bin"
 	}
-	return filepath.Join("app-misc", name+suffix, fmt.Sprintf("%s%s-{{ .Version }}.ebuild", name, suffix))
+	return filepath.Join(category, name+suffix, fmt.Sprintf("%s%s-{{ .Version }}.ebuild", name, suffix))
 }
 
 func hasCategory(path string) bool {
