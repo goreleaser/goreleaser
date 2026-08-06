@@ -644,6 +644,7 @@ func TestTemplateScenarios(t *testing.T) {
 	testCases := []struct {
 		name          string
 		installGroups []installGroup
+		doexe         []installItemData
 	}{
 		{
 			name: "scenario_1",
@@ -699,6 +700,13 @@ func TestTemplateScenarios(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "scenario_doexe",
+			doexe: []installItemData{
+				{Source: "custom_bin", Target: "opt/custom/custom_bin", Dir: "opt/custom", Base: "custom_bin"},
+				{Source: "default_bin", Target: "", Dir: "", Base: ""},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -728,6 +736,7 @@ func TestTemplateScenarios(t *testing.T) {
 				Systemd       []installItemData
 			}{
 				InstallGroups: tc.installGroups,
+				Doexe:         tc.doexe,
 				Bindir:        "/usr/bin",
 			}
 			var buf bytes.Buffer
