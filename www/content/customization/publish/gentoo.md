@@ -60,12 +60,17 @@ gentoo_overlay:
     # Default: false.
     skip_files_validation: false
 
-    # Whether the ebuild installs pre-compiled binary packages.
+    # Whether the ebuild installs pre-compiled binary packages (unpacking binary release artifacts).
     #
+    # Note: GoReleaser currently generates unpack-based binary ebuilds.
     # Required: must be true.
     bin: true
 
-    # Optional type of the package.
+    # The ebuild type variant.
+    #
+    # When set to "bin" (default), GoReleaser automatically appends a `-bin` suffix
+    # to the default package name and ebuild path (e.g. `app-misc/myproject-bin/myproject-bin-{{ .Version }}.ebuild`),
+    # and sets the default binary installation directory `bindir` to `/opt/bin`.
     #
     # Default: "bin".
     type: "bin"
