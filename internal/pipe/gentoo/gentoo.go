@@ -544,24 +544,25 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	return nil
 }
 
-func (Pipe) Publish(ctx *context.Context) error {
+type publishGroup struct {
+	cfg   config.Gentoo
+	files []client.RepoFile
+}
+
+func collectPublishGroups(ctx *context.Context) ([]*publishGroup, error) {
 	arts := ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.GentooEbuild),
 		artifact.ByType(artifact.GentooFile),
 	)).List()
 
-	type group struct {
-		cfg   config.Gentoo
-		files []client.RepoFile
-	}
-
-	groups := map[string]*group{}
+	groupMap := map[string]*publishGroup{}
+	var groups []*publishGroup
 
 	for _, art := range arts {
 		cfg := artifact.MustExtra[config.Gentoo](*art, ebuildExtra)
 		skip, err := tmpl.New(ctx).Apply(cfg.SkipUpload)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if strings.TrimSpace(skip) == "true" {
 			log.Debug("gentoo.skip_upload is true")
@@ -572,23 +573,305 @@ func (Pipe) Publish(ctx *context.Context) error {
 			continue
 		}
 		key := cfg.ID
-		g := groups[key]
+		g := groupMap[key]
 		if g == nil {
-			g = &group{cfg: cfg}
-			groups[key] = g
+			g = &publishGroup{cfg: cfg}
+			groupMap[key] = g
+			groups = append(groups, g)
 		}
 		content, err := os.ReadFile(art.Path)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		g.files = append(g.files, client.RepoFile{
 			Content: content,
 			Path:    filepath.ToSlash(artifact.MustExtra[string](*art, ebuildPathExtra)),
 		})
 	}
+	return groups, nil
+}
 
-	if len(groups) == 0 {
+func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, error) {
+	lister, ok := repoClient.(client.DirectoryLister)
+	if !ok || g.cfg.KeepVersions <= 0 || g.cfg.VersionRetentionStrategy == "" {
+		return nil, nil
+	}
+
+	dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
+	listRepo := repo
+	if g.cfg.Repository.PullRequest.Enabled {
+		listRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
+	}
+	names, err := lister.ListDir(ctx, listRepo, dir)
+	if err != nil {
+		return nil, err
+	}
+	var ebuilds []string
+	prefix := filepath.Base(dir) + "-"
+	for _, n := range names {
+		if strings.HasPrefix(n, prefix) && strings.HasSuffix(n, ".ebuild") {
+			ebuilds = append(ebuilds, n)
+		}
+	}
+	sort.Slice(ebuilds, func(i, j int) bool {
+		vI := parseGentooVersion(ebuilds[i], prefix)
+		vJ := parseGentooVersion(ebuilds[j], prefix)
+		if vI != nil && vJ != nil {
+			return vI.GreaterThan(vJ)
+		}
+		if vI != nil {
+			return true
+		}
+		if vJ != nil {
+			return false
+		}
+		return ebuilds[i] > ebuilds[j]
+	})
+
+	var newFiles []string
+	for _, f := range g.files {
+		name := filepath.Base(f.Path)
+		if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
+			newFiles = append(newFiles, name)
+		}
+	}
+
+	category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
+	metaCacheFiles := map[string]struct{}{}
+	cacheNames, err := lister.ListDir(ctx, listRepo, pathlib.Join("metadata", "md5-cache", category))
+	if err != nil && !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+		return nil, err
+	}
+	for _, name := range cacheNames {
+		metaCacheFiles[name] = struct{}{}
+	}
+
+	var deletedEbuilds []string
+	deleter := &ebuildDeleter{
+		dir:            dir,
+		category:       category,
+		metaCacheFiles: metaCacheFiles,
+		files:          &g.files,
+		deletedEbuilds: &deletedEbuilds,
+	}
+
+	if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
+		var allEbuilds []string
+		allEbuilds = append(allEbuilds, ebuilds...)
+		allEbuilds = append(allEbuilds, newFiles...)
+
+		maxVersions := map[string]*parsedGentooVersion{}
+		for _, n := range allEbuilds {
+			v := parseGentooVersion(n, prefix)
+			if v == nil {
+				continue
+			}
+			b := getVersionBucket(v)
+			if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
+				maxVersions[b] = v
+			}
+		}
+
+		groups := map[string][]string{}
+		for _, n := range ebuilds {
+			v := parseGentooVersion(n, prefix)
+			if v == nil {
+				groups["stable"] = append(groups["stable"], n)
+				continue
+			}
+			b := getVersionBucket(v)
+
+			violates := false
+			switch b {
+			case "alpha":
+				if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
+					(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+					(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+					violates = true
+				}
+			case "beta":
+				if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+					(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
+					violates = true
+				}
+			case "rc":
+				if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
+					violates = true
+				}
+			}
+
+			if violates {
+				deleter.Delete(n)
+			} else {
+				groups[b] = append(groups[b], n)
+			}
+		}
+
+		newCounts := countNewEbuilds(ebuilds, newFiles, func(f string) string {
+			v := parseGentooVersion(f, prefix)
+			if v == nil {
+				return "stable"
+			}
+			return getVersionBucket(v)
+		})
+
+		for b, bucketEbuilds := range groups {
+			allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
+			if len(bucketEbuilds) > allowedToKeep {
+				for _, n := range bucketEbuilds[allowedToKeep:] {
+					deleter.Delete(n)
+				}
+			}
+		}
+	} else if g.cfg.VersionRetentionStrategy == "keep_latest" {
+		newUniqueCount := 0
+		for _, n := range newFiles {
+			if !slices.Contains(ebuilds, n) {
+				newUniqueCount++
+			}
+		}
+		allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
+		if len(ebuilds) > allowedToKeep {
+			log.WithField("keep_versions", g.cfg.KeepVersions).
+				WithField("new_unique", newUniqueCount).
+				WithField("allowed_to_keep", allowedToKeep).
+				WithField("total_old", len(ebuilds)).
+				Debug("keeping latest versions")
+			for _, n := range ebuilds[allowedToKeep:] {
+				deleter.Delete(n)
+			}
+		}
+	}
+	return deletedEbuilds, nil
+}
+
+func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
+	msg, err := tmpl.New(ctx).Apply(g.cfg.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+	author, err := commitauthor.Get(ctx, g.cfg.CommitAuthor)
+	if err != nil {
+		return err
+	}
+	repo := client.RepoFromRef(g.cfg.Repository)
+
+	repoClient, err := client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
+	if err != nil {
+		return err
+	}
+
+	if g.cfg.Repository.PullRequest.Enabled {
+		base := client.Repo{
+			Name:   g.cfg.Repository.PullRequest.Base.Name,
+			Owner:  g.cfg.Repository.PullRequest.Base.Owner,
+			Branch: g.cfg.Repository.PullRequest.Base.Branch,
+		}
+		fscli, ok := repoClient.(client.ForkSyncer)
+		if ok {
+			if err := fscli.SyncFork(ctx, repo, base); err != nil {
+				log.WithError(err).Warn("could not sync fork")
+			}
+		}
+	}
+
+	deletedEbuilds, err := g.applyVersionRetention(ctx, repoClient, repo)
+	if err != nil {
+		return err
+	}
+
+	stateRepo := repo
+	if g.cfg.Repository.PullRequest.Enabled {
+		stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
+	}
+
+	settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+	if err != nil {
+		return err
+	}
+
+	metaCacheAllowed := true
+	if settings.hasCacheFormatsConfigured {
+		metaCacheAllowed = slices.Contains(settings.cacheFormats, "md5-dict") || slices.Contains(settings.cacheFormats, "md5-cache")
+	}
+
+	if g.cfg.MetaCache && !metaCacheAllowed {
+		log.Warnf("gentoo.meta_cache is true for %q, but overlay metadata/layout.conf disables cache-formats", g.cfg.ID)
+	}
+
+	var filteredFiles []client.RepoFile
+	for _, f := range g.files {
+		if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
+			continue
+		}
+		filteredFiles = append(filteredFiles, f)
+	}
+	g.files = filteredFiles
+	if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, stateRepo, &g.files, deletedEbuilds); err != nil {
+		return err
+	}
+
+	if g.cfg.Repository.Git.URL != "" {
+		if err := client.NewGitUploadClient(repo.Branch).CreateFiles(ctx, author, repo, msg, g.files); err != nil {
+			return err
+		}
+	} else if fc, ok := repoClient.(client.FilesCreator); ok {
+		err = fc.CreateFiles(ctx, author, repo, msg, g.files)
+		if err != nil {
+			return err
+		}
+	} else {
+		var filesToCreate []client.RepoFile
+		for _, f := range g.files {
+			if f.Delete {
+				if d, ok := repoClient.(client.FileDeleter); ok {
+					if err := d.DeleteFile(ctx, author, repo, f.Path, msg); err != nil {
+						return err
+					}
+				}
+				continue
+			}
+			filesToCreate = append(filesToCreate, f)
+		}
+		if len(filesToCreate) > 0 {
+			if fc, ok := repoClient.(client.FilesCreator); ok {
+				if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
+					return err
+				}
+			} else {
+				for _, f := range filesToCreate {
+					if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	if !g.cfg.Repository.PullRequest.Enabled {
 		return nil
+	}
+
+	base := client.Repo{
+		Name:   g.cfg.Repository.PullRequest.Base.Name,
+		Owner:  g.cfg.Repository.PullRequest.Base.Owner,
+		Branch: g.cfg.Repository.PullRequest.Base.Branch,
+	}
+	prClient, err := client.NewIfToken(ctx, repoClient, g.cfg.Repository.PullRequest.Token)
+	if err != nil {
+		return err
+	}
+	pcl, ok := prClient.(client.PullRequestOpener)
+	if !ok {
+		return errors.New("client does not support pull requests")
+	}
+	return pcl.OpenPullRequest(ctx, base, repo, msg, g.cfg.Repository.PullRequest.Draft)
+}
+
+func (Pipe) Publish(ctx *context.Context) error {
+	groups, err := collectPublishGroups(ctx)
+	if err != nil || len(groups) == 0 {
+		return err
 	}
 
 	cl, err := client.New(ctx)
@@ -597,270 +880,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	}
 
 	for _, g := range groups {
-		msg, err := tmpl.New(ctx).Apply(g.cfg.CommitMessageTemplate)
-		if err != nil {
-			return err
-		}
-		author, err := commitauthor.Get(ctx, g.cfg.CommitAuthor)
-		if err != nil {
-			return err
-		}
-		repo := client.RepoFromRef(g.cfg.Repository)
-
-		repoClient, err := client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
-		if err != nil {
-			return err
-		}
-
-		if g.cfg.Repository.PullRequest.Enabled {
-			base := client.Repo{
-				Name:   g.cfg.Repository.PullRequest.Base.Name,
-				Owner:  g.cfg.Repository.PullRequest.Base.Owner,
-				Branch: g.cfg.Repository.PullRequest.Base.Branch,
-			}
-			fscli, ok := repoClient.(client.ForkSyncer)
-			if ok {
-				if err := fscli.SyncFork(ctx, repo, base); err != nil {
-					log.WithError(err).Warn("could not sync fork")
-				}
-			}
-		}
-
-		var deletedEbuilds []string
-		// list existing ebuilds
-		if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.KeepVersions > 0 && g.cfg.VersionRetentionStrategy != "" {
-			dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
-			listRepo := repo
-			if g.cfg.Repository.PullRequest.Enabled {
-				listRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
-			}
-			names, err := lister.ListDir(ctx, listRepo, dir)
-			if err != nil {
-				return err
-			}
-			var ebuilds []string
-			prefix := filepath.Base(dir) + "-"
-			for _, n := range names {
-				if strings.HasPrefix(n, prefix) && strings.HasSuffix(n, ".ebuild") {
-					ebuilds = append(ebuilds, n)
-				}
-			}
-			sort.Slice(ebuilds, func(i, j int) bool {
-				vI := parseGentooVersion(ebuilds[i], prefix)
-				vJ := parseGentooVersion(ebuilds[j], prefix)
-				if vI != nil && vJ != nil {
-					return vI.GreaterThan(vJ)
-				}
-				if vI != nil {
-					return true
-				}
-				if vJ != nil {
-					return false
-				}
-				return ebuilds[i] > ebuilds[j]
-			})
-
-			var newFiles []string
-			for _, f := range g.files {
-				name := filepath.Base(f.Path)
-				if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
-					newFiles = append(newFiles, name)
-				}
-			}
-
-			category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
-			metaCacheFiles := map[string]struct{}{}
-			cacheNames, err := lister.ListDir(ctx, listRepo, pathlib.Join("metadata", "md5-cache", category))
-			if err != nil && !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
-				return err
-			}
-			for _, name := range cacheNames {
-				metaCacheFiles[name] = struct{}{}
-			}
-
-			deleter := &ebuildDeleter{
-				dir:            dir,
-				category:       category,
-				metaCacheFiles: metaCacheFiles,
-				files:          &g.files,
-				deletedEbuilds: &deletedEbuilds,
-			}
-
-			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
-				var allEbuilds []string
-				allEbuilds = append(allEbuilds, ebuilds...)
-				allEbuilds = append(allEbuilds, newFiles...)
-
-				maxVersions := map[string]*parsedGentooVersion{}
-				for _, n := range allEbuilds {
-					v := parseGentooVersion(n, prefix)
-					if v == nil {
-						continue
-					}
-					b := getVersionBucket(v)
-					if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
-						maxVersions[b] = v
-					}
-				}
-
-				groups := map[string][]string{}
-				for _, n := range ebuilds {
-					v := parseGentooVersion(n, prefix)
-					if v == nil {
-						groups["stable"] = append(groups["stable"], n)
-						continue
-					}
-					b := getVersionBucket(v)
-
-					violates := false
-					switch b {
-					case "alpha":
-						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
-							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
-							violates = true
-						}
-					case "beta":
-						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
-							violates = true
-						}
-					case "rc":
-						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
-							violates = true
-						}
-					}
-
-					if violates {
-						deleter.Delete(n)
-					} else {
-						groups[b] = append(groups[b], n)
-					}
-				}
-
-				newCounts := countNewEbuilds(ebuilds, newFiles, func(f string) string {
-					v := parseGentooVersion(f, prefix)
-					if v == nil {
-						return "stable"
-					}
-					return getVersionBucket(v)
-				})
-
-				for b, bucketEbuilds := range groups {
-					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
-					if len(bucketEbuilds) > allowedToKeep {
-						for _, n := range bucketEbuilds[allowedToKeep:] {
-							deleter.Delete(n)
-						}
-					}
-				}
-			} else if g.cfg.VersionRetentionStrategy == "keep_latest" {
-				newUniqueCount := 0
-				for _, n := range newFiles {
-					if !slices.Contains(ebuilds, n) {
-						newUniqueCount++
-					}
-				}
-				allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
-				if len(ebuilds) > allowedToKeep {
-					log.WithField("keep_versions", g.cfg.KeepVersions).
-						WithField("new_unique", newUniqueCount).
-						WithField("allowed_to_keep", allowedToKeep).
-						WithField("total_old", len(ebuilds)).
-						Debug("keeping latest versions")
-					for _, n := range ebuilds[allowedToKeep:] {
-						deleter.Delete(n)
-					}
-				}
-			}
-		}
-
-		stateRepo := repo
-		if g.cfg.Repository.PullRequest.Enabled {
-			stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
-		}
-
-		settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
-		if err != nil {
-			return err
-		}
-
-		metaCacheAllowed := true
-		if settings.hasCacheFormatsConfigured {
-			metaCacheAllowed = slices.Contains(settings.cacheFormats, "md5-dict") || slices.Contains(settings.cacheFormats, "md5-cache")
-		}
-
-		if g.cfg.MetaCache && !metaCacheAllowed {
-			log.Warnf("gentoo.meta_cache is true for %q, but overlay metadata/layout.conf disables cache-formats", g.cfg.ID)
-		}
-
-		var filteredFiles []client.RepoFile
-		for _, f := range g.files {
-			if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
-				continue
-			}
-			filteredFiles = append(filteredFiles, f)
-		}
-		g.files = filteredFiles
-		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, stateRepo, &g.files, deletedEbuilds); err != nil {
-			return err
-		}
-
-		if g.cfg.Repository.Git.URL != "" {
-			if err := client.NewGitUploadClient(repo.Branch).CreateFiles(ctx, author, repo, msg, g.files); err != nil {
-				return err
-			}
-		} else if fc, ok := repoClient.(client.FilesCreator); ok {
-			err = fc.CreateFiles(ctx, author, repo, msg, g.files)
-			if err != nil {
-				return err
-			}
-		} else {
-			var filesToCreate []client.RepoFile
-			for _, f := range g.files {
-				if f.Delete {
-					if d, ok := repoClient.(client.FileDeleter); ok {
-						if err := d.DeleteFile(ctx, author, repo, f.Path, msg); err != nil {
-							return err
-						}
-					}
-					continue
-				}
-				filesToCreate = append(filesToCreate, f)
-			}
-			if len(filesToCreate) > 0 {
-				if fc, ok := repoClient.(client.FilesCreator); ok {
-					if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
-						return err
-					}
-				} else {
-					for _, f := range filesToCreate {
-						if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-
-		if !g.cfg.Repository.PullRequest.Enabled {
-			continue
-		}
-
-		base := client.Repo{
-			Name:   g.cfg.Repository.PullRequest.Base.Name,
-			Owner:  g.cfg.Repository.PullRequest.Base.Owner,
-			Branch: g.cfg.Repository.PullRequest.Base.Branch,
-		}
-		prClient, err := client.NewIfToken(ctx, repoClient, g.cfg.Repository.PullRequest.Token)
-		if err != nil {
-			return err
-		}
-		pcl, ok := prClient.(client.PullRequestOpener)
-		if !ok {
-			return errors.New("client does not support pull requests")
-		}
-		if err := pcl.OpenPullRequest(ctx, base, repo, msg, g.cfg.Repository.PullRequest.Draft); err != nil {
+		if err := g.publish(ctx, cl); err != nil {
 			return err
 		}
 	}
