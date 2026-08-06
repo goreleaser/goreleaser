@@ -1160,7 +1160,7 @@ func TestMetaCache(t *testing.T) {
 }
 
 func TestEbuildDeleter(t *testing.T) {
-	t.Run("without metadata cache", func(t *testing.T) {
+	t.Run("without an existing metadata cache", func(t *testing.T) {
 		var files []client.RepoFile
 		var deleted []string
 		deleter := &ebuildDeleter{
@@ -1178,13 +1178,13 @@ func TestEbuildDeleter(t *testing.T) {
 		}}, files)
 	})
 
-	t.Run("with metadata cache", func(t *testing.T) {
+	t.Run("with an existing metadata cache", func(t *testing.T) {
 		var files []client.RepoFile
 		var deleted []string
 		deleter := &ebuildDeleter{
 			dir:            "app-misc/foo-bin",
 			category:       "app-misc",
-			metaCache:      true,
+			metaCacheFiles: map[string]struct{}{"foo-bin-1.0.0": {}},
 			files:          &files,
 			deletedEbuilds: &deleted,
 		}
