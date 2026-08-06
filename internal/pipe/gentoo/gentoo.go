@@ -45,6 +45,12 @@ const (
 //go:embed testdata/template.ebuild.tmpl
 var ebuildTemplate string
 
+//go:embed testdata/template.md5-cache.tmpl
+var metaCacheTemplate string
+
+//go:embed testdata/template.metadata.xml.tmpl
+var metadataXMLTemplate string
+
 type installData struct {
 	Source   string
 	Target   string
@@ -1165,17 +1171,25 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			}
 		}
 
-		marshaled, err := xml.MarshalIndent(meta, "", "\t")
-		if err != nil {
-			return err
+		useFlags := gentooUseFlags(cfg)
+		tmplData := struct {
+			config.Gentoo
+			UseFlags []config.GentooUseFlag
+		}{
+			Gentoo:   cfg,
+			UseFlags: make([]config.GentooUseFlag, len(useFlags)),
+		}
+		for i, f := range useFlags {
+			tmplData.UseFlags[i] = config.GentooUseFlag{
+				Flag:        strings.TrimLeft(f.Flag, "+-"),
+				Description: f.Description,
+			}
 		}
 
 		var buf bytes.Buffer
-		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-		buf.WriteString("<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
-		buf.Write(marshaled)
-		buf.WriteString("\n")
-
+		if err := template.Must(template.New("metadata.xml").Parse(metadataXMLTemplate)).Execute(&buf, tmplData); err != nil {
+			return err
+		}
 		*files = append(*files, client.RepoFile{
 			Content: buf.Bytes(),
 			Path:    metadataPath,
@@ -1456,18 +1470,27 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 	h := md5.Sum([]byte(ebuildContent))
 	md5Hex := fmt.Sprintf("%x", h)
 
-	var buf strings.Builder
-	buf.WriteString("DEFINED_PHASES=src_install src_unpack\n")
-	buf.WriteString("DESCRIPTION=" + d.Description + "\n")
-	buf.WriteString("EAPI=8\n")
-	buf.WriteString("HOMEPAGE=" + d.Homepage + "\n")
-	buf.WriteString("INHERITED=\n")
-	buf.WriteString("IUSE=" + strings.Join(useFlags, " ") + "\n")
-	buf.WriteString("KEYWORDS=" + d.Keywords + "\n")
-	buf.WriteString("LICENSE=" + d.License + "\n")
-	buf.WriteString("RESTRICT=\n")
-	buf.WriteString("SLOT=0\n")
-	buf.WriteString("SRC_URI=" + strings.Join(srcURIs, " ") + "\n")
-	buf.WriteString("_md5_=" + md5Hex + "\n")
+	tmplData := struct {
+		Description string
+		Homepage    string
+		IUSE        string
+		Keywords    string
+		License     string
+		SRC_URI     string
+		MD5         string
+	}{
+		Description: d.Description,
+		Homepage:    d.Homepage,
+		IUSE:        strings.Join(useFlags, " "),
+		Keywords:    d.Keywords,
+		License:     d.License,
+		SRC_URI:     strings.Join(srcURIs, " "),
+		MD5:         md5Hex,
+	}
+
+	var buf bytes.Buffer
+	if err := template.Must(template.New("md5-cache").Parse(metaCacheTemplate)).Execute(&buf, tmplData); err != nil {
+		return ""
+	}
 	return buf.String()
 }
