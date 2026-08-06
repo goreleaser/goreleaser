@@ -284,10 +284,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-		),
+		artifact.ByType(artifact.UploadableArchive),
 		artifact.OnlyReplacingUnibins,
 	}
 	if len(cfg.IDs) > 0 {
@@ -699,15 +696,13 @@ func (Pipe) Publish(ctx *context.Context) error {
 					}
 				}
 
-				newCounts := map[string]int{}
-				for _, f := range newFiles {
+				newCounts := countNewEbuilds(ebuilds, newFiles, func(f string) string {
 					v := parseVersion(f)
-					b := "stable"
-					if v != nil {
-						b = getBucket(v)
+					if v == nil {
+						return "stable"
 					}
-					newCounts[b]++
-				}
+					return getBucket(v)
+				})
 
 				for b, bucketEbuilds := range groups {
 					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
@@ -1096,49 +1091,12 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		deletedVersions = append(deletedVersions, v)
 	}
 
-	var allEbuildContents [][]byte
-	failedToDownloadEbuilds := false
-	if dl, ok := repoClient.(client.FileDownloader); ok {
-		// New files
-		for _, f := range *files {
-			if !f.Delete && strings.HasSuffix(f.Path, ".ebuild") {
-				allEbuildContents = append(allEbuildContents, f.Content)
-			}
-		}
-
-		// Kept ebuilds
-		for _, line := range manifestLines {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 && fields[0] == "EBUILD" {
-				filename := fields[1]
-				isDeleted := false
-				for _, dv := range deletedVersions {
-					if filename == prefix+dv+".ebuild" {
-						isDeleted = true
-						break
-					}
-				}
-				if !isDeleted {
-					content, err := dl.DownloadFile(ctx, repo, pathlib.Join(dir, filename))
-					if err == nil {
-						allEbuildContents = append(allEbuildContents, content)
-					} else {
-						failedToDownloadEbuilds = true
-						log.WithError(err).Warnf("failed to download kept ebuild %s, disabling files/ pruning", filename)
-						break
-					}
-				}
-			}
-		}
-	} else {
-		failedToDownloadEbuilds = true
-	}
-
-	var newFilesBaseNames []string
+	newManifestFiles := map[string]struct{}{}
 	if !thinManifests {
 		for _, f := range *files {
 			if !f.Delete {
-				newFilesBaseNames = append(newFilesBaseNames, filepath.Base(f.Path))
+				recordType, filename := manifestFileInfo(f.Path, dir)
+				newManifestFiles[recordType+":"+filename] = struct{}{}
 			}
 		}
 	}
@@ -1194,25 +1152,8 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 					break
 				}
 			}
-			if !removed && slices.Contains(newFilesBaseNames, filename) {
-				removed = true
-			}
-			if !removed && recordType == "AUX" && !failedToDownloadEbuilds {
-				// prune unused aux files
-				used := false
-				for _, ebc := range allEbuildContents {
-					if bytes.Contains(ebc, []byte(filename)) {
-						used = true
-						break
-					}
-				}
-				if !used {
-					removed = true
-					*files = append(*files, client.RepoFile{
-						Path:   pathlib.Join(dir, "files", filename),
-						Delete: true,
-					})
-				}
+			if !removed {
+				_, removed = newManifestFiles[recordType+":"+filename]
 			}
 			if !removed {
 				newManifestLines = append(newManifestLines, line)
@@ -1246,15 +1187,9 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 				continue
 			}
 
-			recordType := "MISC"
-			basename := filepath.Base(f.Path)
-			if strings.HasSuffix(f.Path, ".ebuild") {
-				recordType = "EBUILD"
-			} else if strings.Contains(f.Path, "/files/") || strings.HasPrefix(f.Path, "files/") {
-				recordType = "AUX"
-			}
+			recordType, filename := manifestFileInfo(f.Path, dir)
 
-			line, err := generateManifestLine(recordType, basename, f.Path, f.Content, manifestHashes)
+			line, err := generateManifestLine(recordType, filename, f.Path, f.Content, manifestHashes)
 			if err != nil {
 				return err
 			}
@@ -1271,4 +1206,26 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		})
 	}
 	return nil
+}
+
+func manifestFileInfo(filePath, packageDir string) (string, string) {
+	path := filepath.ToSlash(filePath)
+	filesDir := pathlib.Join(packageDir, "files")
+	if path == filesDir || strings.HasPrefix(path, filesDir+"/") {
+		return "AUX", strings.TrimPrefix(path, filesDir+"/")
+	}
+	if strings.HasSuffix(path, ".ebuild") {
+		return "EBUILD", pathlib.Base(path)
+	}
+	return "MISC", pathlib.Base(path)
+}
+
+func countNewEbuilds(existing, newFiles []string, bucket func(string) string) map[string]int {
+	counts := map[string]int{}
+	for _, file := range newFiles {
+		if !slices.Contains(existing, file) {
+			counts[bucket(file)]++
+		}
+	}
+	return counts
 }
