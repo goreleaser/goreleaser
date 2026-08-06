@@ -169,6 +169,9 @@ type extraFileValidator struct {
 }
 
 func (v *extraFileValidator) inArchives(fileName string) bool {
+	if len(v.arches) == 0 {
+		return false
+	}
 	for _, art := range v.arches {
 		found := false
 		if files, ok := art.Extra[artifact.ExtraFiles].([]string); ok {
@@ -194,6 +197,27 @@ func (v *extraFileValidator) inArchives(fileName string) bool {
 		}
 	}
 	return true
+}
+
+func NewExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact) *extraFileValidator {
+	return &extraFileValidator{
+		cfg:    cfg,
+		arches: arches,
+	}
+}
+
+func (v *extraFileValidator) Filter(extraFiles map[string]string) error {
+	for name, src := range extraFiles {
+		if v.inArchives(name) {
+			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
+			delete(extraFiles, name)
+			continue
+		}
+		if err := v.validate(name, src); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (v *extraFileValidator) validate(name, src string) error {
@@ -261,7 +285,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("no linux archives found")
 	}
 
-	validator := &extraFileValidator{cfg: cfg, arches: arches}
+	validator := NewExtraFileValidator(cfg, arches)
 
 	type archData struct {
 		Keyword string
@@ -332,15 +356,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	for name, src := range extraFiles {
-		if validator.inArchives(name) {
-			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
-			delete(extraFiles, name)
-			continue
-		}
-		if err := validator.validate(name, src); err != nil {
-			return err
-		}
+	if err := validator.Filter(extraFiles); err != nil {
+		return err
 	}
 
 	processStringArray := func(arr []string) []string {
