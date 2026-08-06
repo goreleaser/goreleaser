@@ -1235,3 +1235,80 @@ func TestEbuildDeleter(t *testing.T) {
 		require.True(t, files[1].Delete)
 	})
 }
+
+func TestEbuildData(t *testing.T) {
+	t.Run("Validate invalid dosym", func(t *testing.T) {
+		data := ebuildData{
+			Dosym: []installItemData{{Source: "foo"}},
+		}
+		require.EqualError(t, data.Validate(), "gentoo.dosym requires a destination")
+	})
+
+	t.Run("Validate valid dosym", func(t *testing.T) {
+		data := ebuildData{
+			Dosym: []installItemData{{Source: "foo", Target: "bar"}},
+		}
+		require.NoError(t, data.Validate())
+	})
+
+	t.Run("SortedUseFlags", func(t *testing.T) {
+		data := ebuildData{
+			UseFlags: []config.GentooUseFlag{
+				{Flag: "systemd"},
+				{Flag: "doc"},
+				{Flag: "systemd"},
+				{Flag: ""},
+			},
+		}
+		flags := data.SortedUseFlags()
+		require.Equal(t, []string{"doc", "systemd"}, flags)
+	})
+
+	t.Run("FormattedSrcURIs", func(t *testing.T) {
+		data := ebuildData{
+			Archs: []archData{
+				{Keyword: "amd64", URI: "https://example.com/foo.tar.gz"},
+				{Keyword: "arm64", URI: "https://example.com/foo-arm64.tar.gz"},
+				{Keyword: "", URI: "invalid"},
+			},
+		}
+		uris := data.FormattedSrcURIs()
+		require.Equal(t, []string{
+			"amd64? ( https://example.com/foo.tar.gz )",
+			"arm64? ( https://example.com/foo-arm64.tar.gz )",
+		}, uris)
+	})
+
+	t.Run("RenderEbuild", func(t *testing.T) {
+		data := ebuildData{
+			Name:        "foo",
+			Description: "Foo package",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			Keywords:    "amd64",
+		}
+		content, err := data.RenderEbuild()
+		require.NoError(t, err)
+		require.Contains(t, content, `DESCRIPTION="Foo package"`)
+		require.Contains(t, content, `HOMEPAGE="https://example.com"`)
+	})
+
+	t.Run("RenderMetaCache", func(t *testing.T) {
+		data := ebuildData{
+			Description: "Foo package",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			Keywords:    "amd64",
+			UseFlags:    []config.GentooUseFlag{{Flag: "systemd"}},
+			Archs: []archData{
+				{Keyword: "amd64", URI: "https://example.com/foo.tar.gz"},
+			},
+		}
+		meta, err := data.RenderMetaCache("ebuild content sample")
+		require.NoError(t, err)
+		require.Contains(t, meta, "DESCRIPTION=Foo package")
+		require.Contains(t, meta, "IUSE=systemd")
+		require.Contains(t, meta, "SRC_URI=amd64? ( https://example.com/foo.tar.gz )")
+		require.Contains(t, meta, "_md5_=")
+	})
+}

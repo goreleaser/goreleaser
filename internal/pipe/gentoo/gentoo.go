@@ -462,31 +462,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	useFlags := gentooUseFlags(cfg)
 
-	data := struct {
-		Name          string
-		Description   string
-		Homepage      string
-		License       string
-		Keywords      string
-		Bindir        string
-		ExtraInstall  string
-		Archs         []archData
-		InstallGroups []installGroup
-		UseFlags      []config.GentooUseFlag
-		Dobin         []installItemData
-		Doconfd       []installItemData
-		Dodir         []string
-		Dodoc         []string
-		Doenvd        []installItemData
-		Doexe         []installItemData
-		Doheader      []installItemData
-		Doinitd       []installItemData
-		Doins         []installItemData
-		Doman         []string
-		Dosbin        []installItemData
-		Dosym         []installItemData
-		Systemd       []installItemData
-	}{
+	data := ebuildData{
 		Name:          cfg.Name,
 		Description:   cfg.Description,
 		Homepage:      cfg.Homepage,
@@ -512,17 +488,14 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Systemd:       ef.buildInstallItems(cfg.Systemd),
 	}
 
-	for _, sym := range data.Dosym {
-		if sym.Target == "" {
-			return errors.New("gentoo.dosym requires a destination")
-		}
-	}
-
-	var buf bytes.Buffer
-	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, data); err != nil {
+	if err := data.Validate(); err != nil {
 		return err
 	}
-	content := buf.String()
+
+	content, err := data.RenderEbuild()
+	if err != nil {
+		return err
+	}
 
 	log.WithField("ebuild", path).Info("writing")
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
@@ -1468,35 +1441,50 @@ func countNewEbuilds(existing, newFiles []string, bucket func(string) string) ma
 	return counts
 }
 
-func generateMetaCacheContent(data any, ebuildContent string) string {
-	d, ok := data.(struct {
-		Name          string
-		Description   string
-		Homepage      string
-		License       string
-		Keywords      string
-		Bindir        string
-		ExtraInstall  string
-		Archs         []archData
-		InstallGroups []installGroup
-		UseFlags      []config.GentooUseFlag
-		Dobin         []installItemData
-		Doconfd       []installItemData
-		Dodir         []string
-		Dodoc         []string
-		Doenvd        []installItemData
-		Doexe         []installItemData
-		Doheader      []installItemData
-		Doinitd       []installItemData
-		Doins         []installItemData
-		Doman         []string
-		Dosbin        []installItemData
-		Dosym         []installItemData
-		Systemd       []installItemData
-	})
-	if !ok {
-		return ""
+type ebuildData struct {
+	Name          string
+	Description   string
+	Homepage      string
+	License       string
+	Keywords      string
+	Bindir        string
+	ExtraInstall  string
+	Archs         []archData
+	InstallGroups []installGroup
+	UseFlags      []config.GentooUseFlag
+	Dobin         []installItemData
+	Doconfd       []installItemData
+	Dodir         []string
+	Dodoc         []string
+	Doenvd        []installItemData
+	Doexe         []installItemData
+	Doheader      []installItemData
+	Doinitd       []installItemData
+	Doins         []installItemData
+	Doman         []string
+	Dosbin        []installItemData
+	Dosym         []installItemData
+	Systemd       []installItemData
+}
+
+func (d ebuildData) Validate() error {
+	for _, sym := range d.Dosym {
+		if sym.Target == "" {
+			return errors.New("gentoo.dosym requires a destination")
+		}
 	}
+	return nil
+}
+
+func (d ebuildData) RenderEbuild() (string, error) {
+	var buf bytes.Buffer
+	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, d); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func (d ebuildData) SortedUseFlags() []string {
 	var useFlags []string
 	for _, flag := range d.UseFlags {
 		if flag.Flag != "" {
@@ -1504,15 +1492,20 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 		}
 	}
 	slices.Sort(useFlags)
-	useFlags = slices.Compact(useFlags)
+	return slices.Compact(useFlags)
+}
 
+func (d ebuildData) FormattedSrcURIs() []string {
 	var srcURIs []string
 	for _, art := range d.Archs {
 		if art.Keyword != "" && art.URI != "" {
 			srcURIs = append(srcURIs, fmt.Sprintf("%s? ( %s )", art.Keyword, art.URI))
 		}
 	}
+	return srcURIs
+}
 
+func (d ebuildData) RenderMetaCache(ebuildContent string) (string, error) {
 	h := md5.Sum([]byte(ebuildContent))
 	md5Hex := hex.EncodeToString(h[:])
 
@@ -1527,16 +1520,24 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 	}{
 		Description: d.Description,
 		Homepage:    d.Homepage,
-		IUSE:        strings.Join(useFlags, " "),
+		IUSE:        strings.Join(d.SortedUseFlags(), " "),
 		Keywords:    d.Keywords,
 		License:     d.License,
-		SrcURI:      strings.Join(srcURIs, " "),
+		SrcURI:      strings.Join(d.FormattedSrcURIs(), " "),
 		MD5:         md5Hex,
 	}
 
 	var buf bytes.Buffer
 	if err := template.Must(template.New("md5-cache").Parse(metaCacheTemplate)).Execute(&buf, tmplData); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func generateMetaCacheContent(data ebuildData, ebuildContent string) string {
+	meta, err := data.RenderMetaCache(ebuildContent)
+	if err != nil {
 		return ""
 	}
-	return buf.String()
+	return meta
 }
