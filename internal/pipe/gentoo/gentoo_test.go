@@ -1342,3 +1342,32 @@ func TestInstallExtraFiles(t *testing.T) {
 	require.Equal(t, "files/foo.conf", arts[0].Name)
 	require.Equal(t, artifact.GentooFile, arts[0].Type)
 }
+
+func TestGentooMetadata(t *testing.T) {
+	t.Run("AddMaintainers valid and empty email", func(t *testing.T) {
+		var meta gentooMetadata
+		err := meta.AddMaintainers([]config.GentooMaintainer{
+			{Name: "Alice", Email: "alice@example.com"},
+		})
+		require.NoError(t, err)
+		require.Len(t, meta.Maintainers, 1)
+		require.Equal(t, "alice@example.com", meta.Maintainers[0].Email)
+
+		err = meta.AddMaintainers([]config.GentooMaintainer{{Name: "Invalid"}})
+		require.EqualError(t, err, "gentoo maintainer email is required")
+	})
+
+	t.Run("AddUseFlags and SetUpstream and Marshal", func(t *testing.T) {
+		var meta gentooMetadata
+		meta.AddUseFlags([]config.GentooUseFlag{
+			{Flag: "systemd", Description: "Enable systemd"},
+		})
+		meta.SetUpstream("https://bugs.example.com", "https://example.com/doc")
+
+		content, err := meta.Marshal()
+		require.NoError(t, err)
+		require.Contains(t, string(content), `<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">`)
+		require.Contains(t, string(content), `<flag name="systemd">Enable systemd</flag>`)
+		require.Contains(t, string(content), `<bugs-to>https://bugs.example.com</bugs-to>`)
+	})
+}

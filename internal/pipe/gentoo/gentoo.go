@@ -49,9 +49,6 @@ var ebuildTemplate string
 //go:embed templates/md5-cache.tmpl
 var metaCacheTemplate string
 
-//go:embed templates/metadata.xml.tmpl
-var metadataXMLTemplate string
-
 type installData struct {
 	Source   string
 	Target   string
@@ -1101,47 +1098,6 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	manifestPath := pathlib.Join(dir, "Manifest")
 
 	if len(cfg.Maintainers) > 0 || cfg.BugsTo != "" || cfg.Homepage != "" || len(cfg.UseFlags) > 0 {
-		type innerNode struct {
-			XMLName xml.Name
-			Content string     `xml:",innerxml"`
-			Attrs   []xml.Attr `xml:",any,attr"`
-		}
-		type gentooMaintainer struct {
-			XMLName xml.Name    `xml:"maintainer"`
-			Type    string      `xml:"type,attr,omitempty"`
-			Email   string      `xml:"email,omitempty"`
-			Name    string      `xml:"name,omitempty"`
-			Attrs   []xml.Attr  `xml:",any,attr"`
-			Nodes   []innerNode `xml:",any"`
-		}
-		type gentooUpstream struct {
-			XMLName xml.Name    `xml:"upstream"`
-			BugsTo  string      `xml:"bugs-to,omitempty"`
-			Doc     string      `xml:"doc,omitempty"`
-			Attrs   []xml.Attr  `xml:",any,attr"`
-			Nodes   []innerNode `xml:",any"`
-		}
-		type gentooUseFlag struct {
-			XMLName xml.Name   `xml:"flag"`
-			Name    string     `xml:"name,attr"`
-			Value   string     `xml:",chardata"`
-			Attrs   []xml.Attr `xml:",any,attr"`
-		}
-		type gentooUse struct {
-			XMLName xml.Name        `xml:"use"`
-			Flags   []gentooUseFlag `xml:"flag"`
-			Attrs   []xml.Attr      `xml:",any,attr"`
-			Nodes   []innerNode     `xml:",any"`
-		}
-		type gentooMetadata struct {
-			XMLName     xml.Name           `xml:"pkgmetadata"`
-			Attrs       []xml.Attr         `xml:",any,attr"`
-			Maintainers []gentooMaintainer `xml:"maintainer"`
-			Use         *gentooUse         `xml:"use,omitempty"`
-			Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
-			InnerNodes  []innerNode        `xml:",any"`
-		}
-
 		meta := gentooMetadata{}
 		if dl, ok := repoClient.(client.FileDownloader); ok {
 			content, err := dl.DownloadFile(ctx, repo, metadataPath)
@@ -1151,93 +1107,19 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 				return fmt.Errorf("failed to download metadata.xml: %w", err)
 			}
 		}
-		if meta.Use == nil {
-			meta.Use = &gentooUse{}
-		}
 
-		configuredFlags := make(map[string]string)
-		configuredFlags["doc"] = "Install README man page and other docs"
-		for _, flag := range cfg.UseFlags {
-			if flag.Description != "" {
-				configuredFlags[strings.TrimLeft(flag.Flag, "+-")] = flag.Description
-			}
+		meta.AddUseFlags(cfg.UseFlags)
+		if err := meta.AddMaintainers(cfg.Maintainers); err != nil {
+			return err
 		}
+		meta.SetUpstream(cfg.BugsTo, cfg.Homepage)
 
-		var configuredFlagNames []string
-		for k := range configuredFlags {
-			configuredFlagNames = append(configuredFlagNames, k)
-		}
-		sort.Strings(configuredFlagNames)
-
-		for _, k := range configuredFlagNames {
-			v := configuredFlags[k]
-			exists := false
-			for _, ef := range meta.Use.Flags {
-				if ef.Name == k {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				meta.Use.Flags = append(meta.Use.Flags, gentooUseFlag{
-					Name:  k,
-					Value: v,
-				})
-			}
-		}
-
-		for _, m := range cfg.Maintainers {
-			if m.Email == "" {
-				return errors.New("gentoo maintainer email is required")
-			}
-			exists := false
-			for _, em := range meta.Maintainers {
-				if em.Email == m.Email {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				meta.Maintainers = append(meta.Maintainers, gentooMaintainer{
-					Type:  "person",
-					Email: m.Email,
-					Name:  m.Name,
-				})
-			}
-		}
-		if cfg.BugsTo != "" || cfg.Homepage != "" {
-			if meta.Upstream == nil {
-				meta.Upstream = &gentooUpstream{}
-			}
-			if cfg.BugsTo != "" {
-				meta.Upstream.BugsTo = cfg.BugsTo
-			}
-			if cfg.Homepage != "" {
-				meta.Upstream.Doc = cfg.Homepage
-			}
-		}
-
-		useFlags := gentooUseFlags(cfg)
-		tmplData := struct {
-			config.Gentoo
-			UseFlags []config.GentooUseFlag
-		}{
-			Gentoo:   cfg,
-			UseFlags: make([]config.GentooUseFlag, len(useFlags)),
-		}
-		for i, f := range useFlags {
-			tmplData.UseFlags[i] = config.GentooUseFlag{
-				Flag:        strings.TrimLeft(f.Flag, "+-"),
-				Description: f.Description,
-			}
-		}
-
-		var buf bytes.Buffer
-		if err := template.Must(template.New("metadata.xml").Parse(metadataXMLTemplate)).Execute(&buf, tmplData); err != nil {
+		content, err := meta.Marshal()
+		if err != nil {
 			return err
 		}
 		*files = append(*files, client.RepoFile{
-			Content: buf.Bytes(),
+			Content: content,
 			Path:    metadataPath,
 		})
 	}
@@ -1567,4 +1449,130 @@ func generateMetaCacheContent(data ebuildData, ebuildContent string) string {
 		return ""
 	}
 	return meta
+}
+
+type gentooInnerNode struct {
+	XMLName xml.Name
+	Content string            `xml:",chardata"`
+	Attrs   []xml.Attr        `xml:",any,attr"`
+	Nodes   []gentooInnerNode `xml:",any"`
+}
+
+type gentooMaintainer struct {
+	Type  string `xml:"type,attr,omitempty"`
+	Email string `xml:"email"`
+	Name  string `xml:"name,omitempty"`
+}
+
+type gentooUpstream struct {
+	BugsTo string            `xml:"bugs-to,omitempty"`
+	Doc    string            `xml:"doc,omitempty"`
+	Attrs  []xml.Attr        `xml:",any,attr"`
+	Nodes  []gentooInnerNode `xml:",any"`
+}
+
+type gentooUseFlag struct {
+	XMLName xml.Name   `xml:"flag"`
+	Name    string     `xml:"name,attr"`
+	Value   string     `xml:",chardata"`
+	Attrs   []xml.Attr `xml:",any,attr"`
+}
+
+type gentooUse struct {
+	XMLName xml.Name          `xml:"use"`
+	Flags   []gentooUseFlag   `xml:"flag"`
+	Attrs   []xml.Attr        `xml:",any,attr"`
+	Nodes   []gentooInnerNode `xml:",any"`
+}
+
+type gentooMetadata struct {
+	XMLName     xml.Name           `xml:"pkgmetadata"`
+	Attrs       []xml.Attr         `xml:",any,attr"`
+	Maintainers []gentooMaintainer `xml:"maintainer"`
+	Use         *gentooUse         `xml:"use,omitempty"`
+	Upstream    *gentooUpstream    `xml:"upstream,omitempty"`
+	InnerNodes  []gentooInnerNode  `xml:",any"`
+}
+
+func (m *gentooMetadata) AddMaintainers(maintainers []config.GentooMaintainer) error {
+	for _, main := range maintainers {
+		if main.Email == "" {
+			return errors.New("gentoo maintainer email is required")
+		}
+		exists := false
+		for _, em := range m.Maintainers {
+			if em.Email == main.Email {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			m.Maintainers = append(m.Maintainers, gentooMaintainer{
+				Type:  "person",
+				Email: main.Email,
+				Name:  main.Name,
+			})
+		}
+	}
+	return nil
+}
+
+func (m *gentooMetadata) AddUseFlags(flags []config.GentooUseFlag) {
+	if m.Use == nil {
+		m.Use = &gentooUse{}
+	}
+	configuredFlags := make(map[string]string)
+	configuredFlags["doc"] = "Install README man page and other docs"
+	for _, flag := range flags {
+		if flag.Description != "" {
+			configuredFlags[strings.TrimLeft(flag.Flag, "+-")] = flag.Description
+		}
+	}
+
+	var configuredFlagNames []string
+	for k := range configuredFlags {
+		configuredFlagNames = append(configuredFlagNames, k)
+	}
+	slices.Sort(configuredFlagNames)
+
+	for _, k := range configuredFlagNames {
+		v := configuredFlags[k]
+		exists := false
+		for _, ef := range m.Use.Flags {
+			if ef.Name == k {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			m.Use.Flags = append(m.Use.Flags, gentooUseFlag{
+				Name:  k,
+				Value: v,
+			})
+		}
+	}
+}
+
+func (m *gentooMetadata) SetUpstream(bugsTo, homepage string) {
+	if bugsTo == "" && homepage == "" {
+		return
+	}
+	if m.Upstream == nil {
+		m.Upstream = &gentooUpstream{}
+	}
+	if bugsTo != "" {
+		m.Upstream.BugsTo = bugsTo
+	}
+	if homepage != "" {
+		m.Upstream.Doc = homepage
+	}
+}
+
+func (m *gentooMetadata) Marshal() ([]byte, error) {
+	content, err := xml.MarshalIndent(m, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+	header := []byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
+	return append(header, append(content, '\n')...), nil
 }
