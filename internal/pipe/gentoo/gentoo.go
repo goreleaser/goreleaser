@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	_ "embed"
+	"encoding/hex"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -826,7 +827,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 		var filteredFiles []client.RepoFile
 		for _, f := range g.files {
-			if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && !(g.cfg.MetaCache && metaCacheAllowed) {
+			if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
 				continue
 			}
 			filteredFiles = append(filteredFiles, f)
@@ -1376,7 +1377,7 @@ func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient cli
 	if err != nil {
 		return settings, fmt.Errorf("failed to download layout.conf: %w", err)
 	}
-	for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+	for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
 		key, value, ok := strings.Cut(strings.TrimSpace(string(lineB)), "=")
 		if !ok {
 			continue
@@ -1481,7 +1482,7 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 	}
 
 	h := md5.Sum([]byte(ebuildContent))
-	md5Hex := fmt.Sprintf("%x", h)
+	md5Hex := hex.EncodeToString(h[:])
 
 	tmplData := struct {
 		Description string
@@ -1489,7 +1490,7 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 		IUSE        string
 		Keywords    string
 		License     string
-		SRC_URI     string
+		SrcURI      string
 		MD5         string
 	}{
 		Description: d.Description,
@@ -1497,7 +1498,7 @@ func generateMetaCacheContent(data any, ebuildContent string) string {
 		IUSE:        strings.Join(useFlags, " "),
 		Keywords:    d.Keywords,
 		License:     d.License,
-		SRC_URI:     strings.Join(srcURIs, " "),
+		SrcURI:      strings.Join(srcURIs, " "),
 		MD5:         md5Hex,
 	}
 
