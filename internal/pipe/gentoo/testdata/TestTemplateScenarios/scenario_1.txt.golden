@@ -14,6 +14,7 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
+  exeinto /usr/bin
   doexe "prog1" || die "Failed to install binary"
   doexe "prog2" || die "Failed to install binary"
   if use doc; then

@@ -93,8 +93,10 @@ src_install() {
 {{- range .Doexe }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
+  exeinto "{{ .Dir }}"
   newexe "{{ .Source }}" "{{ .Base }}"
 {{- else }}
+  exeinto {{ $.Bindir }}
   doexe "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}

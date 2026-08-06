@@ -14,6 +14,7 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
+  exeinto /usr/bin
   if use amd64; then
     newexe "prog1_x86" "prog1" || die "Failed to install binary"
   fi

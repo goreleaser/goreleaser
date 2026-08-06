@@ -728,6 +728,7 @@ func TestTemplateScenarios(t *testing.T) {
 				Systemd       []installItemData
 			}{
 				InstallGroups: tc.installGroups,
+				Bindir:        "/usr/bin",
 			}
 			var buf bytes.Buffer
 			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
