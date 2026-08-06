@@ -30,12 +30,18 @@ gentoo_overlay:
       - foo
       - bar
 
-    # The ebuild's relative path within the repository.
-    # Must include category and package name (e.g. app-misc/myproject-bin/myproject-bin-{{ .Version }}.ebuild).
+    # Optional Gentoo category for the package (e.g. app-admin, dev-util).
     #
-    # Default: "app-misc/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild" (for type "bin") or "app-misc/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild".
+    # Default: "app-misc".
     # Templates: allowed.
-    path: "app-misc/myproject-bin/myproject-bin-{{ .Version }}.ebuild"
+    category: app-admin
+
+    # The ebuild's relative path within the repository.
+    # Must include category and package name (e.g. app-admin/myproject-bin/myproject-bin-{{ .Version }}.ebuild).
+    #
+    # Default: "{{ .Category }}/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild" (for type "bin") or "{{ .Category }}/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild".
+    # Templates: allowed.
+    path: "app-admin/myproject-bin/myproject-bin-{{ .Version }}.ebuild"
 
     # Commit message template.
     #

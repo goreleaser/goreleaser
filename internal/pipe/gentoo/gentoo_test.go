@@ -299,6 +299,19 @@ func TestDefaultSetsPath(t *testing.T) {
 	require.Equal(t, filepath.Join("app-misc", "foo-bin", "foo-bin-{{ .Version }}.ebuild"), ctx.Config.Gentoos[0].Path)
 }
 
+func TestDefaultSetsPathWithCategory(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Category: "app-admin",
+			Bin:      true,
+			License:  "MIT",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, filepath.Join("app-admin", "foo-bin", "foo-bin-{{ .Version }}.ebuild"), ctx.Config.Gentoos[0].Path)
+}
+
 func TestDefaultRequiresLicense(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",

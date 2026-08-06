@@ -453,6 +453,7 @@ type Gentoo struct {
 	ID                       string              `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                      []string            `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Name                     string              `yaml:"name,omitempty" json:"name,omitempty"`
+	Category                 string              `yaml:"category,omitempty" json:"category,omitempty"`
 	Path                     string              `yaml:"path,omitempty" json:"path,omitempty"`
 	Repository               RepoRef             `yaml:"repository,omitempty" json:"repository,omitempty"`
 	CommitAuthor             CommitAuthor        `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
