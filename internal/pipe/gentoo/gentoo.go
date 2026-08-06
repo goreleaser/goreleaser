@@ -42,13 +42,13 @@ const (
 	ebuildMetaCache = "GentooMetaCache"
 )
 
-//go:embed testdata/template.ebuild.tmpl
+//go:embed templates/ebuild.tmpl
 var ebuildTemplate string
 
-//go:embed testdata/template.md5-cache.tmpl
+//go:embed templates/md5-cache.tmpl
 var metaCacheTemplate string
 
-//go:embed testdata/template.metadata.xml.tmpl
+//go:embed templates/metadata.xml.tmpl
 var metadataXMLTemplate string
 
 type installData struct {
