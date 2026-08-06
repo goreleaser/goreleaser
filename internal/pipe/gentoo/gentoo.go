@@ -126,7 +126,6 @@ func getVersionBucket(v *parsedGentooVersion) string {
 type ebuildDeleter struct {
 	dir            string
 	category       string
-	metaCacheFiles map[string]struct{}
 	files          *[]client.RepoFile
 	deletedEbuilds *[]string
 }
@@ -135,9 +134,6 @@ func (d *ebuildDeleter) Delete(ebuildName string) {
 	*d.files = append(*d.files, client.RepoFile{Path: pathlib.Join(d.dir, ebuildName), Delete: true})
 	*d.deletedEbuilds = append(*d.deletedEbuilds, ebuildName)
 	md5Name := strings.TrimSuffix(ebuildName, ".ebuild")
-	if _, ok := d.metaCacheFiles[md5Name]; !ok {
-		return
-	}
 	md5CachePath := pathlib.Join("metadata", "md5-cache", d.category, md5Name)
 	*d.files = append(*d.files, client.RepoFile{Path: md5CachePath, Delete: true})
 }
@@ -714,20 +710,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 			}
 
-			metaCacheFiles := map[string]struct{}{}
-			cacheDir := pathlib.Join("metadata", "md5-cache", strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0])
-			cacheNames, err := lister.ListDir(ctx, listRepo, cacheDir)
-			if err != nil && !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
-				return err
-			}
-			for _, name := range cacheNames {
-				metaCacheFiles[name] = struct{}{}
-			}
-
 			deleter := &ebuildDeleter{
 				dir:            dir,
 				category:       strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0],
-				metaCacheFiles: metaCacheFiles,
 				files:          &g.files,
 				deletedEbuilds: &deletedEbuilds,
 			}

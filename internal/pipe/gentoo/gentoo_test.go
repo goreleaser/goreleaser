@@ -1160,43 +1160,22 @@ func TestMetaCache(t *testing.T) {
 }
 
 func TestEbuildDeleter(t *testing.T) {
-	t.Run("without an existing metadata cache", func(t *testing.T) {
-		var files []client.RepoFile
-		var deleted []string
-		deleter := &ebuildDeleter{
-			dir:            "app-misc/foo-bin",
-			files:          &files,
-			deletedEbuilds: &deleted,
-		}
+	var files []client.RepoFile
+	var deleted []string
+	deleter := &ebuildDeleter{
+		dir:            "app-misc/foo-bin",
+		category:       "app-misc",
+		files:          &files,
+		deletedEbuilds: &deleted,
+	}
 
-		deleter.Delete("foo-bin-1.0.0.ebuild")
+	deleter.Delete("foo-bin-1.0.0.ebuild")
 
-		require.Equal(t, []string{"foo-bin-1.0.0.ebuild"}, deleted)
-		require.Equal(t, []client.RepoFile{{
-			Path:   "app-misc/foo-bin/foo-bin-1.0.0.ebuild",
-			Delete: true,
-		}}, files)
-	})
-
-	t.Run("with an existing metadata cache", func(t *testing.T) {
-		var files []client.RepoFile
-		var deleted []string
-		deleter := &ebuildDeleter{
-			dir:            "app-misc/foo-bin",
-			category:       "app-misc",
-			metaCacheFiles: map[string]struct{}{"foo-bin-1.0.0": {}},
-			files:          &files,
-			deletedEbuilds: &deleted,
-		}
-
-		deleter.Delete("foo-bin-1.0.0.ebuild")
-
-		require.Len(t, deleted, 1)
-		require.Equal(t, "foo-bin-1.0.0.ebuild", deleted[0])
-		require.Len(t, files, 2)
-		require.Equal(t, "app-misc/foo-bin/foo-bin-1.0.0.ebuild", files[0].Path)
-		require.True(t, files[0].Delete)
-		require.Equal(t, "metadata/md5-cache/app-misc/foo-bin-1.0.0", files[1].Path)
-		require.True(t, files[1].Delete)
-	})
+	require.Len(t, deleted, 1)
+	require.Equal(t, "foo-bin-1.0.0.ebuild", deleted[0])
+	require.Len(t, files, 2)
+	require.Equal(t, "app-misc/foo-bin/foo-bin-1.0.0.ebuild", files[0].Path)
+	require.True(t, files[0].Delete)
+	require.Equal(t, "metadata/md5-cache/app-misc/foo-bin-1.0.0", files[1].Path)
+	require.True(t, files[1].Delete)
 }

@@ -1053,6 +1053,7 @@ func (c *githubClient) CreateFiles(
 		branch = defBranch
 	}
 
+	var ref *github.Reference
 	if defBranch != branch && branch != "" {
 		_, res, err := githubDo(ctx, func() (*github.Branch, *github.Response, error) {
 			return c.client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, branch, 100)
@@ -1069,7 +1070,7 @@ func (c *githubClient) CreateFiles(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			_, resp, err := githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+			createdRef, resp, err := githubDo(ctx, func() (*github.Reference, *github.Response, error) {
 				return c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
 					Ref: "refs/heads/" + branch,
 					SHA: defRef.Object.GetSHA(),
@@ -1080,15 +1081,19 @@ func (c *githubClient) CreateFiles(
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
 					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, bodyOf(resp))
 				}
+			} else {
+				ref = createdRef
 			}
 		}
 	}
 
-	ref, _, err := githubDo(ctx, func() (*github.Reference, *github.Response, error) {
-		return c.client.Git.GetRef(ctx, repo.Owner, repo.Name, "refs/heads/"+branch)
-	})
-	if err != nil {
-		return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+branch, err)
+	if ref == nil {
+		ref, _, err = githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+			return c.client.Git.GetRef(ctx, repo.Owner, repo.Name, "refs/heads/"+branch)
+		})
+		if err != nil {
+			return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+branch, err)
+		}
 	}
 
 	currentCommit, _, err := githubDo(ctx, func() (*github.Commit, *github.Response, error) {
