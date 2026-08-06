@@ -4,108 +4,199 @@ linkTitle: Gentoo
 weight: 150
 ---
 
+{{< g_version "v2.17" >}}
+
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
-a _Gentoo Ebuild_ to an overlay or repository.
+a _Gentoo Ebuild_ to an overlay repository.
 
 The `gentoo_overlay` section specifies how the ebuilds should be created:
 
 ```yaml {filename=".goreleaser.yaml"}
 gentoo_overlay:
-  -
-    # Name of the ebuild.
+  - # ID of the gentoo configuration, must be unique.
+    #
+    # Default: "default".
+    id: myproject
+
+    # Name of the package/ebuild.
+    #
     # Default: the project name.
     # Templates: allowed.
     name: myproject
 
     # IDs of the archives to use.
+    # Empty means all archives.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
-    # The ebuild's path within the repository.
+    # The ebuild's relative path within the repository.
+    # Must include category and package name (e.g. app-admin/myproject/myproject-{{ .Version }}.ebuild).
+    #
+    # Default: "app-admin/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild" (or "app-misc/..." for non-bin).
     # Templates: allowed.
     path: "app-admin/myproject/myproject-{{ .Version }}.ebuild"
 
     # Commit message template.
-    # Default: "Update to {{ .Tag }}".
+    #
+    # Default: '{{ .ProjectName }}: bump to {{ .Tag }}'.
     # Templates: allowed.
-    commit_msg_template: "pkgbuild updates"
+    commit_msg_template: "{{ .ProjectName }}: bump to {{ .Tag }}"
 
-    # Optional keywords to be applied to the package.
-    # Default: derived from artifacts architectures
+    # Keywords to be applied to the package.
+    #
+    # Default: ["~amd64"].
     keywords:
       - "~amd64"
       - "~arm64"
 
-    # Extra files to add to the ebuild files directory.
+    # Extra files to add to the ebuild's files/ directory.
     files:
       - src: "init.d/myproject"
         dst: "myproject.init"
 
+    # Skip size (< 20KB) and binary file checks for files in the files/ directory.
+    #
+    # Default: false.
+    skip_files_validation: false
+
+    # Whether the ebuild installs pre-compiled binary packages.
+    #
+    # Required: must be true.
+    bin: true
+
     # Optional type of the package.
-    # Default: ""
+    #
+    # Default: "bin".
     type: "bin"
+
+    # Keep past versions that were created by GoReleaser.
+    # Requires an active SCM integration (e.g. GitHub/GitLab token) to work properly.
+    #
+    # Default: 0.
+    keep_versions: 3
+
+    # Retention strategy for old ebuild versions.
+    #
+    # Valid options: keep_latest, keep_prereleases.
+    # Required if keep_versions > 0.
+    version_retention_strategy: keep_latest
+
+    # Whether to skip uploading the ebuild to the repository.
+    #
+    # Valid options: true, false, auto.
+    # Default: false.
+    # Templates: allowed.
+    skip_upload: false
+
+    # Destination binary installation directory.
+    #
+    # Default: "/opt/bin" if type is "bin", otherwise "/usr/bin".
+    bindir: "/usr/bin"
 
     # The Gentoo maintainers of the ebuild.
     maintainers:
       - name: "John Doe"
         email: "john@example.com"
 
-    # Upstream bugs tracker URL.
+    # Upstream bug tracker URL.
+    #
+    # Templates: allowed.
     bugs_to: "https://github.com/myorg/myproject/issues"
 
-    # Project Homepage
+    # Project homepage.
+    #
+    # Default: inferred from global metadata.
+    # Templates: allowed.
     homepage: "https://myproject.com"
 
     # The ebuild's description.
+    #
     # Default: inferred from global metadata.
     # Templates: allowed.
     description: "Software to create fast and easy drum rolls."
 
     # The ebuild's license.
+    #
+    # Required.
     # Default: inferred from global metadata.
+    # Templates: allowed.
     license: "MIT"
 
-    # Whether the binaries should be extracted from the archive.
-    # This generates an unpack-based ebuild.
-    bin: true
-
-    # Keep past versions that were created by goreleaser.
-    # Requires an active SCM integration (e.g. GitHub/GitLab token) to work properly.
-    keep_versions: 3
-
-    # Disable ignoring size to binary files
-    disable_ignore_size_to_binary_files: false
-
-    # Retention strategy, `keep` vs `drop`. Drop will remove old ones.
-    version_retention_strategy: keep
-
-    # Whether to skip uploading
+    # Extra ebuild installation instructions.
+    #
     # Templates: allowed.
-    skip_upload: true
-
-    # Destination binary directory
-    bindir: "/usr/bin"
-
-    # Extra install commands
     extra_install: |
       doins extra/stuff
 
-    # Use flags
+    # USE flags defined for the ebuild.
     useflags:
       - flag: systemd
         description: "Enable systemd support"
 
-    # Files to install with dobin
+    # Files to install with dobin.
     dobin:
-      - source: "path/to/bin"
-        destination: "mybin"
+      - src: "path/to/bin"
+        dst: "mybin"
+        use:
+          - systemd
 
-    # Similarly we have doconfd, dodir, dodoc, doenvd, doexe, doheader, doinitd, doins, doman, dosbin, dosym, systemd
-    # e.g.:
+    # Files to install with doconfd.
+    doconfd:
+      - src: "path/to/conf"
+        dst: "myconf"
+
+    # Directories to create with dodir.
+    dodir:
+      - "/var/lib/myproject"
+
+    # Documentation files to install with dodoc.
+    dodoc:
+      - "README.md"
+
+    # Files to install with doenvd.
+    doenvd:
+      - src: "path/to/env"
+        dst: "50myproject"
+
+    # Executable files to install with doexe.
+    doexe:
+      - src: "path/to/script.sh"
+        dst: "script.sh"
+
+    # Header files to install with doheader.
+    doheader:
+      - src: "path/to/header.h"
+        dst: "header.h"
+
+    # Init scripts to install with doinitd.
+    doinitd:
+      - src: "path/to/init"
+        dst: "myproject"
+
+    # General files to install with doins.
+    doins:
+      - src: "path/to/file"
+        dst: "file"
+
+    # Man pages to install with doman.
+    doman:
+      - "man/myproject.1"
+
+    # System binaries to install with dosbin.
+    dosbin:
+      - src: "path/to/sbin"
+        dst: "mysbin"
+
+    # Symlinks to create with dosym.
+    dosym:
+      - src: "/usr/bin/myproject"
+        dst: "/usr/bin/myproject-alias"
+
+    # Systemd service files to install.
     systemd:
-      - source: "path/to/service.service"
-        destination: "service.service"
+      - src: "path/to/service.service"
+        dst: "service.service"
 
 {{% g_include file="includes/commit_author.md" %}}
 {{% g_include file="includes/repository.md" %}}
@@ -118,3 +209,4 @@ gentoo_overlay:
 - The target repository needs to have standard Gentoo repo files like `metadata/layout.conf` or they will be generated implicitly.
 
 {{% g_include file="includes/prs.md" %}}
+
