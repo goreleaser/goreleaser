@@ -110,14 +110,14 @@ gentoo_overlay:
 
     # Overrides for manifest hashes. Usually derived from metadata/layout.conf.
     #
-    # Default: ["BLAKE2B", "SHA512"] or values from layout.conf.
+    # Default: null (defers to layout.conf or ["BLAKE2B", "SHA512"]).
     # manifest_hashes:
     #   - BLAKE2B
     #   - SHA512
 
     # Overrides thin manifests generation. Usually derived from metadata/layout.conf.
     #
-    # Default: false or value from layout.conf.
+    # Default: null (defers to layout.conf or false).
     # thin_manifests: false
 
     # The Gentoo maintainers of the ebuild.
