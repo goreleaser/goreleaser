@@ -703,8 +703,8 @@ func TestTemplateScenarios(t *testing.T) {
 		{
 			name: "scenario_doexe",
 			doexe: []installItemData{
-				{Source: "custom_bin", Target: "opt/custom/custom_bin", Dir: "opt/custom", Base: "custom_bin"},
-				{Source: "renamed_bin_x86", Target: "opt/custom/renamed_bin", Dir: "opt/custom", Base: "renamed_bin"},
+				{Source: "custom_bin", Target: "/opt/custom/custom_bin", Dir: "/opt/custom", Base: "custom_bin"},
+				{Source: "renamed_bin_x86", Target: "/opt/other/renamed_bin", Dir: "/opt/other", Base: "renamed_bin"},
 				{Source: "default_bin", Target: "", Dir: "", Base: ""},
 			},
 		},

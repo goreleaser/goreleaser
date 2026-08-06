@@ -14,9 +14,9 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
-  exeinto "opt/custom"
+  exeinto "/opt/custom"
   doexe "custom_bin"
-  exeinto "opt/custom"
+  exeinto "/opt/other"
   newexe "renamed_bin_x86" "renamed_bin"
   exeinto /usr/bin
   doexe "default_bin"
