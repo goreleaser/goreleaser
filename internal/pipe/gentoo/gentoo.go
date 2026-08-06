@@ -3,6 +3,7 @@ package gentoo
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha256"
 	"crypto/sha512"
 	_ "embed"
@@ -38,6 +39,7 @@ import (
 const (
 	ebuildExtra     = "GentooConfig"
 	ebuildPathExtra = "GentooPath"
+	ebuildMetaCache = "GentooMetaCache"
 )
 
 //go:embed testdata/template.ebuild.tmpl
@@ -47,6 +49,12 @@ type installData struct {
 	Source   string
 	Target   string
 	Keywords []string
+}
+
+type archData struct {
+	Keyword string
+	File    string
+	URI     string
 }
 
 type installGroup struct {
@@ -311,11 +319,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("no linux archives found")
 	}
 
-	type archData struct {
-		Keyword string
-		File    string
-		URI     string
-	}
 	var archInfos []archData
 	keywordSet := map[string]struct{}{}
 
@@ -486,6 +489,32 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			ebuildPathExtra: cfg.Path,
 		},
 	})
+
+	if cfg.MetaCache {
+		pkgVer := strings.TrimSuffix(filepath.Base(cfg.Path), ".ebuild")
+		category := strings.Split(filepath.ToSlash(filepath.Clean(cfg.Path)), "/")[0]
+		metaCachePath := pathlib.Join("metadata", "md5-cache", category, pkgVer)
+		metaCacheDistPath := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, metaCachePath)
+
+		metaContent := generateMetaCacheContent(data, content)
+		if err := os.MkdirAll(filepath.Dir(metaCacheDistPath), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(metaCacheDistPath, []byte(metaContent), 0o644); err != nil {
+			return err
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: pkgVer,
+			Path: metaCacheDistPath,
+			Type: artifact.GentooFile,
+			Extra: map[string]any{
+				ebuildExtra:     cfg,
+				ebuildPathExtra: metaCachePath,
+				ebuildMetaCache: true,
+			},
+		})
+	}
+
 	return nil
 }
 
@@ -645,6 +674,15 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 			}
 
+			deleteEbuild := func(n string) {
+				g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
+				deletedEbuilds = append(deletedEbuilds, n)
+				category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
+				md5Name := strings.TrimSuffix(n, ".ebuild")
+				md5CachePath := pathlib.Join("metadata", "md5-cache", category, md5Name)
+				g.files = append(g.files, client.RepoFile{Path: md5CachePath, Delete: true})
+			}
+
 			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
 				getBucket := func(v *gentooVersion) string {
 					pr := v.version.Prerelease()
@@ -705,8 +743,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 					}
 
 					if violates {
-						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-						deletedEbuilds = append(deletedEbuilds, n)
+						deleteEbuild(n)
 					} else {
 						groups[b] = append(groups[b], n)
 					}
@@ -724,8 +761,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
 					if len(bucketEbuilds) > allowedToKeep {
 						for _, n := range bucketEbuilds[allowedToKeep:] {
-							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-							deletedEbuilds = append(deletedEbuilds, n)
+							deleteEbuild(n)
 						}
 					}
 				}
@@ -744,8 +780,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 						WithField("total_old", len(ebuilds)).
 						Debug("keeping latest versions")
 					for _, n := range ebuilds[allowedToKeep:] {
-						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-						deletedEbuilds = append(deletedEbuilds, n)
+						deleteEbuild(n)
 					}
 				}
 			}
@@ -755,6 +790,29 @@ func (Pipe) Publish(ctx *context.Context) error {
 		if g.cfg.Repository.PullRequest.Enabled {
 			stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
 		}
+
+		settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+		if err != nil {
+			return err
+		}
+
+		metaCacheAllowed := true
+		if settings.hasCacheFormatsConfigured {
+			metaCacheAllowed = slices.Contains(settings.cacheFormats, "md5-dict") || slices.Contains(settings.cacheFormats, "md5-cache")
+		}
+
+		if g.cfg.MetaCache && !metaCacheAllowed {
+			log.Warnf("gentoo.meta_cache is true for %q, but overlay metadata/layout.conf disables cache-formats", g.cfg.ID)
+		}
+
+		var filteredFiles []client.RepoFile
+		for _, f := range g.files {
+			if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && !(g.cfg.MetaCache && metaCacheAllowed) {
+				continue
+			}
+			filteredFiles = append(filteredFiles, f)
+		}
+		g.files = filteredFiles
 		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, stateRepo, &g.files, deletedEbuilds); err != nil {
 			return err
 		}
@@ -1124,10 +1182,11 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		})
 	}
 
-	manifestHashes, thinManifests, err := loadManifestSettings(ctx, repoClient, repo, cfg)
+	settings, err := loadOverlaySettings(ctx, cfg, repoClient, repo)
 	if err != nil {
 		return err
 	}
+	manifestHashes, thinManifests := settings.hashes, settings.thin
 	manifestLines, err := loadManifestLines(ctx, repoClient, repo, manifestPath)
 	if err != nil {
 		return err
@@ -1260,31 +1319,35 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	return nil
 }
 
-func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo client.Repo, cfg config.Gentoo) ([]string, bool, error) {
-	hashes := []string{"BLAKE2B", "SHA512"}
-	thin := false
+type overlaySettings struct {
+	hashes                    []string
+	thin                      bool
+	cacheFormats              []string
+	hasCacheFormatsConfigured bool
+}
 
+func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo) (overlaySettings, error) {
+	settings := overlaySettings{
+		hashes: []string{"BLAKE2B", "SHA512"},
+		thin:   false,
+	}
 	if len(cfg.ManifestHashes) > 0 {
-		hashes = cfg.ManifestHashes
+		settings.hashes = cfg.ManifestHashes
 	}
 	if cfg.ThinManifests != nil {
-		thin = *cfg.ThinManifests
-	}
-
-	if len(cfg.ManifestHashes) > 0 && cfg.ThinManifests != nil {
-		return hashes, thin, nil
+		settings.thin = *cfg.ThinManifests
 	}
 
 	dl, ok := repoClient.(client.FileDownloader)
 	if !ok {
-		return hashes, thin, nil
+		return settings, nil
 	}
 	content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
 	if errors.Is(err, client.ErrNotFound) || errors.Is(err, client.ErrNotImplemented) {
-		return hashes, thin, nil
+		return settings, nil
 	}
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to download layout.conf: %w", err)
+		return settings, fmt.Errorf("failed to download layout.conf: %w", err)
 	}
 	for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
 		key, value, ok := strings.Cut(strings.TrimSpace(string(lineB)), "=")
@@ -1294,15 +1357,18 @@ func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo c
 		switch strings.TrimSpace(key) {
 		case "manifest-hashes":
 			if len(cfg.ManifestHashes) == 0 {
-				hashes = strings.Fields(value)
+				settings.hashes = strings.Fields(value)
 			}
 		case "thin-manifests":
 			if cfg.ThinManifests == nil {
-				thin = strings.TrimSpace(value) == "true"
+				settings.thin = strings.TrimSpace(value) == "true"
 			}
+		case "cache-formats":
+			settings.hasCacheFormatsConfigured = true
+			settings.cacheFormats = strings.Fields(value)
 		}
 	}
-	return hashes, thin, nil
+	return settings, nil
 }
 
 func loadManifestLines(ctx *context.Context, repoClient client.Client, repo client.Repo, manifestPath string) ([]string, error) {
@@ -1340,4 +1406,68 @@ func countNewEbuilds(existing, newFiles []string, bucket func(string) string) ma
 		}
 	}
 	return counts
+}
+
+func generateMetaCacheContent(data any, ebuildContent string) string {
+	d, ok := data.(struct {
+		Name          string
+		Description   string
+		Homepage      string
+		License       string
+		Keywords      string
+		Bindir        string
+		ExtraInstall  string
+		Archs         []archData
+		InstallGroups []installGroup
+		UseFlags      []config.GentooUseFlag
+		Dobin         []installItemData
+		Doconfd       []installItemData
+		Dodir         []string
+		Dodoc         []string
+		Doenvd        []installItemData
+		Doexe         []installItemData
+		Doheader      []installItemData
+		Doinitd       []installItemData
+		Doins         []installItemData
+		Doman         []string
+		Dosbin        []installItemData
+		Dosym         []installItemData
+		Systemd       []installItemData
+	})
+	if !ok {
+		return ""
+	}
+	var useFlags []string
+	for _, flag := range d.UseFlags {
+		if flag.Flag != "" {
+			useFlags = append(useFlags, flag.Flag)
+		}
+	}
+	slices.Sort(useFlags)
+	useFlags = slices.Compact(useFlags)
+
+	var srcURIs []string
+	for _, art := range d.Archs {
+		if art.Keyword != "" && art.URI != "" {
+			srcURIs = append(srcURIs, fmt.Sprintf("%s? ( %s )", art.Keyword, art.URI))
+		}
+	}
+
+	h := md5.Sum([]byte(ebuildContent))
+	md5Hex := fmt.Sprintf("%x", h)
+
+	var buf strings.Builder
+	buf.WriteString("DEFINED_PHASES=src_install src_unpack\n")
+	buf.WriteString("DESCRIPTION=" + d.Description + "\n")
+	buf.WriteString("EAPI=8\n")
+	buf.WriteString("HOMEPAGE=" + d.Homepage + "\n")
+	buf.WriteString("INHERITED=\n")
+	buf.WriteString("IUSE=" + strings.Join(useFlags, " ") + "\n")
+	buf.WriteString("KEYWORDS=" + d.Keywords + "\n")
+	buf.WriteString("LICENSE=" + d.License + "\n")
+	buf.WriteString("RESTRICT=\n")
+	buf.WriteString("SLOT=0\n")
+	buf.WriteString("SRC_URI=" + strings.Join(srcURIs, " ") + "\n")
+	buf.WriteString("_md5_=" + md5Hex + "\n")
+	return buf.String()
 }
