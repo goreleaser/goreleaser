@@ -1235,3 +1235,139 @@ func TestEbuildDeleter(t *testing.T) {
 		require.True(t, files[1].Delete)
 	})
 }
+
+func TestEbuildData(t *testing.T) {
+	t.Run("Validate invalid dosym", func(t *testing.T) {
+		data := ebuildData{
+			Dosym: []installItemData{{Source: "foo"}},
+		}
+		require.EqualError(t, data.Validate(), "gentoo.dosym requires a destination")
+	})
+
+	t.Run("Validate valid dosym", func(t *testing.T) {
+		data := ebuildData{
+			Dosym: []installItemData{{Source: "foo", Target: "bar"}},
+		}
+		require.NoError(t, data.Validate())
+	})
+
+	t.Run("SortedUseFlags", func(t *testing.T) {
+		data := ebuildData{
+			UseFlags: []config.GentooUseFlag{
+				{Flag: "systemd"},
+				{Flag: "doc"},
+				{Flag: "systemd"},
+				{Flag: ""},
+			},
+		}
+		flags := data.SortedUseFlags()
+		require.Equal(t, []string{"doc", "systemd"}, flags)
+	})
+
+	t.Run("FormattedSrcURIs", func(t *testing.T) {
+		data := ebuildData{
+			Archs: []archData{
+				{Keyword: "amd64", URI: "https://example.com/foo.tar.gz"},
+				{Keyword: "arm64", URI: "https://example.com/foo-arm64.tar.gz"},
+				{Keyword: "", URI: "invalid"},
+			},
+		}
+		uris := data.FormattedSrcURIs()
+		require.Equal(t, []string{
+			"amd64? ( https://example.com/foo.tar.gz )",
+			"arm64? ( https://example.com/foo-arm64.tar.gz )",
+		}, uris)
+	})
+
+	t.Run("RenderEbuild", func(t *testing.T) {
+		data := ebuildData{
+			Name:        "foo",
+			Description: "Foo package",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			Keywords:    "amd64",
+		}
+		content, err := data.RenderEbuild()
+		require.NoError(t, err)
+		require.Contains(t, content, `DESCRIPTION="Foo package"`)
+		require.Contains(t, content, `HOMEPAGE="https://example.com"`)
+	})
+
+	t.Run("RenderMetaCache", func(t *testing.T) {
+		data := ebuildData{
+			Description: "Foo package",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			Keywords:    "amd64",
+			UseFlags:    []config.GentooUseFlag{{Flag: "systemd"}},
+			Archs: []archData{
+				{Keyword: "amd64", URI: "https://example.com/foo.tar.gz"},
+			},
+		}
+		meta, err := data.RenderMetaCache("ebuild content sample")
+		require.NoError(t, err)
+		require.Contains(t, meta, "DESCRIPTION=Foo package")
+		require.Contains(t, meta, "IUSE=systemd")
+		require.Contains(t, meta, "SRC_URI=amd64? ( https://example.com/foo.tar.gz )")
+		require.Contains(t, meta, "_md5_=")
+	})
+}
+
+func TestInstallExtraFiles(t *testing.T) {
+	tmpDir := t.TempDir()
+	srcFile := filepath.Join(tmpDir, "foo.conf")
+	require.NoError(t, os.WriteFile(srcFile, []byte("conf content"), 0o644))
+
+	ebuildPath := filepath.Join(tmpDir, "app-misc", "foo", "foo-1.0.0.ebuild")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: tmpDir,
+	})
+
+	ef := newExtraFilesProcessor(config.Gentoo{
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+	}, nil, map[string]string{
+		"files/foo.conf": srcFile,
+	})
+
+	err := ef.InstallExtraFiles(ctx, ebuildPath)
+	require.NoError(t, err)
+
+	destFile := filepath.Join(tmpDir, "app-misc", "foo", "files", "foo.conf")
+	content, err := os.ReadFile(destFile)
+	require.NoError(t, err)
+	require.Equal(t, "conf content", string(content))
+
+	arts := ctx.Artifacts.List()
+	require.Len(t, arts, 1)
+	require.Equal(t, "files/foo.conf", arts[0].Name)
+	require.Equal(t, artifact.GentooFile, arts[0].Type)
+}
+
+func TestGentooMetadata(t *testing.T) {
+	t.Run("AddMaintainers valid and empty email", func(t *testing.T) {
+		var meta gentooMetadata
+		err := meta.AddMaintainers([]config.GentooMaintainer{
+			{Name: "Alice", Email: "alice@example.com"},
+		})
+		require.NoError(t, err)
+		require.Len(t, meta.Maintainers, 1)
+		require.Equal(t, "alice@example.com", meta.Maintainers[0].Email)
+
+		err = meta.AddMaintainers([]config.GentooMaintainer{{Name: "Invalid"}})
+		require.EqualError(t, err, "gentoo maintainer email is required")
+	})
+
+	t.Run("AddUseFlags and SetUpstream and Marshal", func(t *testing.T) {
+		var meta gentooMetadata
+		meta.AddUseFlags([]config.GentooUseFlag{
+			{Flag: "systemd", Description: "Enable systemd"},
+		})
+		meta.SetUpstream("https://bugs.example.com", "https://example.com/doc")
+
+		content, err := meta.Marshal()
+		require.NoError(t, err)
+		require.Contains(t, string(content), `<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">`)
+		require.Contains(t, string(content), `<flag name="systemd">Enable systemd</flag>`)
+		require.Contains(t, string(content), `<bugs-to>https://bugs.example.com</bugs-to>`)
+	})
+}
