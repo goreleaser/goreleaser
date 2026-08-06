@@ -786,9 +786,17 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 				filesToCreate = append(filesToCreate, f)
 			}
-			for _, f := range filesToCreate {
-				if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
-					return err
+			if len(filesToCreate) > 0 {
+				if fc, ok := repoClient.(client.FilesCreator); ok {
+					if err := fc.CreateFiles(ctx, author, repo, msg, filesToCreate); err != nil {
+						return err
+					}
+				} else {
+					for _, f := range filesToCreate {
+						if err := repoClient.CreateFile(ctx, author, repo, f.Content, f.Path, msg); err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
