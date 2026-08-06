@@ -99,6 +99,29 @@ func TestDoRunSingleArch(t *testing.T) {
 	golden.RequireEqual(t, bts)
 }
 
+func TestDoRunRejectsRawBinaries(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Name:    "foo",
+			Path:    "app-misc/foo/foo-1.0.0.ebuild",
+			License: "MIT",
+		}},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_linux_amd64",
+		Path:   "foo_linux_amd64",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableBinary,
+	})
+
+	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+	require.EqualError(t, err, "no linux archives found")
+}
+
 func TestDoRunCustomBindir(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -360,6 +383,7 @@ func TestHandleGentooManifestThick(t *testing.T) {
 	files := []client.RepoFile{
 		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0.ebuild"},
 		{Content: []byte("patch content"), Path: "app-misc/foo/files/foo.patch"},
+		{Content: []byte("service content"), Path: "app-misc/foo/files/systemd/foo.service"},
 		{Content: []byte("<pkgmetadata></pkgmetadata>"), Path: "app-misc/foo/metadata.xml"},
 	}
 
@@ -371,6 +395,7 @@ func TestHandleGentooManifestThick(t *testing.T) {
 	require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
 	require.Contains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
 	require.Contains(t, manifestContent, "AUX foo.patch")
+	require.Contains(t, manifestContent, "AUX systemd/foo.service")
 	require.Contains(t, manifestContent, "MISC metadata.xml")
 }
 
@@ -416,14 +441,53 @@ func TestHandleGentooManifestThin(t *testing.T) {
 
 type mockFileDownloader struct {
 	client.Client
-	content []byte
+	content  []byte
+	contents map[string][]byte
 }
 
 func (m mockFileDownloader) DownloadFile(_ *import_context.Context, _ client.Repo, path string) ([]byte, error) {
+	if content, ok := m.contents[path]; ok {
+		return content, nil
+	}
 	if path == "metadata/layout.conf" {
 		return m.content, nil
 	}
 	return nil, client.ErrNotFound
+}
+
+func TestHandleGentooManifestPreservesAuxWithDynamicReference(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name: "foo",
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+	}
+	downloader := mockFileDownloader{
+		content: []byte("thin-manifests = false\n"),
+		contents: map[string][]byte{
+			"app-misc/foo/Manifest":         []byte("EBUILD foo-1.0.0.ebuild 1 BLAKE2B deadbeef\nAUX foo-1.0.patch 1 BLAKE2B deadbeef\n"),
+			"app-misc/foo/foo-1.0.0.ebuild": []byte("PATCHES=( \"${PN}-${PV}.patch\" )\n"),
+		},
+	}
+
+	var files []client.RepoFile
+	require.NoError(t, handleGentooManifestAndMetadata(ctx, cfg, downloader, client.Repo{}, &files, nil))
+	require.Len(t, files, 1)
+	require.Contains(t, string(files[0].Content), "AUX foo-1.0.patch")
+}
+
+func TestCountNewEbuildsExcludesExistingVersions(t *testing.T) {
+	counts := countNewEbuilds(
+		[]string{"foo-1.0.0_rc1.ebuild"},
+		[]string{"foo-1.0.0_rc1.ebuild", "foo-1.0.0_rc2.ebuild"},
+		func(name string) string {
+			if strings.Contains(name, "_rc") {
+				return "rc"
+			}
+			return "stable"
+		},
+	)
+
+	require.Equal(t, map[string]int{"rc": 1}, counts)
 }
 
 func TestHandleGentooManifestUnsupportedHash(t *testing.T) {
