@@ -14,9 +14,12 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
+  exeinto "/opt/custom"
+  doexe "custom_bin"
+  exeinto "/opt/other"
+  newexe "renamed_bin_x86" "renamed_bin"
   exeinto /usr/bin
-  doexe "prog1" || die "Failed to install binary"
-  doexe "prog2" || die "Failed to install binary"
+  doexe "default_bin"
   if use doc; then
     dodoc README* || die
   fi
