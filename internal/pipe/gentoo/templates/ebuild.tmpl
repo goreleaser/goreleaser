@@ -36,8 +36,10 @@ src_install() {
 {{- with .ExtraInstall }}
   {{ . }}
 {{- end }}
+{{- if .InstallGroups }}
 {{- with .Bindir }}
   exeinto {{ . }}
+{{- end }}
 {{- end }}
 {{- range .InstallGroups }}
 {{- if and .Keywords (gt (len $.InstallGroups) 1) }}

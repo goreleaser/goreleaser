@@ -14,7 +14,6 @@ IUSE="doc"
 S="${WORKDIR}"
 
 src_install() {
-  exeinto /usr/bin
   exeinto "opt/custom"
   newexe "custom_bin" "custom_bin"
   exeinto /usr/bin
