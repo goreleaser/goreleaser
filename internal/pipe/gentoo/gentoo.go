@@ -76,6 +76,67 @@ type installItemData struct {
 	Use    []string
 }
 
+type parsedGentooVersion struct {
+	version  *semver.Version
+	revision int
+}
+
+func (v *parsedGentooVersion) GreaterThan(other *parsedGentooVersion) bool {
+	if v.version.Equal(other.version) {
+		return v.revision > other.revision
+	}
+	return v.version.GreaterThan(other.version)
+}
+
+func parseGentooVersion(n, prefix string) *parsedGentooVersion {
+	vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
+	var rev int
+	if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
+		if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
+			rev = parsedRev
+			vStr = vStr[:idx]
+		}
+	}
+	vStr = strings.ReplaceAll(vStr, "_", "-")
+	v, err := semver.NewVersion(vStr)
+	if err != nil {
+		return nil
+	}
+	return &parsedGentooVersion{
+		version:  v,
+		revision: rev,
+	}
+}
+
+func getVersionBucket(v *parsedGentooVersion) string {
+	pr := v.version.Prerelease()
+	switch {
+	case strings.Contains(pr, "rc"):
+		return "rc"
+	case strings.Contains(pr, "beta"):
+		return "beta"
+	case strings.Contains(pr, "alpha"):
+		return "alpha"
+	default:
+		return "stable"
+	}
+}
+
+type ebuildDeleter struct {
+	dir            string
+	category       string
+	files          *[]client.RepoFile
+	deletedEbuilds *[]string
+}
+
+func (d *ebuildDeleter) Delete(ebuildName string) {
+	*d.files = append(*d.files, client.RepoFile{Path: pathlib.Join(d.dir, ebuildName), Delete: true})
+	*d.deletedEbuilds = append(*d.deletedEbuilds, ebuildName)
+	md5Name := strings.TrimSuffix(ebuildName, ".ebuild")
+	md5CachePath := pathlib.Join("metadata", "md5-cache", d.category, md5Name)
+	*d.files = append(*d.files, client.RepoFile{Path: md5CachePath, Delete: true})
+}
+
 // Pipe builds and publishes gentoo ebuilds.
 type Pipe struct{}
 
@@ -625,43 +686,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 					ebuilds = append(ebuilds, n)
 				}
 			}
-			type gentooVersion struct {
-				version  *semver.Version
-				revision int
-			}
-
-			isGreaterThan := func(vI, vJ *gentooVersion) bool {
-				if vI.version.Equal(vJ.version) {
-					return vI.revision > vJ.revision
-				}
-				return vI.version.GreaterThan(vJ.version)
-			}
-
-			parseVersion := func(n string) *gentooVersion {
-				vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
-				var rev int
-				if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
-					if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
-						rev = parsedRev
-						vStr = vStr[:idx]
-					}
-				}
-				vStr = strings.ReplaceAll(vStr, "_", "-")
-				v, err := semver.NewVersion(vStr)
-				if err != nil {
-					return nil
-				}
-				return &gentooVersion{
-					version:  v,
-					revision: rev,
-				}
-			}
-
 			sort.Slice(ebuilds, func(i, j int) bool {
-				vI := parseVersion(ebuilds[i])
-				vJ := parseVersion(ebuilds[j])
+				vI := parseGentooVersion(ebuilds[i], prefix)
+				vJ := parseGentooVersion(ebuilds[j], prefix)
 				if vI != nil && vJ != nil {
-					return isGreaterThan(vI, vJ)
+					return vI.GreaterThan(vJ)
 				}
 				if vI != nil {
 					return true
@@ -680,94 +709,78 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 			}
 
-			deleteEbuild := func(n string) {
-				g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-				deletedEbuilds = append(deletedEbuilds, n)
-				category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
-				md5Name := strings.TrimSuffix(n, ".ebuild")
-				md5CachePath := pathlib.Join("metadata", "md5-cache", category, md5Name)
-				g.files = append(g.files, client.RepoFile{Path: md5CachePath, Delete: true})
+			deleter := &ebuildDeleter{
+				dir:            dir,
+				category:       strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0],
+				files:          &g.files,
+				deletedEbuilds: &deletedEbuilds,
 			}
 
 			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
-				getBucket := func(v *gentooVersion) string {
-					pr := v.version.Prerelease()
-					switch {
-					case strings.Contains(pr, "rc"):
-						return "rc"
-					case strings.Contains(pr, "beta"):
-						return "beta"
-					case strings.Contains(pr, "alpha"):
-						return "alpha"
-					default:
-						return "stable"
-					}
-				}
-
 				var allEbuilds []string
 				allEbuilds = append(allEbuilds, ebuilds...)
 				allEbuilds = append(allEbuilds, newFiles...)
 
-				maxVersions := map[string]*gentooVersion{}
+				maxVersions := map[string]*parsedGentooVersion{}
 				for _, n := range allEbuilds {
-					v := parseVersion(n)
+					v := parseGentooVersion(n, prefix)
 					if v == nil {
 						continue
 					}
-					b := getBucket(v)
-					if maxVersions[b] == nil || isGreaterThan(v, maxVersions[b]) {
+					b := getVersionBucket(v)
+					if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
 						maxVersions[b] = v
 					}
 				}
 
 				groups := map[string][]string{}
 				for _, n := range ebuilds {
-					v := parseVersion(n)
+					v := parseGentooVersion(n, prefix)
 					if v == nil {
 						groups["stable"] = append(groups["stable"], n)
 						continue
 					}
-					b := getBucket(v)
+					b := getVersionBucket(v)
 
 					violates := false
 					switch b {
 					case "alpha":
-						if (maxVersions["beta"] != nil && !isGreaterThan(v, maxVersions["beta"])) ||
-							(maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
+						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
+							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
 					case "beta":
-						if (maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
+						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
 					case "rc":
-						if maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"]) {
+						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
 							violates = true
 						}
 					}
 
 					if violates {
-						deleteEbuild(n)
+						deleter.Delete(n)
 					} else {
 						groups[b] = append(groups[b], n)
 					}
 				}
 
 				newCounts := countNewEbuilds(ebuilds, newFiles, func(f string) string {
-					v := parseVersion(f)
+					v := parseGentooVersion(f, prefix)
 					if v == nil {
 						return "stable"
 					}
-					return getBucket(v)
+					return getVersionBucket(v)
 				})
 
 				for b, bucketEbuilds := range groups {
 					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
 					if len(bucketEbuilds) > allowedToKeep {
 						for _, n := range bucketEbuilds[allowedToKeep:] {
-							deleteEbuild(n)
+							deleter.Delete(n)
 						}
 					}
 				}
@@ -786,7 +799,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 						WithField("total_old", len(ebuilds)).
 						Debug("keeping latest versions")
 					for _, n := range ebuilds[allowedToKeep:] {
-						deleteEbuild(n)
+						deleter.Delete(n)
 					}
 				}
 			}

@@ -1158,3 +1158,24 @@ func TestMetaCache(t *testing.T) {
 		require.False(t, metaCacheAllowed)
 	})
 }
+
+func TestEbuildDeleter(t *testing.T) {
+	var files []client.RepoFile
+	var deleted []string
+	deleter := &ebuildDeleter{
+		dir:            "app-misc/foo-bin",
+		category:       "app-misc",
+		files:          &files,
+		deletedEbuilds: &deleted,
+	}
+
+	deleter.Delete("foo-bin-1.0.0.ebuild")
+
+	require.Len(t, deleted, 1)
+	require.Equal(t, "foo-bin-1.0.0.ebuild", deleted[0])
+	require.Len(t, files, 2)
+	require.Equal(t, "app-misc/foo-bin/foo-bin-1.0.0.ebuild", files[0].Path)
+	require.True(t, files[0].Delete)
+	require.Equal(t, "metadata/md5-cache/app-misc/foo-bin-1.0.0", files[1].Path)
+	require.True(t, files[1].Delete)
+}
