@@ -41,7 +41,7 @@ gentoo_overlay:
     #
     # Default: "{{ .Category }}/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild" (for type "bin") or "{{ .Category }}/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild".
     # Templates: allowed.
-    path: "app-admin/myproject-bin/myproject-bin-{{ .Version }}.ebuild"
+    path: "{{ .Category }}/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild"
 
     # Commit message template.
     #

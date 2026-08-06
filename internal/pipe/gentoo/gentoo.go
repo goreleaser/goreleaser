@@ -273,7 +273,9 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
 	tp := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"Version": gentooVersion(ctx.Version),
+		"Version":  gentooVersion(ctx.Version),
+		"Name":     cfg.Name,
+		"Category": cfg.Category,
 	})
 	if err := tp.ApplyAll(&cfg.Name, &cfg.Category, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
 		return err

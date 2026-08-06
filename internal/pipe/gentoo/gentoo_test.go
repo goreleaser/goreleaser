@@ -312,6 +312,33 @@ func TestDefaultSetsPathWithCategory(t *testing.T) {
 	require.Equal(t, filepath.Join("app-admin", "foo-bin", "foo-bin-{{ .Version }}.ebuild"), ctx.Config.Gentoos[0].Path)
 }
 
+func TestPathWithCategoryAndNameTemplates(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Category: "app-admin",
+			Name:     "bar",
+			Path:     "{{ .Category }}/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild",
+			Bin:      true,
+			License:  "MIT",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bar_1.0.0_linux_amd64.tar.gz",
+		Path:   "dist/bar_1.0.0_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-admin", "bar-bin", "bar-bin-1.0.0.ebuild")
+	_, err := os.Stat(ebuild)
+	require.NoError(t, err)
+}
+
 func TestDefaultRequiresLicense(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
