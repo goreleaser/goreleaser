@@ -199,7 +199,7 @@ func (v *extraFileValidator) inArchives(fileName string) bool {
 	return true
 }
 
-func NewExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact) *extraFileValidator {
+func newExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact) *extraFileValidator {
 	return &extraFileValidator{
 		cfg:    cfg,
 		arches: arches,
@@ -285,7 +285,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("no linux archives found")
 	}
 
-	validator := NewExtraFileValidator(cfg, arches)
+	validator := newExtraFileValidator(cfg, arches)
 
 	type archData struct {
 		Keyword string

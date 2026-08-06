@@ -860,7 +860,7 @@ func TestExtraFileValidator(t *testing.T) {
 				},
 			},
 		}
-		validator := NewExtraFileValidator(config.Gentoo{}, arches)
+		validator := newExtraFileValidator(config.Gentoo{}, arches)
 		require.True(t, validator.inArchives("foo.service"))
 		require.False(t, validator.inArchives("bar.service"))
 	})
@@ -874,7 +874,7 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.service": fooPath,
 		}
-		validator := NewExtraFileValidator(config.Gentoo{}, nil)
+		validator := newExtraFileValidator(config.Gentoo{}, nil)
 		err = validator.Filter(extraFiles)
 		require.NoError(t, err)
 		require.Contains(t, extraFiles, "foo.service")
@@ -889,7 +889,7 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.bin": binPath,
 		}
-		validator := NewExtraFileValidator(config.Gentoo{}, nil)
+		validator := newExtraFileValidator(config.Gentoo{}, nil)
 		err = validator.Filter(extraFiles)
 		require.ErrorContains(t, err, "appears to be a binary file")
 	})
@@ -903,7 +903,7 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.large": largePath,
 		}
-		validator := NewExtraFileValidator(config.Gentoo{}, nil)
+		validator := newExtraFileValidator(config.Gentoo{}, nil)
 		err = validator.Filter(extraFiles)
 		require.ErrorContains(t, err, "larger than 20KB")
 	})
@@ -917,7 +917,7 @@ func TestExtraFileValidator(t *testing.T) {
 		extraFiles := map[string]string{
 			"foo.bin": binPath,
 		}
-		validator := NewExtraFileValidator(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil)
+		validator := newExtraFileValidator(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil)
 		err = validator.Filter(extraFiles)
 		require.NoError(t, err)
 		require.Contains(t, extraFiles, "foo.bin")
