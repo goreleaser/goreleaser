@@ -31,11 +31,11 @@ gentoo_overlay:
       - bar
 
     # The ebuild's relative path within the repository.
-    # Must include category and package name (e.g. app-admin/myproject/myproject-{{ .Version }}.ebuild).
+    # Must include category and package name (e.g. app-misc/myproject-bin/myproject-bin-{{ .Version }}.ebuild).
     #
-    # Default: "app-admin/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild" (or "app-misc/..." for non-bin).
+    # Default: "app-misc/{{ .Name }}-bin/{{ .Name }}-bin-{{ .Version }}.ebuild" (for type "bin") or "app-misc/{{ .Name }}/{{ .Name }}-{{ .Version }}.ebuild".
     # Templates: allowed.
-    path: "app-admin/myproject/myproject-{{ .Version }}.ebuild"
+    path: "app-misc/myproject-bin/myproject-bin-{{ .Version }}.ebuild"
 
     # Commit message template.
     #
