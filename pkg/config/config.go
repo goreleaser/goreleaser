@@ -472,6 +472,7 @@ type Gentoo struct {
 	Bindir                   string              `yaml:"bindir,omitempty" json:"bindir,omitempty"` // v2.8+
 	ManifestHashes           []string            `yaml:"manifest_hashes,omitempty" json:"manifest_hashes,omitempty"`
 	ThinManifests            *bool               `yaml:"thin_manifests,omitempty" json:"thin_manifests,omitempty"`
+	MetaCache                bool                `yaml:"meta_cache,omitempty" json:"meta_cache,omitempty"`
 	ExtraInstall             string              `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	Maintainers              []GentooMaintainer  `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 	BugsTo                   string              `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`

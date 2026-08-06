@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -1112,4 +1113,69 @@ func TestSkipUpload(t *testing.T) {
 		err := Pipe{}.Publish(ctx)
 		require.NoError(t, err)
 	})
+}
+
+func TestMetaCache(t *testing.T) {
+	t.Run("meta_cache enabled", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "foo",
+			Gentoos: []config.Gentoo{{
+				Category:  "app-misc",
+				Name:      "foo",
+				Path:      "app-misc/foo-bin/foo-bin-{{ .Version }}.ebuild",
+				Bin:       true,
+				License:   "MIT",
+				MetaCache: true,
+			}},
+		}, testctx.WithVersion("1.0.0"))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "foo_1.0.0_linux_amd64.tar.gz",
+			Path:   "dist/foo_1.0.0_linux_amd64.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+		cacheFile := filepath.Join(dist, "gentoo", "default", "metadata", "md5-cache", "app-misc", "foo-bin-1.0.0")
+		content, err := os.ReadFile(cacheFile)
+		require.NoError(t, err)
+		require.Contains(t, string(content), "DEFINED_PHASES=")
+		require.Contains(t, string(content), "_md5_=")
+	})
+
+	t.Run("meta_cache disabled by layout.conf", func(t *testing.T) {
+		repoClient := mockFileDownloader{
+			content: []byte("cache-formats = pms\n"),
+		}
+		settings, err := loadOverlaySettings(testctx.Wrap(t.Context()), config.Gentoo{
+			MetaCache: true,
+		}, repoClient, client.Repo{})
+		require.NoError(t, err)
+		metaCacheAllowed := !settings.hasCacheFormatsConfigured || slices.Contains(settings.cacheFormats, "md5-dict") || slices.Contains(settings.cacheFormats, "md5-cache")
+		require.False(t, metaCacheAllowed)
+	})
+}
+
+func TestEbuildDeleter(t *testing.T) {
+	var files []client.RepoFile
+	var deleted []string
+	deleter := &ebuildDeleter{
+		dir:            "app-misc/foo-bin",
+		category:       "app-misc",
+		files:          &files,
+		deletedEbuilds: &deleted,
+	}
+
+	deleter.Delete("foo-bin-1.0.0.ebuild")
+
+	require.Len(t, deleted, 1)
+	require.Equal(t, "foo-bin-1.0.0.ebuild", deleted[0])
+	require.Len(t, files, 2)
+	require.Equal(t, "app-misc/foo-bin/foo-bin-1.0.0.ebuild", files[0].Path)
+	require.True(t, files[0].Delete)
+	require.Equal(t, "metadata/md5-cache/app-misc/foo-bin-1.0.0", files[1].Path)
+	require.True(t, files[1].Delete)
 }

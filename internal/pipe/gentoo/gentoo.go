@@ -3,9 +3,11 @@ package gentoo
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha256"
 	"crypto/sha512"
 	_ "embed"
+	"encoding/hex"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -38,15 +40,28 @@ import (
 const (
 	ebuildExtra     = "GentooConfig"
 	ebuildPathExtra = "GentooPath"
+	ebuildMetaCache = "GentooMetaCache"
 )
 
-//go:embed testdata/template.ebuild.tmpl
+//go:embed templates/ebuild.tmpl
 var ebuildTemplate string
+
+//go:embed templates/md5-cache.tmpl
+var metaCacheTemplate string
+
+//go:embed templates/metadata.xml.tmpl
+var metadataXMLTemplate string
 
 type installData struct {
 	Source   string
 	Target   string
 	Keywords []string
+}
+
+type archData struct {
+	Keyword string
+	File    string
+	URI     string
 }
 
 type installGroup struct {
@@ -60,6 +75,67 @@ type installItemData struct {
 	Dir    string
 	Base   string
 	Use    []string
+}
+
+type parsedGentooVersion struct {
+	version  *semver.Version
+	revision int
+}
+
+func (v *parsedGentooVersion) GreaterThan(other *parsedGentooVersion) bool {
+	if v.version.Equal(other.version) {
+		return v.revision > other.revision
+	}
+	return v.version.GreaterThan(other.version)
+}
+
+func parseGentooVersion(n, prefix string) *parsedGentooVersion {
+	vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
+	var rev int
+	if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
+		if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
+			rev = parsedRev
+			vStr = vStr[:idx]
+		}
+	}
+	vStr = strings.ReplaceAll(vStr, "_", "-")
+	v, err := semver.NewVersion(vStr)
+	if err != nil {
+		return nil
+	}
+	return &parsedGentooVersion{
+		version:  v,
+		revision: rev,
+	}
+}
+
+func getVersionBucket(v *parsedGentooVersion) string {
+	pr := v.version.Prerelease()
+	switch {
+	case strings.Contains(pr, "rc"):
+		return "rc"
+	case strings.Contains(pr, "beta"):
+		return "beta"
+	case strings.Contains(pr, "alpha"):
+		return "alpha"
+	default:
+		return "stable"
+	}
+}
+
+type ebuildDeleter struct {
+	dir            string
+	category       string
+	files          *[]client.RepoFile
+	deletedEbuilds *[]string
+}
+
+func (d *ebuildDeleter) Delete(ebuildName string) {
+	*d.files = append(*d.files, client.RepoFile{Path: pathlib.Join(d.dir, ebuildName), Delete: true})
+	*d.deletedEbuilds = append(*d.deletedEbuilds, ebuildName)
+	md5Name := strings.TrimSuffix(ebuildName, ".ebuild")
+	md5CachePath := pathlib.Join("metadata", "md5-cache", d.category, md5Name)
+	*d.files = append(*d.files, client.RepoFile{Path: md5CachePath, Delete: true})
 }
 
 // Pipe builds and publishes gentoo ebuilds.
@@ -311,11 +387,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return errors.New("no linux archives found")
 	}
 
-	type archData struct {
-		Keyword string
-		File    string
-		URI     string
-	}
 	var archInfos []archData
 	keywordSet := map[string]struct{}{}
 
@@ -486,6 +557,32 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			ebuildPathExtra: cfg.Path,
 		},
 	})
+
+	if cfg.MetaCache {
+		pkgVer := strings.TrimSuffix(filepath.Base(cfg.Path), ".ebuild")
+		category := strings.Split(filepath.ToSlash(filepath.Clean(cfg.Path)), "/")[0]
+		metaCachePath := pathlib.Join("metadata", "md5-cache", category, pkgVer)
+		metaCacheDistPath := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, metaCachePath)
+
+		metaContent := generateMetaCacheContent(data, content)
+		if err := os.MkdirAll(filepath.Dir(metaCacheDistPath), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(metaCacheDistPath, []byte(metaContent), 0o644); err != nil {
+			return err
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: pkgVer,
+			Path: metaCacheDistPath,
+			Type: artifact.GentooFile,
+			Extra: map[string]any{
+				ebuildExtra:     cfg,
+				ebuildPathExtra: metaCachePath,
+				ebuildMetaCache: true,
+			},
+		})
+	}
+
 	return nil
 }
 
@@ -590,43 +687,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 					ebuilds = append(ebuilds, n)
 				}
 			}
-			type gentooVersion struct {
-				version  *semver.Version
-				revision int
-			}
-
-			isGreaterThan := func(vI, vJ *gentooVersion) bool {
-				if vI.version.Equal(vJ.version) {
-					return vI.revision > vJ.revision
-				}
-				return vI.version.GreaterThan(vJ.version)
-			}
-
-			parseVersion := func(n string) *gentooVersion {
-				vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
-				var rev int
-				if idx := strings.LastIndex(vStr, "-r"); idx != -1 {
-					if parsedRev, err := strconv.Atoi(vStr[idx+2:]); err == nil {
-						rev = parsedRev
-						vStr = vStr[:idx]
-					}
-				}
-				vStr = strings.ReplaceAll(vStr, "_", "-")
-				v, err := semver.NewVersion(vStr)
-				if err != nil {
-					return nil
-				}
-				return &gentooVersion{
-					version:  v,
-					revision: rev,
-				}
-			}
-
 			sort.Slice(ebuilds, func(i, j int) bool {
-				vI := parseVersion(ebuilds[i])
-				vJ := parseVersion(ebuilds[j])
+				vI := parseGentooVersion(ebuilds[i], prefix)
+				vJ := parseGentooVersion(ebuilds[j], prefix)
 				if vI != nil && vJ != nil {
-					return isGreaterThan(vI, vJ)
+					return vI.GreaterThan(vJ)
 				}
 				if vI != nil {
 					return true
@@ -645,87 +710,78 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 			}
 
-			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
-				getBucket := func(v *gentooVersion) string {
-					pr := v.version.Prerelease()
-					switch {
-					case strings.Contains(pr, "rc"):
-						return "rc"
-					case strings.Contains(pr, "beta"):
-						return "beta"
-					case strings.Contains(pr, "alpha"):
-						return "alpha"
-					default:
-						return "stable"
-					}
-				}
+			deleter := &ebuildDeleter{
+				dir:            dir,
+				category:       strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0],
+				files:          &g.files,
+				deletedEbuilds: &deletedEbuilds,
+			}
 
+			if g.cfg.VersionRetentionStrategy == "keep_prereleases" {
 				var allEbuilds []string
 				allEbuilds = append(allEbuilds, ebuilds...)
 				allEbuilds = append(allEbuilds, newFiles...)
 
-				maxVersions := map[string]*gentooVersion{}
+				maxVersions := map[string]*parsedGentooVersion{}
 				for _, n := range allEbuilds {
-					v := parseVersion(n)
+					v := parseGentooVersion(n, prefix)
 					if v == nil {
 						continue
 					}
-					b := getBucket(v)
-					if maxVersions[b] == nil || isGreaterThan(v, maxVersions[b]) {
+					b := getVersionBucket(v)
+					if maxVersions[b] == nil || v.GreaterThan(maxVersions[b]) {
 						maxVersions[b] = v
 					}
 				}
 
 				groups := map[string][]string{}
 				for _, n := range ebuilds {
-					v := parseVersion(n)
+					v := parseGentooVersion(n, prefix)
 					if v == nil {
 						groups["stable"] = append(groups["stable"], n)
 						continue
 					}
-					b := getBucket(v)
+					b := getVersionBucket(v)
 
 					violates := false
 					switch b {
 					case "alpha":
-						if (maxVersions["beta"] != nil && !isGreaterThan(v, maxVersions["beta"])) ||
-							(maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
+						if (maxVersions["beta"] != nil && !v.GreaterThan(maxVersions["beta"])) ||
+							(maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
 					case "beta":
-						if (maxVersions["rc"] != nil && !isGreaterThan(v, maxVersions["rc"])) ||
-							(maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"])) {
+						if (maxVersions["rc"] != nil && !v.GreaterThan(maxVersions["rc"])) ||
+							(maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"])) {
 							violates = true
 						}
 					case "rc":
-						if maxVersions["stable"] != nil && !isGreaterThan(v, maxVersions["stable"]) {
+						if maxVersions["stable"] != nil && !v.GreaterThan(maxVersions["stable"]) {
 							violates = true
 						}
 					}
 
 					if violates {
-						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-						deletedEbuilds = append(deletedEbuilds, n)
+						deleter.Delete(n)
 					} else {
 						groups[b] = append(groups[b], n)
 					}
 				}
 
 				newCounts := countNewEbuilds(ebuilds, newFiles, func(f string) string {
-					v := parseVersion(f)
+					v := parseGentooVersion(f, prefix)
 					if v == nil {
 						return "stable"
 					}
-					return getBucket(v)
+					return getVersionBucket(v)
 				})
 
 				for b, bucketEbuilds := range groups {
 					allowedToKeep := max(0, g.cfg.KeepVersions-newCounts[b])
 					if len(bucketEbuilds) > allowedToKeep {
 						for _, n := range bucketEbuilds[allowedToKeep:] {
-							g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-							deletedEbuilds = append(deletedEbuilds, n)
+							deleter.Delete(n)
 						}
 					}
 				}
@@ -744,8 +800,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 						WithField("total_old", len(ebuilds)).
 						Debug("keeping latest versions")
 					for _, n := range ebuilds[allowedToKeep:] {
-						g.files = append(g.files, client.RepoFile{Path: pathlib.Join(dir, n), Delete: true})
-						deletedEbuilds = append(deletedEbuilds, n)
+						deleter.Delete(n)
 					}
 				}
 			}
@@ -755,6 +810,29 @@ func (Pipe) Publish(ctx *context.Context) error {
 		if g.cfg.Repository.PullRequest.Enabled {
 			stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
 		}
+
+		settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+		if err != nil {
+			return err
+		}
+
+		metaCacheAllowed := true
+		if settings.hasCacheFormatsConfigured {
+			metaCacheAllowed = slices.Contains(settings.cacheFormats, "md5-dict") || slices.Contains(settings.cacheFormats, "md5-cache")
+		}
+
+		if g.cfg.MetaCache && !metaCacheAllowed {
+			log.Warnf("gentoo.meta_cache is true for %q, but overlay metadata/layout.conf disables cache-formats", g.cfg.ID)
+		}
+
+		var filteredFiles []client.RepoFile
+		for _, f := range g.files {
+			if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
+				continue
+			}
+			filteredFiles = append(filteredFiles, f)
+		}
+		g.files = filteredFiles
 		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, stateRepo, &g.files, deletedEbuilds); err != nil {
 			return err
 		}
@@ -1107,27 +1185,36 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			}
 		}
 
-		marshaled, err := xml.MarshalIndent(meta, "", "\t")
-		if err != nil {
-			return err
+		useFlags := gentooUseFlags(cfg)
+		tmplData := struct {
+			config.Gentoo
+			UseFlags []config.GentooUseFlag
+		}{
+			Gentoo:   cfg,
+			UseFlags: make([]config.GentooUseFlag, len(useFlags)),
+		}
+		for i, f := range useFlags {
+			tmplData.UseFlags[i] = config.GentooUseFlag{
+				Flag:        strings.TrimLeft(f.Flag, "+-"),
+				Description: f.Description,
+			}
 		}
 
 		var buf bytes.Buffer
-		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-		buf.WriteString("<!DOCTYPE pkgmetadata SYSTEM \"https://www.gentoo.org/dtd/metadata.dtd\">\n")
-		buf.Write(marshaled)
-		buf.WriteString("\n")
-
+		if err := template.Must(template.New("metadata.xml").Parse(metadataXMLTemplate)).Execute(&buf, tmplData); err != nil {
+			return err
+		}
 		*files = append(*files, client.RepoFile{
 			Content: buf.Bytes(),
 			Path:    metadataPath,
 		})
 	}
 
-	manifestHashes, thinManifests, err := loadManifestSettings(ctx, repoClient, repo, cfg)
+	settings, err := loadOverlaySettings(ctx, cfg, repoClient, repo)
 	if err != nil {
 		return err
 	}
+	manifestHashes, thinManifests := settings.hashes, settings.thin
 	manifestLines, err := loadManifestLines(ctx, repoClient, repo, manifestPath)
 	if err != nil {
 		return err
@@ -1260,33 +1347,37 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	return nil
 }
 
-func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo client.Repo, cfg config.Gentoo) ([]string, bool, error) {
-	hashes := []string{"BLAKE2B", "SHA512"}
-	thin := false
+type overlaySettings struct {
+	hashes                    []string
+	thin                      bool
+	cacheFormats              []string
+	hasCacheFormatsConfigured bool
+}
 
+func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo) (overlaySettings, error) {
+	settings := overlaySettings{
+		hashes: []string{"BLAKE2B", "SHA512"},
+		thin:   false,
+	}
 	if len(cfg.ManifestHashes) > 0 {
-		hashes = cfg.ManifestHashes
+		settings.hashes = cfg.ManifestHashes
 	}
 	if cfg.ThinManifests != nil {
-		thin = *cfg.ThinManifests
-	}
-
-	if len(cfg.ManifestHashes) > 0 && cfg.ThinManifests != nil {
-		return hashes, thin, nil
+		settings.thin = *cfg.ThinManifests
 	}
 
 	dl, ok := repoClient.(client.FileDownloader)
 	if !ok {
-		return hashes, thin, nil
+		return settings, nil
 	}
 	content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
 	if errors.Is(err, client.ErrNotFound) || errors.Is(err, client.ErrNotImplemented) {
-		return hashes, thin, nil
+		return settings, nil
 	}
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to download layout.conf: %w", err)
+		return settings, fmt.Errorf("failed to download layout.conf: %w", err)
 	}
-	for _, lineB := range bytes.Split(content, []byte{'\n'}) { //nolint:modernize
+	for lineB := range bytes.SplitSeq(content, []byte{'\n'}) {
 		key, value, ok := strings.Cut(strings.TrimSpace(string(lineB)), "=")
 		if !ok {
 			continue
@@ -1294,15 +1385,18 @@ func loadManifestSettings(ctx *context.Context, repoClient client.Client, repo c
 		switch strings.TrimSpace(key) {
 		case "manifest-hashes":
 			if len(cfg.ManifestHashes) == 0 {
-				hashes = strings.Fields(value)
+				settings.hashes = strings.Fields(value)
 			}
 		case "thin-manifests":
 			if cfg.ThinManifests == nil {
-				thin = strings.TrimSpace(value) == "true"
+				settings.thin = strings.TrimSpace(value) == "true"
 			}
+		case "cache-formats":
+			settings.hasCacheFormatsConfigured = true
+			settings.cacheFormats = strings.Fields(value)
 		}
 	}
-	return hashes, thin, nil
+	return settings, nil
 }
 
 func loadManifestLines(ctx *context.Context, repoClient client.Client, repo client.Repo, manifestPath string) ([]string, error) {
@@ -1340,4 +1434,77 @@ func countNewEbuilds(existing, newFiles []string, bucket func(string) string) ma
 		}
 	}
 	return counts
+}
+
+func generateMetaCacheContent(data any, ebuildContent string) string {
+	d, ok := data.(struct {
+		Name          string
+		Description   string
+		Homepage      string
+		License       string
+		Keywords      string
+		Bindir        string
+		ExtraInstall  string
+		Archs         []archData
+		InstallGroups []installGroup
+		UseFlags      []config.GentooUseFlag
+		Dobin         []installItemData
+		Doconfd       []installItemData
+		Dodir         []string
+		Dodoc         []string
+		Doenvd        []installItemData
+		Doexe         []installItemData
+		Doheader      []installItemData
+		Doinitd       []installItemData
+		Doins         []installItemData
+		Doman         []string
+		Dosbin        []installItemData
+		Dosym         []installItemData
+		Systemd       []installItemData
+	})
+	if !ok {
+		return ""
+	}
+	var useFlags []string
+	for _, flag := range d.UseFlags {
+		if flag.Flag != "" {
+			useFlags = append(useFlags, flag.Flag)
+		}
+	}
+	slices.Sort(useFlags)
+	useFlags = slices.Compact(useFlags)
+
+	var srcURIs []string
+	for _, art := range d.Archs {
+		if art.Keyword != "" && art.URI != "" {
+			srcURIs = append(srcURIs, fmt.Sprintf("%s? ( %s )", art.Keyword, art.URI))
+		}
+	}
+
+	h := md5.Sum([]byte(ebuildContent))
+	md5Hex := hex.EncodeToString(h[:])
+
+	tmplData := struct {
+		Description string
+		Homepage    string
+		IUSE        string
+		Keywords    string
+		License     string
+		SrcURI      string
+		MD5         string
+	}{
+		Description: d.Description,
+		Homepage:    d.Homepage,
+		IUSE:        strings.Join(useFlags, " "),
+		Keywords:    d.Keywords,
+		License:     d.License,
+		SrcURI:      strings.Join(srcURIs, " "),
+		MD5:         md5Hex,
+	}
+
+	var buf bytes.Buffer
+	if err := template.Must(template.New("md5-cache").Parse(metaCacheTemplate)).Execute(&buf, tmplData); err != nil {
+		return ""
+	}
+	return buf.String()
 }
