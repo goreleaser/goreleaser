@@ -277,7 +277,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		"Name":     cfg.Name,
 		"Category": cfg.Category,
 	})
-	if err := tp.ApplyAll(&cfg.Name, &cfg.Category, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.License); err != nil {
+	if err := tp.ApplyAll(&cfg.Name, &cfg.Category, &cfg.Path, &cfg.Description, &cfg.Homepage, &cfg.BugsTo, &cfg.License); err != nil {
 		return err
 	}
 	var err error
@@ -552,18 +552,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 		}
 		repo := client.RepoFromRef(g.cfg.Repository)
 
-		cl, err = client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
+		repoClient, err := client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
 		if err != nil {
 			return err
-		}
-
-		repoClient := cl
-		if g.cfg.Repository.Token != "" {
-			var err error
-			repoClient, err = client.NewIfToken(ctx, cl, g.cfg.Repository.Token)
-			if err != nil {
-				return err
-			}
 		}
 
 		if g.cfg.Repository.PullRequest.Enabled {
@@ -1160,8 +1151,11 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	}
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
-		artifact.Or(artifact.ByType(artifact.UploadableArchive), artifact.ByType(artifact.UploadableBinary)),
+		artifact.ByType(artifact.UploadableArchive),
 		artifact.OnlyReplacingUnibins,
+	}
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
 	}
 	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	currentDists := make(map[string]struct{}, len(arches))
