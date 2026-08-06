@@ -64,14 +64,28 @@ func TestToAPKArch(t *testing.T) {
 
 func TestToAPKVersion(t *testing.T) {
 	for input, expected := range map[string]string{
-		"1.2.3":        "1.2.3",
-		"1.2.3-beta.1": "1.2.3_beta1",
-		"1.2.3-rc.2":   "1.2.3_rc2",
+		"1.2.3":           "1.2.3",
+		"1.2.3-beta.1":    "1.2.3_beta1",
+		"1.2.3-rc.2":      "1.2.3_rc2",
+		"1.2.3-preview.1": "1.2.3_pre_p0_p1",
+		"1.2.3-rc-1":      "1.2.3_rc_p1",
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, expected, toAPKVersion(input))
 		})
 	}
+
+	valid := `^[0-9]+(?:\.[0-9]+)*(?:_(?:alpha|beta|pre|rc|cvs|svn|git|hg|p)[0-9]*)*$`
+	for _, version := range []string{
+		"1.2.3+build.1",
+		"1.2.3-SNAPSHOT-deadbeef",
+	} {
+		t.Run(version+" is valid", func(t *testing.T) {
+			require.Regexp(t, valid, toAPKVersion(version))
+		})
+	}
+
+	require.NotEqual(t, toAPKVersion("1.2.3-beta.1.0"), toAPKVersion("1.2.3-beta.10"))
 }
 
 func TestDefaultPackage(t *testing.T) {
@@ -421,6 +435,72 @@ func TestArchiveFormats(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestMultipleArchiveFormatsUseDeterministicChoice(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			IDs:         []string{"foo"},
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	for _, format := range []string{"zip", "tar.gz"} {
+		addArtifact(t, ctx, artifact.Artifact{
+			Name:    "foo." + format,
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "foo",
+				artifact.ExtraFormat:   format,
+				artifact.ExtraBinaries: []string{"foo"},
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+	require.NoError(t, err)
+	require.Contains(t, string(content), "foo.tar.gz")
+	require.NotContains(t, string(content), "foo.zip")
+}
+
+func TestWhitespacePackageUsesInferredInstructions(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+			Package:     "{{ if .IsSnapshot }}custom{{ else }} \n\t {{ end }}",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	addArtifact(t, ctx, artifact.Artifact{
+		Name:    "foo",
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+	require.NoError(t, err)
+	require.Contains(t, string(content), `install -Dm755 "$srcdir/$_source" "$pkgdir/usr/bin/foo"`)
 }
 
 func TestRequiredMetadata(t *testing.T) {

@@ -12,6 +12,10 @@ publish an [`APKBUILD`][apkbuild] that packages prebuilt Linux binaries.
 Binary artifacts and archives in `tar`, `tgz`, `tar.gz`, `tar.xz`, and `zip`
 formats are supported.
 
+When an archive ID produces multiple formats for the same architecture,
+GoReleaser deterministically selects the first available format in this order:
+`tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
+
 This integration does not create `.apk` packages. To create those directly,
 use [nFPM][nfpm] instead.
 

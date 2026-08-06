@@ -33,6 +33,8 @@ const (
 
 var ErrNoArchivesFound = errors.New("no linux archives found")
 
+var supportedArchiveFormats = []string{"tar.gz", "tgz", "tar.xz", "tar", "zip"}
+
 // Pipe generates and publishes Alpine Linux APKBUILD files.
 type Pipe struct{}
 
@@ -121,7 +123,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 			artifact.ByType(artifact.UploadableBinary),
 			artifact.And(
 				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByFormats("tar", "tgz", "tar.gz", "tar.xz", "zip"),
+				artifact.ByFormats(supportedArchiveFormats...),
 			),
 		),
 	}
@@ -143,15 +145,16 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 			cmp.Compare(a.Name, b.Name),
 		)
 	})
+	archives = selectArtifacts(archives)
 
 	pkg, err := tmpl.New(ctx).Apply(apk.Package)
 	if err != nil {
 		return err
 	}
-	if strings.TrimSpace(pkg) == "" {
+	apk.Package = strings.TrimSpace(pkg)
+	if apk.Package == "" {
 		log.Warn("guessing package instructions")
 	}
-	apk.Package = pkg
 
 	content, err := buildAPKBuild(ctx, apk, cli, archives)
 	if err != nil {
@@ -184,6 +187,35 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		},
 	})
 	return nil
+}
+
+func selectArtifacts(artifacts []*artifact.Artifact) []*artifact.Artifact {
+	selected := make(map[string]int, len(artifacts))
+	result := make([]*artifact.Artifact, 0, len(artifacts))
+	for _, art := range artifacts {
+		arch := toAPKArch(art.Goarch, art.Goarm)
+		index, ok := selected[arch]
+		if !ok {
+			selected[arch] = len(result)
+			result = append(result, art)
+			continue
+		}
+
+		current := result[index]
+		if current.Type != artifact.UploadableArchive || art.Type != artifact.UploadableArchive ||
+			current.ID() != art.ID() || current.Format() == art.Format() {
+			result = append(result, art)
+			continue
+		}
+		if formatPriority(art.Format()) < formatPriority(current.Format()) {
+			result[index] = art
+		}
+	}
+	return result
+}
+
+func formatPriority(format string) int {
+	return slices.Index(supportedArchiveFormats, format)
 }
 
 func defaultPackage(art *artifact.Artifact) string {
@@ -300,11 +332,74 @@ func toAPKArch(goarch, goarm string) string {
 }
 
 func toAPKVersion(version string) string {
-	base, prerelease, ok := strings.Cut(version, "-")
-	if !ok {
-		return version
+	version, metadata, hasMetadata := strings.Cut(version, "+")
+	base, prerelease, hasPrerelease := strings.Cut(version, "-")
+	result := base
+	if hasPrerelease {
+		result += toAPKPrerelease(prerelease)
 	}
-	return base + "_" + strings.ReplaceAll(prerelease, ".", "")
+	if hasMetadata {
+		result += "_p" + toAPKVersionNumber(metadata)
+	}
+	return result
+}
+
+func toAPKPrerelease(prerelease string) string {
+	value := strings.ToLower(prerelease)
+	for _, candidate := range []struct {
+		name   string
+		suffix string
+	}{
+		{name: "preview", suffix: "pre"},
+		{name: "snapshot", suffix: "git"},
+		{name: "alpha", suffix: "alpha"},
+		{name: "beta", suffix: "beta"},
+		{name: "pre", suffix: "pre"},
+		{name: "rc", suffix: "rc"},
+	} {
+		if value != candidate.name && !strings.HasPrefix(value, candidate.name+".") && !strings.HasPrefix(value, candidate.name+"-") {
+			continue
+		}
+
+		if candidate.name == "snapshot" {
+			return "_git" + toAPKVersionNumber(value)
+		}
+
+		result := "_" + candidate.suffix
+		if candidate.name == "preview" {
+			result += "_p0"
+		}
+		rest := strings.TrimPrefix(value, candidate.name)
+		if rest == "" {
+			return result
+		}
+
+		separator := rest[:1]
+		parts := strings.Split(rest[1:], separator)
+		for _, part := range parts {
+			if part == "" || strings.Trim(part, "0123456789") != "" {
+				return result + "_p" + toAPKVersionNumber(rest)
+			}
+		}
+		if separator == "." && candidate.name != "preview" {
+			result += parts[0]
+			parts = parts[1:]
+		}
+		for _, part := range parts {
+			result += "_p" + part
+		}
+		return result
+	}
+	return "_pre" + toAPKVersionNumber(value)
+}
+
+func toAPKVersionNumber(value string) string {
+	var result strings.Builder
+	result.WriteByte('1')
+	for i := range len(value) {
+		_, _ = fmt.Fprintf(&result, "%03d", value[i])
+	}
+	return result.String()
 }
 
 func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
