@@ -16,6 +16,7 @@ var (
 	_ ReleaseNotesGenerator = &Mock{}
 	_ PullRequestOpener     = &Mock{}
 	_ ForkSyncer            = &Mock{}
+	_ ReleaseChecker        = &Mock{}
 )
 
 func NewMock() *Mock {
@@ -29,9 +30,11 @@ type Mock struct {
 	Messages             []string
 	FailToCreateRelease  bool
 	FailToUpload         bool
+	FailCanRelease       bool
 	CreatedRelease       bool
 	UploadedFile         bool
 	ReleasePublished     bool
+	CanReleaseCalled     bool
 	UploadedFileNames    []string
 	UploadedFilePaths    map[string]string
 	Lock                 sync.Mutex
@@ -136,4 +139,12 @@ func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact)
 
 func (c *Mock) DownloadFile(_ *context.Context, _ Repo, _ string) ([]byte, error) {
 	return nil, ErrNotFound
+}
+
+func (c *Mock) CanRelease(_ *context.Context) error {
+	c.CanReleaseCalled = true
+	if c.FailCanRelease {
+		return errors.New("insufficient permissions to create a release")
+	}
+	return nil
 }

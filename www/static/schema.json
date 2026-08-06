@@ -4335,6 +4335,9 @@
 					},
 					"draft": {
 						"type": "boolean"
+					},
+					"token": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4490,6 +4493,25 @@
 					},
 					"include_meta": {
 						"type": "boolean"
+					},
+					"preflight": {
+						"$ref": "#/$defs/ReleasePreflight"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ReleasePreflight": {
+				"properties": {
+					"fail_on_error": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

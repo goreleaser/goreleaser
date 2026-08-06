@@ -414,6 +414,59 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	require.Equal(t, 3, totalRequests)
 }
 
+func TestGitLabCanRelease(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name    string
+		status  int
+		body    string
+		wantErr string
+	}{
+		{"developer", http.StatusOK, `{"permissions":{"project_access":{"access_level":30}}}`, ""},
+		{"maintainer", http.StatusOK, `{"permissions":{"project_access":{"access_level":40}}}`, ""},
+		{"group access", http.StatusOK, `{"permissions":{"group_access":{"access_level":40}}}`, ""},
+		{"reporter", http.StatusOK, `{"permissions":{"project_access":{"access_level":20}}}`, "developer or higher"},
+		{"permissions absent", http.StatusOK, `{}`, ""},
+		{"api error", http.StatusNotFound, `{}`, "could not check release permissions"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				if strings.HasSuffix(r.URL.Path, "/api/v4/version") {
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, `{"version":"16.5.0"}`)
+					return
+				}
+				if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/projects/") {
+					w.WriteHeader(tt.status)
+					fmt.Fprint(w, tt.body)
+					return
+				}
+				t.Errorf("unhandled request: %s %s", r.Method, r.URL.Path)
+			}))
+			defer srv.Close()
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				GitLabURLs: config.GitLabURLs{API: srv.URL},
+				Release: config.Release{
+					GitLab: config.Repo{Owner: "someone", Name: "something"},
+				},
+			})
+
+			client, err := newGitLab(ctx, "test-token")
+			require.NoError(t, err)
+
+			err = client.CanRelease(ctx)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 	t.Parallel()
 	totalRequests := 0

@@ -30,6 +30,7 @@ var (
 	_ PullRequestOpener = &gitlabClient{}
 	_ DirectoryLister   = &gitlabClient{}
 	_ FileDeleter       = &gitlabClient{}
+	_ ReleaseChecker    = &gitlabClient{}
 )
 
 type gitlabClient struct {
@@ -542,6 +543,38 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 
 func (c *gitlabClient) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	// GitLab doesn't support draft releases. So a created release is already published.
+	return nil
+}
+
+func (c *gitlabClient) CanRelease(ctx *context.Context) error {
+	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
+	if err != nil {
+		return err
+	}
+	projectID := gitlabName
+	if ctx.Config.Release.GitLab.Owner != "" {
+		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
+	}
+	p, _, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
+		return c.client.Projects.GetProject(projectID, nil)
+	})
+	if err != nil {
+		return fmt.Errorf("could not check release permissions: %w", err)
+	}
+	if p.Permissions == nil {
+		// Permissions field is absent for certain auth types; skip the check.
+		return nil
+	}
+	var maxLevel gitlab.AccessLevelValue
+	if p.Permissions.ProjectAccess != nil && p.Permissions.ProjectAccess.AccessLevel > maxLevel {
+		maxLevel = p.Permissions.ProjectAccess.AccessLevel
+	}
+	if p.Permissions.GroupAccess != nil && p.Permissions.GroupAccess.AccessLevel > maxLevel {
+		maxLevel = p.Permissions.GroupAccess.AccessLevel
+	}
+	if maxLevel < gitlab.DeveloperPermissions {
+		return fmt.Errorf("token does not have developer or higher permissions for %s", projectID)
+	}
 	return nil
 }
 

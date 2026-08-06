@@ -37,6 +37,7 @@ var (
 	_ Client          = &giteaClient{}
 	_ DirectoryLister = &giteaClient{}
 	_ FileDeleter     = &giteaClient{}
+	_ ReleaseChecker  = &giteaClient{}
 )
 
 func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, *gitea.Response, error) {
@@ -362,6 +363,21 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 
 func (c *giteaClient) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	// TODO: Create release as draft while uploading artifacts and only publish it here.
+	return nil
+}
+
+func (c *giteaClient) CanRelease(ctx *context.Context) error {
+	owner := ctx.Config.Release.Gitea.Owner
+	repoName := ctx.Config.Release.Gitea.Name
+	repo, _, err := giteaDo(ctx, func() (*gitea.Repository, *gitea.Response, error) {
+		return c.client.GetRepo(owner, repoName)
+	})
+	if err != nil {
+		return fmt.Errorf("could not check release permissions: %w", err)
+	}
+	if repo.Permissions != nil && !repo.Permissions.Push {
+		return fmt.Errorf("token does not have push permission for %s/%s", owner, repoName)
+	}
 	return nil
 }
 
