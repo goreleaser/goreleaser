@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-{{- if .BugsTo }}
-	<upstream>
-		<bugs-to>{{ .BugsTo }}</bugs-to>
-	</upstream>
-{{- end }}
 {{- range .Maintainers }}
 	<maintainer type="person">
 		{{- if .Email }}
@@ -16,9 +11,21 @@
 		{{- end }}
 	</maintainer>
 {{- end }}
-{{- range .UseFlags }}
+{{- if .UseFlags }}
 	<use>
+	{{- range .UseFlags }}
 		<flag name="{{ .Flag }}">{{ .Description }}</flag>
+	{{- end }}
 	</use>
+{{- end }}
+{{- if or .BugsTo .Homepage }}
+	<upstream>
+	{{- if .BugsTo }}
+		<bugs-to>{{ .BugsTo }}</bugs-to>
+	{{- end }}
+	{{- if .Homepage }}
+		<doc>{{ .Homepage }}</doc>
+	{{- end }}
+	</upstream>
 {{- end }}
 </pkgmetadata>

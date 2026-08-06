@@ -414,6 +414,24 @@ func TestHandleGentooManifestAndMetadata(t *testing.T) {
 	require.Contains(t, string(files[1].Content), "MISC metadata.xml")
 }
 
+func TestHandleGentooMetadata(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	cfg := config.Gentoo{
+		Name:     "goreleaser-gentoo-smoke",
+		Path:     "app-misc/goreleaser-gentoo-smoke-bin/goreleaser-gentoo-smoke-bin-1.0.0.ebuild",
+		Homepage: "https://github.com/arran4/goreleaser-gentoo-smoke",
+		UseFlags: []config.GentooUseFlag{{
+			Flag:        "systemd",
+			Description: "enables systemd installation",
+		}},
+	}
+
+	var files []client.RepoFile
+	require.NoError(t, handleGentooManifestAndMetadata(ctx, cfg, nil, client.Repo{}, &files, nil))
+	require.NotEmpty(t, files)
+	golden.RequireEqual(t, files[0].Content)
+}
+
 func TestHandleGentooManifestThick(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})

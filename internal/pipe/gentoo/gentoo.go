@@ -966,7 +966,10 @@ func gentooExtraFilePath(name string) (string, error) {
 }
 
 func gentooUseFlags(cfg config.Gentoo) []config.GentooUseFlag {
-	docFlag := config.GentooUseFlag{Flag: "doc"}
+	docFlag := config.GentooUseFlag{
+		Flag:        "doc",
+		Description: "Install README man page and other docs",
+	}
 	useFlagsLen := len(cfg.UseFlags)
 	capHint := useFlagsLen
 	if capHint < int(^uint(0)>>1) {
