@@ -728,6 +728,7 @@ func TestTemplateScenarios(t *testing.T) {
 				Systemd       []installItemData
 			}{
 				InstallGroups: tc.installGroups,
+				UseFlags:      gentooUseFlags(config.Gentoo{}),
 			}
 			var buf bytes.Buffer
 			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
@@ -1147,6 +1148,7 @@ func TestMetaCache(t *testing.T) {
 		content, err := os.ReadFile(cacheFile)
 		require.NoError(t, err)
 		require.Contains(t, string(content), "DEFINED_PHASES=")
+		require.Contains(t, string(content), "IUSE=doc\n")
 		require.Contains(t, string(content), "_md5_=")
 	})
 
