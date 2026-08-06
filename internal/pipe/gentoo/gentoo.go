@@ -785,7 +785,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 			Owner:  g.cfg.Repository.PullRequest.Base.Owner,
 			Branch: g.cfg.Repository.PullRequest.Base.Branch,
 		}
-		pcl, ok := repoClient.(client.PullRequestOpener)
+		prClient, err := client.NewIfToken(ctx, repoClient, g.cfg.Repository.PullRequest.Token)
+		if err != nil {
+			return err
+		}
+		pcl, ok := prClient.(client.PullRequestOpener)
 		if !ok {
 			return errors.New("client does not support pull requests")
 		}
