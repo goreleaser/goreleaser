@@ -122,6 +122,18 @@ func TestDoRunRejectsRawBinaries(t *testing.T) {
 	require.EqualError(t, err, "no linux archives found")
 }
 
+func TestDoRunRejectsUnsafeEbuildPath(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Gentoos: []config.Gentoo{{
+			Path:    "../../outside/foo.ebuild",
+			License: "MIT",
+		}},
+	})
+
+	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+	require.EqualError(t, err, `gentoo.path "../../outside/foo.ebuild" must be a relative category/package/file.ebuild path`)
+}
+
 func TestDoRunCustomBindir(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -725,6 +737,24 @@ func TestDoRunWithSystemdAndUseFlags(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, bts)
+}
+
+func TestGentooUseFlagsIncludesInstallConditions(t *testing.T) {
+	flags := gentooUseFlags(config.Gentoo{
+		UseFlags: []config.GentooUseFlag{{Flag: "+systemd"}},
+		Dobin: []config.GentooInstallItem{{
+			Use: []string{"!systemd", "zsh"},
+		}},
+		Systemd: []config.GentooInstallItem{{
+			Use: []string{"bash"},
+		}},
+	})
+
+	require.Equal(t, []config.GentooUseFlag{
+		{Flag: "+systemd"},
+		{Flag: "bash"},
+		{Flag: "zsh"},
+	}, flags)
 }
 
 func TestIsGreaterThan(t *testing.T) {
