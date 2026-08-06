@@ -502,27 +502,8 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	for name, src := range extraFiles {
-		destName, err := gentooExtraFilePath(name)
-		if err != nil {
-			return err
-		}
-		dst := filepath.Join(filepath.Dir(path), destName)
-		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
-			return err
-		}
-		if err := copyFile(src, dst); err != nil {
-			return err
-		}
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: destName,
-			Path: dst,
-			Type: artifact.GentooFile,
-			Extra: map[string]any{
-				ebuildExtra:     cfg,
-				ebuildPathExtra: pathlib.Join(filepath.ToSlash(filepath.Dir(cfg.Path)), filepath.ToSlash(destName)),
-			},
-		})
+	if err := ef.InstallExtraFiles(ctx, path); err != nil {
+		return err
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -882,6 +863,32 @@ func (Pipe) Publish(ctx *context.Context) error {
 		if err := pcl.OpenPullRequest(ctx, base, repo, msg, g.cfg.Repository.PullRequest.Draft); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (v *extraFilesProcessor) InstallExtraFiles(ctx *context.Context, ebuildPath string) error {
+	for name, src := range v.extraFiles {
+		destName, err := gentooExtraFilePath(name)
+		if err != nil {
+			return err
+		}
+		dst := filepath.Join(filepath.Dir(ebuildPath), destName)
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return err
+		}
+		if err := copyFile(src, dst); err != nil {
+			return err
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: destName,
+			Path: dst,
+			Type: artifact.GentooFile,
+			Extra: map[string]any{
+				ebuildExtra:     v.cfg,
+				ebuildPathExtra: pathlib.Join(filepath.ToSlash(filepath.Dir(v.cfg.Path)), filepath.ToSlash(destName)),
+			},
+		})
 	}
 	return nil
 }

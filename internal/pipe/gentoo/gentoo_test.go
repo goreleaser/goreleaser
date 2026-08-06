@@ -1312,3 +1312,33 @@ func TestEbuildData(t *testing.T) {
 		require.Contains(t, meta, "_md5_=")
 	})
 }
+
+func TestInstallExtraFiles(t *testing.T) {
+	tmpDir := t.TempDir()
+	srcFile := filepath.Join(tmpDir, "foo.conf")
+	require.NoError(t, os.WriteFile(srcFile, []byte("conf content"), 0o644))
+
+	ebuildPath := filepath.Join(tmpDir, "app-misc", "foo", "foo-1.0.0.ebuild")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: tmpDir,
+	})
+
+	ef := newExtraFilesProcessor(config.Gentoo{
+		Path: "app-misc/foo/foo-1.0.0.ebuild",
+	}, nil, map[string]string{
+		"files/foo.conf": srcFile,
+	})
+
+	err := ef.InstallExtraFiles(ctx, ebuildPath)
+	require.NoError(t, err)
+
+	destFile := filepath.Join(tmpDir, "app-misc", "foo", "files", "foo.conf")
+	content, err := os.ReadFile(destFile)
+	require.NoError(t, err)
+	require.Equal(t, "conf content", string(content))
+
+	arts := ctx.Artifacts.List()
+	require.Len(t, arts, 1)
+	require.Equal(t, "files/foo.conf", arts[0].Name)
+	require.Equal(t, artifact.GentooFile, arts[0].Type)
+}
