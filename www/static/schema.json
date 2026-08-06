@@ -1631,6 +1631,9 @@
 							}
 						]
 					},
+					"disable_ignore_size_to_binary_files": {
+						"type": "boolean"
+					},
 					"bindir": {
 						"type": "string"
 					},

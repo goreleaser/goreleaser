@@ -62,24 +62,6 @@ type installItemData struct {
 	Use    []string
 }
 
-func buildInstallItems(cfgItems []config.GentooInstallItem, extraFiles map[string]string) []installItemData {
-	var items []installItemData
-	for _, d := range cfgItems {
-		src := d.Src
-		if _, ok := extraFiles[d.Src]; ok {
-			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
-		}
-		items = append(items, installItemData{
-			Source: src,
-			Target: d.Dst,
-			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
-			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
-			Use:    d.Use,
-		})
-	}
-	return items
-}
-
 // Pipe builds and publishes gentoo ebuilds.
 type Pipe struct{}
 
@@ -161,6 +143,122 @@ var gentooPrereleaseRe = regexp.MustCompile(`-(alpha|beta|pre|rc|p)[.\-]?(\d*)`)
 
 func gentooVersion(v string) string {
 	return gentooPrereleaseRe.ReplaceAllString(v, "_${1}${2}")
+}
+
+type extraFilesProcessor struct {
+	cfg        config.Gentoo
+	arches     []*artifact.Artifact
+	extraFiles map[string]string
+}
+
+func (v *extraFilesProcessor) inArchives(fileName string) bool {
+	if len(v.arches) == 0 {
+		return false
+	}
+	for _, art := range v.arches {
+		found := false
+		if files, ok := art.Extra[artifact.ExtraFiles].([]string); ok {
+			for _, f := range files {
+				if filepath.Base(f) == fileName {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			if bins, ok := art.Extra[artifact.ExtraBinaries].([]string); ok {
+				for _, b := range bins {
+					if filepath.Base(b) == fileName {
+						found = true
+						break
+					}
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func newExtraFilesProcessor(cfg config.Gentoo, arches []*artifact.Artifact, extraFiles map[string]string) *extraFilesProcessor {
+	return &extraFilesProcessor{
+		cfg:        cfg,
+		arches:     arches,
+		extraFiles: extraFiles,
+	}
+}
+
+func (v *extraFilesProcessor) Filter() error {
+	for name, src := range v.extraFiles {
+		if v.inArchives(name) {
+			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
+			delete(v.extraFiles, name)
+			continue
+		}
+		if err := v.validate(name, src); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (v *extraFilesProcessor) validate(name, src string) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("failed to stat extra file %s: %w", name, err)
+	}
+	if !v.cfg.DisableIgnoreSizeToBinaryFiles {
+		if info.Size() > 20*1024 {
+			return fmt.Errorf("extra file %s is larger than 20KB. Gentoo policy forbids large files in the files/ directory. Please add it to a release asset instead", name)
+		}
+
+		f, err := os.Open(src)
+		if err != nil {
+			return fmt.Errorf("failed to open extra file %s: %w", name, err)
+		}
+		defer f.Close()
+		buf := make([]byte, 512)
+		n, err := f.Read(buf)
+		if err != nil && err != io.EOF {
+			return fmt.Errorf("failed to read extra file %s: %w", name, err)
+		}
+		if bytes.IndexByte(buf[:n], 0) != -1 {
+			return fmt.Errorf("extra file %s appears to be a binary file. Gentoo policy forbids binary files in the files/ directory", name)
+		}
+	}
+	return nil
+}
+
+func (v *extraFilesProcessor) processStringArray(arr []string) []string {
+	var out []string
+	for _, s := range arr {
+		if _, ok := v.extraFiles[s]; ok {
+			out = append(out, "${FILESDIR}/"+strings.TrimPrefix(s, "files/"))
+		} else {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
+	var items []installItemData
+	for _, d := range cfgItems {
+		src := d.Src
+		if _, ok := v.extraFiles[d.Src]; ok {
+			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
+		}
+		items = append(items, installItemData{
+			Source: src,
+			Target: d.Dst,
+			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
+			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
+			Use:    d.Use,
+		})
+	}
+	return items
 }
 
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
@@ -270,16 +368,10 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	processStringArray := func(arr []string) []string {
-		var out []string
-		for _, s := range arr {
-			if _, ok := extraFiles[s]; ok {
-				out = append(out, "${FILESDIR}/"+strings.TrimPrefix(s, "files/"))
-			} else {
-				out = append(out, s)
-			}
-		}
-		return out
+	ef := newExtraFilesProcessor(cfg, arches, extraFiles)
+
+	if err := ef.Filter(); err != nil {
+		return err
 	}
 
 	data := struct {
@@ -317,19 +409,19 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      cfg.UseFlags,
-		Dobin:         buildInstallItems(cfg.Dobin, extraFiles),
-		Doconfd:       buildInstallItems(cfg.Doconfd, extraFiles),
+		Dobin:         ef.buildInstallItems(cfg.Dobin),
+		Doconfd:       ef.buildInstallItems(cfg.Doconfd),
 		Dodir:         cfg.Dodir,
-		Dodoc:         processStringArray(cfg.Dodoc),
-		Doenvd:        buildInstallItems(cfg.Doenvd, extraFiles),
-		Doexe:         buildInstallItems(cfg.Doexe, extraFiles),
-		Doheader:      buildInstallItems(cfg.Doheader, extraFiles),
-		Doinitd:       buildInstallItems(cfg.Doinitd, extraFiles),
-		Doins:         buildInstallItems(cfg.Doins, extraFiles),
-		Doman:         processStringArray(cfg.Doman),
-		Dosbin:        buildInstallItems(cfg.Dosbin, extraFiles),
-		Dosym:         buildInstallItems(cfg.Dosym, extraFiles),
-		Systemd:       buildInstallItems(cfg.Systemd, extraFiles),
+		Dodoc:         ef.processStringArray(cfg.Dodoc),
+		Doenvd:        ef.buildInstallItems(cfg.Doenvd),
+		Doexe:         ef.buildInstallItems(cfg.Doexe),
+		Doheader:      ef.buildInstallItems(cfg.Doheader),
+		Doinitd:       ef.buildInstallItems(cfg.Doinitd),
+		Doins:         ef.buildInstallItems(cfg.Doins),
+		Doman:         ef.processStringArray(cfg.Doman),
+		Dosbin:        ef.buildInstallItems(cfg.Dosbin),
+		Dosym:         ef.buildInstallItems(cfg.Dosym),
+		Systemd:       ef.buildInstallItems(cfg.Systemd),
 	}
 
 	for _, sym := range data.Dosym {
@@ -1004,6 +1096,44 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		deletedVersions = append(deletedVersions, v)
 	}
 
+	var allEbuildContents [][]byte
+	failedToDownloadEbuilds := false
+	if dl, ok := repoClient.(client.FileDownloader); ok {
+		// New files
+		for _, f := range *files {
+			if !f.Delete && strings.HasSuffix(f.Path, ".ebuild") {
+				allEbuildContents = append(allEbuildContents, f.Content)
+			}
+		}
+
+		// Kept ebuilds
+		for _, line := range manifestLines {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 && fields[0] == "EBUILD" {
+				filename := fields[1]
+				isDeleted := false
+				for _, dv := range deletedVersions {
+					if filename == prefix+dv+".ebuild" {
+						isDeleted = true
+						break
+					}
+				}
+				if !isDeleted {
+					content, err := dl.DownloadFile(ctx, repo, pathlib.Join(dir, filename))
+					if err == nil {
+						allEbuildContents = append(allEbuildContents, content)
+					} else {
+						failedToDownloadEbuilds = true
+						log.WithError(err).Warnf("failed to download kept ebuild %s, disabling files/ pruning", filename)
+						break
+					}
+				}
+			}
+		}
+	} else {
+		failedToDownloadEbuilds = true
+	}
+
 	var newFilesBaseNames []string
 	if !thinManifests {
 		for _, f := range *files {
@@ -1066,6 +1196,23 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			}
 			if !removed && slices.Contains(newFilesBaseNames, filename) {
 				removed = true
+			}
+			if !removed && recordType == "AUX" && !failedToDownloadEbuilds {
+				// prune unused aux files
+				used := false
+				for _, ebc := range allEbuildContents {
+					if bytes.Contains(ebc, []byte(filename)) {
+						used = true
+						break
+					}
+				}
+				if !used {
+					removed = true
+					*files = append(*files, client.RepoFile{
+						Path:   pathlib.Join(dir, "files", filename),
+						Delete: true,
+					})
+				}
 			}
 			if !removed {
 				newManifestLines = append(newManifestLines, line)

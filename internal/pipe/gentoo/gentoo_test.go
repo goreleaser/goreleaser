@@ -845,3 +845,81 @@ func TestDefaultValidation(t *testing.T) {
 	}
 	require.ErrorContains(t, Pipe{}.Default(ctx), "gentoo.version_retention_strategy must be provided if gentoo.keep_versions > 0")
 }
+
+func TestExtraFileValidator(t *testing.T) {
+	t.Run("inArchives", func(t *testing.T) {
+		arches := []*artifact.Artifact{
+			{
+				Extra: map[string]any{
+					artifact.ExtraFiles: []string{"/tmp/files/foo.service"},
+				},
+			},
+			{
+				Extra: map[string]any{
+					artifact.ExtraFiles: []string{"/tmp/files/foo.service"},
+				},
+			},
+		}
+		ef := newExtraFilesProcessor(config.Gentoo{}, arches, nil)
+		require.True(t, ef.inArchives("foo.service"))
+		require.False(t, ef.inArchives("bar.service"))
+	})
+
+	t.Run("Filter_valid", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		fooPath := filepath.Join(tmpDir, "foo.service")
+		err := os.WriteFile(fooPath, []byte("valid text content"), 0o644)
+		require.NoError(t, err)
+
+		extraFiles := map[string]string{
+			"foo.service": fooPath,
+		}
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
+		require.NoError(t, err)
+		require.Contains(t, extraFiles, "foo.service")
+	})
+
+	t.Run("Filter_binary", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		binPath := filepath.Join(tmpDir, "foo.bin")
+		err := os.WriteFile(binPath, []byte{0x00, 0x01, 0x02}, 0o644)
+		require.NoError(t, err)
+
+		extraFiles := map[string]string{
+			"foo.bin": binPath,
+		}
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
+		require.ErrorContains(t, err, "appears to be a binary file")
+	})
+
+	t.Run("Filter_toolarge", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		largePath := filepath.Join(tmpDir, "foo.large")
+		err := os.WriteFile(largePath, make([]byte, 21*1024), 0o644)
+		require.NoError(t, err)
+
+		extraFiles := map[string]string{
+			"foo.large": largePath,
+		}
+		ef := newExtraFilesProcessor(config.Gentoo{}, nil, extraFiles)
+		err = ef.Filter()
+		require.ErrorContains(t, err, "larger than 20KB")
+	})
+
+	t.Run("Filter_disabled", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		binPath := filepath.Join(tmpDir, "foo.bin")
+		err := os.WriteFile(binPath, []byte{0x00, 0x01, 0x02}, 0o644)
+		require.NoError(t, err)
+
+		extraFiles := map[string]string{
+			"foo.bin": binPath,
+		}
+		ef := newExtraFilesProcessor(config.Gentoo{DisableIgnoreSizeToBinaryFiles: true}, nil, extraFiles)
+		err = ef.Filter()
+		require.NoError(t, err)
+		require.Contains(t, extraFiles, "foo.bin")
+	})
+}
