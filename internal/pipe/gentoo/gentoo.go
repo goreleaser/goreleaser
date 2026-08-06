@@ -455,9 +455,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	for name, src := range extraFiles {
-		destName := name
-		if !strings.HasPrefix(strings.ToLower(filepath.ToSlash(destName)), "files/") {
-			destName = filepath.Join("files", destName)
+		destName, err := gentooExtraFilePath(name)
+		if err != nil {
+			return err
 		}
 		dst := filepath.Join(filepath.Dir(path), destName)
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
@@ -760,7 +760,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 			}
 		}
 
-		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, repo, &g.files, deletedEbuilds); err != nil {
+		stateRepo := repo
+		if g.cfg.Repository.PullRequest.Enabled {
+			stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
+		}
+		if err := handleGentooManifestAndMetadata(ctx, g.cfg, repoClient, stateRepo, &g.files, deletedEbuilds); err != nil {
 			return err
 		}
 
@@ -863,9 +867,18 @@ func isValidGentooPath(filePath string) bool {
 	}
 	parts := strings.Split(path, "/")
 	return len(parts) == 3 &&
-		parts[0] != "" && parts[0] != "." &&
-		parts[1] != "" && parts[1] != "." &&
+		parts[0] != "" && parts[0] != "." && parts[0] != ".." &&
+		parts[1] != "" && parts[1] != "." && parts[1] != ".." &&
 		strings.HasSuffix(parts[2], ".ebuild")
+}
+
+func gentooExtraFilePath(name string) (string, error) {
+	path := filepath.ToSlash(name)
+	path = strings.TrimPrefix(path, "files/")
+	if path == "" || pathlib.IsAbs(path) || path != pathlib.Clean(path) || strings.HasPrefix(path, "../") || path == ".." {
+		return "", fmt.Errorf("gentoo extra file name %q must remain within the files directory", name)
+	}
+	return pathlib.Join("files", path), nil
 }
 
 func gentooUseFlags(cfg config.Gentoo) []config.GentooUseFlag {
@@ -1145,6 +1158,16 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			}
 		}
 	}
+	filters := []artifact.Filter{
+		artifact.ByGoos("linux"),
+		artifact.Or(artifact.ByType(artifact.UploadableArchive), artifact.ByType(artifact.UploadableBinary)),
+		artifact.OnlyReplacingUnibins,
+	}
+	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	currentDists := make(map[string]struct{}, len(arches))
+	for _, art := range arches {
+		currentDists[art.Name] = struct{}{}
+	}
 
 	var newManifestLines []string
 	for _, line := range manifestLines {
@@ -1159,7 +1182,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 
 		switch recordType {
 		case "DIST":
-			removed := false
+			_, removed := currentDists[filename]
 			for _, dv := range deletedVersions {
 				if idx := strings.Index(filename, dv); idx != -1 {
 					isMatch := true
@@ -1207,16 +1230,6 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 			newManifestLines = append(newManifestLines, line)
 		}
 	}
-
-	filters := []artifact.Filter{
-		artifact.ByGoos("linux"),
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-		),
-		artifact.OnlyReplacingUnibins,
-	}
-	arches := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 
 	for _, art := range arches {
 		line, err := generateManifestLine("DIST", art.Name, art.Path, nil, manifestHashes)
