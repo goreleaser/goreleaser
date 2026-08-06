@@ -62,24 +62,6 @@ type installItemData struct {
 	Use    []string
 }
 
-func buildInstallItems(cfgItems []config.GentooInstallItem, extraFiles map[string]string) []installItemData {
-	var items []installItemData
-	for _, d := range cfgItems {
-		src := d.Src
-		if _, ok := extraFiles[d.Src]; ok {
-			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
-		}
-		items = append(items, installItemData{
-			Source: src,
-			Target: d.Dst,
-			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
-			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
-			Use:    d.Use,
-		})
-	}
-	return items
-}
-
 // Pipe builds and publishes gentoo ebuilds.
 type Pipe struct{}
 
@@ -164,8 +146,9 @@ func gentooVersion(v string) string {
 }
 
 type extraFileValidator struct {
-	cfg    config.Gentoo
-	arches []*artifact.Artifact
+	cfg        config.Gentoo
+	arches     []*artifact.Artifact
+	extraFiles map[string]string
 }
 
 func (v *extraFileValidator) inArchives(fileName string) bool {
@@ -199,18 +182,19 @@ func (v *extraFileValidator) inArchives(fileName string) bool {
 	return true
 }
 
-func newExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact) *extraFileValidator {
+func newExtraFileValidator(cfg config.Gentoo, arches []*artifact.Artifact, extraFiles map[string]string) *extraFileValidator {
 	return &extraFileValidator{
-		cfg:    cfg,
-		arches: arches,
+		cfg:        cfg,
+		arches:     arches,
+		extraFiles: extraFiles,
 	}
 }
 
-func (v *extraFileValidator) Filter(extraFiles map[string]string) error {
-	for name, src := range extraFiles {
+func (v *extraFileValidator) Filter() error {
+	for name, src := range v.extraFiles {
 		if v.inArchives(name) {
 			log.Warnf("file %s is already in all archives, skipping upload to Gentoo files/ directory", name)
-			delete(extraFiles, name)
+			delete(v.extraFiles, name)
 			continue
 		}
 		if err := v.validate(name, src); err != nil {
@@ -245,6 +229,36 @@ func (v *extraFileValidator) validate(name, src string) error {
 		}
 	}
 	return nil
+}
+
+func (v *extraFileValidator) processStringArray(arr []string) []string {
+	var out []string
+	for _, s := range arr {
+		if _, ok := v.extraFiles[s]; ok {
+			out = append(out, "${FILESDIR}/"+strings.TrimPrefix(s, "files/"))
+		} else {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func (v *extraFileValidator) buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
+	var items []installItemData
+	for _, d := range cfgItems {
+		src := d.Src
+		if _, ok := v.extraFiles[d.Src]; ok {
+			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
+		}
+		items = append(items, installItemData{
+			Source: src,
+			Target: d.Dst,
+			Dir:    pathlib.Dir(filepath.ToSlash(d.Dst)),
+			Base:   pathlib.Base(filepath.ToSlash(d.Dst)),
+			Use:    d.Use,
+		})
+	}
+	return items
 }
 
 func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplater) error {
@@ -284,8 +298,6 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	if len(arches) == 0 {
 		return errors.New("no linux archives found")
 	}
-
-	validator := newExtraFileValidator(cfg, arches)
 
 	type archData struct {
 		Keyword string
@@ -356,20 +368,10 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		return err
 	}
 
-	if err := validator.Filter(extraFiles); err != nil {
-		return err
-	}
+	validator := newExtraFileValidator(cfg, arches, extraFiles)
 
-	processStringArray := func(arr []string) []string {
-		var out []string
-		for _, s := range arr {
-			if _, ok := extraFiles[s]; ok {
-				out = append(out, "${FILESDIR}/"+strings.TrimPrefix(s, "files/"))
-			} else {
-				out = append(out, s)
-			}
-		}
-		return out
+	if err := validator.Filter(); err != nil {
+		return err
 	}
 
 	data := struct {
@@ -407,19 +409,19 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      cfg.UseFlags,
-		Dobin:         buildInstallItems(cfg.Dobin, extraFiles),
-		Doconfd:       buildInstallItems(cfg.Doconfd, extraFiles),
+		Dobin:         validator.buildInstallItems(cfg.Dobin),
+		Doconfd:       validator.buildInstallItems(cfg.Doconfd),
 		Dodir:         cfg.Dodir,
-		Dodoc:         processStringArray(cfg.Dodoc),
-		Doenvd:        buildInstallItems(cfg.Doenvd, extraFiles),
-		Doexe:         buildInstallItems(cfg.Doexe, extraFiles),
-		Doheader:      buildInstallItems(cfg.Doheader, extraFiles),
-		Doinitd:       buildInstallItems(cfg.Doinitd, extraFiles),
-		Doins:         buildInstallItems(cfg.Doins, extraFiles),
-		Doman:         processStringArray(cfg.Doman),
-		Dosbin:        buildInstallItems(cfg.Dosbin, extraFiles),
-		Dosym:         buildInstallItems(cfg.Dosym, extraFiles),
-		Systemd:       buildInstallItems(cfg.Systemd, extraFiles),
+		Dodoc:         validator.processStringArray(cfg.Dodoc),
+		Doenvd:        validator.buildInstallItems(cfg.Doenvd),
+		Doexe:         validator.buildInstallItems(cfg.Doexe),
+		Doheader:      validator.buildInstallItems(cfg.Doheader),
+		Doinitd:       validator.buildInstallItems(cfg.Doinitd),
+		Doins:         validator.buildInstallItems(cfg.Doins),
+		Doman:         validator.processStringArray(cfg.Doman),
+		Dosbin:        validator.buildInstallItems(cfg.Dosbin),
+		Dosym:         validator.buildInstallItems(cfg.Dosym),
+		Systemd:       validator.buildInstallItems(cfg.Systemd),
 	}
 
 	for _, sym := range data.Dosym {
