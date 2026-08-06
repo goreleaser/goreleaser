@@ -16,7 +16,7 @@ SRC_URI="
 LICENSE="{{ .License }}"
 SLOT="0"
 KEYWORDS="{{ .Keywords }}"
-IUSE="doc{{ range .UseFlags }} {{ .Flag }}{{ end }}"
+IUSE="{{ range $i, $flag := .UseFlags }}{{ if $i }} {{ end }}{{ $flag.Flag }}{{ end }}"
 
 S="${WORKDIR}"
 

@@ -126,6 +126,7 @@ func getVersionBucket(v *parsedGentooVersion) string {
 type ebuildDeleter struct {
 	dir            string
 	category       string
+	metaCacheFiles map[string]struct{}
 	files          *[]client.RepoFile
 	deletedEbuilds *[]string
 }
@@ -134,6 +135,9 @@ func (d *ebuildDeleter) Delete(ebuildName string) {
 	*d.files = append(*d.files, client.RepoFile{Path: pathlib.Join(d.dir, ebuildName), Delete: true})
 	*d.deletedEbuilds = append(*d.deletedEbuilds, ebuildName)
 	md5Name := strings.TrimSuffix(ebuildName, ".ebuild")
+	if _, ok := d.metaCacheFiles[md5Name]; !ok {
+		return
+	}
 	md5CachePath := pathlib.Join("metadata", "md5-cache", d.category, md5Name)
 	*d.files = append(*d.files, client.RepoFile{Path: md5CachePath, Delete: true})
 }
@@ -710,9 +714,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 				}
 			}
 
+			category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
+			metaCacheFiles := map[string]struct{}{}
+			cacheNames, err := lister.ListDir(ctx, listRepo, pathlib.Join("metadata", "md5-cache", category))
+			if err != nil && !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
+				return err
+			}
+			for _, name := range cacheNames {
+				metaCacheFiles[name] = struct{}{}
+			}
+
 			deleter := &ebuildDeleter{
 				dir:            dir,
-				category:       strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0],
+				category:       category,
+				metaCacheFiles: metaCacheFiles,
 				files:          &g.files,
 				deletedEbuilds: &deletedEbuilds,
 			}
@@ -951,7 +966,24 @@ func gentooExtraFilePath(name string) (string, error) {
 }
 
 func gentooUseFlags(cfg config.Gentoo) []config.GentooUseFlag {
-	flags := append([]config.GentooUseFlag(nil), cfg.UseFlags...)
+	docFlag := config.GentooUseFlag{
+		Flag:        "doc",
+		Description: "Install README man page and other docs",
+	}
+	useFlagsLen := len(cfg.UseFlags)
+	capHint := useFlagsLen
+	if capHint < int(^uint(0)>>1) {
+		capHint++
+	}
+	flags := make([]config.GentooUseFlag, 1, capHint)
+	for _, flag := range cfg.UseFlags {
+		if strings.TrimLeft(flag.Flag, "+-") == "doc" {
+			docFlag = flag
+			continue
+		}
+		flags = append(flags, flag)
+	}
+	flags[0] = docFlag
 	configured := make(map[string]struct{}, len(flags))
 	for _, flag := range flags {
 		configured[strings.TrimLeft(flag.Flag, "+-")] = struct{}{}

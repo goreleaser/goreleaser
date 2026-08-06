@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="doc">Install README man page and other docs</flag>
+		<flag name="systemd">enables systemd installation</flag>
+	</use>
+	<upstream>
+		<doc>https://github.com/arran4/goreleaser-gentoo-smoke</doc>
+	</upstream>
+</pkgmetadata>
