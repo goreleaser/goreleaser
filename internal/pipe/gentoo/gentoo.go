@@ -397,65 +397,9 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 	}
 
 	if len(ebuilds) > 0 && g.cfg.UpdateVersions {
-		if dl, ok := repoClient.(client.FileDownloader); ok {
-			for i := range g.files {
-				if !strings.HasSuffix(g.files[i].Path, ".ebuild") || g.files[i].Delete {
-					continue
-				}
-
-				fName := filepath.Base(g.files[i].Path)
-				v := parseGentooVersion(fName, prefix)
-				if v == nil {
-					continue
-				}
-
-				maxR := -1
-				var maxREbuild string
-				for _, e := range ebuilds {
-					ev := parseGentooVersion(e, prefix)
-					if ev != nil && ev.version.Equal(v.version) {
-						if ev.revision > maxR {
-							maxR = ev.revision
-							maxREbuild = e
-						}
-					}
-				}
-
-				if maxR != -1 && maxREbuild != "" {
-					existingEbuildContent, err := dl.DownloadFile(ctx, stateRepo, filepath.ToSlash(filepath.Join(dir, maxREbuild)))
-					if err == nil {
-						strippedExisting := stripComments(existingEbuildContent)
-						strippedNew := stripComments(g.files[i].Content)
-
-						isDifferent := !bytes.Equal(strippedExisting, strippedNew)
-
-						if !isDifferent {
-							for _, f := range g.files {
-								if f.Path == g.files[i].Path || f.Delete {
-									continue
-								}
-								existingContent, dErr := dl.DownloadFile(ctx, stateRepo, f.Path)
-								if dErr != nil || !bytes.Equal(existingContent, f.Content) {
-									isDifferent = true
-									break
-								}
-							}
-						}
-
-						if !isDifferent {
-							log.WithField("file", fName).Debug("existing ebuild matches new ebuild content, not creating a new revision")
-							g.files[i].Path = filepath.ToSlash(filepath.Join(dir, maxREbuild))
-						} else {
-							newRev := maxR + 1
-							vStr := strings.TrimSuffix(strings.TrimPrefix(fName, prefix), ".ebuild")
-							newEbuildName := fmt.Sprintf("%s%s-r%d.ebuild", prefix, vStr, newRev)
-							newEbuildPath := filepath.ToSlash(filepath.Join(dir, newEbuildName))
-							log.WithField("file", fName).WithField("new_file", newEbuildName).Info("ebuild content changed, bumping revision")
-							g.files[i].Path = newEbuildPath
-						}
-					}
-				}
-			}
+		dl, ok := repoClient.(client.FileDownloader)
+		if ok {
+			g.updateVersions(ctx, dl, stateRepo, dir, prefix, ebuilds)
 		}
 	}
 
@@ -788,4 +732,68 @@ func stripComments(content []byte) []byte {
 		}
 	}
 	return result
+}
+
+func (g *publishGroup) updateVersions(ctx *context.Context, dl client.FileDownloader, stateRepo client.Repo, dir, prefix string, ebuilds []string) {
+	for i := range g.files {
+		if !strings.HasSuffix(g.files[i].Path, ".ebuild") || g.files[i].Delete {
+			continue
+		}
+
+		fName := filepath.Base(g.files[i].Path)
+		v := parseGentooVersion(fName, prefix)
+		if v == nil {
+			continue
+		}
+
+		maxR := -1
+		var maxREbuild string
+		for _, e := range ebuilds {
+			ev := parseGentooVersion(e, prefix)
+			if ev != nil && ev.version.Equal(v.version) && ev.revision > maxR {
+				maxR = ev.revision
+				maxREbuild = e
+			}
+		}
+
+		if maxR == -1 || maxREbuild == "" {
+			continue
+		}
+
+		existingEbuildContent, err := dl.DownloadFile(ctx, stateRepo, filepath.ToSlash(filepath.Join(dir, maxREbuild)))
+		if err != nil {
+			continue
+		}
+
+		strippedExisting := stripComments(existingEbuildContent)
+		strippedNew := stripComments(g.files[i].Content)
+
+		isDifferent := !bytes.Equal(strippedExisting, strippedNew)
+
+		if !isDifferent {
+			for _, f := range g.files {
+				if f.Path == g.files[i].Path || f.Delete {
+					continue
+				}
+				existingContent, dErr := dl.DownloadFile(ctx, stateRepo, f.Path)
+				if dErr != nil || !bytes.Equal(existingContent, f.Content) {
+					isDifferent = true
+					break
+				}
+			}
+		}
+
+		if !isDifferent {
+			log.WithField("file", fName).Debug("existing ebuild matches new ebuild content, not creating a new revision")
+			g.files[i].Path = filepath.ToSlash(filepath.Join(dir, maxREbuild))
+			continue
+		}
+
+		newRev := maxR + 1
+		vStr := strings.TrimSuffix(strings.TrimPrefix(fName, prefix), ".ebuild")
+		newEbuildName := fmt.Sprintf("%s%s-r%d.ebuild", prefix, vStr, newRev)
+		newEbuildPath := filepath.ToSlash(filepath.Join(dir, newEbuildName))
+		log.WithField("file", fName).WithField("new_file", newEbuildName).Info("ebuild content changed, bumping revision")
+		g.files[i].Path = newEbuildPath
+	}
 }
