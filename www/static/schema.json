@@ -1621,7 +1621,7 @@
 					"keep_versions": {
 						"type": "integer"
 					},
-					"update_versions": {
+					"conflict_resolution": {
 						"type": "boolean"
 					},
 					"version_retention_strategy": {
