@@ -87,6 +87,13 @@ gentoo_overlay:
     # Default: 0.
     keep_versions: 3
 
+    # Automatically bump the ebuild revision (e.g. from 1.0.0 to 1.0.0-r1)
+    # when the content of the ebuild or its auxiliary files changes materially
+    # for the same release version.
+    #
+    # Default: false.
+    conflict_resolution: true
+
     # Retention strategy for old ebuild versions.
     #
     # Valid options: keep_latest, keep_prereleases.
