@@ -396,7 +396,7 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 		}
 	}
 
-	if len(ebuilds) > 0 && g.cfg.ConflictResolution {
+	if len(ebuilds) > 0 && strings.EqualFold(g.cfg.ConflictResolution, "Revision") {
 		dl, ok := repoClient.(client.FileDownloader)
 		if ok {
 			g.updateVersions(ctx, dl, stateRepo, dir, prefix, ebuilds)

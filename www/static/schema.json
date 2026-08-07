@@ -1622,7 +1622,7 @@
 						"type": "integer"
 					},
 					"conflict_resolution": {
-						"type": "boolean"
+						"type": "string"
 					},
 					"version_retention_strategy": {
 						"type": "string"
