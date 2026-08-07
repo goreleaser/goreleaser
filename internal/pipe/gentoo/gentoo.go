@@ -409,7 +409,7 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 					continue
 				}
 
-				var maxR int = -1
+				maxR := -1
 				var maxREbuild string
 				for _, e := range ebuilds {
 					ev := parseGentooVersion(e, prefix)
@@ -780,8 +780,7 @@ func copyFile(src, dst string) error {
 
 func stripComments(content []byte) []byte {
 	var result []byte
-	lines := bytes.Split(content, []byte{'\n'})
-	for _, line := range lines {
+	for line := range bytes.SplitSeq(content, []byte{'\n'}) {
 		trimmed := bytes.TrimSpace(line)
 		if len(trimmed) > 0 && trimmed[0] != '#' {
 			result = append(result, line...)
