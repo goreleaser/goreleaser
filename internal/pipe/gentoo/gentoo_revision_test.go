@@ -31,7 +31,6 @@ func TestExtractVersion(t *testing.T) {
 	}
 }
 
-
 func TestPublishGroupUpdateVersions(t *testing.T) {
 	// Add a basic test to satisfy coverage / PR requirements
 	// A more thorough mock for client.FileDownloader would be needed for a full test

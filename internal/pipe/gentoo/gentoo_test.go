@@ -1372,7 +1372,6 @@ func TestGentooMetadata(t *testing.T) {
 	})
 }
 
-
 func TestUpdateVersions(t *testing.T) {
 	// Dummy test to satisfy coverage.
 	// Since updateVersions depends on FileDownloader interface, a full unit test
