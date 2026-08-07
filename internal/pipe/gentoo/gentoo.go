@@ -2,6 +2,7 @@
 package gentoo
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -357,27 +358,111 @@ func collectPublishGroups(ctx *context.Context) ([]*publishGroup, error) {
 }
 
 func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, error) {
+	dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
+	stateRepo := repo
+	if g.cfg.Repository.PullRequest.Enabled {
+		stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
+	}
+
+	var ebuilds []string
+	prefix := filepath.Base(dir) + "-"
+
 	lister, ok := repoClient.(client.DirectoryLister)
+	if ok {
+		names, err := lister.ListDir(ctx, stateRepo, dir)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range names {
+			if strings.HasPrefix(n, prefix) && strings.HasSuffix(n, ".ebuild") {
+				ebuilds = append(ebuilds, n)
+			}
+		}
+	}
+
+	if len(ebuilds) == 0 {
+		settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+		if err == nil && !settings.thin {
+			manifestPath := filepath.ToSlash(filepath.Join(dir, "Manifest"))
+			manifestLines, err := loadManifestLines(ctx, repoClient, stateRepo, manifestPath)
+			if err == nil {
+				for _, line := range manifestLines {
+					fields := strings.Fields(line)
+					if len(fields) >= 2 && fields[0] == "EBUILD" {
+						ebuilds = append(ebuilds, fields[1])
+					}
+				}
+			}
+		}
+	}
+
+	if len(ebuilds) > 0 && g.cfg.UpdateVersions {
+		if dl, ok := repoClient.(client.FileDownloader); ok {
+			for i := range g.files {
+				if !strings.HasSuffix(g.files[i].Path, ".ebuild") || g.files[i].Delete {
+					continue
+				}
+
+				fName := filepath.Base(g.files[i].Path)
+				v := parseGentooVersion(fName, prefix)
+				if v == nil {
+					continue
+				}
+
+				var maxR int = -1
+				var maxREbuild string
+				for _, e := range ebuilds {
+					ev := parseGentooVersion(e, prefix)
+					if ev != nil && ev.version.Equal(v.version) {
+						if ev.revision > maxR {
+							maxR = ev.revision
+							maxREbuild = e
+						}
+					}
+				}
+
+				if maxR != -1 && maxREbuild != "" {
+					existingEbuildContent, err := dl.DownloadFile(ctx, stateRepo, filepath.ToSlash(filepath.Join(dir, maxREbuild)))
+					if err == nil {
+						strippedExisting := stripComments(existingEbuildContent)
+						strippedNew := stripComments(g.files[i].Content)
+
+						isDifferent := !bytes.Equal(strippedExisting, strippedNew)
+
+						if !isDifferent {
+							for _, f := range g.files {
+								if f.Path == g.files[i].Path || f.Delete {
+									continue
+								}
+								existingContent, dErr := dl.DownloadFile(ctx, stateRepo, f.Path)
+								if dErr != nil || !bytes.Equal(existingContent, f.Content) {
+									isDifferent = true
+									break
+								}
+							}
+						}
+
+						if !isDifferent {
+							log.WithField("file", fName).Debug("existing ebuild matches new ebuild content, not creating a new revision")
+							g.files[i].Path = filepath.ToSlash(filepath.Join(dir, maxREbuild))
+						} else {
+							newRev := maxR + 1
+							vStr := strings.TrimSuffix(strings.TrimPrefix(fName, prefix), ".ebuild")
+							newEbuildName := fmt.Sprintf("%s%s-r%d.ebuild", prefix, vStr, newRev)
+							newEbuildPath := filepath.ToSlash(filepath.Join(dir, newEbuildName))
+							log.WithField("file", fName).WithField("new_file", newEbuildName).Info("ebuild content changed, bumping revision")
+							g.files[i].Path = newEbuildPath
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if !ok || g.cfg.KeepVersions <= 0 || g.cfg.VersionRetentionStrategy == "" {
 		return nil, nil
 	}
 
-	dir := filepath.ToSlash(filepath.Dir(g.cfg.Path))
-	listRepo := repo
-	if g.cfg.Repository.PullRequest.Enabled {
-		listRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
-	}
-	names, err := lister.ListDir(ctx, listRepo, dir)
-	if err != nil {
-		return nil, err
-	}
-	var ebuilds []string
-	prefix := filepath.Base(dir) + "-"
-	for _, n := range names {
-		if strings.HasPrefix(n, prefix) && strings.HasSuffix(n, ".ebuild") {
-			ebuilds = append(ebuilds, n)
-		}
-	}
 	slices.SortFunc(ebuilds, func(i, j string) int {
 		vI := parseGentooVersion(i, prefix)
 		vJ := parseGentooVersion(j, prefix)
@@ -409,8 +494,8 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 
 	category := strings.Split(filepath.ToSlash(filepath.Clean(g.cfg.Path)), "/")[0]
 	metaCacheFiles := map[string]struct{}{}
-	if lister, ok := repoClient.(client.DirectoryLister); ok && g.cfg.MetaCache {
-		cacheNames, err := lister.ListDir(ctx, listRepo, filepath.ToSlash(filepath.Join("metadata", "md5-cache", category)))
+	if g.cfg.MetaCache {
+		cacheNames, err := lister.ListDir(ctx, stateRepo, filepath.ToSlash(filepath.Join("metadata", "md5-cache", category)))
 		if err != nil && !errors.Is(err, client.ErrNotFound) && !errors.Is(err, client.ErrNotImplemented) {
 			return nil, err
 		}
@@ -691,4 +776,17 @@ func copyFile(src, dst string) error {
 
 	_, err = out.ReadFrom(in)
 	return err
+}
+
+func stripComments(content []byte) []byte {
+	var result []byte
+	lines := bytes.Split(content, []byte{'\n'})
+	for _, line := range lines {
+		trimmed := bytes.TrimSpace(line)
+		if len(trimmed) > 0 && trimmed[0] != '#' {
+			result = append(result, line...)
+			result = append(result, '\n')
+		}
+	}
+	return result
 }

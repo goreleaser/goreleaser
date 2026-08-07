@@ -466,6 +466,7 @@ type Gentoo struct {
 	Bin                      bool                `yaml:"bin" json:"bin"`
 	Type                     string              `yaml:"type,omitempty" json:"type,omitempty"`
 	KeepVersions             int                 `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
+	UpdateVersions           bool                `yaml:"update_versions,omitempty" json:"update_versions,omitempty"`
 	VersionRetentionStrategy string              `yaml:"version_retention_strategy,omitempty" json:"version_retention_strategy,omitempty"`
 	SkipUpload               string              `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipFilesValidation      bool                `yaml:"skip_files_validation,omitempty" json:"skip_files_validation,omitempty"`
