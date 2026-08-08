@@ -5,8 +5,6 @@ weight: 130
 
 {{< g_version "v2.12" >}}
 
-{{< g_experimental "https://github.com/goreleaser/goreleaser/discussions/6005" >}}
-
 This feature uses `docker buildx` to build multi-arch manifests,
 reusing the previously built binaries and/or packages.
 
@@ -191,7 +189,7 @@ dockers_v2:
           dir: "{{ .ContextDir }}"
           # Only run this hook if the template evaluates to `true`.
           # {{< g_inline_version "v2.17" >}}
-          if: "{{ eq .Runtime.Goarch \"amd64\" }}"
+          if: '{{ eq .Runtime.Goarch "amd64" }}'
           # Extra env vars to inject into the hook.
           env:
             - DOCKERFILE={{ .Dockerfile }}
