@@ -14,11 +14,12 @@ import (
 )
 
 type checkCmd struct {
-	cmd        *cobra.Command
-	config     string
-	quiet      bool
-	deprecated bool
-	checked    int
+	cmd               *cobra.Command
+	config            string
+	quiet             bool
+	deprecated        bool
+	allowDeprecations bool
+	checked           int
 }
 
 func newCheckCmd() *checkCmd {
@@ -60,7 +61,9 @@ func newCheckCmd() *checkCmd {
 				}
 
 				if ctx.Deprecated {
-					exits = append(exits, 2)
+					if !root.allowDeprecations {
+						exits = append(exits, 2)
+					}
 					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
 				}
 			}
@@ -90,6 +93,7 @@ func newCheckCmd() *checkCmd {
 	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Quiet mode: no output")
 	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
+	cmd.Flags().BoolVar(&root.allowDeprecations, "allow-deprecations", false, "Allow deprecated properties: only warn about them, do not fail the check")
 	_ = cmd.Flags().MarkHidden("deprecated")
 	_ = cmd.Flags().MarkHidden("config")
 
