@@ -342,28 +342,11 @@ func (p Pipe) prepareAdditionalLocales(ctx *context.Context, winget config.Winge
 // doAdditionalLocales renders the already validated additional locale
 // manifests. It must only be called after prepareAdditionalLocales succeeded.
 func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) error {
-	if len(winget.AdditionalLocales) == 0 {
-		return nil
-	}
-
-	for i := range winget.AdditionalLocales {
-		aloc := &winget.AdditionalLocales[i]
-
-		description := ""
-		if aloc.Description != "" {
-			description = strings.ReplaceAll(aloc.Description, "\t", "  ")
-		}
-
-		releaseNotes := winget.ReleaseNotes
-		if aloc.ReleaseNotes != "" {
-			releaseNotes = aloc.ReleaseNotes
-		}
-
+	for _, aloc := range winget.AdditionalLocales {
 		tags := aloc.Tags
 		if len(tags) == 0 {
 			tags = winget.Tags
 		}
-
 		if err := createYAML(ctx, winget, Locale{
 			PackageIdentifier:   winget.PackageIdentifier,
 			PackageVersion:      ctx.Version,
@@ -380,10 +363,10 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 			Copyright:           cmp.Or(aloc.Copyright, winget.Copyright),
 			CopyrightURL:        cmp.Or(aloc.CopyrightURL, winget.CopyrightURL),
 			ShortDescription:    cmp.Or(aloc.ShortDescription, winget.ShortDescription),
-			Description:         description,
+			Description:         strings.ReplaceAll(aloc.Description, "\t", "  "),
 			Moniker:             winget.Name,
 			Tags:                fixTags(tags),
-			ReleaseNotes:        releaseNotes,
+			ReleaseNotes:        cmp.Or(aloc.ReleaseNotes, winget.ReleaseNotes),
 			ReleaseNotesURL:     cmp.Or(aloc.ReleaseNotesURL, winget.ReleaseNotesURL),
 			InstallationNotes:   cmp.Or(aloc.InstallationNotes, winget.InstallationNotes),
 			ManifestType:        "locale",
@@ -392,7 +375,6 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 			return err
 		}
 	}
-
 	return nil
 }
 
