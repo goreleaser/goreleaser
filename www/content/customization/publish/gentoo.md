@@ -87,6 +87,14 @@ gentoo_overlay:
     # Default: 0.
     keep_versions: 3
 
+    # Strategy for resolving ebuild version conflicts when a file already exists.
+    # Valid options: Fail, Overwrite, Revision.
+    # When "Revision" is specified, the ebuild revision (e.g. from 1.0.0 to 1.0.0-r1)
+    # will automatically bump when the content of the ebuild or its auxiliary files changes materially.
+    #
+    # Default: Overwrite (the pre-existing behavior).
+    conflict_resolution: Revision
+
     # Retention strategy for old ebuild versions.
     #
     # Valid options: keep_latest, keep_prereleases.
