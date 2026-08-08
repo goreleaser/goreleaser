@@ -3,19 +3,6 @@ cask "url_parameters_curl" do
   version "1.0.1"
 
   on_macos do
-    on_intel do
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      url "https://dummyhost/download/v#{version}/bin.tgz",
-        using: :homebrew_curl,
-        cookies: {
-          "license" => "accept",
-        },
-        referer: "https://example-url-parameters.com/",
-        header: [
-          "Accept: application/octet-stream",
-        ],
-        user_agent: "GoReleaser"
-    end
     on_arm do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin.txz",
@@ -29,8 +16,20 @@ cask "url_parameters_curl" do
         ],
         user_agent: "GoReleaser"
     end
+    on_intel do
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin.tgz",
+        using: :homebrew_curl,
+        cookies: {
+          "license" => "accept",
+        },
+        referer: "https://example-url-parameters.com/",
+        header: [
+          "Accept: application/octet-stream",
+        ],
+        user_agent: "GoReleaser"
+    end
   end
-
   on_linux do
     on_intel do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"

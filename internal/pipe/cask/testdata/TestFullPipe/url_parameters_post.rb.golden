@@ -3,18 +3,6 @@ cask "url_parameters_post" do
   version "1.0.1"
 
   on_macos do
-    on_intel do
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      url "https://dummyhost/download/v#{version}/bin.tgz",
-        verified: "https://dummyhost/download/",
-        using: :post,
-        header: [
-          "Accept: application/octet-stream",
-        ],
-        data: {
-          "payload" => "hello_world",
-        }
-    end
     on_arm do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin.txz",
@@ -27,8 +15,19 @@ cask "url_parameters_post" do
           "payload" => "hello_world",
         }
     end
+    on_intel do
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin.tgz",
+        verified: "https://dummyhost/download/",
+        using: :post,
+        header: [
+          "Accept: application/octet-stream",
+        ],
+        data: {
+          "payload" => "hello_world",
+        }
+    end
   end
-
   on_linux do
     on_intel do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"

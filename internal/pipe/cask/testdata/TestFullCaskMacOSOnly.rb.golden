@@ -29,5 +29,4 @@ cask "test" do
   zsh_completion "mybin.zsh"
 
   # No zap stanza required
-
 end
