@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -109,7 +110,7 @@ func (g *gitClient) CreateFiles(
 		{"config", "--local", "user.name", commitAuthor.Name},
 		{"config", "--local", "user.email", commitAuthor.Email},
 		{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
-		{"config", "--local", "commit.gpgSign", fmt.Sprintf("%t", commitAuthor.Signing.Enabled)},
+		{"config", "--local", "commit.gpgSign", strconv.FormatBool(commitAuthor.Signing.Enabled)},
 	}
 	if commitAuthor.Signing.Key != "" {
 		gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})

@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -167,7 +168,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 	file := filepath.Join(ctx.Config.Dist, "apkbuild", apk.Name+".apkbuild")
 	if occurrence > 0 {
 		id = fmt.Sprintf("%s-%d", apk.Name, occurrence+1)
-		file = filepath.Join(ctx.Config.Dist, "apkbuild", fmt.Sprintf("%d", occurrence+1), apk.Name+".apkbuild")
+		file = filepath.Join(ctx.Config.Dist, "apkbuild", strconv.Itoa(occurrence+1), apk.Name+".apkbuild")
 	}
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return fmt.Errorf("failed to write APKBUILD: %w", err)
@@ -385,8 +386,8 @@ func toAPKPrerelease(prerelease string) string {
 			result += parts[0]
 			parts = parts[1:]
 		}
-		for _, part := range parts {
-			result += "_p" + part
+		if len(parts) > 0 {
+			result += "_p" + strings.Join(parts, "_p")
 		}
 		return result
 	}
