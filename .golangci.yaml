@@ -102,9 +102,6 @@ linters:
       context-todo: true
       os-chdir: true
       os-mkdir-temp: true
-      os-setenv: true
-      os-create-temp: true
-      os-temp-dir: true
   exclusions:
     generated: lax
     presets:

@@ -1565,6 +1565,247 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Gentoo": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"keywords": {
+						"$ref": "#/$defs/StringArray"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"bin": {
+						"type": "boolean"
+					},
+					"type": {
+						"type": "string"
+					},
+					"keep_versions": {
+						"type": "integer"
+					},
+					"conflict_resolution": {
+						"type": "string"
+					},
+					"version_retention_strategy": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"skip_files_validation": {
+						"type": "boolean"
+					},
+					"bindir": {
+						"type": "string"
+					},
+					"manifest_hashes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"thin_manifests": {
+						"type": "boolean"
+					},
+					"meta_cache": {
+						"type": "boolean"
+					},
+					"extra_install": {
+						"type": "string"
+					},
+					"maintainers": {
+						"items": {
+							"$ref": "#/$defs/GentooMaintainer"
+						},
+						"type": "array"
+					},
+					"bugs_to": {
+						"type": "string"
+					},
+					"useflags": {
+						"items": {
+							"$ref": "#/$defs/GentooUseFlag"
+						},
+						"type": "array"
+					},
+					"dobin": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doconfd": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"dodir": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dodoc": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"doenvd": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doexe": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doheader": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doinitd": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doins": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"doman": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dosbin": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"dosym": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					},
+					"systemd": {
+						"items": {
+							"$ref": "#/$defs/GentooInstallItem"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"bin"
+				]
+			},
+			"GentooInstallItem": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"use": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"src"
+				]
+			},
+			"GentooMaintainer": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"GentooUseFlag": {
+				"properties": {
+					"flag": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"flag"
+				]
+			},
 			"Git": {
 				"properties": {
 					"tag_sort": {
@@ -3832,6 +4073,12 @@
 					"scoops": {
 						"items": {
 							"$ref": "#/$defs/Scoop"
+						},
+						"type": "array"
+					},
+					"gentoo_overlay": {
+						"items": {
+							"$ref": "#/$defs/Gentoo"
 						},
 						"type": "array"
 					},

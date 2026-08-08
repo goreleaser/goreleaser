@@ -35,6 +35,8 @@ var (
 	_ ReleaseNotesGenerator = &githubClient{}
 	_ PullRequestOpener     = &githubClient{}
 	_ ForkSyncer            = &githubClient{}
+	_ DirectoryLister       = &githubClient{}
+	_ FileDeleter           = &githubClient{}
 	_ ReleaseChecker        = &githubClient{}
 )
 
@@ -125,6 +127,75 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 		return &githubClient{}, err
 	}
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error) {
+	c.checkRateLimit(ctx)
+	_, contents, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, dir, &github.RepositoryContentGetOptions{Ref: repo.Branch})
+	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var names []string
+	for _, item := range contents {
+		if item != nil && item.GetType() == "file" {
+			names = append(names, item.GetName())
+		}
+	}
+	return names, nil
+}
+
+func (c *githubClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	c.checkRateLimit(ctx)
+	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: repo.Branch})
+	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	if file == nil {
+		return nil, errors.New("not a file")
+	}
+	content, err := file.GetContent()
+	if err != nil {
+		return nil, err
+	}
+	return []byte(content), nil
+}
+
+func (c *githubClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error {
+	c.checkRateLimit(ctx)
+	branch := repo.Branch
+	if branch == "" {
+		def, err := c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return err
+		}
+		branch = def
+	}
+	file, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{Ref: branch})
+	if err != nil {
+		var rerr *github.ErrorResponse
+		if errors.As(err, &rerr) && rerr.Response.StatusCode == http.StatusNotFound {
+			log.WithField("file", path).Debug("file does not exist, skipping deletion")
+			return nil
+		}
+		return err
+	}
+	opts := &github.RepositoryContentFileOptions{
+		Committer: &github.CommitAuthor{Name: &commitAuthor.Name, Email: &commitAuthor.Email},
+		Message:   &message,
+		Branch:    &branch,
+		SHA:       new(string),
+	}
+	*opts.SHA = file.GetSHA()
+	_, _, err = c.client.Repositories.DeleteFile(ctx, repo.Owner, repo.Name, path, opts)
+	return err
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
@@ -500,6 +571,15 @@ func (c *githubClient) CreateFile(
 
 	if file != nil {
 		options.SHA = file.SHA
+		fileContent, err := file.GetContent()
+		if err == nil && fileContent == string(content) {
+			log.
+				WithField("repository", repo.String()).
+				WithField("branch", repo.Branch).
+				WithField("file", path).
+				Info("file already exists with the same content, skipping update")
+			return nil
+		}
 	}
 	if _, _, err := githubDo(ctx, func() (*github.RepositoryContentResponse, *github.Response, error) {
 		return c.client.Repositories.UpdateFile(
@@ -951,4 +1031,161 @@ func bodyOf(resp *github.Response) string {
 		return fmt.Sprintf("could not read response body: %v", err)
 	}
 	return string(bts)
+}
+
+// CreateFiles implements FilesCreator
+func (c *githubClient) CreateFiles(
+	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo Repo,
+	message string,
+	files []RepoFile,
+) error {
+	c.checkRateLimit(ctx)
+
+	defBranch, err := c.getDefaultBranch(ctx, repo)
+	if err != nil {
+		return fmt.Errorf("could not get default branch: %w", err)
+	}
+
+	branch := repo.Branch
+	if branch == "" {
+		branch = defBranch
+	}
+
+	var ref *github.Reference
+	if defBranch != branch && branch != "" {
+		_, res, err := githubDo(ctx, func() (*github.Branch, *github.Response, error) {
+			return c.client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, branch, 100)
+		})
+		if err != nil && (res == nil || res.StatusCode != http.StatusNotFound) {
+			return fmt.Errorf("could not get branch %q: %w", branch, err)
+		}
+
+		if res != nil && res.StatusCode == http.StatusNotFound {
+			defRef, _, err := githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+				return c.client.Git.GetRef(ctx, repo.Owner, repo.Name, "refs/heads/"+defBranch)
+			})
+			if err != nil {
+				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
+			}
+
+			createdRef, resp, err := githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+				return c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
+					Ref: "refs/heads/" + branch,
+					SHA: defRef.Object.GetSHA(),
+				})
+			})
+			if err != nil {
+				rerr := new(github.ErrorResponse)
+				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
+					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, bodyOf(resp))
+				}
+			} else {
+				ref = createdRef
+			}
+		}
+	}
+
+	if ref == nil {
+		ref, _, err = githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+			return c.client.Git.GetRef(ctx, repo.Owner, repo.Name, "refs/heads/"+branch)
+		})
+		if err != nil {
+			return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+branch, err)
+		}
+	}
+
+	currentCommit, _, err := githubDo(ctx, func() (*github.Commit, *github.Response, error) {
+		return c.client.Git.GetCommit(ctx, repo.Owner, repo.Name, ref.Object.GetSHA())
+	})
+	if err != nil {
+		return fmt.Errorf("could not get commit %q: %w", ref.Object.GetSHA(), err)
+	}
+
+	var entries []*github.TreeEntry
+	for _, f := range files {
+		path := f.Path
+		mode := "100644"
+		typ := "blob"
+		if f.Delete {
+			entries = append(entries, &github.TreeEntry{
+				Path: &path,
+				Mode: &mode,
+				Type: &typ,
+				SHA:  nil, // This acts as delete
+			})
+			continue
+		}
+
+		content := string(f.Content)
+		entries = append(entries, &github.TreeEntry{
+			Path:    &path,
+			Mode:    &mode,
+			Type:    &typ,
+			Content: &content,
+		})
+	}
+
+	if len(entries) == 0 {
+		return nil
+	}
+
+	tree, _, err := githubDo(ctx, func() (*github.Tree, *github.Response, error) {
+		return c.client.Git.CreateTree(ctx, repo.Owner, repo.Name, currentCommit.Tree.GetSHA(), entries)
+	})
+	if err != nil {
+		return fmt.Errorf("could not create tree: %w", err)
+	}
+
+	if tree.GetSHA() == currentCommit.Tree.GetSHA() {
+		log.
+			WithField("repository", repo.String()).
+			WithField("branch", branch).
+			Info("no files changed, skipping commit")
+		return nil
+	}
+
+	commit := &github.Commit{
+		Message: &message,
+		Tree:    tree,
+		Parents: []*github.Commit{currentCommit},
+	}
+
+	if !commitAuthor.UseGitHubAppToken {
+		commit.Author = &github.CommitAuthor{
+			Name:  &commitAuthor.Name,
+			Email: &commitAuthor.Email,
+		}
+		commit.Committer = &github.CommitAuthor{
+			Name:  &commitAuthor.Name,
+			Email: &commitAuthor.Email,
+		}
+	}
+
+	newCommit, _, err := githubDo(ctx, func() (*github.Commit, *github.Response, error) {
+		return c.client.Git.CreateCommit(ctx, repo.Owner, repo.Name, *commit, nil)
+	})
+	if err != nil {
+		return fmt.Errorf("could not create commit: %w", err)
+	}
+
+	_, _, err = githubDo(ctx, func() (*github.Reference, *github.Response, error) {
+		force := false
+		return c.client.Git.UpdateRef(ctx, repo.Owner, repo.Name, "refs/heads/"+branch, github.UpdateRef{
+			SHA:   newCommit.GetSHA(),
+			Force: &force,
+		})
+	})
+	if err != nil {
+		return fmt.Errorf("could not update ref %q: %w", "refs/heads/"+branch, err)
+	}
+
+	log.
+		WithField("repository", repo.String()).
+		WithField("branch", branch).
+		WithField("commit", newCommit.GetSHA()).
+		Info("pushed commit")
+
+	return nil
 }
