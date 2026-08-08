@@ -183,6 +183,33 @@ type AURSource struct {
 	Install string `yaml:"install,omitempty" json:"install,omitempty"`
 }
 
+// APKBuild configures an Alpine Linux APKBUILD for prebuilt binaries.
+type APKBuild struct {
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Description           string       `yaml:"description" json:"description"`
+	Homepage              string       `yaml:"homepage" json:"homepage"`
+	License               string       `yaml:"license" json:"license"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty" jsonschema:"maxItems=1"`
+	Contributors          []string     `yaml:"contributors,omitempty" json:"contributors,omitempty"`
+	Provides              []string     `yaml:"provides,omitempty" json:"provides,omitempty"`
+	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	MakeDepends           []string     `yaml:"makedepends,omitempty" json:"makedepends,omitempty"`
+	Replaces              []string     `yaml:"replaces,omitempty" json:"replaces,omitempty"`
+	Options               []string     `yaml:"options,omitempty" json:"options,omitempty"`
+	Rel                   string       `yaml:"rel,omitempty" json:"rel,omitempty"`
+	Package               string       `yaml:"package,omitempty" json:"package,omitempty"`
+	GitURL                string       `yaml:"git_url,omitempty" json:"git_url,omitempty"`
+	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
+	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
+	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+	Disable               string       `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
 // Homebrew contains the brew section.
 //
 // Deprecated: in favor of [HomebrewCask].
@@ -1362,6 +1389,7 @@ type Project struct {
 	Winget            []Winget          `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs              []AUR             `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	AURSources        []AURSource       `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
+	APKBuilds         []APKBuild        `yaml:"apkbuilds,omitempty" json:"apkbuilds,omitempty"`
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
