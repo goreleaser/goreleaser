@@ -96,9 +96,9 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 			t.Abi = abi
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
-		case "ppc64":
+		case "ppc64", "ppc64le":
 			t.Goppc64 = extra
-		case "riscv":
+		case "riscv", "riscv64":
 			t.Goriscv64 = extra
 		}
 	}
@@ -168,7 +168,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 			}
 			targets[fixTarget(target)] = true
 		}
-		build.Targets = slices.Collect(maps.Keys(targets))
+		build.Targets = slices.Sorted(maps.Keys(targets))
 
 		// Explicit targets skip the matrix, so validate their GOARM and run the
 		// same one-ABI-per-version conflict check the matrix path runs.

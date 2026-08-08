@@ -113,7 +113,7 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 			cfg.Notarize.Key,
 		).WithStatusConfig(notary.StatusConfig{
 			Timeout: cfg.Notarize.Timeout,
-			Poll:    10,
+			Poll:    10 * time.Second,
 			Wait:    cfg.Notarize.Wait,
 		})
 

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
@@ -35,6 +35,7 @@ var (
 	_ ReleaseNotesGenerator = &githubClient{}
 	_ PullRequestOpener     = &githubClient{}
 	_ ForkSyncer            = &githubClient{}
+	_ ReleaseChecker        = &githubClient{}
 )
 
 type githubClient struct {
@@ -160,7 +161,7 @@ func (c *githubClient) rateLimitChecker(
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	c.checkRateLimit(ctx)
 	notes, _, err := githubDo(ctx, func() (*github.RepositoryReleaseNotes, *github.Response, error) {
-		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, github.GenerateNotesRequest{
 			TagName:         current,
 			PreviousTagName: &prev,
 		})
@@ -531,7 +532,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
 	body = truncateReleaseBody(body)
 
-	data := &github.RepositoryRelease{
+	data := github.UpdateReleaseRequest{
 		Name:    &title,
 		TagName: &ctx.Git.CurrentTag,
 		Body:    &body,
@@ -568,7 +569,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	if err != nil {
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
-	data := &github.RepositoryRelease{
+	data := github.UpdateReleaseRequest{
 		Draft: new(false),
 	}
 	tpl := tmpl.New(ctx)
@@ -603,7 +604,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	return nil
 }
 
-func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
+func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.UpdateReleaseRequest, body string) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx)
 	release, err := c.findRelease(ctx, data.GetTagName())
 	if err != nil || release == nil {
@@ -612,7 +613,16 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
 				ctx.Config.Release.GitHub.Name,
-				data,
+				github.CreateReleaseRequest{
+					TagName:                data.GetTagName(),
+					TargetCommitish:        data.TargetCommitish,
+					Name:                   data.Name,
+					Body:                   data.Body,
+					Draft:                  data.Draft,
+					Prerelease:             data.Prerelease,
+					MakeLatest:             data.MakeLatest,
+					DiscussionCategoryName: data.DiscussionCategoryName,
+				},
 			)
 		})
 		if resp == nil {
@@ -635,7 +645,14 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 		return release, err
 	}
 
-	data.Draft = release.Draft
+	// An immutable release cannot be updated, nor can its assets be replaced,
+	// so retrying will never succeed. Fail fast with a clear error instead of
+	// attempting to update the release and upload every artifact.
+	if release.GetImmutable() {
+		return nil, fmt.Errorf("release %s already exists and is immutable, it cannot be updated", release.GetTagName())
+	}
+
+	data.Draft = new(release.Draft)
 	data.Body = new(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
 }
@@ -655,10 +672,10 @@ func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.R
 	return c.findDraftRelease(ctx, name)
 }
 
-func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+func (c *githubClient) updateRelease(ctx *context.Context, id int64, data github.UpdateReleaseRequest) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx)
 	release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
-		return c.client.Repositories.EditRelease(
+		return c.client.Repositories.UpdateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name,
@@ -676,6 +693,35 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 	}
 	l.Debug("release updated")
 	return release, nil
+}
+
+func (c *githubClient) CanRelease(ctx *context.Context) error {
+	c.checkRateLimit(ctx)
+	if _, _, err := githubDo(ctx, func() (*github.Repository, *github.Response, error) {
+		return c.client.Repositories.Get(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name)
+	}); err != nil {
+		return fmt.Errorf("could not access release repository: %w", err)
+	}
+
+	release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
+		return c.client.Repositories.GetReleaseByTag(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			ctx.Git.CurrentTag,
+		)
+	})
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			// No release exists yet for this tag: nothing blocks creating it.
+			return nil
+		}
+		return fmt.Errorf("could not check for an existing release: %w", err)
+	}
+	if release.GetImmutable() {
+		return fmt.Errorf("release %s already exists and is immutable, it cannot be updated", release.GetTagName())
+	}
+	return nil
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {

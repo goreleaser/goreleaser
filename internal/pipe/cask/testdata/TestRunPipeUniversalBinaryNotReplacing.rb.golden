@@ -3,13 +3,13 @@ cask "unibin" do
   version "1.0.1"
 
   on_macos do
-    on_intel do
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      url "https://dummyhost/download/v#{version}/bin_amd64.tar.gz"
-    end
     on_arm do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin_arm64.tar.gz"
+    end
+    on_intel do
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      url "https://dummyhost/download/v#{version}/bin_amd64.tar.gz"
     end
   end
 
@@ -24,5 +24,4 @@ cask "unibin" do
   binary "unibin"
 
   # No zap stanza required
-
 end

@@ -201,7 +201,11 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 	}
 
 	log.Info("homebrew_casks.pull_request enabled, creating a PR")
-	pcl, ok := cl.(client.PullRequestOpener)
+	prcl, err := client.NewIfToken(ctx, cl, brew.Repository.PullRequest.Token)
+	if err != nil {
+		return err
+	}
+	pcl, ok := prcl.(client.PullRequestOpener)
 	if !ok {
 		return errors.New("client does not support pull requests")
 	}
@@ -461,7 +465,31 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 	return result, nil
 }
 
+// archStanzaRank orders packages so the generated `on_*` blocks come out in
+// Homebrew's canonical stanza order, which puts arm before intel:
+//
+//	ON_SYSTEM_METHODS_STANZA_ORDER = [:arm, :intel, ...]
+//
+// (Homebrew/rubocops/cask/constants/stanza.rb). Sorting the arch strings
+// alphabetically put amd64 first, so every generated Cask emitted `on_intel`
+// before `on_arm` and tripped Cask/StanzaOrder.
+func archStanzaRank(arch string) int {
+	switch arch {
+	case "all":
+		return 0
+	case "arm64":
+		return 1
+	case "amd64":
+		return 2
+	default:
+		return 3
+	}
+}
+
 func compareByArch(a, b releasePackage) int {
+	if c := cmp.Compare(archStanzaRank(a.Arch), archStanzaRank(b.Arch)); c != 0 {
+		return c
+	}
 	return cmp.Compare(a.Arch, b.Arch)
 }
 

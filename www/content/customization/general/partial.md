@@ -27,6 +27,19 @@ GGOOS=windows goreleaser release --clean --split
 Note that this step will push your Docker images as well.
 Docker manifests are not created yet, though.
 
+> [!IMPORTANT]
+> **Docker images**
+>
+> The above is true for `dockers`/`docker_manifests` only.
+>
+> With [`dockers_v2`](/customization/package/dockers_v2/), nothing is built in
+> this step: since `docker buildx` builds and pushes the manifest in a single
+> run, the images are built and pushed in the merge step, which is when all the
+> artifacts for all the platforms are available.
+>
+> This means the machine running the merge step needs to have `docker buildx`
+> set up as well.
+
 - In the first example, it'll build for the current `GOOS` (as returned by
   `runtime.GOOS`).
 - In the second, it'll use the informed `GOOS`. This env will also bleed to
@@ -52,7 +65,8 @@ This last step will run some extra things that were not run during the previous
 step:
 
 - merge previous contexts and artifacts lists
-- pull previously built images
+- pull previously built images (`dockers`)
+- build and push the Docker images (`dockers_v2`)
 - create the source archive (if enabled)
 - checksum all artifacts
 - sign artifacts (according to configuration)

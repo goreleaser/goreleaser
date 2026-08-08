@@ -98,9 +98,9 @@ Perfect! Everything works as expected.
 
 We can check the content on the GitHub UI.
 
-![](https://cdn-images-1.medium.com/max/5964/1*O2zfXri4yrmo_GN3clczow.png)
+![](https://a.goreleaser.com/blog/homebrew-gofish/img1.png)
 
-![](https://cdn-images-1.medium.com/max/6020/1*1TVV84tYM1staeDcifH7tw.png)
+![](https://a.goreleaser.com/blog/homebrew-gofish/img2.png)
 
 ### Installation
 
@@ -124,7 +124,7 @@ gofish install github.com/dirien/goreleaser-rig/goreleaser-brew-fish
 
 Now you can distribute this tap or rig repositories and everybody can install your projects via this package manager.
 
-![](https://cdn-images-1.medium.com/max/2560/0*prjIhehAsUYTBaLx.jpg)
+![](https://a.goreleaser.com/blog/homebrew-gofish/img3.jpg)
 
 ### The Code
 

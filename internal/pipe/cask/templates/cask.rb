@@ -13,13 +13,12 @@ cask "{{ .Name }}" do
   on_macos do
   {{- include "macos_packages" . | indent 2 }}
   end
-  {{ end }}
-
-  {{ if .LinuxPackages }}
+  {{- end }}
+  {{- if .LinuxPackages }}
   on_linux do
   {{- include "linux_packages" . | indent 2 }}
   end
-  {{ end }}
+  {{- end }}
 
   name "{{ .Name }}"
   desc "{{ .Description }}"
@@ -105,11 +104,16 @@ cask "{{ .Name }}" do
 
   {{ zap .Zap }}
 
-  {{ with .Caveats -}}
+  {{- with .Caveats }}
+
   caveats <<~EOS
     {{- range (split .) }}
     {{ . -}}
     {{- end }}
   EOS
   {{- end }}
+{{- /*
+  No blank line before `end`: rubocop's Layout/EmptyLinesAroundBlockBody
+  rejects one, and it fired on every Cask GoReleaser generated.
+*/}}
 end

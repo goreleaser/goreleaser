@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager/types"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
@@ -109,7 +109,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 	if provider == "s3" && conf.ACL != "" {
 		up.beforeWrite = func(asFunc func(any) bool) error {
-			req := &s3.PutObjectInput{}
+			req := &transfermanager.UploadObjectInput{}
 			if !asFunc(&req) {
 				return errors.New("could not apply before write")
 			}

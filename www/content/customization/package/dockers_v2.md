@@ -5,8 +5,6 @@ weight: 130
 
 {{< g_version "v2.12" >}}
 
-{{< g_experimental "https://github.com/goreleaser/goreleaser/discussions/6005" >}}
-
 This feature uses `docker buildx` to build multi-arch manifests,
 reusing the previously built binaries and/or packages.
 
@@ -34,8 +32,15 @@ dockers_v2:
     # the Dockerfile for the build.
     # When set, it takes precedence over `dockerfile`.
     #
+    # When rendering the file contents, `.Binary` (the name of the binary being
+    # copied into the image) and `.Binaries` (the sorted list of all binary
+    # names, useful when copying more than one) are available - handy for things
+    # like `ENTRYPOINT ["/usr/bin/{{ .Binary }}"]`. Since a single image is built
+    # for all its platforms, per-platform fields (such as `.Os` and `.Arch`) are
+    # not available.
+    #
     # Templates: allowed (both the path and the file contents).
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     templated_dockerfile: "Dockerfile.tmpl"
 
     # IDs to filter the binaries/packages.
@@ -83,8 +88,11 @@ dockers_v2:
     # Same as `extra_files`, but the source files are rendered as templates
     # before being copied into the build context.
     #
+    # As with `templated_dockerfile`, `.Binary` and `.Binaries` are available
+    # when rendering the file contents.
+    #
     # Templates: allowed (source path, destination path, and file contents).
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     templated_extra_files:
       - # Source file path (relative to the project root).
         #
@@ -180,8 +188,8 @@ dockers_v2:
           # Working directory for the command.
           dir: "{{ .ContextDir }}"
           # Only run this hook if the template evaluates to `true`.
-          # {{< g_inline_version "v2.17-unreleased" >}}
-          if: "{{ eq .Runtime.Goarch \"amd64\" }}"
+          # {{< g_inline_version "v2.17" >}}
+          if: '{{ eq .Runtime.Goarch "amd64" }}'
           # Extra env vars to inject into the hook.
           env:
             - DOCKERFILE={{ .Dockerfile }}
@@ -221,6 +229,31 @@ dockers_v2:
 > test this new version for a while, before launching v3.
 
 {{< g_templates >}}
+
+## Building and pushing are a single step
+
+Docker buildx builds and pushes the manifest in a single `docker buildx build
+--push` run, as it can't create a multi-platform manifest locally without
+pushing it.
+
+Because of that, `dockers_v2` images are built in the **publish** phase, not in
+the build phase (which is what `dockers` used to do).
+
+In practice, this means that anything that skips publishing will also not build
+your images:
+
+- `goreleaser build`
+- `goreleaser release --skip=publish` (as well as `--skip=docker`)
+- `goreleaser release --prepare`{{< g_inline_pro >}}
+- `goreleaser release --split`{{< g_inline_pro >}}
+- `goreleaser release --single-target`{{< g_inline_pro >}}
+
+The images are then built and pushed later, when you run `goreleaser publish`,
+`goreleaser continue`, or `goreleaser continue --merge`{{< g_inline_pro >}}.
+
+> [!TIP]
+> If you want to build the images without pushing them, e.g. to verify that your
+> `Dockerfile` works, run a [snapshot build](#testing-locally).
 
 ## Testing locally
 

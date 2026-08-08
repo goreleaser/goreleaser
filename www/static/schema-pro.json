@@ -5237,6 +5237,9 @@
 					"draft": {
 						"type": "boolean"
 					},
+					"token": {
+						"type": "string"
+					},
 					"check_boxes": {
 						"type": "boolean"
 					},
@@ -5395,6 +5398,9 @@
 					"include_meta": {
 						"type": "boolean"
 					},
+					"preflight": {
+						"$ref": "#/$defs/ReleasePreflight"
+					},
 					"templated_extra_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFile"
@@ -5406,6 +5412,22 @@
 					},
 					"footer": {
 						"$ref": "#/$defs/IncludedMarkdown"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ReleasePreflight": {
+				"properties": {
+					"fail_on_error": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

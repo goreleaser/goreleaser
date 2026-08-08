@@ -203,6 +203,17 @@ func TestAllBuildTargets(t *testing.T) {
 		})
 		require.EqualError(t, err, "invalid goamd64: invalid")
 	})
+
+	t.Run("invalid goarm64", func(t *testing.T) {
+		for _, v := range []string{"v8.10", "v9.6", "v8.1,bogus", "garbage v8.1", "v8.1 junk", "xxv8.1xx"} {
+			_, err := listTargets(config.Build{
+				Goos:    []string{"linux"},
+				Goarch:  []string{"arm64"},
+				Goarm64: []string{v},
+			})
+			require.EqualError(t, err, "invalid goarm64: "+v)
+		}
+	})
 }
 
 func TestGoosGoarchCombos(t *testing.T) {

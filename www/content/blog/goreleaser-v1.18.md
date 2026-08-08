@@ -13,7 +13,7 @@ first like to thank all the maintainers out there for the hard work, you rock!
 
 <!--more-->
 
-![new goreleaser -v output (pro)](https://carlosbecker.com/posts/goreleaser-v1.18/img1.webp)
+![new goreleaser -v output (pro)](https://a.goreleaser.com/blog/goreleaser-v1.18/img1.webp)
 
 Now, onto new features!
 

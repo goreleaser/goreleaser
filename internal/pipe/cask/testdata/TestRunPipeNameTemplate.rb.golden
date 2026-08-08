@@ -29,5 +29,4 @@ cask "foo_is_bar" do
   binary "foo"
 
   # No zap stanza required
-
 end

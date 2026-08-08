@@ -25,7 +25,7 @@ But let us start, with the idea behind Docker Image Manifest.
 
 ## What are Docker Image Manifests?
 
-![Image Manifests](https://github.com/goreleaser/goreleaser/assets/245435/380b4907-8d7f-4704-852d-8142c1212e86)
+![Image Manifests](https://a.goreleaser.com/blog/docker-manifests/img1.png)
 
 <!-- _[Source](https://ownyourbits.com/2019/05/13/building-docker-containers-in-2019/)_ doesn't exist anymole -->
 
@@ -59,7 +59,7 @@ This works fine with local images or images stored in a remote registry.
 docker manifest inspect <image>:<version>
 ```
 
-![Example output of the docker manifest inspect command](https://github.com/goreleaser/goreleaser/assets/245435/90b1f47f-8c3f-41dd-962a-7990e14771a9)
+![Example output of the docker manifest inspect command](https://a.goreleaser.com/blog/docker-manifests/img2.png)
 _Example output of the docker manifest inspect command_
 
 ## Multi-Arch Builds and Manifests
@@ -95,7 +95,7 @@ All you need to do is to add the `docker_manifests` to your `.goreleaser.yaml`.
 The most important part is to map `name_template` to the `image_templates` you
 created in the `dockers` step.
 
-![Example snippet of a gorelaser.yaml](https://github.com/goreleaser/goreleaser/assets/245435/94f6f3fc-98e0-4d9f-96c0-65851ee07e2f)
+![Example snippet of a gorelaser.yaml](https://a.goreleaser.com/blog/docker-manifests/img3.png)
 _Example snippet of a `.gorelaser.yaml`_
 
 There are some additional flags you can set, e.g. if you have a self-hosted
@@ -111,6 +111,6 @@ With GoReleaser its a breeze to create Docker manifest for your multi arch
 builds.
 Go try it out!
 
-![](https://cdn-images-1.medium.com/max/2000/0*2blEBypJ9QRvqDsm.jpg)
+![](https://a.goreleaser.com/blog/docker-manifests/img4.jpg)
 
 [https://goreleaser.com/](https://goreleaser.com/customization/docker_manifest/)

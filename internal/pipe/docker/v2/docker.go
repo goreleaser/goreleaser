@@ -69,7 +69,23 @@ func (Base) Skip(ctx *context.Context) bool {
 }
 
 // Skip implements Skipper.
-func (p Snapshot) Skip(ctx *context.Context) bool { return p.Base.Skip(ctx) || !ctx.Snapshot }
+func (p Snapshot) Skip(ctx *context.Context) bool {
+	if p.Base.Skip(ctx) {
+		return true
+	}
+	if ctx.Snapshot {
+		return false
+	}
+	if skips.Any(ctx, skips.Publish) {
+		log.Warn(
+			logext.Keyword("dockers_v2") +
+				logext.Warning(" builds and pushes images in a single step, so no images will be built while publishing is skipped, check ") +
+				logext.URL("https://goreleaser.com/customization/package/dockers_v2/#building-and-pushing-are-a-single-step") +
+				logext.Warning(" for more info"),
+		)
+	}
+	return true
+}
 
 // Default implements defaults.Defaulter.
 func (Base) Default(ctx *context.Context) error {

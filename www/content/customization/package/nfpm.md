@@ -611,7 +611,7 @@ nfpms:
     # package, so the `executable` of each application below is simply the
     # binary's file name.
     #
-    # {{< g_inline_version "v2.17-unreleased" >}}
+    # {{< g_inline_version "v2.17" >}}
     msix:
       # The publisher identity. Must match the subject of the signing
       # certificate. Required.
@@ -733,7 +733,7 @@ will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 
 ## A note about MSIX
 
-{{< g_version "v2.17-unreleased" >}}
+{{< g_version "v2.17" >}}
 
 {{< g_experimental "https://github.com/goreleaser/goreleaser/issues/6519" >}}
 

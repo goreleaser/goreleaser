@@ -97,7 +97,7 @@ COPY goreleaser-container-example \
 ENTRYPOINT ["/usr/bin/goreleaser-container-example"]
 ```
 
-![Chainguard logo](https://cdn-images-1.medium.com/max/2000/0*3X76j809VWDnCLxY)
+![Chainguard logo](https://a.goreleaser.com/blog/azure-devops-multi-platform/img1.png)
 
 You may spot that I use a static container image as base image from Chainguard. Chainguard images are designed for minimalism and security in mind. Many of the images provided by Chainguard are distroless, which means they do not contain a package manager or any other programs that are not required for the specific purpose of the image. Chainguard images are also scanned for vulnerabilities and are regularly updated. You can find more information about Chainguard images here:
 [**Chainguard Images**
@@ -242,11 +242,11 @@ docker_manifests:
 
 With the infrastructure done and GoReleaser config finished, we can set up Azure DevOps Service.
 
-![Switch to the Service Connections screen](https://cdn-images-1.medium.com/max/4060/1*4n5ZoSZ6HMNp0kL--zYFPA.png)_Switch to the Service Connections screen_
+![Switch to the Service Connections screen](https://a.goreleaser.com/blog/azure-devops-multi-platform/img2.png)_Switch to the Service Connections screen_
 
-![Click on the New service connection button](https://cdn-images-1.medium.com/max/4060/1*WBYOMjBmxl_LAEhnUcBSDg.png)_Click on the New service connection button_
+![Click on the New service connection button](https://a.goreleaser.com/blog/azure-devops-multi-platform/img3.png)_Click on the New service connection button_
 
-![Select Azure Container Registry and connect your Azure subscription to it](https://cdn-images-1.medium.com/max/4060/1*kGcBwOXxuKwQsnkwo2870A.png)_Select Azure Container Registry and connect your Azure subscription to it_
+![Select Azure Container Registry and connect your Azure subscription to it](https://a.goreleaser.com/blog/azure-devops-multi-platform/img4.png)_Select Azure Container Registry and connect your Azure subscription to it_
 
 Time for the last part of our demo: Setting up the Azure DevOps pipeline. I will not go too much into detail about the pipeline, as this is not the focus of this demo. But I will show you the important parts of the pipeline.
 
@@ -300,11 +300,11 @@ jobs:
 
 To run a release, you need to create a tag in Azure to get the release process started.
 
-![Logs produced during the release process](https://cdn-images-1.medium.com/max/4060/1*rawcazzmdDWXUzeo-YAIlQ.png)_Logs produced during the release process_
+![Logs produced during the release process](https://a.goreleaser.com/blog/azure-devops-multi-platform/img5.png)_Logs produced during the release process_
 
 And you should see in the Repository tab of your Azure Container Registry service in the Azure Portal UI the multi-platform container images.
 
-![List of all produced multi-platform container images](https://cdn-images-1.medium.com/max/7184/1*Z8mRJwHIv3o9jWlubU_hhQ.png)_List of all produced multi-platform container images_
+![List of all produced multi-platform container images](https://a.goreleaser.com/blog/azure-devops-multi-platform/img6.png)_List of all produced multi-platform container images_
 
 ## Conclusion
 

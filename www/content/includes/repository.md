@@ -13,7 +13,7 @@
       # Optionally a branch can be provided.
       #
       # Default: default repository branch, or '{{ .ProjectName }}-{{ .Version }}'
-      # when 'pull_request.enabled' is true. {{< g_inline_version "v2.17-unreleased" >}}
+      # when 'pull_request.enabled' is true. {{< g_inline_version "v2.17" >}}
       # Templates: allowed.
       branch: main
 
@@ -47,6 +47,12 @@
 
         # Whether to open the PR as a draft or not.
         draft: true
+
+        # An optional token that can be provided for opening the pull request.
+        #
+        # Templates: allowed.
+        # {{< g_inline_version "v2.18-unreleased" >}}
+        token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
 
         # If the pull request template has checkboxes, enabling this will
         # check all of them.

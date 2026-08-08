@@ -19,5 +19,4 @@ cask "foo" do
   manpage "man/foo.1.gz"
 
   # No zap stanza required
-
 end

@@ -12,7 +12,7 @@ In this blog article, I want to show how to use **GoReleaser** in **Azure DevOps
 
 <!--more-->
 
-![](https://cdn-images-1.medium.com/max/2000/1*hAK9NMa-YbSnTQdSEoX7Gw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img1.png)
 
 In this blog article, I want to show how to use **GoReleaser** in **Azure
 DevOps**.
@@ -44,7 +44,7 @@ services based on your business needs:
 
 ## Install GoReleaser Via The Marketplace
 
-![](https://cdn-images-1.medium.com/max/4144/1*NCY5i6iCEPW5ZpNhYeB6Jg.png)
+![](https://a.goreleaser.com/blog/azure-devops/img2.png)
 
 **GoReleaser** offers a [Plugin via the
 Marketplace](https://marketplace.visualstudio.com/items?itemName=GoReleaser.goreleaser).
@@ -53,7 +53,7 @@ start!
 
 In your pipeline editor you can lookup the task:
 
-![](https://cdn-images-1.medium.com/max/2000/1*U-zVyao5qwgjfzTcGHgSJA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img3.png)
 
 And quickly change the default settings to fit with your use case!
 For example set a specific version or execute certain **GoReleaser** commands.
@@ -61,7 +61,7 @@ For example set a specific version or execute certain **GoReleaser** commands.
 See the official docs for more details
 [https://github.com/goreleaser/goreleaser-azure-devops-extension](https://github.com/goreleaser/goreleaser-azure-devops-extension)
 
-![](https://cdn-images-1.medium.com/max/2000/1*Aqtx-0KvADotNmeX7X1HTQ.png)
+![](https://a.goreleaser.com/blog/azure-devops/img4.png)
 
 ## Finally The Demo!
 
@@ -192,15 +192,15 @@ Connection in Azure DevOps As we going to upload the image to Docker Hub, we
 need to create in **Azure Devops** the Service Connection.
 
 Go to **Project Settings** and click **Service connections**:
-![](https://cdn-images-1.medium.com/max/2000/1*QDD9dVR5ZYUtm4qh5Izy2w.png)
-![](https://cdn-images-1.medium.com/max/2000/1*PMGoYUHoda1bVumVGW1Fow.png)
+![](https://a.goreleaser.com/blog/azure-devops/img5.png)
+![](https://a.goreleaser.com/blog/azure-devops/img6.png)
 
 Choose **Docker Registry**:
-![](https://cdn-images-1.medium.com/max/2000/1*JmkHy2p5pjhc7llWCHjChw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img7.png)
 
 In the detail view, select **Docker Hub **and then enter your details, like
 **Docker ID**, **Docker Password** and the **Service Connection Name**:
-![](https://cdn-images-1.medium.com/max/2000/1*WCT6xaaNtoT6Y-Ws7-0qOQ.png)
+![](https://a.goreleaser.com/blog/azure-devops/img8.png)
 
 Click **Verify and save**, we will come back to the service connection in our
 Pipeline code.
@@ -326,41 +326,41 @@ syft](https://github.com/anchore/syft) and
 Currently there is no native task for this in **Azure DevOps**. We just use the
 **CmdLine** task and curl the binaries.
 
-![](https://cdn-images-1.medium.com/max/2496/1*O01UvqQCv8255Kj9JEvxiw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img9.png)
 
 It is also important to log into your **Docker Hub** account, via the **Service
 Connection** we created earlier.
 The **Docker** task takes care of the actual login.
 
-![](https://cdn-images-1.medium.com/max/2000/1*_uMeZymqEJ0Xqq64OP_UXA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img10.png)
 
 Now we can call our **GoReleaser** task.
 
-![](https://cdn-images-1.medium.com/max/2000/1*blEbdGwd8PXZ9ExCScfYtw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img11.png)
 
 ### Azure Pipeline Secret Library
 
 For cosign, I use a password, I stored in the Azure Pipeline Library as secret
 variable.
 
-![](https://cdn-images-1.medium.com/max/4028/1*ioSS8X6yT4qFNQrCrQbAYA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img12.png)
 
 In my pipeline code, I will pass this value as environment variable via the
 variables tag.
 
-![](https://cdn-images-1.medium.com/max/2000/1*CTox6hgrOCgaTs9AFJWUhQ.png)
+![](https://a.goreleaser.com/blog/azure-devops/img13.png)
 
 In this demo, I am going to publish the release artifacts as build artifacts.
 
-![](https://cdn-images-1.medium.com/max/2244/1*nwH4Ej9GbQ6RdE_MfYMelw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img14.png)
 
 The task **CopyFiles** collects some files from the **dist** folder and the
 cosign public key and **PublishBuildArtifacts** publish them.
 You will find the artifacts on the pipeline detail
 
-![](https://cdn-images-1.medium.com/max/2000/1*GWCiLGBnHOnCjyRuqrPEEw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img15.png)
 
-![](https://cdn-images-1.medium.com/max/4220/1*MLeku1FpKCFMv7bfNvu_eA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img16.png)
 
 Of course, you can use other targets too, like a cloud native storage.
 
@@ -372,25 +372,25 @@ post for more details on this subject
 
 Head over to **tags** menu and create a new tag in the UI
 
-![](https://cdn-images-1.medium.com/max/2000/1*zIYaYhDk1rSpd5_si5mHIA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img17.png)
 
-![](https://cdn-images-1.medium.com/max/4472/1*Zaq4EUjn3egC5_3VLVQA5Q.png)
+![](https://a.goreleaser.com/blog/azure-devops/img18.png)
 
 Your pipeline should immediately start to run:
 
-![](https://cdn-images-1.medium.com/max/5528/1*h5YYGAPjIXrcympI01H9yA.png)
+![](https://a.goreleaser.com/blog/azure-devops/img19.png)
 
 And both jobs should run:
 
-![](https://cdn-images-1.medium.com/max/5592/1*TawbQohuoGdG4sO9xo0YLw.png)
+![](https://a.goreleaser.com/blog/azure-devops/img20.png)
 
-![](https://cdn-images-1.medium.com/max/2000/0*GY5jcM6UErG39iF2.jpg)
+![](https://a.goreleaser.com/blog/azure-devops/img21.jpg)
 
 And this is pretty much all of it! As I promised, very easy and straight forward
 we can implement **GoReleaser** in **Azure DevOps**, similar we would use it in
 GitHub
 
-![](https://cdn-images-1.medium.com/max/2560/0*1ZhRSdH-Se88gOdj.jpg)
+![](https://a.goreleaser.com/blog/azure-devops/img22.jpg)
 
 ### Caveat:
 
