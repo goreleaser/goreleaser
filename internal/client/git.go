@@ -89,35 +89,6 @@ func (g *gitClient) CreateFiles(
 		if err := cloneRepo(ctx, parent, url, name, env); err != nil {
 			return err
 		}
-
-		gitCmds := [][]string{
-			{"config", "--local", "user.name", commitAuthor.Name},
-			{"config", "--local", "user.email", commitAuthor.Email},
-			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
-		}
-
-		// append git flags for signing to overall comand if configured
-		if commitAuthor.Signing.Enabled {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "true"})
-
-			if commitAuthor.Signing.Key != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
-			}
-
-			if commitAuthor.Signing.Program != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
-			}
-
-			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
-			}
-		} else {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "false"})
-		}
-
-		if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
-			return fmt.Errorf("git: failed to setup local repository: %w", err)
-		}
 		if g.branch != "" {
 			if err := runGitCmds(ctx, cwd, env, [][]string{
 				{"checkout", g.branch},
@@ -129,6 +100,28 @@ func (g *gitClient) CreateFiles(
 				}
 			}
 		}
+	}
+
+	if err := unsetGitConfigs(ctx, cwd, env, "user.signingKey", "gpg.program", "gpg.format"); err != nil {
+		return fmt.Errorf("git: failed to reset local repository config: %w", err)
+	}
+	gitCmds := [][]string{
+		{"config", "--local", "user.name", commitAuthor.Name},
+		{"config", "--local", "user.email", commitAuthor.Email},
+		{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
+		{"config", "--local", "commit.gpgSign", fmt.Sprintf("%t", commitAuthor.Signing.Enabled)},
+	}
+	if commitAuthor.Signing.Key != "" {
+		gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
+	}
+	if commitAuthor.Signing.Program != "" {
+		gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
+	}
+	if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
+		gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
+	}
+	if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
+		return fmt.Errorf("git: failed to setup local repository: %w", err)
 	}
 
 	for _, file := range files {
@@ -260,6 +253,19 @@ func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string)
 		args := append([]string{"-C", cwd}, cmd...)
 		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
 			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
+		}
+	}
+	return nil
+}
+
+func unsetGitConfigs(ctx *context.Context, cwd string, env []string, keys ...string) error {
+	for _, key := range keys {
+		args := []string{"-C", cwd, "config", "--local", "--get", key}
+		if _, err := git.RunWithEnv(ctx, env, args...); err != nil {
+			continue
+		}
+		if err := runGitCmds(ctx, cwd, env, [][]string{{"config", "--local", "--unset-all", key}}); err != nil {
+			return err
 		}
 	}
 	return nil
