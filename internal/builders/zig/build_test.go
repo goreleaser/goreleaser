@@ -104,6 +104,11 @@ func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
 
 	folder := testlib.Mktmp(t)
+	// CI (mlugg/setup-zig) forces a shared zig cache at the repo root, which
+	// gets corrupted when this package and the rust package build in parallel.
+	// Use a per-test cache so they cannot race.
+	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
+	t.Setenv("ZIG_GLOBAL_CACHE_DIR", filepath.Join(folder, ".zig-global-cache"))
 	folder = filepath.Join(folder, "proj")
 	require.NoError(t, os.MkdirAll(folder, 0o755))
 	cmd := exec.CommandContext(t.Context(), "zig", "init")
