@@ -106,6 +106,10 @@ jobs:
         with:
           node-version: "25"
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          # Cancelled Windows jobs can persist a partially written Zig cache,
+          # which poisons subsequent runs restored through the prefix key.
+          use-cache: ${{ matrix.os != 'windows-latest' }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
       - uses: cargo-bins/cargo-binstall@e00d2c94cc0067b77737821097a62d91c0301baa # v1.21.1
