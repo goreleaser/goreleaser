@@ -32,7 +32,7 @@ const (
 	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var ErrNoArchivesFound = errors.New("no linux binaries or archives found")
 
 var supportedArchiveFormats = []string{"tar.gz", "tgz", "tar.xz", "tar", "zip"}
 
