@@ -78,6 +78,8 @@ const (
 	WingetDefaultLocale
 	// WingetVersion winget version file.
 	WingetVersion
+	// WingetLocale winget additional locale file.
+	WingetLocale
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
@@ -218,7 +220,7 @@ func (t Type) String() string {
 		return "C Archive Library"
 	case CShared:
 		return "C Shared Library"
-	case WingetInstaller, WingetDefaultLocale, WingetVersion:
+	case WingetInstaller, WingetDefaultLocale, WingetVersion, WingetLocale:
 		return "Winget Manifest"
 	case Nixpkg:
 		return "Nixpkg"

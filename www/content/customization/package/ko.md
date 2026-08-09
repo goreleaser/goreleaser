@@ -43,6 +43,7 @@ kos:
     # Local images will take priority over fetching remote images. {{< g_inline_version "v2.13" >}}
     #
     # Default: 'cgr.dev/chainguard/static'.
+    # Templates: allowed.
     base_image: alpine
 
     # Labels for the image.
@@ -62,6 +63,7 @@ kos:
     # first one using crane.
     #
     # Default: [ '$KO_DOCKER_REPO' ].
+    # Templates: allowed.
     repositories:
       - ghcr.io/foo/bar
       - foo/bar
@@ -117,6 +119,7 @@ kos:
     # Use the local_domain attribute to configure the local registry (e.g. kind.local).
     #
     # Default "goreleaser.ko.local" - local docker registry is used.
+    # Templates: allowed.
     # {{< g_inline_version "v2.10" >}}
     local_domain: "goreleaser.ko.local"
 

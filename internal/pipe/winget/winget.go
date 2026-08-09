@@ -23,15 +23,18 @@ import (
 )
 
 var (
-	errNoRepoName               = pipe.Skip("winget.repository.name is required")
-	errNoPublisher              = pipe.Skip("winget.publisher is required")
-	errNoLicense                = pipe.Skip("winget.license is required")
-	errNoShortDescription       = pipe.Skip("winget.short_description is required")
-	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier is invalid")
-	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
-	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
-	errMultipleArchives         = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
-	errMixedFormats             = pipe.Skip("found archives with multiple formats (.exe and .zip)")
+	errNoRepoName                = pipe.Skip("winget.repository.name is required")
+	errNoPublisher               = pipe.Skip("winget.publisher is required")
+	errNoLicense                 = pipe.Skip("winget.license is required")
+	errNoShortDescription        = pipe.Skip("winget.short_description is required")
+	errInvalidPackageIdentifier  = pipe.Skip("winget.package_identifier is invalid")
+	errSkipUpload                = pipe.Skip("winget.skip_upload is set")
+	errSkipUploadAuto            = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
+	errMultipleArchives          = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
+	errMixedFormats              = pipe.Skip("found archives with multiple formats (.exe and .zip)")
+	errAdditionalLocaleEmpty     = pipe.Skip("winget.additional_locales.locale is empty")
+	errAdditionalLocaleDuplicate = pipe.Skip("winget.additional_locales contains duplicate locales")
+	errAdditionalLocaleIsDefault = pipe.Skip("winget.additional_locales.locale must not equal default_locale")
 
 	// copied from winget src
 	packageIdentifierValid = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
@@ -46,7 +49,10 @@ func (e errNoArchivesFound) Error() string {
 	return fmt.Sprintf("no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
-const wingetConfigExtra = "WingetConfig"
+const (
+	wingetConfigExtra = "WingetConfig"
+	wingetLocaleExtra = "WingetLocale"
+)
 
 type Pipe struct{}
 
@@ -215,13 +221,21 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		}
 	}
 
+	// Preflight the additional locales before creating any artifact so an
+	// invalid locale cannot leave a partially registered (and published) set
+	// of manifests behind.
+	winget, err = p.prepareAdditionalLocales(ctx, winget)
+	if err != nil {
+		return err
+	}
+
 	if err := createYAML(ctx, winget, Version{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		DefaultLocale:     winget.DefaultLocale,
 		ManifestType:      "version",
 		ManifestVersion:   manifestVersion,
-	}, artifact.WingetVersion); err != nil {
+	}, artifact.WingetVersion, winget.DefaultLocale); err != nil {
 		return err
 	}
 
@@ -230,11 +244,11 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, installer, artifact.WingetInstaller); err != nil {
+	if err := createYAML(ctx, winget, installer, artifact.WingetInstaller, winget.DefaultLocale); err != nil {
 		return err
 	}
 
-	return createYAML(ctx, winget, Locale{
+	if err := createYAML(ctx, winget, Locale{
 		PackageIdentifier:   winget.PackageIdentifier,
 		PackageVersion:      ctx.Version,
 		PackageLocale:       winget.DefaultLocale,
@@ -258,7 +272,110 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		InstallationNotes:   winget.InstallationNotes,
 		ManifestType:        "defaultLocale",
 		ManifestVersion:     manifestVersion,
-	}, artifact.WingetDefaultLocale)
+	}, artifact.WingetDefaultLocale, winget.DefaultLocale); err != nil {
+		return err
+	}
+
+	return p.doAdditionalLocales(ctx, winget)
+}
+
+// prepareAdditionalLocales templates and validates every additional locale up
+// front (before any artifact is created). It returns the prepared winget so an
+// invalid locale cannot leave a partial set of manifests registered.
+func (p Pipe) prepareAdditionalLocales(ctx *context.Context, winget config.Winget) (config.Winget, error) {
+	tp := tmpl.New(ctx)
+	seen := map[string]bool{}
+	for i := range winget.AdditionalLocales {
+		aloc := &winget.AdditionalLocales[i]
+
+		if err := tp.ApplyAll(&aloc.Locale); err != nil {
+			return winget, err
+		}
+
+		if aloc.Locale == "" {
+			return winget, errAdditionalLocaleEmpty
+		}
+
+		if aloc.Locale == winget.DefaultLocale {
+			return winget, errAdditionalLocaleIsDefault
+		}
+
+		if seen[aloc.Locale] {
+			return winget, errAdditionalLocaleDuplicate
+		}
+		seen[aloc.Locale] = true
+
+		if err := tp.ApplyAll(
+			&aloc.Publisher,
+			&aloc.PublisherURL,
+			&aloc.PublisherSupportURL,
+			&aloc.PrivacyURL,
+			&aloc.Author,
+			&aloc.PackageName,
+			&aloc.Homepage,
+			&aloc.License,
+			&aloc.LicenseURL,
+			&aloc.Copyright,
+			&aloc.CopyrightURL,
+			&aloc.ShortDescription,
+			&aloc.Description,
+			&aloc.ReleaseNotesURL,
+			&aloc.InstallationNotes,
+		); err != nil {
+			return winget, err
+		}
+
+		if aloc.ReleaseNotes != "" {
+			releaseNotes, err := tp.WithExtraFields(tmpl.Fields{
+				"Changelog": ctx.ReleaseNotes,
+			}).Apply(aloc.ReleaseNotes)
+			if err != nil {
+				return winget, err
+			}
+			aloc.ReleaseNotes = releaseNotes
+		}
+	}
+
+	return winget, nil
+}
+
+// doAdditionalLocales renders the already validated additional locale
+// manifests. It must only be called after prepareAdditionalLocales succeeded.
+func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) error {
+	for _, aloc := range winget.AdditionalLocales {
+		tags := aloc.Tags
+		if len(tags) == 0 {
+			tags = winget.Tags
+		}
+		if err := createYAML(ctx, winget, Locale{
+			PackageIdentifier:   winget.PackageIdentifier,
+			PackageVersion:      ctx.Version,
+			PackageLocale:       aloc.Locale,
+			Publisher:           cmp.Or(aloc.Publisher, winget.Publisher),
+			PublisherURL:        cmp.Or(aloc.PublisherURL, winget.PublisherURL),
+			PublisherSupportURL: cmp.Or(aloc.PublisherSupportURL, winget.PublisherSupportURL),
+			PrivacyURL:          cmp.Or(aloc.PrivacyURL, winget.PrivacyURL),
+			Author:              cmp.Or(aloc.Author, winget.Author),
+			PackageName:         cmp.Or(aloc.PackageName, winget.PackageName),
+			PackageURL:          cmp.Or(aloc.Homepage, winget.Homepage),
+			License:             cmp.Or(aloc.License, winget.License),
+			LicenseURL:          cmp.Or(aloc.LicenseURL, winget.LicenseURL),
+			Copyright:           cmp.Or(aloc.Copyright, winget.Copyright),
+			CopyrightURL:        cmp.Or(aloc.CopyrightURL, winget.CopyrightURL),
+			ShortDescription:    cmp.Or(aloc.ShortDescription, winget.ShortDescription),
+			Description:         strings.ReplaceAll(aloc.Description, "\t", "  "),
+			Moniker:             winget.Name,
+			Tags:                fixTags(tags),
+			ReleaseNotes:        cmp.Or(aloc.ReleaseNotes, winget.ReleaseNotes),
+			ReleaseNotesURL:     cmp.Or(aloc.ReleaseNotesURL, winget.ReleaseNotesURL),
+			InstallationNotes:   cmp.Or(aloc.InstallationNotes, winget.InstallationNotes),
+			ManifestType:        "locale",
+			ManifestVersion:     manifestVersion,
+		}, artifact.WingetLocale, aloc.Locale); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
@@ -267,6 +384,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 		artifact.WingetInstaller,
 		artifact.WingetVersion,
 		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
 	)).GroupByID() {
 		err := doPublish(ctx, cli, files)
 		if err != nil && pipe.IsSkip(err) {
@@ -378,6 +496,8 @@ func langserverLineFor(tp artifact.Type) string {
 		return installerLangServer
 	case artifact.WingetDefaultLocale:
 		return defaultLocaleLangServer
+	case artifact.WingetLocale:
+		return localeLangServer
 	default:
 		return versionLangServer
 	}
@@ -389,7 +509,7 @@ func extFor(tp artifact.Type, locale string) string {
 		return ".yaml"
 	case artifact.WingetInstaller:
 		return ".installer.yaml"
-	case artifact.WingetDefaultLocale:
+	case artifact.WingetDefaultLocale, artifact.WingetLocale:
 		return ".locale." + locale + ".yaml"
 	default:
 		// should never happen
@@ -403,7 +523,7 @@ func repoFileID(tp artifact.Type) string {
 		return "version"
 	case artifact.WingetInstaller:
 		return "installer"
-	case artifact.WingetDefaultLocale:
+	case artifact.WingetDefaultLocale, artifact.WingetLocale:
 		return "locale"
 	default:
 		// should never happen

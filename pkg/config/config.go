@@ -398,6 +398,28 @@ type Winget struct {
 	InstallationNotes     string             `yaml:"installation_notes,omitempty" json:"installation_notes,omitempty"`
 	Tags                  []string           `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Dependencies          []WingetDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	AdditionalLocales     []WingetLocale     `yaml:"additional_locales,omitempty" json:"additional_locales,omitempty"`
+}
+
+type WingetLocale struct {
+	Locale              string   `yaml:"locale" json:"locale"`
+	Publisher           string   `yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	PublisherURL        string   `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
+	PublisherSupportURL string   `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
+	PrivacyURL          string   `yaml:"privacy_url,omitempty" json:"privacy_url,omitempty"`
+	Author              string   `yaml:"author,omitempty" json:"author,omitempty"`
+	PackageName         string   `yaml:"package_name,omitempty" json:"package_name,omitempty"`
+	Homepage            string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License             string   `yaml:"license,omitempty" json:"license,omitempty"`
+	LicenseURL          string   `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+	Copyright           string   `yaml:"copyright,omitempty" json:"copyright,omitempty"`
+	CopyrightURL        string   `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
+	ShortDescription    string   `yaml:"short_description,omitempty" json:"short_description,omitempty"`
+	Description         string   `yaml:"description,omitempty" json:"description,omitempty"`
+	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
+	ReleaseNotes        string   `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
+	ReleaseNotesURL     string   `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
+	InstallationNotes   string   `yaml:"installation_notes,omitempty" json:"installation_notes,omitempty"`
 }
 
 type WingetDependency struct {

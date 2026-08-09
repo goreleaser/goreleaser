@@ -195,6 +195,7 @@ type buildOptions struct {
 	bare                bool
 	preserveImportPaths bool
 	baseImportPaths     bool
+	localDomain         string
 }
 
 func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
@@ -277,12 +278,16 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	return build.NewCaching(b)
 }
 
-func getLocalDomain(ko config.Ko) string {
+func getLocalDomain(ctx *context.Context, ko config.Ko) (string, error) {
 	localDomain := "goreleaser.ko.local"
 	if ko.LocalDomain != "" {
-		localDomain = ko.LocalDomain
+		var err error
+		localDomain, err = tmpl.New(ctx).Apply(ko.LocalDomain)
+		if err != nil {
+			return "", err
+		}
 	}
-	return localDomain
+	return localDomain, nil
 }
 
 func doBuild(ctx *context.Context, ko config.Ko) error {
@@ -307,7 +312,7 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		BaseImportPaths:     opts.baseImportPaths,
 		Tags:                opts.tags,
 		Local:               ctx.Snapshot,
-		LocalDomain:         getLocalDomain(ko),
+		LocalDomain:         opts.localDomain,
 	}
 	var p publish.Interface
 	if ctx.Snapshot {
@@ -404,12 +409,27 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		bare:                cfg.Bare,
 		preserveImportPaths: cfg.PreserveImportPaths,
 		baseImportPaths:     cfg.BaseImportPaths,
-		baseImage:           cfg.BaseImage,
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
-		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
+	}
+
+	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
+	if err != nil {
+		return nil, err
+	}
+	opts.baseImage = baseImage
+
+	if len(cfg.Repositories) > 0 {
+		repos, err := applyTemplate(ctx, cfg.Repositories)
+		if err != nil {
+			return nil, err
+		}
+		opts.imageRepos = removeEmpty(repos)
+	}
+	if len(opts.imageRepos) == 0 {
+		return nil, errNoRepositories
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
@@ -473,6 +493,13 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		}
 		opts.ldflags = ldflags
 	}
+
+	localDomain, err := getLocalDomain(ctx, cfg)
+	if err != nil {
+		return nil, err
+	}
+	opts.localDomain = localDomain
+
 	return opts, nil
 }
 
