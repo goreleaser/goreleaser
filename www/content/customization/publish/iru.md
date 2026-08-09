@@ -56,7 +56,11 @@ iru:
 
   # IDs of the artifacts to publish.
   #
-  # Default: all uploadable archives, binaries, and files.
+  # Custom Apps only install on macOS, so artifacts for other operating
+  # systems are ignored. Each selected artifact must have the extension
+  # matching install_type, e.g. .pkg for the default install_type.
+  #
+  # Default: all uploadable archives and binaries.
   ids:
     - macos-pkg
 
@@ -69,15 +73,16 @@ iru:
   # ID of an existing Custom App library item to update instead of creating
   # a new one on every release.
   #
-  # When set, exactly one artifact must match the given ids. Updates only
-  # send the new file plus explicitly set fields, so unset fields keep
-  # whatever is configured in the Iru dashboard.
+  # A Custom App holds a single file, so exactly one artifact must match:
+  # for a multi-architecture macOS build, either select one artifact with
+  # ids, or build a universal binary.
+  # See "Updating an existing Custom App" below.
   #
   # Templates: allowed.
   library_item_id: 58429143-b55c-42d3-a9a3-7c699ddd0ce1
 
-  # How the file should be installed. All selected artifacts must have the
-  # matching file extension (.pkg, .zip, or .dmg).
+  # How the file should be installed. Selected artifacts must have the
+  # matching file extension: .pkg, .zip, or .dmg.
   #
   # Valid options: package, zip, image.
   # Default: package.
@@ -91,12 +96,13 @@ iru:
 
   # Path to extract a zip file to.
   #
-  # Required if install_type is zip.
+  # Required if install_type is zip, and only allowed with it.
   unzip_location: /Applications
 
   # Audit script.
   #
-  # Required if install_enforcement is continuously_enforce.
+  # Required if install_enforcement is continuously_enforce, and only
+  # allowed with it.
   audit_script: ""
 
   # Script to run before the install.
@@ -107,26 +113,26 @@ iru:
 
   # Whether to show the app in Self Service.
   #
-  # If not set, the field is not sent, so updates keep whatever is
-  # configured in the Iru dashboard.
+  # Required if install_enforcement is no_enforcement.
   show_in_self_service: false
 
   # Self Service category ID to display the app in.
   #
-  # Required if show_in_self_service is true.
+  # Required if show_in_self_service is true, and only allowed with it.
   # Templates: allowed.
   self_service_category_id: ""
 
   # Whether to flag the app as recommended in Self Service.
   #
-  # If not set, the field is not sent, so updates keep whatever is
-  # configured in the Iru dashboard.
+  # Requires show_in_self_service.
   self_service_recommended: false
 
-  # Whether to restart the device after a successful install.
+  # Whether the Custom App is active and installable.
   #
-  # If not set, the field is not sent, so updates keep whatever is
-  # configured in the Iru dashboard.
+  # Default: true.
+  active: true
+
+  # Whether to restart the device after a successful install.
   restart: false
 
   # Whether to disable this feature.
@@ -134,5 +140,16 @@ iru:
   # Templates: allowed.
   disable: "{{ .IsSnapshot }}"
 ```
+
+### Updating an existing Custom App
+
+By default, each release creates a new Custom App. Set `library_item_id` to
+update an existing one instead: the file is uploaded as usual, and the
+library item is then updated to point at it.
+
+Updates only send the fields you configured, so everything you leave out
+keeps the value it has in Iru. That also means an empty value is sent when
+you set one explicitly, which clears the field, e.g. `audit_script: ""`
+removes the audit script of an existing item.
 
 {{< g_templates >}}

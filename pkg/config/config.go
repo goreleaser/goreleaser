@@ -1684,13 +1684,14 @@ type Iru struct {
 	LibraryItemID          string   `yaml:"library_item_id,omitempty" json:"library_item_id,omitempty"`
 	InstallType            string   `yaml:"install_type,omitempty" json:"install_type,omitempty" jsonschema:"enum=package,enum=zip,enum=image,default=package"`
 	InstallEnforcement     string   `yaml:"install_enforcement,omitempty" json:"install_enforcement,omitempty" jsonschema:"enum=install_once,enum=continuously_enforce,enum=no_enforcement,default=install_once"`
-	UnzipLocation          string   `yaml:"unzip_location,omitempty" json:"unzip_location,omitempty"`
-	AuditScript            string   `yaml:"audit_script,omitempty" json:"audit_script,omitempty"`
-	PreinstallScript       string   `yaml:"preinstall_script,omitempty" json:"preinstall_script,omitempty"`
-	PostinstallScript      string   `yaml:"postinstall_script,omitempty" json:"postinstall_script,omitempty"`
+	UnzipLocation          *string  `yaml:"unzip_location,omitempty" json:"unzip_location,omitempty"`
+	AuditScript            *string  `yaml:"audit_script,omitempty" json:"audit_script,omitempty"`
+	PreinstallScript       *string  `yaml:"preinstall_script,omitempty" json:"preinstall_script,omitempty"`
+	PostinstallScript      *string  `yaml:"postinstall_script,omitempty" json:"postinstall_script,omitempty"`
 	ShowInSelfService      *bool    `yaml:"show_in_self_service,omitempty" json:"show_in_self_service,omitempty"`
-	SelfServiceCategoryID  string   `yaml:"self_service_category_id,omitempty" json:"self_service_category_id,omitempty"`
+	SelfServiceCategoryID  *string  `yaml:"self_service_category_id,omitempty" json:"self_service_category_id,omitempty"`
 	SelfServiceRecommended *bool    `yaml:"self_service_recommended,omitempty" json:"self_service_recommended,omitempty"`
+	Active                 *bool    `yaml:"active,omitempty" json:"active,omitempty"`
 	Restart                *bool    `yaml:"restart,omitempty" json:"restart,omitempty"`
 	Disable                string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }

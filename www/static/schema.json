@@ -2228,6 +2228,9 @@
 					"self_service_recommended": {
 						"type": "boolean"
 					},
+					"active": {
+						"type": "boolean"
+					},
 					"restart": {
 						"type": "boolean"
 					},

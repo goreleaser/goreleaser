@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -52,13 +53,25 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return pipe.Skip("iru.disable is set")
 	}
 
+	rawItemID := cfg.LibraryItemID
 	if err := t.ApplyAll(
 		&cfg.URL,
 		&cfg.APIToken,
 		&cfg.LibraryItemID,
-		&cfg.SelfServiceCategoryID,
 	); err != nil {
 		return fmt.Errorf("could not apply templates: %w", err)
+	}
+	if rawItemID != "" && cfg.LibraryItemID == "" {
+		// Otherwise this would silently create a new Custom App instead of
+		// updating the intended one.
+		return errors.New("library_item_id templated to an empty string")
+	}
+	if cfg.SelfServiceCategoryID != nil {
+		id, err := t.Apply(*cfg.SelfServiceCategoryID)
+		if err != nil {
+			return fmt.Errorf("could not apply templates: %w", err)
+		}
+		cfg.SelfServiceCategoryID = &id
 	}
 	cfg.URL = strings.TrimRight(cfg.URL, "/")
 	if cfg.URL == "" {
@@ -72,20 +85,27 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return err
 	}
 
-	artifacts := ctx.Artifacts.Filter(artifact.And(
+	selected := artifact.And(
 		artifact.ByTypes(
 			artifact.UploadableArchive,
 			artifact.UploadableBinary,
-			artifact.UploadableFile,
 		),
 		artifact.ByIDs(cfg.IDs...),
-	)).List()
+	)
+	// Custom Apps only install on macOS, so artifacts built for other
+	// operating systems are filtered out instead of failing the release, the
+	// same way the other OS-specific pipes do it.
+	artifacts := ctx.Artifacts.Filter(artifact.And(selected, artifact.ByGoos("darwin"))).List()
 	if len(artifacts) == 0 {
+		if len(ctx.Artifacts.Filter(selected).List()) > 0 {
+			return pipe.Skip("no macOS artifacts found matching the given filters")
+		}
 		return pipe.Skip("no artifacts found matching the given filters")
 	}
 	if cfg.LibraryItemID != "" && len(artifacts) > 1 {
 		return fmt.Errorf(
-			"library_item_id is set, but %d artifacts matched: use iru.ids to select a single artifact",
+			"library_item_id is set, but %d artifacts matched: a Custom App holds a single file, "+
+				"so use iru.ids to select one artifact, or build a universal binary",
 			len(artifacts),
 		)
 	}
@@ -121,27 +141,79 @@ func effectiveInstallEnforcement(cfg config.Iru) string {
 	return cfg.InstallEnforcement
 }
 
+// knownStr returns the value of an optional string field, and whether that
+// value is known: it is when the field is configured, and when creating, where
+// leaving it out means empty. When updating, an unconfigured field keeps the
+// value of the existing library item, which is not known here.
+func knownStr(s *string, creating bool) (string, bool) {
+	if s != nil {
+		return *s, true
+	}
+	return "", creating
+}
+
+// knownBool is knownStr for optional booleans, which default to false.
+func knownBool(b *bool, creating bool) (bool, bool) {
+	if b != nil {
+		return *b, true
+	}
+	return false, creating
+}
+
 // validate checks the field combinations required by the Iru API, so
-// misconfigurations fail before anything is uploaded.
+// misconfigurations fail before anything is uploaded. Every rule only applies
+// when all the values it involves are known, which means creating is fully
+// validated, while updating rejects the combinations it can actually see.
 func validate(cfg config.Iru) error {
+	creating := cfg.LibraryItemID == ""
 	installType := effectiveInstallType(cfg)
 	enforcement := effectiveInstallEnforcement(cfg)
-	selfService := cfg.ShowInSelfService != nil && *cfg.ShowInSelfService
+	unzipLocation, unzipKnown := knownStr(cfg.UnzipLocation, creating)
+	auditScript, auditKnown := knownStr(cfg.AuditScript, creating)
+	categoryID, categoryKnown := knownStr(cfg.SelfServiceCategoryID, creating)
+	selfService, selfServiceKnown := knownBool(cfg.ShowInSelfService, creating)
+	recommended, recommendedKnown := knownBool(cfg.SelfServiceRecommended, creating)
 
-	if installType == "zip" && cfg.UnzipLocation == "" {
-		return errors.New("install_type is zip, but unzip_location is not set")
+	if installType != "" {
+		if _, ok := installTypeExts[installType]; !ok {
+			return fmt.Errorf("invalid install_type: %s", installType)
+		}
 	}
-	if enforcement == "continuously_enforce" && cfg.AuditScript == "" {
-		return errors.New("install_enforcement is continuously_enforce, but audit_script is not set")
+	if enforcement != "" && !slices.Contains(installEnforcements, enforcement) {
+		return fmt.Errorf("invalid install_enforcement: %s", enforcement)
 	}
-	if enforcement != "" && enforcement != "continuously_enforce" && cfg.AuditScript != "" {
-		return fmt.Errorf("audit_script is set, but install_enforcement is %s instead of continuously_enforce", enforcement)
+	if unzipKnown && installType != "" {
+		if installType == "zip" && unzipLocation == "" {
+			return errors.New("install_type is zip, but unzip_location is not set")
+		}
+		if installType != "zip" && unzipLocation != "" {
+			return fmt.Errorf("unzip_location is set, but install_type is %s instead of zip", installType)
+		}
 	}
-	if enforcement == "no_enforcement" && !selfService {
+	if auditKnown && enforcement != "" {
+		if enforcement == "continuously_enforce" && auditScript == "" {
+			return errors.New("install_enforcement is continuously_enforce, but audit_script is not set")
+		}
+		if enforcement != "continuously_enforce" && auditScript != "" {
+			return fmt.Errorf(
+				"audit_script is set, but install_enforcement is %s instead of continuously_enforce",
+				enforcement,
+			)
+		}
+	}
+	if enforcement == "no_enforcement" && selfServiceKnown && !selfService {
 		return errors.New("install_enforcement is no_enforcement, but show_in_self_service is not enabled")
 	}
-	if selfService && cfg.SelfServiceCategoryID == "" {
-		return errors.New("show_in_self_service is enabled, but self_service_category_id is not set")
+	if recommendedKnown && recommended && selfServiceKnown && !selfService {
+		return errors.New("self_service_recommended is enabled, but show_in_self_service is not enabled")
+	}
+	if categoryKnown && selfServiceKnown {
+		if selfService && categoryID == "" {
+			return errors.New("show_in_self_service is enabled, but self_service_category_id is not set")
+		}
+		if !selfService && categoryID != "" {
+			return errors.New("self_service_category_id is set, but show_in_self_service is not enabled")
+		}
 	}
 	return nil
 }
@@ -154,27 +226,40 @@ var installTypeExts = map[string]string{
 	"image":   ".dmg",
 }
 
-// validateArtifact ensures the artifact matches the install type, so
-// incompatible files (e.g. Linux binaries or tarballs from a cross-platform
-// release) fail before anything is uploaded.
+// installEnforcements lists the enforcement values the Iru API accepts.
+var installEnforcements = []string{"install_once", "continuously_enforce", "no_enforcement"}
+
+// supportedExts lists every extension a Custom App file can have, in a stable
+// order for error messages.
+var supportedExts = []string{".dmg", ".pkg", ".zip"}
+
+// validateArtifact ensures the artifact can be installed as a Custom App, so
+// incompatible files from a cross-platform release fail before anything is
+// uploaded.
 func validateArtifact(cfg config.Iru, art *artifact.Artifact) error {
+	// Updating with install_type unset keeps the type of the existing library
+	// item, which is not known here, so any supported file is accepted.
+	exts := supportedExts
 	installType := effectiveInstallType(cfg)
-	if installType == "" {
-		// Updating with install_type unset keeps the type configured on the
-		// existing library item, which is not known here.
-		return nil
+	if installType != "" {
+		exts = []string{installTypeExts[installType]}
 	}
-	ext, ok := installTypeExts[installType]
-	if !ok {
-		return fmt.Errorf("invalid install_type: %s", installType)
+	name := strings.ToLower(art.Name)
+	for _, ext := range exts {
+		if strings.HasSuffix(name, ext) {
+			return nil
+		}
 	}
-	if !strings.HasSuffix(strings.ToLower(art.Name), ext) {
+	if installType != "" {
 		return fmt.Errorf(
 			"artifact %q is not compatible with install_type %s: use iru.ids to select only %s artifacts",
-			art.Name, installType, ext,
+			art.Name, installType, exts[0],
 		)
 	}
-	return nil
+	return fmt.Errorf(
+		"artifact %q is not a Custom App file: use iru.ids to select only %s artifacts",
+		art.Name, strings.Join(exts, ", "),
+	)
 }
 
 func (p Pipe) publishArtifact(ctx *context.Context, cfg config.Iru, art *artifact.Artifact) error {
@@ -314,20 +399,23 @@ func (p Pipe) createOrUpdate(ctx *context.Context, cfg config.Iru, name, fileKey
 			form.Set("install_enforcement", cfg.InstallEnforcement)
 		}
 	}
-	for key, value := range map[string]string{
+	// Only configured fields are sent, but an explicitly empty value is
+	// configured too: it clears the field on the library item.
+	for key, value := range map[string]*string{
 		"unzip_location":           cfg.UnzipLocation,
 		"audit_script":             cfg.AuditScript,
 		"preinstall_script":        cfg.PreinstallScript,
 		"postinstall_script":       cfg.PostinstallScript,
 		"self_service_category_id": cfg.SelfServiceCategoryID,
 	} {
-		if value != "" {
-			form.Set(key, value)
+		if value != nil {
+			form.Set(key, *value)
 		}
 	}
 	for key, value := range map[string]*bool{
 		"show_in_self_service":     cfg.ShowInSelfService,
 		"self_service_recommended": cfg.SelfServiceRecommended,
+		"active":                   cfg.Active,
 		"restart":                  cfg.Restart,
 	} {
 		if value != nil {

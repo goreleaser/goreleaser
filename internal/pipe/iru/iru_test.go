@@ -31,7 +31,7 @@ func TestContinueOnError(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("skip flag", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Iru: config.Iru{URL: "https://acme.api.kandji.io"},
+			Iru: config.Iru{URL: "https://iru.invalid"},
 		})
 		skips.Set(ctx, skips.Iru)
 		require.True(t, Pipe{}.Skip(ctx))
@@ -44,7 +44,7 @@ func TestSkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Iru: config.Iru{URL: "https://acme.api.kandji.io"},
+			Iru: config.Iru{URL: "https://iru.invalid"},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
@@ -53,7 +53,7 @@ func TestSkip(t *testing.T) {
 func TestPublishDisabled(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:     "https://acme.api.kandji.io",
+			URL:     "https://iru.invalid",
 			Name:    "myapp",
 			Disable: "true",
 		},
@@ -64,7 +64,7 @@ func TestPublishDisabled(t *testing.T) {
 func TestPublishMissingToken(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:  "https://acme.api.kandji.io",
+			URL:  "https://iru.invalid",
 			Name: "myapp",
 		},
 	})
@@ -91,7 +91,7 @@ func TestPublishTokenFromEnv(t *testing.T) {
 func TestPublishNoArtifacts(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      "https://acme.api.kandji.io",
+			URL:      "https://iru.invalid",
 			Name:     "myapp",
 			APIToken: "token",
 		},
@@ -102,17 +102,17 @@ func TestPublishNoArtifacts(t *testing.T) {
 func TestPublishUpdateWithMultipleArtifacts(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:           "https://acme.api.kandji.io",
+			URL:           "https://iru.invalid",
 			Name:          "myapp",
 			APIToken:      "token",
 			LibraryItemID: "some-id",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "a.pkg", Path: "a.pkg", Type: artifact.UploadableFile,
+		Name: "a.pkg", Path: "a.pkg", Goos: "darwin", Type: artifact.UploadableArchive,
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "b.pkg", Path: "b.pkg", Type: artifact.UploadableFile,
+		Name: "b.pkg", Path: "b.pkg", Goos: "darwin", Type: artifact.UploadableArchive,
 	})
 	require.ErrorContains(t, Pipe{}.Publish(ctx), "library_item_id is set")
 }
@@ -258,6 +258,7 @@ func testArtifact(tb testing.TB) *artifact.Artifact {
 	return &artifact.Artifact{
 		Name: "myapp.pkg",
 		Path: path,
+		Goos: "darwin",
 		Type: artifact.UploadableArchive,
 		Extra: map[string]any{
 			artifact.ExtraID: "default",
@@ -276,7 +277,8 @@ func TestPublish(t *testing.T) {
 			InstallType:           "package",
 			InstallEnforcement:    "install_once",
 			ShowInSelfService:     new(true),
-			SelfServiceCategoryID: "cat-id",
+			SelfServiceCategoryID: new("cat-id"),
+			Active:                new(false),
 		},
 	}, testctx.WithVersion("1.2.3"))
 	ctx.Artifacts.Add(testArtifact(t))
@@ -297,6 +299,7 @@ func TestPublish(t *testing.T) {
 	require.Equal(t, "install_once", srv.saveForm["install_enforcement"])
 	require.Equal(t, "true", srv.saveForm["show_in_self_service"])
 	require.Equal(t, "cat-id", srv.saveForm["self_service_category_id"])
+	require.Equal(t, "false", srv.saveForm["active"])
 	require.NotContains(t, srv.saveForm, "restart")
 	require.NotContains(t, srv.saveForm, "self_service_recommended")
 	require.NotContains(t, srv.saveForm, "unzip_location")
@@ -325,6 +328,7 @@ func TestPublishUpdate(t *testing.T) {
 	require.NotContains(t, srv.saveForm, "name")
 	require.NotContains(t, srv.saveForm, "install_type")
 	require.NotContains(t, srv.saveForm, "install_enforcement")
+	require.NotContains(t, srv.saveForm, "active")
 }
 
 func TestPublishUpdateSendsExplicitFields(t *testing.T) {
@@ -365,31 +369,238 @@ func TestPublishInitUploadError(t *testing.T) {
 	require.Equal(t, 0, srv.s3Uploads)
 }
 
+// validationCase is a config that must be rejected, along with the message of
+// the rule that has to reject it: asserting the message keeps these tables from
+// passing for another reason, e.g. because no artifact matched.
+type validationCase struct {
+	cfg     config.Iru
+	wantErr string
+}
+
 func TestPublishValidation(t *testing.T) {
-	for name, cfg := range map[string]config.Iru{
+	for name, tt := range map[string]validationCase{
 		"zip without unzip_location": {
-			InstallType: "zip",
+			cfg:     config.Iru{InstallType: "zip"},
+			wantErr: "install_type is zip, but unzip_location is not set",
+		},
+		"unzip_location without zip": {
+			cfg:     config.Iru{InstallType: "package", UnzipLocation: new("/Applications")},
+			wantErr: "unzip_location is set, but install_type is package instead of zip",
 		},
 		"continuously_enforce without audit_script": {
-			InstallEnforcement: "continuously_enforce",
+			cfg:     config.Iru{InstallEnforcement: "continuously_enforce"},
+			wantErr: "install_enforcement is continuously_enforce, but audit_script is not set",
 		},
 		"audit_script without continuously_enforce": {
-			AuditScript: "#!/bin/zsh",
+			cfg:     config.Iru{AuditScript: new("#!/bin/zsh")},
+			wantErr: "audit_script is set, but install_enforcement is install_once instead of continuously_enforce",
 		},
 		"no_enforcement without self service": {
-			InstallEnforcement: "no_enforcement",
+			cfg:     config.Iru{InstallEnforcement: "no_enforcement"},
+			wantErr: "install_enforcement is no_enforcement, but show_in_self_service is not enabled",
 		},
 		"self service without category": {
-			ShowInSelfService: new(true),
+			cfg:     config.Iru{ShowInSelfService: new(true)},
+			wantErr: "show_in_self_service is enabled, but self_service_category_id is not set",
+		},
+		"category without self service": {
+			cfg:     config.Iru{SelfServiceCategoryID: new("cat-id")},
+			wantErr: "self_service_category_id is set, but show_in_self_service is not enabled",
+		},
+		"recommended without self service": {
+			cfg:     config.Iru{SelfServiceRecommended: new(true)},
+			wantErr: "self_service_recommended is enabled, but show_in_self_service is not enabled",
+		},
+		"invalid install type": {
+			cfg:     config.Iru{InstallType: "nope"},
+			wantErr: "invalid install_type: nope",
+		},
+		"invalid install enforcement": {
+			cfg:     config.Iru{InstallEnforcement: "once"},
+			wantErr: "invalid install_enforcement: once",
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			cfg.URL = "https://acme.api.kandji.io"
+			cfg := tt.cfg
+			cfg.URL = "https://iru.invalid"
 			cfg.APIToken = "token"
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Iru: cfg})
-			require.Error(t, Pipe{}.Publish(ctx))
+			ctx.Artifacts.Add(testArtifact(t))
+
+			require.ErrorContains(t, Pipe{}.Publish(ctx), tt.wantErr)
 		})
 	}
+}
+
+func TestPublishValidationOnUpdate(t *testing.T) {
+	t.Run("companion fields may live on the remote item", func(t *testing.T) {
+		srv := newTestServer(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Iru: config.Iru{
+				URL:      srv.URL,
+				APIToken: "token",
+				// unzip_location and the Self Service category are not set
+				// here: the existing library item already has them.
+				LibraryItemID:     "some-lib-id",
+				InstallType:       "zip",
+				ShowInSelfService: new(true),
+			},
+		})
+		art := testArtifact(t)
+		art.Name = "myapp.zip"
+		ctx.Artifacts.Add(art)
+
+		require.NoError(t, Pipe{}.Publish(ctx))
+	})
+
+	// Conflicts the pipe can see without knowing the remote item must still
+	// fail before the upload, even when updating.
+	for name, tt := range map[string]validationCase{
+		"zip with cleared unzip_location": {
+			cfg:     config.Iru{InstallType: "zip", UnzipLocation: new("")},
+			wantErr: "install_type is zip, but unzip_location is not set",
+		},
+		"unzip_location with image": {
+			cfg:     config.Iru{InstallType: "image", UnzipLocation: new("/Applications")},
+			wantErr: "unzip_location is set, but install_type is image instead of zip",
+		},
+		"continuously_enforce with cleared audit_script": {
+			cfg:     config.Iru{InstallEnforcement: "continuously_enforce", AuditScript: new("")},
+			wantErr: "install_enforcement is continuously_enforce, but audit_script is not set",
+		},
+		"audit_script with install_once": {
+			cfg:     config.Iru{InstallEnforcement: "install_once", AuditScript: new("#!/bin/zsh")},
+			wantErr: "audit_script is set, but install_enforcement is install_once instead of continuously_enforce",
+		},
+		"no_enforcement with self service off": {
+			cfg:     config.Iru{InstallEnforcement: "no_enforcement", ShowInSelfService: new(false)},
+			wantErr: "install_enforcement is no_enforcement, but show_in_self_service is not enabled",
+		},
+		"self service with cleared category": {
+			cfg:     config.Iru{ShowInSelfService: new(true), SelfServiceCategoryID: new("")},
+			wantErr: "show_in_self_service is enabled, but self_service_category_id is not set",
+		},
+		"category with self service off": {
+			cfg:     config.Iru{ShowInSelfService: new(false), SelfServiceCategoryID: new("cat-id")},
+			wantErr: "self_service_category_id is set, but show_in_self_service is not enabled",
+		},
+		"recommended with self service off": {
+			cfg:     config.Iru{ShowInSelfService: new(false), SelfServiceRecommended: new(true)},
+			wantErr: "self_service_recommended is enabled, but show_in_self_service is not enabled",
+		},
+	} {
+		t.Run("explicit conflict: "+name, func(t *testing.T) {
+			server := newTestServer(t)
+			cfg := tt.cfg
+			cfg.URL = server.URL
+			cfg.APIToken = "token"
+			cfg.LibraryItemID = "some-lib-id"
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Iru: cfg})
+			ctx.Artifacts.Add(testArtifact(t))
+
+			require.ErrorContains(t, Pipe{}.Publish(ctx), tt.wantErr)
+			require.Equal(t, 0, server.uploadInits)
+		})
+	}
+}
+
+func TestPublishLibraryItemIDTemplatedEmpty(t *testing.T) {
+	server := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:           server.URL,
+			APIToken:      "token",
+			LibraryItemID: "{{ .Env.ITEM_ID }}",
+		},
+	}, testctx.WithEnv(map[string]string{"ITEM_ID": ""}))
+	ctx.Artifacts.Add(testArtifact(t))
+
+	// Otherwise this would silently create a new Custom App.
+	require.ErrorContains(t, Pipe{}.Publish(ctx), "library_item_id templated to an empty string")
+	require.Equal(t, 0, server.uploadInits)
+}
+
+func TestPublishUpdateClearsExplicitlyEmptyFields(t *testing.T) {
+	server := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:           server.URL,
+			APIToken:      "token",
+			LibraryItemID: "some-lib-id",
+			AuditScript:   new(""),
+		},
+	})
+	ctx.Artifacts.Add(testArtifact(t))
+
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	require.Equal(t, http.MethodPatch, server.saveMethod)
+	// An explicitly empty value is sent, so it clears the field.
+	require.Contains(t, server.saveForm, "audit_script")
+	require.Empty(t, server.saveForm["audit_script"])
+	require.NotContains(t, server.saveForm, "preinstall_script")
+}
+
+func TestPublishIgnoresNonMacOSArtifacts(t *testing.T) {
+	server := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:           server.URL,
+			APIToken:      "token",
+			InstallType:   "zip",
+			UnzipLocation: new("/usr/local/bin"),
+		},
+	})
+	// A cross-platform release: only the darwin artifact is published, the
+	// others are ignored instead of failing the release.
+	mac := testArtifact(t)
+	mac.Name = "myapp_darwin_all.zip"
+	ctx.Artifacts.Add(mac)
+	for _, goos := range []string{"windows", "linux"} {
+		other := testArtifact(t)
+		other.Name = "myapp_" + goos + "_amd64.zip"
+		other.Goos = goos
+		ctx.Artifacts.Add(other)
+	}
+
+	require.NoError(t, Pipe{}.Publish(ctx))
+	require.Equal(t, 1, server.uploadInits)
+	require.Equal(t, "companies/xyz/myapp_darwin_all.zip", server.saveForm["file_key"])
+}
+
+func TestPublishSkipsWhenOnlyNonMacOSArtifacts(t *testing.T) {
+	server := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:      server.URL,
+			APIToken: "token",
+		},
+	})
+	art := testArtifact(t)
+	art.Name = "myapp_windows_amd64.zip"
+	art.Goos = "windows"
+	ctx.Artifacts.Add(art)
+
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
+	require.Equal(t, 0, server.uploadInits)
+}
+
+func TestPublishArtifactUnsupportedExtOnUpdate(t *testing.T) {
+	server := newTestServer(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Iru: config.Iru{
+			URL:           server.URL,
+			APIToken:      "token",
+			LibraryItemID: "some-lib-id",
+		},
+	})
+	// install_type is unset, but a tarball is never a Custom App file.
+	art := testArtifact(t)
+	art.Name = "myapp_darwin_all.tar.gz"
+	ctx.Artifacts.Add(art)
+
+	require.ErrorContains(t, Pipe{}.Publish(ctx), "is not a Custom App file")
+	require.Equal(t, 0, server.uploadInits)
 }
 
 func TestPublishArtifactInstallTypeMismatch(t *testing.T) {
@@ -485,7 +696,7 @@ func TestPublishMultipleArtifacts(t *testing.T) {
 func TestPublishDisableTemplateError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:     "https://acme.api.kandji.io",
+			URL:     "https://iru.invalid",
 			Disable: "{{ .Nope }}",
 		},
 	})
@@ -584,6 +795,7 @@ func TestPublishMissingFile(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "gone.pkg",
 		Path: filepath.Join(t.TempDir(), "does-not-exist"),
+		Goos: "darwin",
 		Type: artifact.UploadableArchive,
 	})
 	require.ErrorContains(t, Pipe{}.Publish(ctx), "could not upload file")
