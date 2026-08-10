@@ -22,13 +22,14 @@ Description: Poor misguided one. Why are you installing this package?
  discover the error in your ways.
 ```
 
-Maintainer script file that will trigger questions, usually its `postinst` because all package files are already installed:
+Maintainer script file that will trigger questions, usually called `config.sh`:
 
 ```sh
 #!/bin/sh -e
 
 # Source debconf library.
 . /usr/share/debconf/confmodule
+db_version 2.0
 
 # Do you like debian?
 db_input high foo/like_debian || true
@@ -44,15 +45,14 @@ if [ "$RET" = "false" ]; then
 fi
 ```
 
-Include `templates` and `postinst` in `.goreleaser.yaml`:
+Include `templates` in `.goreleaser.yaml`, and add `debconf` to `predepends`:
 
 ```yaml
-    overrides:
-      deb:
-        scripts:
-          postinstall: ./deb/postinst
     deb:
+      predepends:
+        - debconf
       scripts:
+        config: ./deb/config.sh
         templates: ./deb/templates
 ```
 
