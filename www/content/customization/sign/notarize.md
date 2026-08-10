@@ -132,7 +132,13 @@ notarize:
         # Beware of the overall `--timeout` time.
         # This only has any effect if `wait` is true.
         #
+        # Apple derives the lifetime of the App Store Connect authentication
+        # token from this value, and rejects tokens that live for too long, so
+        # this is capped at `20m`. Setting anything above that will fail the
+        # configuration validation.
+        #
         # Default: 10m.
+        # Maximum: 20m.
         timeout: 20m
 ```
 

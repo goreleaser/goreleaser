@@ -58,6 +58,11 @@ func TestMacOSDefault(t *testing.T) {
 				{
 					IDs: []string{"hi"},
 				},
+				{
+					Notarize: config.MacOSNotarize{
+						Timeout: maxNotarizeTimeout,
+					},
+				},
 			},
 		},
 	})
@@ -82,7 +87,30 @@ func TestMacOSDefault(t *testing.T) {
 				Timeout: 10 * time.Minute,
 			},
 		},
+		{
+			IDs: []string{"foo"},
+			Notarize: config.MacOSNotarize{
+				Timeout: maxNotarizeTimeout,
+			},
+		},
 	}, ctx.Config.Notarize.MacOS)
+}
+
+func TestMacOSDefaultTimeoutTooBig(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		Notarize: config.Notarize{
+			MacOS: []config.MacOSSignNotarize{
+				{
+					Notarize: config.MacOSNotarize{
+						Timeout: 21 * time.Minute,
+					},
+				},
+			},
+		},
+	})
+
+	require.ErrorContains(t, MacOS{}.Default(ctx), "timeout must be at most 20m0s, got 21m0s")
 }
 
 func TestMacOSRun(t *testing.T) {

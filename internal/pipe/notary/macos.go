@@ -18,6 +18,12 @@ import (
 	"github.com/goreleaser/quill/quill/pki/load"
 )
 
+// maxNotarizeTimeout is the maximum allowed notarization timeout.
+//
+// Apple's App Store Connect API rejects tokens with a lifetime greater than 20
+// minutes, and the token lifetime is derived from this timeout.
+const maxNotarizeTimeout = 20 * time.Minute
+
 type MacOS struct{}
 
 func (MacOS) String() string { return "sign & notarize macOS binaries" }
@@ -31,6 +37,13 @@ func (MacOS) Default(ctx *context.Context) error {
 		n := &ctx.Config.Notarize.MacOS[i]
 		if n.Notarize.Timeout == 0 {
 			n.Notarize.Timeout = 10 * time.Minute
+		}
+		if n.Notarize.Timeout > maxNotarizeTimeout {
+			return fmt.Errorf(
+				"timeout must be at most %s, got %s: Apple rejects authentication tokens with longer lifetimes",
+				maxNotarizeTimeout,
+				n.Notarize.Timeout,
+			)
 		}
 		if len(n.IDs) == 0 {
 			n.IDs = []string{ctx.Config.ProjectName}
