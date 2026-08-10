@@ -27,7 +27,10 @@ import (
 )
 
 const (
-	defaultInstallType        = "package"
+	// The API requires install_type and install_enforcement, it does not
+	// default them, so the pipe picks the values that fit a macOS archive
+	// built by GoReleaser.
+	defaultInstallType        = "zip"
 	defaultInstallEnforcement = "install_once"
 	tokenEnvKey               = "IRU_API_TOKEN"
 )
@@ -152,7 +155,7 @@ func knownStr(s *string, creating bool) (string, bool) {
 	return "", creating
 }
 
-// knownBool is knownStr for optional booleans, which default to false.
+// knownBool is knownStr for the optional booleans that default to false.
 func knownBool(b *bool, creating bool) (bool, bool) {
 	if b != nil {
 		return *b, true
@@ -242,7 +245,11 @@ func validateArtifact(cfg config.Iru, art *artifact.Artifact) error {
 	exts := supportedExts
 	installType := effectiveInstallType(cfg)
 	if installType != "" {
-		exts = []string{installTypeExts[installType]}
+		ext, ok := installTypeExts[installType]
+		if !ok {
+			return fmt.Errorf("invalid install_type: %s", installType)
+		}
+		exts = []string{ext}
 	}
 	name := strings.ToLower(art.Name)
 	for _, ext := range exts {

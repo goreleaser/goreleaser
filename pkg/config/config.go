@@ -1682,7 +1682,7 @@ type Iru struct {
 	IDs                    []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	APIToken               string   `yaml:"api_token,omitempty" json:"api_token,omitempty"`
 	LibraryItemID          string   `yaml:"library_item_id,omitempty" json:"library_item_id,omitempty"`
-	InstallType            string   `yaml:"install_type,omitempty" json:"install_type,omitempty" jsonschema:"enum=package,enum=zip,enum=image,default=package"`
+	InstallType            string   `yaml:"install_type,omitempty" json:"install_type,omitempty" jsonschema:"enum=package,enum=zip,enum=image,default=zip"`
 	InstallEnforcement     string   `yaml:"install_enforcement,omitempty" json:"install_enforcement,omitempty" jsonschema:"enum=install_once,enum=continuously_enforce,enum=no_enforcement,default=install_once"`
 	UnzipLocation          *string  `yaml:"unzip_location,omitempty" json:"unzip_location,omitempty"`
 	AuditScript            *string  `yaml:"audit_script,omitempty" json:"audit_script,omitempty"`

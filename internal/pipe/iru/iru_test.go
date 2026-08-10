@@ -78,7 +78,8 @@ func TestPublishTokenFromEnv(t *testing.T) {
 		Iru: config.Iru{
 			URL:                srv.URL,
 			Name:               "My App",
-			InstallType:        "package",
+			InstallType:        "zip",
+			UnzipLocation:      new("/Applications"),
 			InstallEnforcement: "install_once",
 		},
 	}, testctx.WithEnv(map[string]string{"IRU_API_TOKEN": "token"}))
@@ -91,9 +92,10 @@ func TestPublishTokenFromEnv(t *testing.T) {
 func TestPublishNoArtifacts(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      "https://iru.invalid",
-			Name:     "myapp",
-			APIToken: "token",
+			URL:           "https://iru.invalid",
+			Name:          "myapp",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
@@ -256,7 +258,7 @@ func testArtifact(tb testing.TB) *artifact.Artifact {
 	path := filepath.Join(tb.TempDir(), "binary")
 	require.NoError(tb, os.WriteFile(path, []byte(testFileContent), 0o644))
 	return &artifact.Artifact{
-		Name: "myapp.pkg",
+		Name: "myapp.zip",
 		Path: path,
 		Goos: "darwin",
 		Type: artifact.UploadableArchive,
@@ -274,7 +276,8 @@ func TestPublish(t *testing.T) {
 			URL:                   srv.URL,
 			Name:                  "My App {{ .Version }}",
 			APIToken:              "token",
-			InstallType:           "package",
+			InstallType:           "zip",
+			UnzipLocation:         new("/Applications"),
 			InstallEnforcement:    "install_once",
 			ShowInSelfService:     new(true),
 			SelfServiceCategoryID: new("cat-id"),
@@ -287,22 +290,22 @@ func TestPublish(t *testing.T) {
 
 	require.Equal(t, 1, srv.uploadInits)
 	require.Equal(t, 1, srv.s3Uploads)
-	require.Equal(t, "companies/xyz/myapp.pkg", srv.s3Fields["key"])
+	require.Equal(t, "companies/xyz/myapp.zip", srv.s3Fields["key"])
 	require.Equal(t, "some-policy", srv.s3Fields["policy"])
 	require.Equal(t, testFileContent, srv.s3FileContent)
 
 	require.Equal(t, http.MethodPost, srv.saveMethod)
 	require.Equal(t, "/api/v1/library/custom-apps", srv.savePath)
 	require.Equal(t, "My App 1.2.3", srv.saveForm["name"])
-	require.Equal(t, "companies/xyz/myapp.pkg", srv.saveForm["file_key"])
-	require.Equal(t, "package", srv.saveForm["install_type"])
+	require.Equal(t, "companies/xyz/myapp.zip", srv.saveForm["file_key"])
+	require.Equal(t, "zip", srv.saveForm["install_type"])
 	require.Equal(t, "install_once", srv.saveForm["install_enforcement"])
 	require.Equal(t, "true", srv.saveForm["show_in_self_service"])
 	require.Equal(t, "cat-id", srv.saveForm["self_service_category_id"])
 	require.Equal(t, "false", srv.saveForm["active"])
 	require.NotContains(t, srv.saveForm, "restart")
 	require.NotContains(t, srv.saveForm, "self_service_recommended")
-	require.NotContains(t, srv.saveForm, "unzip_location")
+	require.Equal(t, "/Applications", srv.saveForm["unzip_location"])
 	require.NotContains(t, srv.saveForm, "preinstall_script")
 }
 
@@ -322,7 +325,7 @@ func TestPublishUpdate(t *testing.T) {
 
 	require.Equal(t, http.MethodPatch, srv.saveMethod)
 	require.Equal(t, "/api/v1/library/custom-apps/some-lib-id", srv.savePath)
-	require.Equal(t, "companies/xyz/myapp.pkg", srv.saveForm["file_key"])
+	require.Equal(t, "companies/xyz/myapp.zip", srv.saveForm["file_key"])
 	// Updates only send explicitly configured fields, so settings managed
 	// in the Iru dashboard are kept.
 	require.NotContains(t, srv.saveForm, "name")
@@ -340,7 +343,8 @@ func TestPublishUpdateSendsExplicitFields(t *testing.T) {
 			Name:          "My App",
 			APIToken:      "token",
 			LibraryItemID: "some-lib-id",
-			InstallType:   "package",
+			InstallType:   "zip",
+			Active:        new(true),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -349,8 +353,19 @@ func TestPublishUpdateSendsExplicitFields(t *testing.T) {
 
 	require.Equal(t, http.MethodPatch, srv.saveMethod)
 	require.Equal(t, "My App", srv.saveForm["name"])
-	require.Equal(t, "package", srv.saveForm["install_type"])
+	require.Equal(t, "zip", srv.saveForm["install_type"])
+	require.Equal(t, "true", srv.saveForm["active"])
 	require.NotContains(t, srv.saveForm, "install_enforcement")
+}
+
+func TestValidateArtifactInvalidInstallType(t *testing.T) {
+	// Publish validates the install type before this is reached, so this
+	// guards against the extension check silently accepting everything.
+	err := validateArtifact(
+		config.Iru{InstallType: "nope"},
+		&artifact.Artifact{Name: "myapp.zip"},
+	)
+	require.ErrorContains(t, err, "invalid install_type: nope")
 }
 
 func TestPublishInitUploadError(t *testing.T) {
@@ -358,9 +373,10 @@ func TestPublishInitUploadError(t *testing.T) {
 	srv.failInitStatus = http.StatusBadRequest
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -388,27 +404,27 @@ func TestPublishValidation(t *testing.T) {
 			wantErr: "unzip_location is set, but install_type is package instead of zip",
 		},
 		"continuously_enforce without audit_script": {
-			cfg:     config.Iru{InstallEnforcement: "continuously_enforce"},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), InstallEnforcement: "continuously_enforce"},
 			wantErr: "install_enforcement is continuously_enforce, but audit_script is not set",
 		},
 		"audit_script without continuously_enforce": {
-			cfg:     config.Iru{AuditScript: new("#!/bin/zsh")},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), AuditScript: new("#!/bin/zsh")},
 			wantErr: "audit_script is set, but install_enforcement is install_once instead of continuously_enforce",
 		},
 		"no_enforcement without self service": {
-			cfg:     config.Iru{InstallEnforcement: "no_enforcement"},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), InstallEnforcement: "no_enforcement"},
 			wantErr: "install_enforcement is no_enforcement, but show_in_self_service is not enabled",
 		},
 		"self service without category": {
-			cfg:     config.Iru{ShowInSelfService: new(true)},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), ShowInSelfService: new(true)},
 			wantErr: "show_in_self_service is enabled, but self_service_category_id is not set",
 		},
 		"category without self service": {
-			cfg:     config.Iru{SelfServiceCategoryID: new("cat-id")},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), SelfServiceCategoryID: new("cat-id")},
 			wantErr: "self_service_category_id is set, but show_in_self_service is not enabled",
 		},
 		"recommended without self service": {
-			cfg:     config.Iru{SelfServiceRecommended: new(true)},
+			cfg:     config.Iru{UnzipLocation: new("/Applications"), SelfServiceRecommended: new(true)},
 			wantErr: "self_service_recommended is enabled, but show_in_self_service is not enabled",
 		},
 		"invalid install type": {
@@ -572,8 +588,9 @@ func TestPublishSkipsWhenOnlyNonMacOSArtifacts(t *testing.T) {
 	server := newTestServer(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      server.URL,
-			APIToken: "token",
+			URL:           server.URL,
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	art := testArtifact(t)
@@ -607,16 +624,17 @@ func TestPublishArtifactInstallTypeMismatch(t *testing.T) {
 	srv := newTestServer(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			APIToken: "token",
+			URL:           srv.URL,
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
-	// Default install_type is package, but the artifact is a tarball.
+	// Default install_type is zip, but the artifact is a tarball.
 	art := testArtifact(t)
-	art.Name = "myapp_linux_amd64.tar.gz"
+	art.Name = "myapp_darwin_all.tar.gz"
 	ctx.Artifacts.Add(art)
 
-	require.ErrorContains(t, Pipe{}.Publish(ctx), "not compatible with install_type package")
+	require.ErrorContains(t, Pipe{}.Publish(ctx), "not compatible with install_type zip")
 	require.Equal(t, 0, srv.uploadInits)
 }
 
@@ -635,9 +653,10 @@ func TestPublishCreateRetriesWhileProcessing(t *testing.T) {
 	srv.failSaveTimes = 2
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 		Retry: config.Retry{
 			Attempts: 5,
@@ -657,9 +676,10 @@ func TestPublishCreateDoesNotRetryAmbiguousErrors(t *testing.T) {
 	srv.failSaveStatus = http.StatusBadGateway
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 		Retry: config.Retry{
 			Attempts: 5,
@@ -677,14 +697,15 @@ func TestPublishMultipleArtifacts(t *testing.T) {
 	srv := newTestServer(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App {{ .ArtifactName }}",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App {{ .ArtifactName }}",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	first := testArtifact(t)
 	second := testArtifact(t)
-	second.Name = "other.pkg"
+	second.Name = "other.zip"
 	ctx.Artifacts.Add(first)
 	ctx.Artifacts.Add(second)
 
@@ -716,9 +737,10 @@ func TestPublishNameTemplateError(t *testing.T) {
 	srv := newTestServer(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "{{ .Nope }}",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "{{ .Nope }}",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -730,9 +752,10 @@ func TestPublishInvalidUploadResponse(t *testing.T) {
 	srv.emptyUploadRes = true
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -744,9 +767,10 @@ func TestPublishS3UploadError(t *testing.T) {
 	srv.failS3Status = http.StatusForbidden
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -759,9 +783,10 @@ func TestPublishCreateError(t *testing.T) {
 	srv.failSaveStatus = http.StatusForbidden
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -787,13 +812,14 @@ func TestPublishMissingFile(t *testing.T) {
 	srv := newTestServer(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      srv.URL,
-			Name:     "My App",
-			APIToken: "token",
+			URL:           srv.URL,
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "gone.pkg",
+		Name: "gone.zip",
 		Path: filepath.Join(t.TempDir(), "does-not-exist"),
 		Goos: "darwin",
 		Type: artifact.UploadableArchive,
@@ -804,9 +830,10 @@ func TestPublishMissingFile(t *testing.T) {
 func TestPublishServerUnreachable(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Iru: config.Iru{
-			URL:      "http://127.0.0.1:1",
-			Name:     "My App",
-			APIToken: "token",
+			URL:           "http://127.0.0.1:1",
+			Name:          "My App",
+			APIToken:      "token",
+			UnzipLocation: new("/Applications"),
 		},
 	})
 	ctx.Artifacts.Add(testArtifact(t))
@@ -822,7 +849,8 @@ func TestPublishFilterByIDs(t *testing.T) {
 			Name:               "My App",
 			APIToken:           "token",
 			IDs:                []string{"other"},
-			InstallType:        "package",
+			InstallType:        "zip",
+			UnzipLocation:      new("/Applications"),
 			InstallEnforcement: "install_once",
 		},
 	})

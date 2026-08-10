@@ -58,7 +58,7 @@ iru:
   #
   # Custom Apps only install on macOS, so artifacts for other operating
   # systems are ignored. Each selected artifact must have the extension
-  # matching install_type, e.g. .pkg for the default install_type.
+  # matching install_type, i.e. .zip by default.
   #
   # Default: all uploadable archives and binaries.
   ids:
@@ -84,11 +84,17 @@ iru:
   # How the file should be installed. Selected artifacts must have the
   # matching file extension: .pkg, .zip, or .dmg.
   #
+  # The API requires this field, GoReleaser defaults it to zip, which fits
+  # a macOS zip archive from the archives section. Set package or image
+  # when you publish a .pkg or .dmg.
+  #
   # Valid options: package, zip, image.
-  # Default: package.
-  install_type: package
+  # Default: zip.
+  install_type: zip
 
   # Installation enforcement.
+  #
+  # The API requires this field, GoReleaser defaults it.
   #
   # Valid options: install_once, continuously_enforce, no_enforcement.
   # Default: install_once.
@@ -129,7 +135,7 @@ iru:
 
   # Whether the Custom App is active and installable.
   #
-  # Default: true.
+  # Default: true, applied by the API when creating.
   active: true
 
   # Whether to restart the device after a successful install.

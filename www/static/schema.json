@@ -2196,7 +2196,7 @@
 							"zip",
 							"image"
 						],
-						"default": "package"
+						"default": "zip"
 					},
 					"install_enforcement": {
 						"type": "string",
