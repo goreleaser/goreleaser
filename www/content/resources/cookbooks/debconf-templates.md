@@ -45,10 +45,12 @@ if [ "$RET" = "false" ]; then
 fi
 ```
 
-Include `templates` in `.goreleaser.yaml`:
+Include `templates` in `.goreleaser.yaml`, and add `debconf` to `predepends`:
 
 ```yaml
     deb:
+      predepends:
+        - debconf
       scripts:
         config: ./deb/config.sh
         templates: ./deb/templates
