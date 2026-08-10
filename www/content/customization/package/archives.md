@@ -288,7 +288,7 @@ will probably look like this:
 ```yaml {filename=".goreleaser.yaml"}
 archives:
   # Note: Replace gz with xz for xz.
-  - format: gz
+  - formats: ["gz"]
     files:
       - none*
 ```
@@ -307,7 +307,7 @@ so by setting `format` to `binary`:
 
 ```yaml {filename=".goreleaser.yaml"}
 archives:
-  - format: binary
+  - formats: ["binary"]
 ```
 
 You can then set a custom `name_template`, which will be the name used when
