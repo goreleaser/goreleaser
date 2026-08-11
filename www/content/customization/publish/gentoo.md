@@ -242,13 +242,17 @@ gentoo_overlays:
 
 Explicit install item lists (`dobin`, `dosbin`, `doexe`, `doins`, etc.) support `src_id` to reference a specific GoReleaser archive artifact by ID and override its installation behavior (referencing an archive artifact with `src_id` prevents its default installation mechanism):
 
-* `src`: Literal path to install.
-* `src_id`: GoReleaser archive ID supplying the executable/file.
+* `src` only: Literal path to install.
+* `src_id`: GoReleaser archive ID supplying the executable/file (must match a selected archive ID).
 * `src_id` without `src`: Derives the executable source path directly from archive artifact metadata (`ExtraBinaries` / `ExtraWrappedIn`).
-* `src_id` with `src`: Uses `src` as the specific path inside that archive artifact.
+* `src_id` with `src`: Uses `src` as the path inside that archive artifact (`ExtraWrappedIn`).
 * **Automatic Binary Suppression**: Referencing an archive artifact ID with `src_id` suppresses its default automatic binary installation, preventing duplicate installation rules. Unreferenced archive binaries continue to be installed automatically.
 * `dst`: May relocate or rename the installed executable/file in the ebuild.
 * `use`: May conditionally install the item under one or more Gentoo `USE` flags.
+* **Validation & Layout Rules**:
+  - Every `src_id` must match a selected archive artifact ID.
+  - If an archive contains multiple binaries, using `dst` without an explicit `src` is prohibited (specify explicit `src` for each binary).
+  - Archive layouts (`wrap_in_directory` and binaries) must be identical across all selected architectures for a given `src_id`.
 * **Multi-Archive Architectures**: Multiple selected archive artifacts may supply binaries for the same Gentoo architecture (e.g. `amd64` supplying both a `default` binary archive and a `plugin` binary archive).
 
 ### Example

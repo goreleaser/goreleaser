@@ -295,6 +295,47 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	useFlags := gentooUseFlags(cfg)
 
+	dobin, err := ef.buildInstallItems("dobin", cfg.Dobin)
+	if err != nil {
+		return err
+	}
+	doconfd, err := ef.buildInstallItems("doconfd", cfg.Doconfd)
+	if err != nil {
+		return err
+	}
+	doenvd, err := ef.buildInstallItems("doenvd", cfg.Doenvd)
+	if err != nil {
+		return err
+	}
+	doexe, err := ef.buildInstallItems("doexe", cfg.Doexe)
+	if err != nil {
+		return err
+	}
+	doheader, err := ef.buildInstallItems("doheader", cfg.Doheader)
+	if err != nil {
+		return err
+	}
+	doinitd, err := ef.buildInstallItems("doinitd", cfg.Doinitd)
+	if err != nil {
+		return err
+	}
+	doins, err := ef.buildInstallItems("doins", cfg.Doins)
+	if err != nil {
+		return err
+	}
+	dosbin, err := ef.buildInstallItems("dosbin", cfg.Dosbin)
+	if err != nil {
+		return err
+	}
+	dosym, err := ef.buildInstallItems("dosym", cfg.Dosym)
+	if err != nil {
+		return err
+	}
+	systemd, err := ef.buildInstallItems("systemd", cfg.Systemd)
+	if err != nil {
+		return err
+	}
+
 	data := ebuildData{
 		Name:          cfg.Name,
 		Description:   cfg.Description,
@@ -306,19 +347,19 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      useFlags,
-		Dobin:         ef.buildInstallItems(cfg.Dobin),
-		Doconfd:       ef.buildInstallItems(cfg.Doconfd),
+		Dobin:         dobin,
+		Doconfd:       doconfd,
 		Dodir:         cfg.Dodir,
 		Dodoc:         ef.processStringArray(cfg.Dodoc),
-		Doenvd:        ef.buildInstallItems(cfg.Doenvd),
-		Doexe:         ef.buildInstallItems(cfg.Doexe),
-		Doheader:      ef.buildInstallItems(cfg.Doheader),
-		Doinitd:       ef.buildInstallItems(cfg.Doinitd),
-		Doins:         ef.buildInstallItems(cfg.Doins),
+		Doenvd:        doenvd,
+		Doexe:         doexe,
+		Doheader:      doheader,
+		Doinitd:       doinitd,
+		Doins:         doins,
 		Doman:         ef.processStringArray(cfg.Doman),
-		Dosbin:        ef.buildInstallItems(cfg.Dosbin),
-		Dosym:         ef.buildInstallItems(cfg.Dosym),
-		Systemd:       ef.buildInstallItems(cfg.Systemd),
+		Dosbin:        dosbin,
+		Dosym:         dosym,
+		Systemd:       systemd,
 	}
 
 	if err := data.Validate(); err != nil {

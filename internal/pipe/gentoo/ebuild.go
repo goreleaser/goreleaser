@@ -261,7 +261,7 @@ func (v *extraFilesProcessor) validate(name, src string) error {
 	return nil
 }
 
-func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallItem) []installItemData {
+func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []config.GentooInstallItem) ([]installItemData, error) {
 	var items []installItemData
 	for _, d := range cfgItems {
 		if d.SrcID != "" {
@@ -272,13 +272,24 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 				}
 			}
 
+			if len(matchingArches) == 0 {
+				return nil, fmt.Errorf("gentoo %s: src_id %q does not match a selected archive", sectionName, d.SrcID)
+			}
+
+			firstWrappedIn := artifact.ExtraOr(*matchingArches[0], artifact.ExtraWrappedIn, "")
+			firstBins := artifact.ExtraOr(*matchingArches[0], artifact.ExtraBinaries, []string{})
+			for _, art := range matchingArches[1:] {
+				w := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, "")
+				b := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
+				if w != firstWrappedIn || !slices.Equal(b, firstBins) {
+					return nil, fmt.Errorf("gentoo %s: src_id %q has mismatched archive layouts across architectures; specify explicit src", sectionName, d.SrcID)
+				}
+			}
+
 			if d.Src != "" {
 				srcPath := d.Src
-				if len(matchingArches) > 0 {
-					wrappedIn := artifact.ExtraOr(*matchingArches[0], artifact.ExtraWrappedIn, "")
-					if wrappedIn != "" {
-						srcPath = path.Join(wrappedIn, d.Src)
-					}
+				if firstWrappedIn != "" {
+					srcPath = path.Join(firstWrappedIn, d.Src)
 				}
 				target := d.Dst
 				dir := path.Dir(filepath.ToSlash(d.Dst))
@@ -296,16 +307,18 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 					Base:   base,
 					Use:    d.Use,
 				})
-			} else if len(matchingArches) > 0 {
-				bins := artifact.ExtraOr(*matchingArches[0], artifact.ExtraBinaries, []string{})
-				wrappedIn := artifact.ExtraOr(*matchingArches[0], artifact.ExtraWrappedIn, "")
+			} else {
+				bins := firstBins
 				if len(bins) == 0 {
 					bins = []string{v.cfg.Name}
 				}
+				if len(bins) > 1 && d.Dst != "" {
+					return nil, fmt.Errorf("gentoo %s: dst %q cannot be used with multiple binaries %v in src_id %q; specify explicit src for each binary", sectionName, d.Dst, bins, d.SrcID)
+				}
 				for _, b := range bins {
 					sourcePath := b
-					if wrappedIn != "" {
-						sourcePath = path.Join(wrappedIn, b)
+					if firstWrappedIn != "" {
+						sourcePath = path.Join(firstWrappedIn, b)
 					}
 					target := d.Dst
 					var dir, base string
@@ -337,11 +350,6 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 		src := d.Src
 		if _, ok := v.extraFiles[d.Src]; ok {
 			src = "${FILESDIR}/" + strings.TrimPrefix(d.Src, "files/")
-		} else if len(v.arches) > 0 {
-			wrappedIn := artifact.ExtraOr(*v.arches[0], artifact.ExtraWrappedIn, "")
-			if wrappedIn != "" && !strings.HasPrefix(src, wrappedIn+"/") {
-				src = path.Join(wrappedIn, d.Src)
-			}
 		}
 
 		dir := path.Dir(filepath.ToSlash(d.Dst))
@@ -361,7 +369,7 @@ func (v *extraFilesProcessor) buildInstallItems(cfgItems []config.GentooInstallI
 			Use:    d.Use,
 		})
 	}
-	return items
+	return items, nil
 }
 
 func (v *extraFilesProcessor) processStringArray(arr []string) []string {
