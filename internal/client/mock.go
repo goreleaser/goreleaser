@@ -45,6 +45,8 @@ type Mock struct {
 	ReleaseNotesParams   []string
 	OpenedPullRequest    bool
 	SyncedFork           bool
+	DeletedFiles         []string
+	Files                map[string][]byte
 }
 
 func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
@@ -54,6 +56,15 @@ func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
 
 func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {
 	c.OpenedPullRequest = true
+	return nil
+}
+
+func (c *Mock) ListDir(_ *context.Context, _ Repo, _ string) ([]string, error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *Mock) DeleteFile(_ *context.Context, _ config.CommitAuthor, _ Repo, path, _ string) error {
+	c.DeletedFiles = append(c.DeletedFiles, path)
 	return nil
 }
 
@@ -125,6 +136,15 @@ func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact)
 	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)
 	c.UploadedFilePaths[artifact.Name] = artifact.Path
 	return nil
+}
+
+func (c *Mock) DownloadFile(_ *context.Context, _ Repo, path string) ([]byte, error) {
+	if c.Files != nil {
+		if content, ok := c.Files[path]; ok {
+			return content, nil
+		}
+	}
+	return nil, ErrNotFound
 }
 
 func (c *Mock) CanRelease(_ *context.Context) error {

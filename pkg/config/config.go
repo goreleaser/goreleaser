@@ -470,6 +470,68 @@ type Scoop struct {
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 
+// Gentoo contains the gentoo ebuild section.
+type Gentoo struct {
+	ID                       string                   `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs                      []string                 `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Name                     string                   `yaml:"name,omitempty" json:"name,omitempty"`
+	Category                 string                   `yaml:"category,omitempty" json:"category,omitempty"`
+	OverlayPath              string                   `yaml:"overlay_path,omitempty" json:"overlay_path,omitempty"`
+	Repository               RepoRef                  `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor             CommitAuthor             `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate    string                   `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Homepage                 string                   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Description              string                   `yaml:"description,omitempty" json:"description,omitempty"`
+	License                  string                   `yaml:"license,omitempty" json:"license,omitempty"`
+	Keywords                 StringArray              `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	Files                    []ExtraFile              `yaml:"files,omitempty" json:"files,omitempty"`
+	Bin                      bool                     `yaml:"bin" json:"bin"`
+	Type                     string                   `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=bin"`
+	KeepVersions             int                      `yaml:"keep_versions,omitempty" json:"keep_versions,omitempty"`
+	ConflictResolution       ConflictResolution       `yaml:"conflict_resolution,omitempty" json:"conflict_resolution,omitempty" jsonschema:"enum=Fail,enum=Overwrite,enum=Revision"`
+	VersionRetentionStrategy VersionRetentionStrategy `yaml:"version_retention_strategy,omitempty" json:"version_retention_strategy,omitempty" jsonschema:"enum=keep_latest,enum=keep_prereleases"`
+	SkipUpload               string                   `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	SkipFilesValidation      bool                     `yaml:"skip_files_validation,omitempty" json:"skip_files_validation,omitempty"`
+	Bindir                   string                   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	ManifestHashes           []string                 `yaml:"manifest_hashes,omitempty" json:"manifest_hashes,omitempty"`
+	ThinManifests            *bool                    `yaml:"thin_manifests,omitempty" json:"thin_manifests,omitempty"`
+	MetaCache                bool                     `yaml:"meta_cache,omitempty" json:"meta_cache,omitempty"`
+	ExtraInstall             string                   `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
+	Maintainers              []GentooMaintainer       `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	BugsTo                   string                   `yaml:"bugs_to,omitempty" json:"bugs_to,omitempty"`
+	UseFlags                 []GentooUseFlag          `yaml:"useflags,omitempty" json:"useflags,omitempty"`
+	Dobin                    []GentooInstallItem      `yaml:"dobin,omitempty" json:"dobin,omitempty"`
+	Doconfd                  []GentooInstallItem      `yaml:"doconfd,omitempty" json:"doconfd,omitempty"`
+	Dodir                    []string                 `yaml:"dodir,omitempty" json:"dodir,omitempty"`
+	Dodoc                    []string                 `yaml:"dodoc,omitempty" json:"dodoc,omitempty"`
+	Doenvd                   []GentooInstallItem      `yaml:"doenvd,omitempty" json:"doenvd,omitempty"`
+	Doexe                    []GentooInstallItem      `yaml:"doexe,omitempty" json:"doexe,omitempty"`
+	Doheader                 []GentooInstallItem      `yaml:"doheader,omitempty" json:"doheader,omitempty"`
+	Doinitd                  []GentooInstallItem      `yaml:"doinitd,omitempty" json:"doinitd,omitempty"`
+	Doins                    []GentooInstallItem      `yaml:"doins,omitempty" json:"doins,omitempty"`
+	Doman                    []string                 `yaml:"doman,omitempty" json:"doman,omitempty"`
+	Dosbin                   []GentooInstallItem      `yaml:"dosbin,omitempty" json:"dosbin,omitempty"`
+	Dosym                    []GentooInstallItem      `yaml:"dosym,omitempty" json:"dosym,omitempty"`
+	Systemd                  []GentooInstallItem      `yaml:"systemd,omitempty" json:"systemd,omitempty"`
+}
+
+type GentooUseFlag struct {
+	Flag        string `yaml:"flag" json:"flag"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
+}
+
+type GentooInstallItem struct {
+	SrcID string   `yaml:"src_id,omitempty" json:"src_id,omitempty"`
+	Src   string   `yaml:"src,omitempty" json:"src,omitempty"`
+	Dst   string   `yaml:"dst,omitempty" json:"dst,omitempty"`
+	Use   []string `yaml:"use,omitempty" json:"use,omitempty"`
+}
+
+type GentooMaintainer struct {
+	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
+	Email string `yaml:"email,omitempty" json:"email,omitempty"`
+}
+
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
 	Name              string        `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1387,6 +1449,7 @@ type Project struct {
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
+	Gentoos           []Gentoo          `yaml:"gentoo_overlays,omitempty" json:"gentoo_overlays,omitempty"`
 	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
@@ -1708,3 +1771,18 @@ type MCPPackage struct {
 type MCPTransport struct {
 	Type string `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=stdio,enum=streamable-http,enum=sse"`
 }
+
+type ConflictResolution string
+
+const (
+	ConflictResolutionFail      ConflictResolution = "Fail"
+	ConflictResolutionOverwrite ConflictResolution = "Overwrite"
+	ConflictResolutionRevision  ConflictResolution = "Revision"
+)
+
+type VersionRetentionStrategy string
+
+const (
+	VersionRetentionStrategyKeepLatest      VersionRetentionStrategy = "keep_latest"
+	VersionRetentionStrategyKeepPrereleases VersionRetentionStrategy = "keep_prereleases"
+)

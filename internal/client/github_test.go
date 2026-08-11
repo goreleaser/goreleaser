@@ -1810,6 +1810,51 @@ func TestGitHubCloseMilestoneNotFound(t *testing.T) {
 	require.ErrorAs(t, err, &ErrNoMilestoneFound{})
 }
 
+func TestGitHubCreateFilesUsesCreatedRef(t *testing.T) {
+	t.Parallel()
+	var releaseRefGets atomic.Int32
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/owner/repo":
+			fmt.Fprint(w, `{"default_branch":"main"}`)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/owner/repo/branches/release":
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"Branch not found"}`)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/owner/repo/git/ref/heads/main":
+			fmt.Fprint(w, `{"ref":"refs/heads/main","object":{"sha":"base"}}`)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/owner/repo/git/refs":
+			fmt.Fprint(w, `{"ref":"refs/heads/release","object":{"sha":"base"}}`)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/owner/repo/git/ref/heads/release":
+			releaseRefGets.Add(1)
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"Reference not found"}`)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/owner/repo/git/commits/base":
+			fmt.Fprint(w, `{"sha":"base","tree":{"sha":"tree-base"}}`)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/owner/repo/git/trees":
+			fmt.Fprint(w, `{"sha":"tree-new"}`)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/owner/repo/git/commits":
+			fmt.Fprint(w, `{"sha":"commit-new"}`)
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/v3/repos/owner/repo/git/refs/heads/release":
+			fmt.Fprint(w, `{"ref":"refs/heads/release","object":{"sha":"commit-new"}}`)
+		default:
+			t.Errorf("unhandled request: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{API: srv.URL},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	require.NoError(t, client.CreateFiles(ctx, config.CommitAuthor{}, Repo{
+		Owner:  "owner",
+		Name:   "repo",
+		Branch: "release",
+	}, "message", []RepoFile{{Path: "file", Content: []byte("content")}}))
+	require.Zero(t, releaseRefGets.Load())
+}
+
 func TestGitHubUploadReplaceExisting(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {

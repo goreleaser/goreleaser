@@ -92,6 +92,10 @@ const (
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
+	// GentooEbuild is an uploadable gentoo ebuild file.
+	GentooEbuild
+	// GentooFile is an extra file to accompany a gentoo ebuild.
+	GentooFile
 	// SBOM is a Software Bill of Materials file.
 	SBOM
 	// PublishableChocolatey is a chocolatey package yet to be published.
@@ -160,7 +164,8 @@ func (t Type) isUploadable() bool {
 		Snapcraft,              // See [PublishableSnapcraft].
 		Metadata,               // Local only.
 		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
-		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
+		PkgBuild, SourcePkgBuild, // It's always named `.PKGBUILD`
+		GentooEbuild, GentooFile:
 		return false
 	default:
 		return true
@@ -203,6 +208,10 @@ func (t Type) String() string {
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
 		return "Scoop Manifest"
+	case GentooEbuild:
+		return "Ebuild"
+	case GentooFile:
+		return "Ebuild File"
 	case SBOM:
 		return "SBOM"
 	case PkgBuild, SourcePkgBuild:

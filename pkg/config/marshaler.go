@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -94,6 +95,23 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
+// UnmarshalYAML handles case-insensitive unmarshaling for VersionRetentionStrategy.
+func (v *VersionRetentionStrategy) UnmarshalYAML(unmarshal func(any) error) error {
+	var s string
+	if err := unmarshal(&s); err != nil {
+		return err
+	}
+	switch {
+	case strings.EqualFold(s, string(VersionRetentionStrategyKeepLatest)):
+		*v = VersionRetentionStrategyKeepLatest
+	case strings.EqualFold(s, string(VersionRetentionStrategyKeepPrereleases)):
+		*v = VersionRetentionStrategyKeepPrereleases
+	default:
+		*v = VersionRetentionStrategy(s)
+	}
+	return nil
+}
+
 // UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
 func (a *SlackBlock) UnmarshalYAML(unmarshal func(any) error) error {
 	var yamlv2 any
@@ -180,5 +198,24 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	a.Version = dep.Version
 	a.OS = dep.OS
 
+	return nil
+}
+
+// UnmarshalYAML handles case-insensitive unmarshaling for ConflictResolution.
+func (c *ConflictResolution) UnmarshalYAML(unmarshal func(any) error) error {
+	var s string
+	if err := unmarshal(&s); err != nil {
+		return err
+	}
+	switch {
+	case strings.EqualFold(s, string(ConflictResolutionFail)):
+		*c = ConflictResolutionFail
+	case strings.EqualFold(s, string(ConflictResolutionOverwrite)):
+		*c = ConflictResolutionOverwrite
+	case strings.EqualFold(s, string(ConflictResolutionRevision)):
+		*c = ConflictResolutionRevision
+	default:
+		return fmt.Errorf("invalid conflict_resolution %q, must be one of Fail, Overwrite, or Revision", s)
+	}
 	return nil
 }

@@ -49,6 +49,34 @@ builds: []
 	require.Empty(t, prop.Blobs)
 }
 
+func TestConflictResolutionUnmarshal(t *testing.T) {
+	tests := []struct {
+		in       string
+		expected ConflictResolution
+		err      bool
+	}{
+		{"fail", ConflictResolutionFail, false},
+		{"FAIL", ConflictResolutionFail, false},
+		{"overwrite", ConflictResolutionOverwrite, false},
+		{"revision", ConflictResolutionRevision, false},
+		{"Revison", "", true},
+		{"invalid", "", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			conf := fmt.Sprintf("gentoo_overlays:\n  - conflict_resolution: %s\n", tt.in)
+			prop, err := LoadReader(strings.NewReader(conf))
+			if tt.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, prop.Gentoos[0].ConflictResolution)
+			}
+		})
+	}
+}
+
 type errorReader struct{}
 
 func (errorReader) Read(_ []byte) (n int, err error) {

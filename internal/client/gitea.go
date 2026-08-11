@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
@@ -24,9 +25,90 @@ type giteaClient struct {
 	client *gitea.Client
 }
 
+func (c *giteaClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]string, error) {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			log.WithField("projectID", repo.String()).
+				WithError(err).
+				Warn("error checking for default branch, using server default")
+		}
+	}
+
+	contents, resp, err := giteaDo(ctx, func() ([]*gitea.ContentsResponse, *gitea.Response, error) {
+		return c.client.ListContents(repo.Owner, repo.Name, branch, dir)
+	})
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var names []string
+	for _, item := range contents {
+		if item != nil && item.Type == "file" {
+			names = append(names, item.Name)
+		}
+	}
+	return names, nil
+}
+
+func (c *giteaClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, path, message string) error {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			log.WithField("projectID", repo.String()).
+				WithError(err).
+				Warn("error checking for default branch, using server default")
+		}
+	}
+
+	currentFile, getResp, err := giteaDo(ctx, func() (*gitea.ContentsResponse, *gitea.Response, error) {
+		return c.client.GetContents(repo.Owner, repo.Name, branch, path)
+	})
+	if err != nil {
+		if getResp != nil && getResp.StatusCode == http.StatusNotFound {
+			return nil
+		}
+		return err
+	}
+
+	fileOptions := gitea.FileOptions{
+		Message:    message,
+		BranchName: branch,
+		Author: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+		Committer: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+	}
+
+	_, _, err = giteaDo(ctx, func() (struct{}, *gitea.Response, error) {
+		resp, err := c.client.DeleteFile(repo.Owner, repo.Name, path, gitea.DeleteFileOptions{
+			FileOptions: fileOptions,
+			SHA:         currentFile.SHA,
+		})
+		return struct{}{}, resp, err
+	})
+	return err
+}
+
 var (
-	_ Client         = &giteaClient{}
-	_ ReleaseChecker = &giteaClient{}
+	_ Client          = &giteaClient{}
+	_ DirectoryLister = &giteaClient{}
+	_ FileDeleter     = &giteaClient{}
+	_ ReleaseChecker  = &giteaClient{}
 )
 
 func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, *gitea.Response, error) {
@@ -220,6 +302,18 @@ func (c *giteaClient) CreateFile(
 		return err
 	}
 
+	if currentFile != nil && currentFile.Content != nil {
+		decodedContent, decodeErr := base64.StdEncoding.DecodeString(*currentFile.Content)
+		if decodeErr == nil && string(decodedContent) == string(content) {
+			log.
+				WithField("repository", repo.String()).
+				WithField("name", repo.Name).
+				WithField("file", path).
+				Info("file already exists with the same content, skipping update")
+			return nil
+		}
+	}
+
 	// update file
 	_, _, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
 		return c.client.UpdateFile(repo.Owner, repo.Name, path, gitea.UpdateFileOptions{
@@ -395,4 +489,120 @@ func (c *giteaClient) Upload(
 		_, resp, err := c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
 		return retryx.HTTP(err, must(resp).Response)
 	}, retryx.IsRetriable)
+}
+
+func (c *giteaClient) DownloadFile(ctx *context.Context, repo Repo, path string) ([]byte, error) {
+	branch := repo.Branch
+	if branch == "" {
+		var err error
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	content, resp, err := c.client.GetFile(repo.Owner, repo.Name, branch, path)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return content, nil
+}
+
+// CreateFiles implements FilesCreator
+func (c *giteaClient) CreateFiles(
+	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo Repo,
+	message string,
+	files []RepoFile,
+) error {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.getDefaultBranch(ctx, repo)
+		if err != nil {
+			return err
+		}
+	}
+
+	var changeFiles []*gitea.ChangeFileOperation
+	for _, f := range files {
+		currentFile, getResp, err := giteaDo(ctx, func() (*gitea.ContentsResponse, *gitea.Response, error) {
+			return c.client.GetContents(repo.Owner, repo.Name, branch, f.Path)
+		})
+
+		if err != nil && (getResp == nil || getResp.StatusCode != http.StatusNotFound) {
+			return fmt.Errorf("could not get file %s: %w", f.Path, err)
+		}
+
+		if f.Delete {
+			if getResp != nil && getResp.StatusCode != http.StatusNotFound && currentFile != nil {
+				changeFiles = append(changeFiles, &gitea.ChangeFileOperation{
+					Operation: "delete",
+					Path:      f.Path,
+					SHA:       currentFile.SHA,
+				})
+			}
+			continue
+		}
+
+		encodedContent := base64.StdEncoding.EncodeToString(f.Content)
+
+		if err != nil && getResp != nil && getResp.StatusCode == http.StatusNotFound {
+			changeFiles = append(changeFiles, &gitea.ChangeFileOperation{
+				Operation: "create",
+				Path:      f.Path,
+				Content:   encodedContent,
+			})
+		} else {
+			if currentFile != nil && currentFile.Content != nil {
+				decodedContent, decodeErr := base64.StdEncoding.DecodeString(*currentFile.Content)
+				if decodeErr == nil && bytes.Equal(decodedContent, f.Content) {
+					log.WithField("repository", repo.String()).
+						WithField("branch", branch).
+						WithField("file", f.Path).
+						Info("file already exists with the same content, skipping update")
+					continue
+				}
+			}
+
+			changeFiles = append(changeFiles, &gitea.ChangeFileOperation{
+				Operation: "update",
+				Path:      f.Path,
+				Content:   encodedContent,
+				SHA:       currentFile.SHA,
+			})
+		}
+	}
+
+	if len(changeFiles) == 0 {
+		return nil
+	}
+
+	opts := gitea.ChangeFilesOptions{
+		Files:   changeFiles,
+		Message: message,
+		Branch:  branch,
+		Author: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+		Committer: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+	}
+
+	_, _, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
+		return c.client.ChangeFiles(repo.Owner, repo.Name, opts)
+	})
+	if err != nil {
+		return fmt.Errorf("could not change files: %w", err)
+	}
+
+	return nil
 }
