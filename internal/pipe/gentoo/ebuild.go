@@ -134,21 +134,33 @@ func (d ebuildData) RenderMetaCache(ebuildContent string) (string, error) {
 	h := md5.Sum([]byte(ebuildContent))
 	md5Hex := hex.EncodeToString(h[:])
 
+	var bdepend string
+	var eclasses string
+	if len(d.Systemd) > 0 {
+		bdepend = "virtual/pkgconfig"
+		eclassHash := md5.Sum([]byte("systemd.eclass"))
+		eclasses = fmt.Sprintf("systemd\t%s", hex.EncodeToString(eclassHash[:]))
+	}
+
 	tmplData := struct {
+		BDEPEND     string
 		Description string
 		Homepage    string
 		IUSE        string
 		Keywords    string
 		License     string
 		SrcURI      string
+		Eclasses    string
 		MD5         string
 	}{
+		BDEPEND:     bdepend,
 		Description: d.Description,
 		Homepage:    d.Homepage,
 		IUSE:        strings.Join(d.SortedUseFlags(), " "),
 		Keywords:    d.Keywords,
 		License:     d.License,
 		SrcURI:      strings.Join(d.FormattedSrcURIs(), " "),
+		Eclasses:    eclasses,
 		MD5:         md5Hex,
 	}
 

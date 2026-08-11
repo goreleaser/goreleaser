@@ -1,3 +1,6 @@
+{{- if .BDEPEND }}
+BDEPEND={{ .BDEPEND }}
+{{- end }}
 DEFINED_PHASES=install
 DESCRIPTION={{ .Description }}
 EAPI=8
@@ -8,5 +11,7 @@ LICENSE={{ .License }}
 RESTRICT=
 SLOT=0
 SRC_URI={{ .SrcURI }}
+{{- if .Eclasses }}
+_eclasses_={{ .Eclasses }}
+{{- end }}
 _md5_={{ .MD5 }}
-
