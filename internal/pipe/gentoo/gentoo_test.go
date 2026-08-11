@@ -1838,4 +1838,158 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		}
 		require.False(t, suppressed["unsuppressed_id"])
 	})
+
+	t.Run("unknown src_id returns error", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "myapp",
+			Gentoos: []config.Gentoo{{
+				Category:    "app-misc",
+				Name:        "myapp",
+				Bin:         true,
+				License:     "MIT",
+				Description: "foo",
+				Doexe: []config.GentooInstallItem{{
+					SrcID: "cgi_typo",
+				}},
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "myapp.tar.gz",
+			Path:   "dist/myapp.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID: "default",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+		require.ErrorContains(t, err, `gentoo doexe: src_id "cgi_typo" does not match a selected archive`)
+	})
+
+	t.Run("multiple binaries with dst returns error", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "myapp",
+			Gentoos: []config.Gentoo{{
+				Category:    "app-misc",
+				Name:        "myapp",
+				Bin:         true,
+				License:     "MIT",
+				Description: "foo",
+				Doexe: []config.GentooInstallItem{{
+					SrcID: "tools",
+					Dst:   "/opt/bin/tool",
+				}},
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "tools.tar.gz",
+			Path:   "dist/tools.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "tools",
+				artifact.ExtraBinaries: []string{"foo", "bar"},
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+		require.ErrorContains(t, err, `gentoo doexe: dst "/opt/bin/tool" cannot be used with multiple binaries [foo bar] in src_id "tools"; specify explicit src for each binary`)
+	})
+
+	t.Run("mismatched archive layouts across architectures returns error", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "myapp",
+			Gentoos: []config.Gentoo{{
+				Category:    "app-misc",
+				Name:        "myapp",
+				Bin:         true,
+				License:     "MIT",
+				Description: "foo",
+				Doexe: []config.GentooInstallItem{{
+					SrcID: "default",
+				}},
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "myapp_amd64.tar.gz",
+			Path:   "dist/myapp_amd64.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "default",
+				artifact.ExtraWrappedIn: "dir_amd64",
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "myapp_arm64.tar.gz",
+			Path:   "dist/myapp_arm64.tar.gz",
+			Goos:   "linux",
+			Goarch: "arm64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "default",
+				artifact.ExtraWrappedIn: "dir_arm64",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+		require.ErrorContains(t, err, `gentoo doexe: src_id "default" has mismatched archive layouts across architectures; specify explicit src`)
+	})
+
+	t.Run("plain src stays literal even with wrappedIn archive", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "myapp",
+			Gentoos: []config.Gentoo{{
+				Category:    "app-misc",
+				Name:        "myapp",
+				Bin:         true,
+				License:     "MIT",
+				Description: "foo",
+				Doexe: []config.GentooInstallItem{{
+					Src: "special/foo",
+				}},
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "myapp_amd64.tar.gz",
+			Path:   "dist/myapp_amd64.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "default",
+				artifact.ExtraWrappedIn: "myapp-1.0.0",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+		content, err := os.ReadFile(ebuildPath)
+		require.NoError(t, err)
+		str := string(content)
+
+		require.Contains(t, str, `doexe "special/foo"`)
+		require.NotContains(t, str, `doexe "myapp-1.0.0/special/foo"`)
+	})
 }
