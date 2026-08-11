@@ -193,10 +193,16 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	var archInfos []archData
+	slices.Sort(keywordsOrder)
+	keywordsOrder = slices.Compact(keywordsOrder)
 	for _, kw := range keywordsOrder {
+		uris := archMap[kw]
+		slices.SortFunc(uris, func(a, b archItem) int {
+			return strings.Compare(a.File, b.File)
+		})
 		archInfos = append(archInfos, archData{
 			Keyword: kw,
-			URIs:    archMap[kw],
+			URIs:    uris,
 		})
 	}
 
@@ -247,6 +253,15 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		}
 	}
 
+	for kw := range installByKw {
+		slices.SortFunc(installByKw[kw], func(a, b installData) int {
+			if c := strings.Compare(a.Source, b.Source); c != 0 {
+				return c
+			}
+			return strings.Compare(a.Target, b.Target)
+		})
+	}
+
 	var installGroups []installGroup
 	if len(installByKw) > 0 {
 		groupMap := make(map[string][]string)
@@ -266,7 +281,15 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			installItemsMap[groupKey] = installs
 		}
 
-		for groupKey, kws := range groupMap {
+		groupKeys := make([]string, 0, len(groupMap))
+		for groupKey := range groupMap {
+			groupKeys = append(groupKeys, groupKey)
+		}
+		slices.Sort(groupKeys)
+
+		for _, groupKey := range groupKeys {
+			kws := groupMap[groupKey]
+			slices.Sort(kws)
 			installs := installItemsMap[groupKey]
 			for i := range installs {
 				installs[i].Keywords = kws
