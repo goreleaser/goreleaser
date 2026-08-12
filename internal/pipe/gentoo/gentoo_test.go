@@ -931,6 +931,8 @@ func TestGentooVersionPMSOrdering(t *testing.T) {
 		{"foo-1.2.ebuild", "foo-1.10.ebuild", -1},
 		{"foo-1.2.3.ebuild", "foo-1.2.3a.ebuild", -1},
 		{"foo-1.2.3a.ebuild", "foo-1.2.3b.ebuild", -1},
+		{"foo-1.01.ebuild", "foo-1.1.ebuild", -1},
+		{"foo-1.0.0.ebuild", "foo-1.0.ebuild", 1},
 
 		// Equal versions
 		{"foo-1.0.0.ebuild", "foo-1.0.0.ebuild", 0},
@@ -938,6 +940,7 @@ func TestGentooVersionPMSOrdering(t *testing.T) {
 
 		// Chained suffixes
 		{"foo-1.0_alpha1_p1.ebuild", "foo-1.0_alpha1_p2.ebuild", -1},
+		{"foo-1.0_alpha1_beta1.ebuild", "foo-1.0_alpha1_beta2.ebuild", -1},
 	}
 
 	for _, tt := range tests {
