@@ -28,30 +28,6 @@ IUSE="{{ range $i, $flag := .UseFlags }}{{ if $i }} {{ end }}{{ $flag.Flag }}{{ 
 
 S="${WORKDIR}"
 
-{{- define "use_start" }}
-{{- if . }}
-  if {{ range $i, $u := . }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- end }}
-
-{{- define "use_end" }}
-{{- if . }}
-  fi
-{{- end }}
-{{- end }}
-
-{{- define "keyword_start" }}
-{{- if . }}
-  if {{ range $i, $k := . }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- end }}
-
-{{- define "keyword_end" }}
-{{- if . }}
-  fi
-{{- end }}
-{{- end }}
-
 src_install() {
 {{- with .ExtraInstall }}
   {{ . }}
@@ -83,125 +59,205 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- range .Dobin }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newbin "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  dobin "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newbin "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}dobin "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doconfd }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newconfd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  doconfd "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newconfd "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}doconfd "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Dodir }}
   dodir "{{ . }}"
 {{- end }}
 {{- range .Doenvd }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newenvd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  doenvd "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newenvd "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}doenvd "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doexe }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
 {{- if .Target }}
-  exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
+{{ indent .Keywords .Use }}exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
   {{- if eq .Source .Base }}
-  doexe "{{ .Source }}"
+{{ indent .Keywords .Use }}doexe "{{ .Source }}"
   {{- else }}
-  newexe "{{ .Source }}" "{{ .Base }}"
+{{ indent .Keywords .Use }}newexe "{{ .Source }}" "{{ .Base }}"
   {{- end }}
 {{- else }}
-  exeinto {{ $.Bindir }}
-  doexe "{{ .Source }}"
+{{ indent .Keywords .Use }}exeinto {{ $.Bindir }}
+{{ indent .Keywords .Use }}doexe "{{ .Source }}"
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doheader }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newheader "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  doheader "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newheader "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}doheader "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doinitd }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newinitd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  doinitd "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newinitd "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}doinitd "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doins }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
 {{- if .Target }}
-  insinto "{{ .Dir }}"
+{{ indent .Keywords .Use }}insinto "{{ .Dir }}"
   {{- if eq .Source .Base }}
-  doins "{{ .Source }}"
+{{ indent .Keywords .Use }}doins "{{ .Source }}"
   {{- else }}
-  newins "{{ .Source }}" "{{ .Base }}"
+{{ indent .Keywords .Use }}newins "{{ .Source }}" "{{ .Base }}"
   {{- end }}
 {{- else }}
-  insinto /
-  doins "{{ .Source }}"
+{{ indent .Keywords .Use }}insinto /
+{{ indent .Keywords .Use }}doins "{{ .Source }}"
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Dosbin }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  newsbin "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  dosbin "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}newsbin "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}dosbin "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Dosym }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-  dosym "{{ .Source }}" "{{ .Target }}"
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{ indent .Keywords .Use }}dosym "{{ .Source }}" "{{ .Target }}"
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Systemd }}
-{{- template "keyword_start" .Keywords }}
-{{- template "use_start" .Use }}
-{{- if .Target }}
-  systemd_newunit "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  systemd_dounit "{{ .Source }}"
+{{- if .Keywords }}
+  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
-{{- template "use_end" .Use }}
-{{- template "keyword_end" .Keywords }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+{{- end }}
+{{- if .Target }}
+{{ indent .Keywords .Use }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
+{{- else }}
+{{ indent .Keywords .Use }}systemd_dounit "{{ .Source }}"
+{{- end }}
+{{- if .Use }}
+{{ indentUse .Keywords .Use }}fi
+{{- end }}
+{{- if .Keywords }}
+  fi
+{{- end }}
 {{- end }}
 {{- range .Doman }}
   doman "{{ . }}"

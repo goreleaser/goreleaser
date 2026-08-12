@@ -835,7 +835,26 @@ func TestTemplateScenarios(t *testing.T) {
 				UseFlags:      gentooUseFlags(config.Gentoo{}),
 			}
 			var buf bytes.Buffer
-			err := template.Must(template.New("ebuild").Funcs(template.FuncMap{"escape": shellEscape}).Parse(tmplStr)).Execute(&buf, data)
+			err := template.Must(template.New("ebuild").Funcs(template.FuncMap{
+				"escape": shellEscape,
+				"indentUse": func(keywords []string, _ []string) string {
+					ind := "  "
+					if len(keywords) > 0 {
+						ind += "  "
+					}
+					return ind
+				},
+				"indent": func(keywords []string, use []string) string {
+					ind := "  "
+					if len(keywords) > 0 {
+						ind += "  "
+					}
+					if len(use) > 0 {
+						ind += "  "
+					}
+					return ind
+				},
+			}).Parse(tmplStr)).Execute(&buf, data)
 			require.NoError(t, err)
 			golden.RequireEqualTxt(t, buf.Bytes())
 		})
@@ -2309,8 +2328,8 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		require.NoError(t, err)
 		str := string(content)
 
-		require.Contains(t, str, "if use amd64; then\n  exeinto /opt/bin\n  doexe \"dir_amd64/myapp\"\n  fi")
-		require.Contains(t, str, "if use arm64; then\n  exeinto /opt/bin\n  doexe \"dir_arm64/myapp\"\n  fi")
+		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    doexe \"dir_amd64/myapp\"\n  fi")
+		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    doexe \"dir_arm64/myapp\"\n  fi")
 	})
 
 	t.Run("plain src stays literal even with wrappedIn archive", func(t *testing.T) {
