@@ -595,7 +595,7 @@ func (m mockFileDownloader) DownloadFile(_ *import_context.Context, _ client.Rep
 	if content, ok := m.contents[path]; ok {
 		return content, nil
 	}
-	if path == "metadata/layout.conf" {
+	if path == "metadata/layout.conf" || strings.HasSuffix(path, "metadata/layout.conf") {
 		return m.content, nil
 	}
 	return nil, client.ErrNotFound
@@ -835,7 +835,7 @@ func TestTemplateScenarios(t *testing.T) {
 				UseFlags:      gentooUseFlags(config.Gentoo{}),
 			}
 			var buf bytes.Buffer
-			err := template.Must(template.New("ebuild").Parse(tmplStr)).Execute(&buf, data)
+			err := template.Must(template.New("ebuild").Funcs(template.FuncMap{"escape": shellEscape}).Parse(tmplStr)).Execute(&buf, data)
 			require.NoError(t, err)
 			golden.RequireEqualTxt(t, buf.Bytes())
 		})
@@ -1530,7 +1530,7 @@ func TestMetaCache(t *testing.T) {
 	t.Run("meta_cache filter properly applies with overlay path", func(t *testing.T) {
 		repoClient := client.NewMock()
 		repoClient.Files = map[string][]byte{
-			"metadata/layout.conf": []byte("cache-formats = pms\n"),
+			"my-overlay/metadata/layout.conf": []byte("cache-formats = pms\n"),
 		}
 
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
@@ -1755,6 +1755,21 @@ func TestGentooMetadata(t *testing.T) {
 		require.Contains(t, string(content), `<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">`)
 		require.Contains(t, string(content), `<flag name="systemd">Enable systemd</flag>`)
 		require.Contains(t, string(content), `<bugs-to>https://bugs.example.com</bugs-to>`)
+	})
+
+	t.Run("AddUseFlags modifies existing", func(t *testing.T) {
+		var meta gentooMetadata
+		meta.AddUseFlags([]config.GentooUseFlag{
+			{Flag: "systemd", Description: "Enable systemd old"},
+		})
+		meta.AddUseFlags([]config.GentooUseFlag{
+			{Flag: "systemd", Description: "Enable systemd new"},
+		})
+
+		content, err := meta.Marshal()
+		require.NoError(t, err)
+		require.Contains(t, string(content), `<flag name="systemd">Enable systemd new</flag>`)
+		require.NotContains(t, string(content), `<flag name="systemd">Enable systemd old</flag>`)
 	})
 }
 
@@ -2403,4 +2418,128 @@ func TestEbuildGenerationDeterminism(t *testing.T) {
 	content1 := generateEbuild(false)
 	content2 := generateEbuild(true)
 	require.Equal(t, content1, content2)
+}
+
+func TestHandleGentooManifestAndMetadataPrunesOnlyFullyDeletedBaseVersions(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	})
+	cfg := config.Gentoo{
+		Category: "app-misc",
+		Name:     "foo",
+	}
+
+	artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath, []byte("test content"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   artPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	artPath2 := filepath.Join(dist, "foo_2.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath2, []byte("test content 2"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_2.0.0_linux_amd64.tar.gz",
+		Path:   artPath2,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	downloader := mockFileDownloader{
+		content: []byte("thin-manifests = false\n"),
+		contents: map[string][]byte{
+			"app-misc/foo/Manifest": []byte("DIST foo_1.0.0_linux_amd64.tar.gz 1 BLAKE2B deadbeef\nDIST foo_2.0.0_linux_amd64.tar.gz 1 BLAKE2B deadbeef\nEBUILD foo-1.0.0.ebuild 1 BLAKE2B deadbeef\nEBUILD foo-1.0.0-r1.ebuild 1 BLAKE2B deadbeef\nEBUILD foo-2.0.0.ebuild 1 BLAKE2B deadbeef\n"),
+		},
+	}
+
+	files := []client.RepoFile{
+		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-1.0.0-r1.ebuild"},
+		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-2.0.0.ebuild"},
+	}
+
+	deletedEbuilds := []string{"foo-1.0.0.ebuild"}
+
+	err := handleGentooManifestAndMetadata(ctx, cfg, downloader, client.Repo{}, &files, deletedEbuilds)
+	require.NoError(t, err)
+
+	var manifestContent string
+	for _, f := range files {
+		if f.Path == "app-misc/foo/Manifest" {
+			manifestContent = string(f.Content)
+			break
+		}
+	}
+
+	require.NotEmpty(t, manifestContent)
+	// Base version 1.0.0 has a retained revision (foo-1.0.0-r1.ebuild), so its DIST should not be pruned.
+	require.Contains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
+	require.Contains(t, manifestContent, "DIST foo_2.0.0_linux_amd64.tar.gz")
+	// The specific EBUILD 1.0.0 should be pruned though.
+	require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
+	require.Contains(t, manifestContent, "EBUILD foo-1.0.0-r1.ebuild")
+	require.Contains(t, manifestContent, "EBUILD foo-2.0.0.ebuild")
+}
+
+func TestHandleGentooManifestAndMetadataPrunesFullyDeletedBaseVersions(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	})
+	cfg := config.Gentoo{
+		Category: "app-misc",
+		Name:     "foo",
+	}
+
+	// Artifact for version 2.0.0 still exists
+	artPath2 := filepath.Join(dist, "foo_2.0.0_linux_amd64.tar.gz")
+	require.NoError(t, os.WriteFile(artPath2, []byte("test content 2"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_2.0.0_linux_amd64.tar.gz",
+		Path:   artPath2,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	downloader := mockFileDownloader{
+		content: []byte("thin-manifests = false\n"),
+		contents: map[string][]byte{
+			// Manifest starts with both 1.0.0 and 2.0.0
+			"app-misc/foo/Manifest": []byte("DIST foo_1.0.0_linux_amd64.tar.gz 1 BLAKE2B deadbeef\nDIST foo_2.0.0_linux_amd64.tar.gz 1 BLAKE2B deadbeef\nEBUILD foo-1.0.0.ebuild 1 BLAKE2B deadbeef\nEBUILD foo-2.0.0.ebuild 1 BLAKE2B deadbeef\n"),
+		},
+	}
+
+	// Only 2.0.0 is retained
+	files := []client.RepoFile{
+		{Content: []byte("ebuild content"), Path: "app-misc/foo/foo-2.0.0.ebuild"},
+	}
+
+	// 1.0.0 is deleted
+	deletedEbuilds := []string{"foo-1.0.0.ebuild"}
+
+	err := handleGentooManifestAndMetadata(ctx, cfg, downloader, client.Repo{}, &files, deletedEbuilds)
+	require.NoError(t, err)
+
+	var manifestContent string
+	for _, f := range files {
+		if f.Path == "app-misc/foo/Manifest" {
+			manifestContent = string(f.Content)
+			break
+		}
+	}
+
+	require.NotEmpty(t, manifestContent)
+	// Base version 1.0.0 has no retained revisions, so its DIST should be pruned.
+	require.NotContains(t, manifestContent, "DIST foo_1.0.0_linux_amd64.tar.gz")
+	require.Contains(t, manifestContent, "DIST foo_2.0.0_linux_amd64.tar.gz")
+	require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
+	require.Contains(t, manifestContent, "EBUILD foo-2.0.0.ebuild")
 }

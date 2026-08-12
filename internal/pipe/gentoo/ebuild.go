@@ -103,9 +103,19 @@ func (d ebuildData) HasEclasses() bool {
 	return len(d.Eclasses) > 0
 }
 
+func shellEscape(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	s = strings.ReplaceAll(s, `$`, `\$`)
+	s = strings.ReplaceAll(s, "`", "\\`")
+	return s
+}
+
 func (d ebuildData) RenderEbuild() (string, error) {
 	var buf bytes.Buffer
-	if err := template.Must(template.New("ebuild").Parse(ebuildTemplate)).Execute(&buf, d); err != nil {
+	if err := template.Must(template.New("ebuild").Funcs(template.FuncMap{
+		"escape": shellEscape,
+	}).Parse(ebuildTemplate)).Execute(&buf, d); err != nil {
 		return "", err
 	}
 	return buf.String(), nil
@@ -135,7 +145,6 @@ func (d ebuildData) FormattedSrcURIs() []string {
 	}
 	return srcURIs
 }
-
 
 func (d ebuildData) RenderMetaCache(ebuildContent string) (string, error) {
 	if d.HasEclasses() {

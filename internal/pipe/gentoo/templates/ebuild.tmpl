@@ -5,8 +5,8 @@ EAPI=8
 inherit {{- range .Eclasses }} {{ . }}{{- end }}
 {{- end }}
 
-DESCRIPTION="{{ .Description }}"
-HOMEPAGE="{{ .Homepage }}"
+DESCRIPTION="{{ escape .Description }}"
+HOMEPAGE="{{ escape .Homepage }}"
 SRC_URI="
 {{- range .Archs }}
 {{- if eq (len .URIs) 1 }}
@@ -21,7 +21,7 @@ SRC_URI="
 {{- end }}
 "
 
-LICENSE="{{ .License }}"
+LICENSE="{{ escape .License }}"
 SLOT="0"
 KEYWORDS="{{ .Keywords }}"
 IUSE="{{ range $i, $flag := .UseFlags }}{{ if $i }} {{ end }}{{ $flag.Flag }}{{ end }}"
@@ -122,7 +122,7 @@ src_install() {
 {{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
-  exeinto "{{ .Dir }}"
+  exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
   {{- if eq .Source .Base }}
   doexe "{{ .Source }}"
   {{- else }}

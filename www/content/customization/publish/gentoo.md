@@ -63,8 +63,8 @@ gentoo_overlays:
 
     # Extra files to add to the ebuild's files/ directory.
     files:
-      - src: "init.d/myproject"
-        dst: "myproject.init"
+      - glob: "init.d/myproject"
+        name_template: "myproject.init"
 
     # Skip size (< 20KB) and binary file checks for files in the files/ directory.
     #

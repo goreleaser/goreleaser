@@ -13,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/blake2b"
@@ -112,8 +113,9 @@ func (m *gentooMetadata) AddUseFlags(flags []config.GentooUseFlag) {
 	for _, k := range configuredFlagNames {
 		v := configuredFlags[k]
 		exists := false
-		for _, ef := range m.Use.Flags {
+		for i, ef := range m.Use.Flags {
 			if ef.Name == k {
+				m.Use.Flags[i].Value = v
 				exists = true
 				break
 			}
@@ -169,7 +171,7 @@ func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient cli
 	if !ok {
 		return settings, nil
 	}
-	content, err := dl.DownloadFile(ctx, repo, "metadata/layout.conf")
+	content, err := dl.DownloadFile(ctx, repo, path.Join(cfg.OverlayPath, "metadata/layout.conf"))
 	if errors.Is(err, client.ErrNotFound) || errors.Is(err, client.ErrNotImplemented) {
 		return settings, nil
 	}
@@ -315,11 +317,42 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		return err
 	}
 
-	var deletedVersions []string
 	prefix := filepath.Base(dir) + "-"
+
+	retainedBaseVersions := make(map[string]bool)
+	for _, f := range *files {
+		if f.Delete || !strings.HasSuffix(f.Path, ".ebuild") || !isInsidePackageDir(f.Path, dir) {
+			continue
+		}
+
+		filename := filepath.Base(f.Path)
+		if v, ok := strings.CutPrefix(filename, prefix); ok {
+			v = strings.TrimSuffix(v, ".ebuild")
+			if idx := strings.LastIndex(v, "-r"); idx != -1 {
+				if _, err := strconv.Atoi(v[idx+2:]); err == nil {
+					v = v[:idx]
+				}
+			}
+			retainedBaseVersions[v] = true
+		}
+	}
+
+	var deletedVersions []string
+	var deletedBaseVersions []string
 	for _, e := range deletedEbuilds {
-		v := strings.TrimSuffix(strings.TrimPrefix(e, prefix), ".ebuild")
+		v, _ := strings.CutPrefix(e, prefix)
+		v = strings.TrimSuffix(v, ".ebuild")
 		deletedVersions = append(deletedVersions, v)
+
+		baseV := v
+		if idx := strings.LastIndex(v, "-r"); idx != -1 {
+			if _, err := strconv.Atoi(v[idx+2:]); err == nil {
+				baseV = v[:idx]
+			}
+		}
+		if !retainedBaseVersions[baseV] {
+			deletedBaseVersions = append(deletedBaseVersions, baseV)
+		}
 	}
 
 	newManifestFiles := map[string]struct{}{}
@@ -359,7 +392,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 		switch recordType {
 		case "DIST":
 			_, removed := currentDists[filename]
-			for _, dv := range deletedVersions {
+			for _, dv := range deletedBaseVersions {
 				if idx := strings.Index(filename, dv); idx != -1 {
 					isMatch := true
 					if idx > 0 && filename[idx-1] != '_' && filename[idx-1] != '-' {
