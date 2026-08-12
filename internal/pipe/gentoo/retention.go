@@ -10,10 +10,13 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 )
 
-var gentooPrereleaseRe = regexp.MustCompile(`-(alpha|beta|pre|rc|p)[.\-]?(\d*)`)
+var gentooPrereleaseRe = regexp.MustCompile(`(?i)-(alpha|beta|pre|rc|p)[.\-]?(\d*)`)
 
 func gentooVersion(v string) string {
-	return gentooPrereleaseRe.ReplaceAllString(v, "_${1}${2}")
+	return gentooPrereleaseRe.ReplaceAllStringFunc(v, func(m string) string {
+		match := gentooPrereleaseRe.FindStringSubmatch(m)
+		return "_" + strings.ToLower(match[1]) + match[2]
+	})
 }
 
 type suffixKind int

@@ -1113,6 +1113,8 @@ func TestGentooVersion(t *testing.T) {
 		{"1.0.0-pre", "1.0.0_pre"},
 		{"1.0.0-p", "1.0.0_p"},
 		{"2.0.0-rc-10", "2.0.0_rc10"},
+		{"1.0.0-RC1", "1.0.0_rc1"},
+		{"1.0.0-Alpha1", "1.0.0_alpha1"},
 	}
 
 	for _, tt := range tests {
