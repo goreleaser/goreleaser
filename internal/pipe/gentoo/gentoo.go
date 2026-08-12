@@ -390,6 +390,7 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	slices.Sort(eclasses)
 	eclasses = slices.Compact(eclasses)
 	data.Eclasses = eclasses
+	data.HasSystemdEclass = slices.Contains(eclasses, "systemd")
 
 	if err := data.Validate(); err != nil {
 		return err

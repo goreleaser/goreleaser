@@ -82,6 +82,7 @@ type ebuildData struct {
 	Dosym         []installItemData
 	Systemd       []installItemData
 	Eclasses      []string
+	HasSystemdEclass bool
 }
 
 func (d ebuildData) Validate() error {
