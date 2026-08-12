@@ -15,6 +15,7 @@ RUN apk add --no-cache bash \
 	git \
 	git-lfs \
 	gpg \
+	gpg-agent \
 	mercurial \
 	make \
 	openssh-client \
