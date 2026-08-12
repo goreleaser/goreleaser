@@ -1525,7 +1525,7 @@ func TestMetaCache(t *testing.T) {
 				License:     "MIT",
 				Description: "foo package",
 				MetaCache:   true,
-				Systemd:     []config.GentooInstallItem{{Src: "foo.service"}},
+				Eclasses:    []string{"desktop"},
 			}},
 		}, testctx.WithVersion("1.0.0"))
 		ctx.Artifacts.Add(&artifact.Artifact{
