@@ -63,15 +63,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newbin "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newbin "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}dobin "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dobin "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -82,15 +82,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newconfd "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newconfd "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doconfd "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doconfd "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -104,15 +104,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newenvd "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newenvd "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doenvd "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doenvd "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -125,29 +125,29 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
 {{- $curexedir := $.Bindir }}
 {{- if .Dir }}{{ $curexedir = .Dir }}{{ end }}
 {{- if or (ne $lastexedir $curexedir) $in_conditional }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
 {{- if not $in_conditional }}{{ $lastexedir = $curexedir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
 {{- end }}
   {{- if eq .Source .Base }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doexe "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doexe "{{ .Source }}"
   {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newexe "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newexe "{{ .Source }}" "{{ .Base }}"
   {{- end }}
 {{- else }}
 {{- if or (ne $lastexedir $.Bindir) $in_conditional }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}exeinto {{ $.Bindir }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}exeinto {{ $.Bindir }}
 {{- if not $in_conditional }}{{ $lastexedir = $.Bindir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
 {{- end }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doexe "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doexe "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -158,15 +158,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newheader "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newheader "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doheader "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doheader "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -177,15 +177,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newinitd "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newinitd "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doinitd "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doinitd "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -196,21 +196,21 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}insinto "{{ .Dir }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}insinto "{{ .Dir }}"
   {{- if eq .Source .Base }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doins "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doins "{{ .Source }}"
   {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newins "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newins "{{ .Source }}" "{{ .Base }}"
   {{- end }}
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}insinto /
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}doins "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}insinto /
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doins "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -221,15 +221,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}newsbin "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newsbin "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}dosbin "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dosbin "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -240,11 +240,11 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}dosym "{{ .Source }}" "{{ .Target }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dosym "{{ .Source }}" "{{ .Target }}"
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
@@ -255,15 +255,15 @@ src_install() {
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
+  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{- if and .Keywords .Use }}{{- "\n      " }}{{- else if or .Keywords .Use }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}systemd_dounit "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_dounit "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
-{{- if .Keywords }}{{- "\n    " }}{{- else }}{{- "\n  " }}{{- end }}fi
+  {{ if .Keywords }}  {{ end }}fi
 {{- end }}
 {{- if .Keywords }}
   fi
