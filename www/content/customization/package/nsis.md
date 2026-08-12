@@ -52,6 +52,8 @@ nsis:
 
     # Extra files to include in the installer build context.
     # You can use glob patterns to include multiple files:
+    #
+    # Templates: allowed.
     extra_files:
       - glob: "README*.md"
         name_template: "{{ .ProjectName }}_README.md"
@@ -59,6 +61,8 @@ nsis:
     # Additional templated extra files to add to the installer.
     # Those files will have their contents pass through the template engine,
     # and its results will be added to the package.
+    #
+    # Templates: allowed.
     templated_extra_files:
       - src: "LICENSE_TEMPLATE.md"
         dst: "LICENSE_{{.Version}}.txt"

@@ -64,6 +64,8 @@ makeselfs:
     description: foo bar
 
     # Keywords for your package.
+    #
+    # Templates: allowed.
     keywords:
       - release
       - makeself
@@ -71,16 +73,19 @@ makeselfs:
     # Your app's homepage.
     #
     # Default: inferred from global metadata.
+    # Templates: allowed.
     homepage: "https://example.com/"
 
     # Your software license.
     #
     # Default: inferred from global metadata.
+    # Templates: allowed.
     license: MIT
 
     # The maintainer/author of the package.
     #
     # Default: inferred from global metadata.
+    # Templates: allowed.
     maintainer: "Foo Bar <foo at bar dot com>"
 
     # Archive file name template.
@@ -104,6 +109,7 @@ makeselfs:
     # This script will be copied into the archive.
     # It is executed when the user runs the Makeself package.
     # Templates: allowed.
+    # Required.
     script: install.sh
 
     # Additional command-line arguments to pass to Makeself.
@@ -122,11 +128,11 @@ makeselfs:
     #
     # Templates: allowed.
     files:
-      - LICENSE.txt
-      - README_{{.Os}}.md
-      - CHANGELOG.md
-      - configs/*
-      - scripts/*.sh
+      - src: LICENSE.txt
+      - src: README_{{.Os}}.md
+      - src: CHANGELOG.md
+      - src: configs/*
+      - src: scripts/*.sh
       # a more complete example
       - src: "*.md"
         dst: docs

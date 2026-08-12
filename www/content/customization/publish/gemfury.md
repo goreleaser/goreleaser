@@ -54,7 +54,7 @@ gemfury:
     # Formats to upload.
     # Available options are `apk`, `deb`, `rpm`, and `src.rpm`.
     #
-    # Default: ['apk', deb', 'rpm'].
+    # Default: ['deb', 'rpm', 'apk'].
     formats:
       - deb
       - apk # {{< g_inline_version "v2.7" >}}

@@ -38,6 +38,11 @@ blobs:
     # Requires provider to be `s3`
     disable_ssl: true
 
+    # KMS key to use to encrypt the files before uploading.
+    # This is a Go CDK secrets keeper URL, e.g. `awskms://`, `gcpkms://`, or
+    # `azurekeyvault://`.
+    kms_key: "awskms://alias/my-key"
+
     # Bucket name.
     #
     # Templates: allowed.

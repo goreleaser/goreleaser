@@ -497,6 +497,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary"
 						],
 						"default": "tar.gz"
@@ -1675,6 +1678,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary",
 							"none"
 						],
@@ -4582,21 +4588,6 @@
 					"signature": {
 						"$ref": "#/$defs/NFPMRPMSignature"
 					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMRPMScripts"
-					},
-					"prefixes": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"packager": {
-						"type": "string"
-					},
-					"buildhost": {
-						"type": "string"
-					},
 					"enabled": {
 						"type": "boolean"
 					},
@@ -4631,6 +4622,9 @@
 						"type": "string"
 					},
 					"url": {
+						"type": "string"
+					},
+					"packager": {
 						"type": "string"
 					},
 					"description": {

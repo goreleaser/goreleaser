@@ -23,7 +23,7 @@ snapcrafts:
   - #
     # ID of the snapcraft config, must be unique.
     #
-    # Default: 'default'.
+    # Default: empty.
     id: foo
 
     # IDs of the builds which should be archived in this package.
@@ -59,12 +59,16 @@ snapcrafts:
 
     # Single-line elevator pitch for your amazing snap.
     # 79 char long at most.
+    #
+    # Templates: allowed.
     summary: Software to create fast and easy drum rolls.
 
     # This the description of your snap. You have a paragraph or two to tell the
     # most important story about your snap. Keep it under 100 words though,
     # we live in tweetspace and your description wants to look good in the snap
     # store.
+    #
+    # Templates: allowed.
     description: This is the best drum roll application out there. Install it and awe!
 
     # Disable this configuration.
@@ -98,6 +102,7 @@ snapcrafts:
     # channels.
     #
     # Default: 'stable'
+    # Templates: allowed.
     grade: stable
 
     # Snaps can be setup to follow three different confinement policies:
@@ -138,7 +143,9 @@ snapcrafts:
     # directory.
     extra_files:
       - source: drumroll.wrapper
+        # Default: source.
         destination: bin/drumroll.wrapper
+        # Default: 0644.
         mode: 0755
 
     # Additional templated extra files to add to the package.
@@ -150,6 +157,7 @@ snapcrafts:
     templated_extra_files:
       - source: LICENSE.tpl
         destination: LICENSE.txt
+        # Default: 0644.
         mode: 0644
 
     # With layouts, you can make elements in $SNAP, $SNAP_DATA, $SNAP_COMMON
@@ -280,6 +288,9 @@ snapcrafts:
         # Restart condition of the snap.
         # https://snapcraft.io/docs/snapcraft-yaml-reference
         restart_condition: "always"
+
+        # Delay before restarting the snap.
+        restart_delay: 10s
 
         # List of slots for interfaces to connect to.
         slots: ["foo", "bar", "baz"]

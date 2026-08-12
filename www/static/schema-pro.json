@@ -6819,6 +6819,12 @@
 						},
 						"type": "array"
 					},
+					"additional_locales": {
+						"items": {
+							"$ref": "#/$defs/WingetLocale"
+						},
+						"type": "array"
+					},
 					"product_code": {
 						"type": "string"
 					},
@@ -6852,6 +6858,72 @@
 				"type": "object",
 				"required": [
 					"package_identifier"
+				]
+			},
+			"WingetLocale": {
+				"properties": {
+					"locale": {
+						"type": "string"
+					},
+					"publisher": {
+						"type": "string"
+					},
+					"publisher_url": {
+						"type": "string"
+					},
+					"publisher_support_url": {
+						"type": "string"
+					},
+					"privacy_url": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"package_name": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"license_url": {
+						"type": "string"
+					},
+					"copyright": {
+						"type": "string"
+					},
+					"copyright_url": {
+						"type": "string"
+					},
+					"short_description": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"release_notes": {
+						"type": "string"
+					},
+					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"locale"
 				]
 			}
 		},

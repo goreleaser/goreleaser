@@ -92,7 +92,7 @@ sboms:
 
     # Whether this SBOM configuration is disabled.
     #
-    # Default: 'true'.
+    # Default: 'false'.
     # Templates: allowed.
     # {{< g_inline_version "v2.10" >}}
     disable: true

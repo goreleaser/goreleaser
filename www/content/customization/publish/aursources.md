@@ -58,6 +58,13 @@ aur_sources:
     # Default: inferred from global metadata.
     license: "MIT"
 
+    # The architectures to build the package for.
+    #
+    # Default: [ 'x86_64', 'aarch64' ].
+    arches:
+      - x86_64
+      - aarch64
+
     # The SSH private key that should be used to commit to the Git repository.
     # This can either be a path or the key contents.
     #
@@ -110,6 +117,11 @@ aur_sources:
     # during package upgrades and removals.
     backup:
       - /etc/foo.conf
+
+    # The release number of the package (the `pkgrel` field in the PKGBUILD).
+    #
+    # Default: '1'.
+    rel: "1"
 
     # Custom prepare instructions.
     prepare: |-

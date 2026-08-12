@@ -15,7 +15,7 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     id: "my-build"
 
     # Use bun.
@@ -24,7 +24,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     binary: program
 
     # List of targets to be built, in Bun's format.

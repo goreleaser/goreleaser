@@ -37,6 +37,15 @@ srpm:
   # Default: ProjectName.
   package_name: myproject
 
+  # RPM epoch.
+  epoch: "1"
+
+  # RPM section.
+  section: devel
+
+  # Package maintainer.
+  maintainer: My Name <me@example.com>
+
   # Path to the .spec file Go template.
   # This file is required and must be provided by you.
   spec_file: myproject.spec.tmpl
@@ -93,6 +102,7 @@ srpm:
   # If the key is password-protected, you'll need to set the `%SRPM_PASSPHRASE`
   # environment variable when calling GoReleaser.
   signature:
+    # Templates: allowed.
     key_file: "{{ .Env.GPG_KEY_FILE }}"
 
   # Extra files to include in the SRPM beyond the source archive and spec file.
@@ -101,9 +111,12 @@ srpm:
   contents:
     - src: "{{ .Env.PATCH_DIR }}/fix-build-{{ .Version }}.patch"
       dst: "fix-build-{{ .Version }}.patch"
+      type: config
+      packager: rpm
       file_info:
         owner: mockbuild
         group: mockbuild
+        mode: 0644
         mtime: "2006-01-02T15:04:05Z"
 ```
 

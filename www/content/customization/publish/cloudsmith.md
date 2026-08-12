@@ -47,14 +47,14 @@ cloudsmiths:
     # Config is skipped if empty
     #
     # Templates: allowed.
-    organization: "{{ .ProjectName }}"
+    repository: "{{ .ProjectName }}"
 
     # Skip the announcing feature in some conditions, for instance, when
     # publishing patch releases.
     # Any value different of 'true' will be considered 'false'.
     #
     # Templates: allowed.
-    skip: "{{gt .Patch 0}}"
+    disable: "{{gt .Patch 0}}"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple Cloudsmith configurations
