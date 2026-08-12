@@ -12,7 +12,7 @@ options as the [build][] pipe when possible, so the results will probably be
 cached.
 
 > [!WARNING]
-> When on `--snapshot` mode, Ko will publish the image to `ko.local`.
+> When on `--snapshot` mode, Ko will publish the image to `goreleaser.ko.local`.
 > If its a regular build, Ko will only run in the publishing phase.
 
 > [!NOTE]
@@ -22,9 +22,13 @@ cached.
 ```yaml {filename=".goreleaser.yaml"}
 kos:
   - # ID of this image.
+    #
+    # Default: project name.
     id: foo
 
     # Build ID that should be used to import the build settings.
+    #
+    # Default: id.
     build: build-id
 
     # Main path to build.
@@ -47,10 +51,14 @@ kos:
     base_image: alpine
 
     # Labels for the image.
+    #
+    # Templates: allowed (values only).
     labels:
       foo: bar
 
     # Annotations for the OCI manifest.
+    #
+    # Templates: allowed (values only).
     annotations:
       foo: bar
 
@@ -72,6 +80,7 @@ kos:
     #
     # Default: '$KO_DOCKER_REPO'.
     # Deprecated: use 'repositories' instead.
+    # Templates: allowed.
     repository: ghcr.io/foo/bar
 
     # Platforms to build and publish.
@@ -126,6 +135,7 @@ kos:
     # Ldflags to use on build.
     #
     # Default: build.ldflags.
+    # Templates: allowed.
     ldflags:
       - foo
       - bar
@@ -133,6 +143,7 @@ kos:
     # Flags to use on build.
     #
     # Default: build.flags.
+    # Templates: allowed.
     flags:
       - foo
       - bar
@@ -140,6 +151,7 @@ kos:
     # Env to use on build.
     #
     # Default: build.env.
+    # Templates: allowed.
     env:
       - FOO=bar
       - SOMETHING=value

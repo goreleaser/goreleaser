@@ -44,7 +44,9 @@ before_publish:
     # - image:      any Docker Images
     #
     # Default: no filter.
-    artifacts: all
+    artifacts:
+      - archive
+      - binary
 
     # The command to run.
     #

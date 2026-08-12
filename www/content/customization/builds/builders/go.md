@@ -19,7 +19,7 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     id: "my-build"
 
     # Path to main.go file or main package.
@@ -33,7 +33,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     binary: program
 
     # Custom flags.
@@ -301,7 +301,8 @@ builds:
     dir: go
 
     # Builder allows you to use a different build implementation.
-    # Valid options are: `go`, `rust`, `zig`, and `prebuilt` (pro-only).
+    # Valid options are: `go`, `rust`, `zig`, `bun`, `deno`, `node`, `uv`,
+    # `poetry`, and `prebuilt` (pro-only).
     #
     # Default: 'go'.
     builder: prebuilt

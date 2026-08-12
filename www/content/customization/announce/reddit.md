@@ -25,6 +25,9 @@ announce:
     # Username for your Reddit account
     username: ""
 
+    # Subreddit to post the release to.
+    sub: ""
+
     # URL template to use while publishing.
     #
     # Default: '{{ .ReleaseURL }}'.

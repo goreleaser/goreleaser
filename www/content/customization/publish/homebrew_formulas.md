@@ -152,12 +152,8 @@ brews:
       - svn
       - bash
 
-    # Specify for packages that run as a service.
-    plist: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      # ...
-
     # Service block.
+    # Specify for packages that run as a service.
     service: |
       run: foo/bar
       # ...

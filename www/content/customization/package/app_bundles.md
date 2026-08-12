@@ -65,15 +65,33 @@ app_bundles:
         dst: Contents/Info.plist
       - src: ./release/icon.png
         dst: Contents/Resources/icon.png
+
+        # Strip parent directories when adding files to the bundle.
+        strip_parent: true
+
         # File info.
         # Not all fields are supported by all formats available formats.
         #
         # Default: copied from the source file.
         info:
+          # Ignored for app bundles.
+          #
+          # Templates: allowed.
+          owner: root
+
+          # Ignored for app bundles.
+          #
+          # Templates: allowed.
+          group: root
+
           # Must be in time.RFC3339Nano format.
           #
           # Templates: allowed.
           mtime: "{{ .CommitDate }}"
+
+          # File mode.
+          # Ignored for app bundles.
+          mode: 0644
 
     # Additional templated files to add to the app bundle.
     # Those files will have their contents pass through the template engine,
@@ -93,10 +111,24 @@ app_bundles:
         #
         # Default: copied from the source file.
         info:
+          # Ignored for app bundles.
+          #
+          # Templates: allowed.
+          owner: root
+
+          # Ignored for app bundles.
+          #
+          # Templates: allowed.
+          group: root
+
           # Must be in time.RFC3339Nano format.
           #
           # Templates: allowed.
           mtime: "{{ .CommitDate }}"
+
+          # File mode.
+          # Ignored for app bundles.
+          mode: 0644
 ```
 
 ## Limitations

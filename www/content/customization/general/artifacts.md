@@ -40,6 +40,7 @@ The `type` field indicates what kind of artifact it is:
 | `Binary`                 | A compiled binary                          |
 | `File`                   | A generic uploadable file                  |
 | `Linux Package`          | A package created by nfpm (deb, rpm, etc.) |
+| `MSIX`                   | A Windows MSIX package created by nfpm     |
 | `Snap`                   | A Snapcraft package                        |
 | `Docker Image`           | A Docker image                             |
 | `Published Docker Image` | A published Docker image                   |
@@ -68,7 +69,11 @@ The `type` field indicates what kind of artifact it is:
 | `DMG`                    | A macOS disk image                         |
 | `MacOS Package`          | A macOS installer package                  |
 | `MSI`                    | A Windows MSI installer                    |
+| `NSIS`                   | A Windows NSIS installer                   |
 | `NPM Package`            | An NPM package                             |
+| `Flatpak`                | A Flatpak bundle                           |
+| `Source RPM`             | A source RPM package                       |
+| `Metadata`               | An internal GoReleaser metadata JSON file  |
 
 ## Extra fields
 

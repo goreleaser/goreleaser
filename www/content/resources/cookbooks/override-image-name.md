@@ -33,7 +33,7 @@ jobs:
     steps:
       # ...
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: latest

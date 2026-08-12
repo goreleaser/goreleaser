@@ -89,7 +89,7 @@ npms:
     #
     # Default: ["README*", "LICENSE*"]
     # Templates: allowed.
-    extra_files:
+    files:
       - glob: ./path/to/file.txt
         name_template: "file.txt"
 
@@ -99,7 +99,7 @@ npms:
     # and/or to add more files.
     #
     # Templates: allowed.
-    templated_extra_files:
+    templated_files:
       # src can also be a glob, as long as dst is a directory.
       - src: "LICENSE.md.tpl"
         dst: LICENSE.md

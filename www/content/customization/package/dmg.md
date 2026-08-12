@@ -58,7 +58,8 @@ dmg:
     # will be built.
     extra_files:
       - logo.ico
-      - glob: ./docs/*.md
+      - # Templates: allowed.
+        glob: ./docs/*.md
       - glob: ./single_file.txt
         # Templates: allowed.
         # Note that this only works if glob matches exactly 1 file.
@@ -75,7 +76,6 @@ dmg:
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
-        mode: 0644
 
     # Whether to remove the archives from the artifact list.
     # If left as false, your end release will have both the archives and the

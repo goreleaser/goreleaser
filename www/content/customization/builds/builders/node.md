@@ -27,7 +27,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     binary: program
 
     # Entrypoint script bundled into the SEA blob.
