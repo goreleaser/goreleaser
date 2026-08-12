@@ -160,7 +160,7 @@ func compareGentooSuffixes(s1, s2 []gentooSuffix) int {
 	return 0
 }
 
-var gentooSuffixTokenRe = regexp.MustCompile(`_(alpha|beta|pre|rc|p)(\d*)`)
+var gentooSuffixTokenRe = regexp.MustCompile(`_(alpha|beta|pre|rc|p)(\d*)$`)
 
 func parseGentooVersion(n, prefix string) *parsedGentooVersion {
 	vStr := strings.TrimSuffix(strings.TrimPrefix(n, prefix), ".ebuild")
