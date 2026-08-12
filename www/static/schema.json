@@ -4457,21 +4457,6 @@
 					"signature": {
 						"$ref": "#/$defs/NFPMRPMSignature"
 					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMRPMScripts"
-					},
-					"prefixes": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"packager": {
-						"type": "string"
-					},
-					"buildhost": {
-						"type": "string"
-					},
 					"enabled": {
 						"type": "boolean"
 					},
@@ -4506,6 +4491,9 @@
 						"type": "string"
 					},
 					"url": {
+						"type": "string"
+					},
+					"packager": {
 						"type": "string"
 					},
 					"description": {

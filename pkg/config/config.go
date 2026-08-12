@@ -981,7 +981,10 @@ type NFPMContent struct {
 
 // SRPM config.
 type SRPM struct {
-	NFPMRPM
+	Summary          string            `yaml:"summary,omitempty" json:"summary,omitempty"`
+	Group            string            `yaml:"group,omitempty" json:"group,omitempty"`
+	Compression      string            `yaml:"compression,omitempty" json:"compression,omitempty"`
+	Signature        NFPMRPMSignature  `yaml:"signature,omitempty" json:"signature,omitempty"`
 	Enabled          bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PackageName      string            `yaml:"package_name,omitempty" json:"package_name,omitempty"`
 	Epoch            string            `yaml:"epoch,omitempty" json:"epoch,omitempty"`
