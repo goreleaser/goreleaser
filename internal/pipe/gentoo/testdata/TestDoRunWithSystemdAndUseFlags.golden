@@ -19,10 +19,10 @@ src_install() {
   exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
   if ! use systemd; then
-  newinitd "foo.init" "foo"
+    newinitd "foo.init" "foo"
   fi
   dosym "/usr/bin/foo" "/usr/bin/bar"
   if use systemd; then
-  systemd_dounit "foo.service"
+    systemd_dounit "foo.service"
   fi
 }
