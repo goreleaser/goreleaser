@@ -257,11 +257,10 @@ src_install() {
 {{- if .Use }}
 {{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
-{{ indent .Keywords .Use }}insinto /usr/lib/systemd/system
 {{- if .Target }}
-{{ indent .Keywords .Use }}newins "{{ .Source }}" "{{ .Base }}"
+{{ indent .Keywords .Use }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-{{ indent .Keywords .Use }}doins "{{ .Source }}"
+{{ indent .Keywords .Use }}systemd_dounit "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
 {{ indentUse .Keywords .Use }}fi

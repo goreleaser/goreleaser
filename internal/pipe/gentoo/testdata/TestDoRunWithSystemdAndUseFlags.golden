@@ -22,7 +22,6 @@ src_install() {
   fi
   dosym "/usr/bin/foo" "/usr/bin/bar"
   if use systemd; then
-    insinto /usr/lib/systemd/system
-    doins "foo.service"
+    systemd_dounit "foo.service"
   fi
 }
