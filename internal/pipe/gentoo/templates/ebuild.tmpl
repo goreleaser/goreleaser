@@ -118,7 +118,9 @@ src_install() {
   fi
 {{- end }}
 {{- end }}
+{{- $lastexedir := "" }}
 {{- range .Doexe }}
+{{- $in_conditional := or .Keywords .Use }}
 {{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
@@ -126,14 +128,22 @@ src_install() {
 {{ indentUse .Keywords .Use }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
+{{- $curexedir := $.Bindir }}
+{{- if .Dir }}{{ $curexedir = .Dir }}{{ end }}
+{{- if or (ne $lastexedir $curexedir) $in_conditional }}
 {{ indent .Keywords .Use }}exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
+{{- if not $in_conditional }}{{ $lastexedir = $curexedir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
+{{- end }}
   {{- if eq .Source .Base }}
 {{ indent .Keywords .Use }}doexe "{{ .Source }}"
   {{- else }}
 {{ indent .Keywords .Use }}newexe "{{ .Source }}" "{{ .Base }}"
   {{- end }}
 {{- else }}
+{{- if or (ne $lastexedir $.Bindir) $in_conditional }}
 {{ indent .Keywords .Use }}exeinto {{ $.Bindir }}
+{{- if not $in_conditional }}{{ $lastexedir = $.Bindir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
+{{- end }}
 {{ indent .Keywords .Use }}doexe "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
