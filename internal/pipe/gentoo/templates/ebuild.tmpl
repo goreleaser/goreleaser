@@ -40,6 +40,18 @@ S="${WORKDIR}"
 {{- end }}
 {{- end }}
 
+{{- define "keyword_start" }}
+{{- if . }}
+  if {{ range $i, $k := . }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
+{{- end }}
+{{- end }}
+
+{{- define "keyword_end" }}
+{{- if . }}
+  fi
+{{- end }}
+{{- end }}
+
 src_install() {
 {{- with .ExtraInstall }}
   {{ . }}
@@ -71,6 +83,7 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- range .Dobin }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newbin "{{ .Source }}" "{{ .Base }}"
@@ -78,8 +91,10 @@ src_install() {
   dobin "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doconfd }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newconfd "{{ .Source }}" "{{ .Base }}"
@@ -87,11 +102,13 @@ src_install() {
   doconfd "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Dodir }}
   dodir "{{ . }}"
 {{- end }}
 {{- range .Doenvd }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newenvd "{{ .Source }}" "{{ .Base }}"
@@ -99,8 +116,10 @@ src_install() {
   doenvd "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doexe }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   exeinto "{{ .Dir }}"
@@ -114,8 +133,10 @@ src_install() {
   doexe "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doheader }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newheader "{{ .Source }}" "{{ .Base }}"
@@ -123,8 +144,10 @@ src_install() {
   doheader "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doinitd }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newinitd "{{ .Source }}" "{{ .Base }}"
@@ -132,8 +155,10 @@ src_install() {
   doinitd "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doins }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   insinto "{{ .Dir }}"
@@ -147,8 +172,10 @@ src_install() {
   doins "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Dosbin }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   newsbin "{{ .Source }}" "{{ .Base }}"
@@ -156,13 +183,17 @@ src_install() {
   dosbin "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Dosym }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
   dosym "{{ .Source }}" "{{ .Target }}"
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Systemd }}
+{{- template "keyword_start" .Keywords }}
 {{- template "use_start" .Use }}
 {{- if .Target }}
   systemd_newunit "{{ .Source }}" "{{ .Base }}"
@@ -170,6 +201,7 @@ src_install() {
   systemd_dounit "{{ .Source }}"
 {{- end }}
 {{- template "use_end" .Use }}
+{{- template "keyword_end" .Keywords }}
 {{- end }}
 {{- range .Doman }}
   doman "{{ . }}"

@@ -49,11 +49,12 @@ type installGroup struct {
 }
 
 type installItemData struct {
-	Source string
-	Target string
-	Dir    string
-	Base   string
-	Use    []string
+	Source   string
+	Target   string
+	Dir      string
+	Base     string
+	Use      []string
+	Keywords []string
 }
 
 type ebuildData struct {
@@ -273,16 +274,52 @@ func (v *extraFilesProcessor) validate(name, src string) error {
 func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []config.GentooInstallItem) ([]installItemData, error) {
 	var items []installItemData
 	for _, d := range cfgItems {
+		var keywords []string
+		for _, arch := range d.Archs {
+			kw, err := gentooArch(arch)
+			if err != nil {
+				return nil, fmt.Errorf("gentoo %s: %w", sectionName, err)
+			}
+			keywords = append(keywords, kw)
+		}
+		slices.Sort(keywords)
+		keywords = slices.Compact(keywords)
+
 		if d.SrcID != "" {
 			var matchingArches []*artifact.Artifact
 			for _, art := range v.arches {
 				if artifact.ExtraOr(*art, artifact.ExtraID, "default") == d.SrcID {
+					if len(keywords) > 0 {
+						kw, _ := gentooArch(art.Goarch)
+						if !slices.Contains(keywords, kw) {
+							continue
+						}
+					}
 					matchingArches = append(matchingArches, art)
 				}
 			}
 
 			if len(matchingArches) == 0 {
+				if len(keywords) > 0 {
+					return nil, fmt.Errorf("gentoo %s: src_id %q does not match a selected archive for archs %v", sectionName, d.SrcID, d.Archs)
+				}
 				return nil, fmt.Errorf("gentoo %s: src_id %q does not match a selected archive", sectionName, d.SrcID)
+			}
+
+			if len(keywords) > 0 {
+				for _, kw := range keywords {
+					found := false
+					for _, art := range matchingArches {
+						artKw, _ := gentooArch(art.Goarch)
+						if artKw == kw {
+							found = true
+							break
+						}
+					}
+					if !found {
+						return nil, fmt.Errorf("gentoo %s: src_id %q does not match a selected archive for archs %v", sectionName, d.SrcID, d.Archs)
+					}
+				}
 			}
 
 			firstWrappedIn := artifact.ExtraOr(*matchingArches[0], artifact.ExtraWrappedIn, "")
@@ -310,11 +347,12 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 					base = path.Base(filepath.ToSlash(srcPath))
 				}
 				items = append(items, installItemData{
-					Source: srcPath,
-					Target: target,
-					Dir:    dir,
-					Base:   base,
-					Use:    d.Use,
+					Source:   srcPath,
+					Target:   target,
+					Dir:      dir,
+					Base:     base,
+					Use:      d.Use,
+					Keywords: keywords,
 				})
 			} else {
 				bins := firstBins
@@ -345,11 +383,12 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 						}
 					}
 					items = append(items, installItemData{
-						Source: sourcePath,
-						Target: target,
-						Dir:    dir,
-						Base:   base,
-						Use:    d.Use,
+						Source:   sourcePath,
+						Target:   target,
+						Dir:      dir,
+						Base:     base,
+						Use:      d.Use,
+						Keywords: keywords,
 					})
 				}
 			}
@@ -371,11 +410,12 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 		}
 
 		items = append(items, installItemData{
-			Source: src,
-			Target: d.Dst,
-			Dir:    dir,
-			Base:   base,
-			Use:    d.Use,
+			Source:   src,
+			Target:   d.Dst,
+			Dir:      dir,
+			Base:     base,
+			Use:      d.Use,
+			Keywords: keywords,
 		})
 	}
 	return items, nil

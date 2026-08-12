@@ -526,6 +526,7 @@ type GentooInstallItem struct {
 	Src   string   `yaml:"src,omitempty" json:"src,omitempty"`
 	Dst   string   `yaml:"dst,omitempty" json:"dst,omitempty"`
 	Use   []string `yaml:"use,omitempty" json:"use,omitempty"`
+	Archs []string `yaml:"archs,omitempty" json:"archs,omitempty"`
 }
 
 type GentooMaintainer struct {

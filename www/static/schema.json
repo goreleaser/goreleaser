@@ -1792,6 +1792,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"archs": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

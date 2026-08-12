@@ -259,6 +259,7 @@ Explicit install item lists (`dobin`, `dosbin`, `doexe`, `doins`, etc.) support 
 * **Automatic Binary Suppression**: Referencing an archive artifact ID with `src_id` suppresses its default automatic binary installation, preventing duplicate installation rules. Unreferenced archive binaries continue to be installed automatically.
 * `dst`: May relocate or rename the installed executable/file in the ebuild.
 * `use`: May conditionally install the item under one or more Gentoo `USE` flags.
+* `archs`: May restrict the installation item to specific architectures (e.g. `amd64`, `arm64`). This bypasses layout mismatch errors for architectures separated across different lists.
 * **Validation & Layout Rules**:
   - Every `src_id` must match a selected archive artifact ID.
   - If an archive contains multiple binaries, using `dst` without an explicit `src` is prohibited (specify explicit `src` for each binary).
