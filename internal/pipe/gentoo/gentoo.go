@@ -385,6 +385,15 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Systemd:       systemd,
 	}
 
+	var eclasses []string
+	eclasses = append(eclasses, cfg.Eclasses...)
+	if len(systemd) > 0 && !slices.Contains(eclasses, "systemd") {
+		eclasses = append(eclasses, "systemd")
+	}
+	slices.Sort(eclasses)
+	eclasses = slices.Compact(eclasses)
+	data.Eclasses = eclasses
+
 	if err := data.Validate(); err != nil {
 		return err
 	}
@@ -415,29 +424,35 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 
 	if cfg.MetaCache {
 		pkgVer := strings.TrimSuffix(filepath.Base(path), ".ebuild")
-		metaCachePath := filepath.ToSlash(filepath.Join("metadata", "md5-cache", cfg.Category, pkgVer))
-		if cfg.OverlayPath != "" {
-			metaCachePath = filepath.ToSlash(filepath.Join(cfg.OverlayPath, metaCachePath))
-		}
-		metaCacheDistPath := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, metaCachePath)
+		if data.HasEclasses() {
+			log.Warnf("gentoo: meta_cache is enabled for %q, but ebuild %q inherits eclasses; skipping metadata cache generation", cfg.ID, pkgVer)
+		} else {
+			metaCachePath := filepath.ToSlash(filepath.Join("metadata", "md5-cache", cfg.Category, pkgVer))
+			if cfg.OverlayPath != "" {
+				metaCachePath = filepath.ToSlash(filepath.Join(cfg.OverlayPath, metaCachePath))
+			}
+			metaCacheDistPath := filepath.Join(ctx.Config.Dist, "gentoo", cfg.ID, metaCachePath)
 
-		metaContent := generateMetaCacheContent(data, content)
-		if err := os.MkdirAll(filepath.Dir(metaCacheDistPath), 0o755); err != nil {
-			return err
+			metaContent := generateMetaCacheContent(data, content)
+			if metaContent != "" {
+				if err := os.MkdirAll(filepath.Dir(metaCacheDistPath), 0o755); err != nil {
+					return err
+				}
+				if err := os.WriteFile(metaCacheDistPath, []byte(metaContent), 0o644); err != nil {
+					return err
+				}
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name: pkgVer,
+					Path: metaCacheDistPath,
+					Type: artifact.GentooFile,
+					Extra: map[string]any{
+						ebuildExtra:     cfg,
+						ebuildPathExtra: metaCachePath,
+						ebuildMetaCache: true,
+					},
+				})
+			}
 		}
-		if err := os.WriteFile(metaCacheDistPath, []byte(metaContent), 0o644); err != nil {
-			return err
-		}
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: pkgVer,
-			Path: metaCacheDistPath,
-			Type: artifact.GentooFile,
-			Extra: map[string]any{
-				ebuildExtra:     cfg,
-				ebuildPathExtra: metaCachePath,
-				ebuildMetaCache: true,
-			},
-		})
 	}
 
 	return nil
@@ -594,7 +609,7 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 	var deletedEbuilds []string
 	deleter := &ebuildDeleter{
 		dir:            dir,
-		category:       g.cfg.Category,
+		metaCacheDir:   metaCacheDir,
 		metaCacheFiles: metaCacheFiles,
 		files:          &g.files,
 		deletedEbuilds: &deletedEbuilds,
@@ -751,9 +766,14 @@ func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
 		log.Warnf("gentoo.meta_cache is true for %q, but overlay metadata/layout.conf disables cache-formats", g.cfg.ID)
 	}
 
+	metaCachePrefix := "metadata/md5-cache/"
+	if g.cfg.OverlayPath != "" {
+		metaCachePrefix = filepath.ToSlash(filepath.Join(g.cfg.OverlayPath, "metadata", "md5-cache")) + "/"
+	}
+
 	var filteredFiles []client.RepoFile
 	for _, f := range g.files {
-		if strings.HasPrefix(filepath.ToSlash(f.Path), "metadata/md5-cache/") && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
+		if strings.HasPrefix(filepath.ToSlash(f.Path), metaCachePrefix) && !f.Delete && (!g.cfg.MetaCache || !metaCacheAllowed) {
 			continue
 		}
 		filteredFiles = append(filteredFiles, f)
@@ -972,5 +992,17 @@ func (g *publishGroup) updateVersions(ctx *context.Context, dl client.FileDownlo
 		newEbuildPath := filepath.ToSlash(filepath.Join(dir, newEbuildName))
 		log.WithField("file", fName).WithField("new_file", newEbuildName).Info("ebuild content changed, bumping revision")
 		g.files[i].Path = newEbuildPath
+
+		oldMetaCachePrefix := filepath.ToSlash(filepath.Join("metadata", "md5-cache", g.cfg.Category, fmt.Sprintf("%s%s", prefix, vStr)))
+		newMetaCachePath := filepath.ToSlash(filepath.Join("metadata", "md5-cache", g.cfg.Category, fmt.Sprintf("%s%s-r%d", prefix, vStr, newRev)))
+		if g.cfg.OverlayPath != "" {
+			oldMetaCachePrefix = filepath.ToSlash(filepath.Join(g.cfg.OverlayPath, oldMetaCachePrefix))
+			newMetaCachePath = filepath.ToSlash(filepath.Join(g.cfg.OverlayPath, newMetaCachePath))
+		}
+		for j := range g.files {
+			if g.files[j].Path == oldMetaCachePrefix {
+				g.files[j].Path = newMetaCachePath
+			}
+		}
 	}
 }

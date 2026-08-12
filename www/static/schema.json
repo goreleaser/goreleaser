@@ -1762,6 +1762,12 @@
 							"$ref": "#/$defs/GentooInstallItem"
 						},
 						"type": "array"
+					},
+					"eclasses": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
