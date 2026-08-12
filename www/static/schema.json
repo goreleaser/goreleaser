@@ -378,6 +378,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary"
 						],
 						"default": "tar.gz"
@@ -1556,6 +1559,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary",
 							"none"
 						],

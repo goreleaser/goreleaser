@@ -592,10 +592,10 @@ type Hook struct {
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
 	Goos    string      `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
+	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=tar.zst,enum=tzst,enum=xz,enum=binary,enum=none,default=tar.gz"`
 
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz,deprecated=true"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=tar.zst,enum=tzst,enum=xz,enum=binary,enum=none,default=tar.gz,deprecated=true"`
 }
 
 // File is a file inside an archive.
@@ -646,7 +646,7 @@ type Archive struct {
 	IDs                       []string         `yaml:"ids,omitempty" json:"ids,omitempty"`
 	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=tar.zst,enum=tzst,enum=xz,enum=binary,default=tar.gz"`
 	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripBinaryDirectory      bool             `yaml:"strip_binary_directory,omitempty" json:"strip_binary_directory,omitempty"`
@@ -655,7 +655,7 @@ type Archive struct {
 	AllowDifferentBinaryCount bool             `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
 
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz,deprecated=true"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=tar.zst,enum=tzst,enum=xz,enum=binary,default=tar.gz,deprecated=true"`
 
 	// Deprecated: use [IDs] instead.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
