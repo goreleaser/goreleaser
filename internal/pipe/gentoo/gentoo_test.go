@@ -1296,6 +1296,134 @@ func TestSkipUpload(t *testing.T) {
 	})
 }
 
+func TestConflictResolutionFail(t *testing.T) {
+	t.Run("succeeds when publishing a new version alongside existing ebuilds", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "foo",
+			Gentoos: []config.Gentoo{{
+				Category:           "app-misc",
+				Name:               "foo",
+				Bin:                true,
+				License:            "MIT",
+				Description:        "foo",
+				ConflictResolution: config.ConflictResolutionFail,
+			}},
+		}, testctx.WithVersion("2.0.0"))
+
+		artPath := filepath.Join(dist, "foo_2.0.0_linux_amd64.tar.gz")
+		require.NoError(t, os.WriteFile(artPath, []byte("content"), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "foo_2.0.0_linux_amd64.tar.gz",
+			Path:   artPath,
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		groups, err := collectPublishGroups(ctx)
+		require.NoError(t, err)
+		require.Len(t, groups, 1)
+
+		clientMock := &client.Mock{
+			DirFiles: map[string][]string{
+				"app-misc/foo-bin": {"foo-bin-1.0.0.ebuild"},
+			},
+		}
+
+		require.NoError(t, groups[0].publish(ctx, clientMock))
+	})
+
+	t.Run("fails when generated ebuild filename already exists", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "foo",
+			Gentoos: []config.Gentoo{{
+				Category:           "app-misc",
+				Name:               "foo",
+				Bin:                true,
+				License:            "MIT",
+				Description:        "foo",
+				ConflictResolution: config.ConflictResolutionFail,
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+		require.NoError(t, os.WriteFile(artPath, []byte("content"), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "foo_1.0.0_linux_amd64.tar.gz",
+			Path:   artPath,
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		groups, err := collectPublishGroups(ctx)
+		require.NoError(t, err)
+		require.Len(t, groups, 1)
+
+		clientMock := &client.Mock{
+			DirFiles: map[string][]string{
+				"app-misc/foo-bin": {"foo-bin-1.0.0.ebuild"},
+			},
+		}
+
+		err = groups[0].publish(ctx, clientMock)
+		require.EqualError(t, err, "ebuild foo-bin-1.0.0.ebuild already exists in app-misc/foo-bin")
+	})
+
+	t.Run("fails when generated ebuild filename is in thick Manifest", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "foo",
+			Gentoos: []config.Gentoo{{
+				Category:           "app-misc",
+				Name:               "foo",
+				Bin:                true,
+				License:            "MIT",
+				Description:        "foo",
+				ConflictResolution: config.ConflictResolutionFail,
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		artPath := filepath.Join(dist, "foo_1.0.0_linux_amd64.tar.gz")
+		require.NoError(t, os.WriteFile(artPath, []byte("content"), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "foo_1.0.0_linux_amd64.tar.gz",
+			Path:   artPath,
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		groups, err := collectPublishGroups(ctx)
+		require.NoError(t, err)
+		require.Len(t, groups, 1)
+
+		clientMock := &client.Mock{
+			Files: map[string][]byte{
+				"metadata/layout.conf":      []byte("thin-manifests = false\n"),
+				"app-misc/foo-bin/Manifest": []byte("EBUILD foo-bin-1.0.0.ebuild 100 SHA256 abc\n"),
+			},
+		}
+
+		err = groups[0].publish(ctx, clientMock)
+		require.EqualError(t, err, "ebuild foo-bin-1.0.0.ebuild already exists in app-misc/foo-bin")
+	})
+}
+
 func TestMetaCache(t *testing.T) {
 	t.Run("meta_cache disabled by default", func(t *testing.T) {
 		dist := t.TempDir()

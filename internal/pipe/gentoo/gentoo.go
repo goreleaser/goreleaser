@@ -554,7 +554,18 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 		case config.ConflictResolutionOverwrite:
 			// overwrites by default, no specific action required
 		case config.ConflictResolutionFail:
-			return nil, fmt.Errorf("ebuilds already exist for %s", prefix)
+			var newFiles []string
+			for _, f := range g.files {
+				name := filepath.Base(f.Path)
+				if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".ebuild") {
+					newFiles = append(newFiles, name)
+				}
+			}
+			for _, nf := range newFiles {
+				if slices.Contains(ebuilds, nf) {
+					return nil, fmt.Errorf("ebuild %s already exists in %s", nf, dir)
+				}
+			}
 		}
 	}
 

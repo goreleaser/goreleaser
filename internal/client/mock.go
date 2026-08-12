@@ -17,6 +17,8 @@ var (
 	_ PullRequestOpener     = &Mock{}
 	_ ForkSyncer            = &Mock{}
 	_ ReleaseChecker        = &Mock{}
+	_ DirectoryLister       = &Mock{}
+	_ FileDownloader        = &Mock{}
 )
 
 func NewMock() *Mock {
@@ -47,6 +49,7 @@ type Mock struct {
 	SyncedFork           bool
 	DeletedFiles         []string
 	Files                map[string][]byte
+	DirFiles             map[string][]string
 }
 
 func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
@@ -59,7 +62,12 @@ func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) 
 	return nil
 }
 
-func (c *Mock) ListDir(_ *context.Context, _ Repo, _ string) ([]string, error) {
+func (c *Mock) ListDir(_ *context.Context, _ Repo, dir string) ([]string, error) {
+	if c.DirFiles != nil {
+		if files, ok := c.DirFiles[dir]; ok {
+			return files, nil
+		}
+	}
 	return nil, ErrNotImplemented
 }
 
