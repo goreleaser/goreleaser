@@ -99,7 +99,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	cl, err := client.New(ctx)
+	cl, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
