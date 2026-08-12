@@ -58,30 +58,30 @@ type installItemData struct {
 }
 
 type ebuildData struct {
-	Name          string
-	Description   string
-	Homepage      string
-	License       string
-	Keywords      string
-	Bindir        string
-	ExtraInstall  string
-	Archs         []archData
-	InstallGroups []installGroup
-	UseFlags      []config.GentooUseFlag
-	Dobin         []installItemData
-	Doconfd       []installItemData
-	Dodir         []string
-	Dodoc         []string
-	Doenvd        []installItemData
-	Doexe         []installItemData
-	Doheader      []installItemData
-	Doinitd       []installItemData
-	Doins         []installItemData
-	Doman         []string
-	Dosbin        []installItemData
-	Dosym         []installItemData
-	Systemd       []installItemData
-	Eclasses      []string
+	Name             string
+	Description      string
+	Homepage         string
+	License          string
+	Keywords         string
+	Bindir           string
+	ExtraInstall     string
+	Archs            []archData
+	InstallGroups    []installGroup
+	UseFlags         []config.GentooUseFlag
+	Dobin            []installItemData
+	Doconfd          []installItemData
+	Dodir            []string
+	Dodoc            []string
+	Doenvd           []installItemData
+	Doexe            []installItemData
+	Doheader         []installItemData
+	Doinitd          []installItemData
+	Doins            []installItemData
+	Doman            []string
+	Dosbin           []installItemData
+	Dosym            []installItemData
+	Systemd          []installItemData
+	Eclasses         []string
 	HasSystemdEclass bool
 }
 
