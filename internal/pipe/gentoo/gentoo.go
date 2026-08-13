@@ -318,43 +318,43 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 	useFlags := gentooUseFlags(cfg)
 
-	dobin, err := ef.buildInstallItems("dobin", cfg.Dobin)
+	dobin, err := ef.buildInstallItems("dobin", cfg.Dobin, "")
 	if err != nil {
 		return err
 	}
-	doconfd, err := ef.buildInstallItems("doconfd", cfg.Doconfd)
+	doconfd, err := ef.buildInstallItems("doconfd", cfg.Doconfd, "")
 	if err != nil {
 		return err
 	}
-	doenvd, err := ef.buildInstallItems("doenvd", cfg.Doenvd)
+	doenvd, err := ef.buildInstallItems("doenvd", cfg.Doenvd, "")
 	if err != nil {
 		return err
 	}
-	doexe, err := ef.buildInstallItems("doexe", cfg.Doexe)
+	doexe, err := ef.buildInstallItems("doexe", cfg.Doexe, cfg.Bindir)
 	if err != nil {
 		return err
 	}
-	doheader, err := ef.buildInstallItems("doheader", cfg.Doheader)
+	doheader, err := ef.buildInstallItems("doheader", cfg.Doheader, "")
 	if err != nil {
 		return err
 	}
-	doinitd, err := ef.buildInstallItems("doinitd", cfg.Doinitd)
+	doinitd, err := ef.buildInstallItems("doinitd", cfg.Doinitd, "")
 	if err != nil {
 		return err
 	}
-	doins, err := ef.buildInstallItems("doins", cfg.Doins)
+	doins, err := ef.buildInstallItems("doins", cfg.Doins, "/")
 	if err != nil {
 		return err
 	}
-	dosbin, err := ef.buildInstallItems("dosbin", cfg.Dosbin)
+	dosbin, err := ef.buildInstallItems("dosbin", cfg.Dosbin, "")
 	if err != nil {
 		return err
 	}
-	dosym, err := ef.buildInstallItems("dosym", cfg.Dosym)
+	dosym, err := ef.buildInstallItems("dosym", cfg.Dosym, "")
 	if err != nil {
 		return err
 	}
-	systemd, err := ef.buildInstallItems("systemd", cfg.Systemd)
+	systemd, err := ef.buildInstallItems("systemd", cfg.Systemd, "")
 	if err != nil {
 		return err
 	}
@@ -370,29 +370,33 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 		Archs:         archInfos,
 		InstallGroups: installGroups,
 		UseFlags:      useFlags,
-		Dobin:         dobin,
-		Doconfd:       doconfd,
 		Dodir:         cfg.Dodir,
 		Dodoc:         ef.processStringArray(cfg.Dodoc),
-		Doenvd:        doenvd,
-		Doexe:         doexe,
-		Doheader:      doheader,
-		Doinitd:       doinitd,
-		Doins:         doins,
+		Installers:    append(append(append(append(append(append(append(append(append([]installItemData{}, dobin...), doconfd...), doenvd...), doexe...), doheader...), doinitd...), doins...), dosbin...), dosym...),
 		Doman:         ef.processStringArray(cfg.Doman),
-		Dosbin:        dosbin,
-		Dosym:         dosym,
 		Systemd:       systemd,
 	}
 
 	var eclasses []string
 	eclasses = append(eclasses, cfg.Eclasses...)
-	if len(systemd) > 0 && !slices.Contains(eclasses, "systemd") {
-		eclasses = append(eclasses, "systemd")
-	}
 	slices.Sort(eclasses)
 	eclasses = slices.Compact(eclasses)
 	data.Eclasses = eclasses
+
+	if !slices.Contains(eclasses, "systemd") && len(data.Systemd) > 0 {
+		for _, item := range data.Systemd {
+			item.Target = "1"
+			item.Dir = "/usr/lib/systemd/system"
+			item.DirSwitchCmd = "insinto"
+			item.InstallerCmd = "doins"
+			item.InstallRenameCmd = "newins"
+			data.Installers = append(data.Installers, item)
+		}
+		data.Systemd = nil
+	} else if len(data.Systemd) > 0 {
+		data.Installers = append(data.Installers, data.Systemd...)
+		data.Systemd = nil
+	}
 
 	if err := data.Validate(); err != nil {
 		return err

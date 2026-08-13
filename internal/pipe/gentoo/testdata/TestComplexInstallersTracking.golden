@@ -17,9 +17,19 @@ S="${WORKDIR}"
 src_install() {
   exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
+  dobin "bin1"
+  exeinto /opt/foo
+  doexe "exe1"
+  doexe "exe2"
+  exeinto /usr/local/bin
+  doexe "exe3"
   insinto /etc/foo
-  newins "config.yaml" "foo.conf"
+  doins "ins1"
   insinto /
-  doins "simple.yaml"
-  doman "foo.1"
+  doins "ins2"
+  insinto /etc/foo
+  doins "ins3"
+  insinto /usr/lib/systemd/system
+  doins "sys1.service"
+  newins "sys2.service" "sys2-rename.service"
 }

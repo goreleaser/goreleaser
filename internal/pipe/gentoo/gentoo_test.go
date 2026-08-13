@@ -232,6 +232,54 @@ func TestDoRunWithDoinsAndDoman(t *testing.T) {
 	golden.RequireEqual(t, bts)
 }
 
+func TestComplexInstallersTracking(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Gentoos: []config.Gentoo{{
+			Repository: config.RepoRef{Name: "overlay"},
+			Bin:        true,
+			License:    "MIT",
+			Dobin: []config.GentooInstallItem{
+				{Src: "bin1"},
+			},
+			Doexe: []config.GentooInstallItem{
+				{Src: "exe1", Dst: "/opt/foo/exe1"},
+				{Src: "exe2", Dst: "/opt/foo/exe2"},
+				{Src: "exe3", Dst: "/usr/local/bin/exe3"},
+			},
+			Doins: []config.GentooInstallItem{
+				{Src: "ins1", Dst: "/etc/foo/ins1"},
+				{Src: "ins2"},
+				{Src: "ins3", Dst: "/etc/foo/ins3"},
+			},
+			Systemd: []config.GentooInstallItem{
+				{Src: "sys1.service"},
+				{Src: "sys2.service", Dst: "sys2-rename.service"},
+			},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_1.0.0_linux_amd64.tar.gz",
+		Path:   "amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], cli))
+
+	ebuild := filepath.Join(dist, "gentoo", "default", "app-misc", "foo-bin", "foo-bin-1.0.0.ebuild")
+	bts, err := os.ReadFile(ebuild)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, bts)
+}
+
 func TestDoRunWithFiles(t *testing.T) {
 	dist := t.TempDir()
 	svc := "foo.service"
@@ -795,9 +843,9 @@ func TestTemplateScenarios(t *testing.T) {
 		{
 			name: "scenario_doexe",
 			doexe: []installItemData{
-				{Source: "custom_bin", Target: "/opt/custom/custom_bin", Dir: "/opt/custom", Base: "custom_bin"},
-				{Source: "renamed_bin_x86", Target: "/opt/other/renamed_bin", Dir: "/opt/other", Base: "renamed_bin", Keywords: []string{"amd64"}},
-				{Source: "default_bin", Target: "", Dir: "", Base: ""},
+				{Source: "custom_bin", Target: "/opt/custom/custom_bin", Dir: "/opt/custom", Base: "custom_bin", InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
+				{Source: "renamed_bin_x86", Target: "/opt/other/renamed_bin", Dir: "/opt/other", Base: "renamed_bin", Keywords: []string{"amd64"}, InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
+				{Source: "default_bin", Target: "", Dir: "", Base: "", InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
 			},
 		},
 	}
@@ -814,23 +862,15 @@ func TestTemplateScenarios(t *testing.T) {
 				Archs         []any
 				InstallGroups []installGroup
 				UseFlags      []config.GentooUseFlag
-				Dobin         []installItemData
-				Doconfd       []installItemData
 				Dodir         []string
 				Dodoc         []string
-				Doenvd        []installItemData
-				Doexe         []installItemData
-				Doheader      []installItemData
-				Doinitd       []installItemData
-				Doins         []installItemData
 				Doman         []string
-				Dosbin        []installItemData
-				Dosym         []installItemData
 				Systemd       []installItemData
 				Eclasses      []string
+				Installers    []installItemData
 			}{
 				InstallGroups: tc.installGroups,
-				Doexe:         tc.doexe,
+				Installers:    tc.doexe,
 				Bindir:        "/usr/bin",
 				UseFlags:      gentooUseFlags(config.Gentoo{}),
 			}
@@ -1525,7 +1565,7 @@ func TestMetaCache(t *testing.T) {
 				License:     "MIT",
 				Description: "foo package",
 				MetaCache:   true,
-				Systemd:     []config.GentooInstallItem{{Src: "foo.service"}},
+				Eclasses:    []string{"desktop"},
 			}},
 		}, testctx.WithVersion("1.0.0"))
 		ctx.Artifacts.Add(&artifact.Artifact{
@@ -1637,7 +1677,7 @@ func TestEbuildData(t *testing.T) {
 		data := ebuildData{
 			Description: "foo",
 			License:     "MIT",
-			Dosym:       []installItemData{{Source: "foo"}},
+			Installers:  []installItemData{{InstallerCmd: "dosym", Source: "foo"}},
 		}
 		require.EqualError(t, data.Validate(), "dosym requires a destination")
 	})
@@ -1646,7 +1686,7 @@ func TestEbuildData(t *testing.T) {
 		data := ebuildData{
 			Description: "foo",
 			License:     "MIT",
-			Dosym:       []installItemData{{Source: "foo", Target: "bar"}},
+			Installers:  []installItemData{{InstallerCmd: "dosym", Source: "foo", Target: "bar"}},
 		}
 		require.NoError(t, data.Validate())
 	})
@@ -1980,10 +2020,10 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		require.Contains(t, str, "default_linux_amd64.tar.gz")
 		require.Contains(t, str, "plugin_linux_amd64.tar.gz")
 
-		require.Contains(t, str, `exeinto "/opt/bin"`)
+		require.Contains(t, str, `exeinto /opt/bin`)
 		require.Contains(t, str, `doexe "program1"`)
 		require.Contains(t, str, `if use plugin; then`)
-		require.Contains(t, str, `exeinto "/var/www/cgi-bin"`)
+		require.Contains(t, str, `exeinto /var/www/cgi-bin`)
 		require.Contains(t, str, `newexe "program2-bin" "program2"`)
 	})
 
@@ -2055,7 +2095,7 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 
 		require.NotContains(t, str, `doexe "myapp-helper"`)
 		require.Contains(t, str, `if use tools; then`)
-		require.Contains(t, str, `exeinto "/opt/myapp"`)
+		require.Contains(t, str, `exeinto /opt/myapp`)
 		require.Contains(t, str, `newexe "helpers/bar" "helper"`)
 	})
 
