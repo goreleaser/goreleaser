@@ -58,7 +58,7 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range .Dobin }}
+{{- range .SimpleInstallers }}
 {{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
@@ -66,28 +66,9 @@ src_install() {
   {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
 {{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newbin "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .NewCmd }} "{{ .Source }}" "{{ .Base }}"
 {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dobin "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
-{{- range .Doconfd }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newconfd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doconfd "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .Cmd }} "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}fi
@@ -98,25 +79,6 @@ src_install() {
 {{- end }}
 {{- range .Dodir }}
   dodir "{{ . }}"
-{{- end }}
-{{- range .Doenvd }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newenvd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doenvd "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
 {{- end }}
 {{- $lastexedir := "" }}
 {{- range .Doexe }}
@@ -153,44 +115,6 @@ src_install() {
   fi
 {{- end }}
 {{- end }}
-{{- range .Doheader }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newheader "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doheader "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
-{{- range .Doinitd }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newinitd "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doinitd "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
 {{- range .Doins }}
 {{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
@@ -216,25 +140,6 @@ src_install() {
   fi
 {{- end }}
 {{- end }}
-{{- range .Dosbin }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newsbin "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dosbin "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
 {{- range .Dosym }}
 {{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
@@ -243,25 +148,6 @@ src_install() {
   {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
   {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dosym "{{ .Source }}" "{{ .Target }}"
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
-{{- range .Systemd }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_dounit "{{ .Source }}"
-{{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}fi
 {{- end }}

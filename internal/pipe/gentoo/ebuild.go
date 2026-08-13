@@ -55,33 +55,30 @@ type installItemData struct {
 	Base     string
 	Use      []string
 	Keywords []string
+	Cmd      string
+	NewCmd   string
 }
 
 type ebuildData struct {
-	Name          string
-	Description   string
-	Homepage      string
-	License       string
-	Keywords      string
-	Bindir        string
-	ExtraInstall  string
-	Archs         []archData
-	InstallGroups []installGroup
-	UseFlags      []config.GentooUseFlag
-	Dobin         []installItemData
-	Doconfd       []installItemData
-	Dodir         []string
-	Dodoc         []string
-	Doenvd        []installItemData
-	Doexe         []installItemData
-	Doheader      []installItemData
-	Doinitd       []installItemData
-	Doins         []installItemData
-	Doman         []string
-	Dosbin        []installItemData
-	Dosym         []installItemData
-	Systemd       []installItemData
-	Eclasses      []string
+	Name             string
+	Description      string
+	Homepage         string
+	License          string
+	Keywords         string
+	Bindir           string
+	ExtraInstall     string
+	Archs            []archData
+	InstallGroups    []installGroup
+	UseFlags         []config.GentooUseFlag
+	Dodir            []string
+	Dodoc            []string
+	Doexe            []installItemData
+	Doins            []installItemData
+	Doman            []string
+	Dosym            []installItemData
+	Systemd          []installItemData
+	Eclasses         []string
+	SimpleInstallers []installItemData
 }
 
 func (d ebuildData) Validate() error {
@@ -391,6 +388,15 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 							base = path.Base(cleanedDst)
 						}
 					}
+					cmd := sectionName
+					newCmd := "new" + strings.TrimPrefix(sectionName, "do")
+					if sectionName == "systemd" {
+						cmd = "systemd_dounit"
+						newCmd = "systemd_newunit"
+					} else if sectionName == "dosym" {
+						cmd = "dosym"
+						newCmd = "dosym"
+					}
 					items = append(items, installItemData{
 						Source:   sourcePath,
 						Target:   target,
@@ -398,6 +404,8 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 						Base:     base,
 						Use:      d.Use,
 						Keywords: keywords,
+						Cmd:      cmd,
+						NewCmd:   newCmd,
 					})
 				}
 			}
@@ -418,6 +426,15 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 			base = path.Base(filepath.ToSlash(src))
 		}
 
+		cmd := sectionName
+		newCmd := "new" + strings.TrimPrefix(sectionName, "do")
+		if sectionName == "systemd" {
+			cmd = "systemd_dounit"
+			newCmd = "systemd_newunit"
+		} else if sectionName == "dosym" {
+			cmd = "dosym"
+			newCmd = "dosym"
+		}
 		items = append(items, installItemData{
 			Source:   src,
 			Target:   d.Dst,
@@ -425,6 +442,8 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 			Base:     base,
 			Use:      d.Use,
 			Keywords: keywords,
+			Cmd:      cmd,
+			NewCmd:   newCmd,
 		})
 	}
 	return items, nil

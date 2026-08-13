@@ -814,20 +814,19 @@ func TestTemplateScenarios(t *testing.T) {
 				Archs         []any
 				InstallGroups []installGroup
 				UseFlags      []config.GentooUseFlag
-				Dobin         []installItemData
-				Doconfd       []installItemData
-				Dodir         []string
-				Dodoc         []string
-				Doenvd        []installItemData
-				Doexe         []installItemData
-				Doheader      []installItemData
-				Doinitd       []installItemData
-				Doins         []installItemData
-				Doman         []string
-				Dosbin        []installItemData
-				Dosym         []installItemData
-				Systemd       []installItemData
-				Eclasses      []string
+
+				Dodir []string
+				Dodoc []string
+
+				Doexe []installItemData
+
+				Doins []installItemData
+				Doman []string
+
+				Dosym            []installItemData
+				Systemd          []installItemData
+				Eclasses         []string
+				SimpleInstallers []installItemData
 			}{
 				InstallGroups: tc.installGroups,
 				Doexe:         tc.doexe,

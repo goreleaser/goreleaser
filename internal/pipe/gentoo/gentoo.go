@@ -360,29 +360,24 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	data := ebuildData{
-		Name:          cfg.Name,
-		Description:   cfg.Description,
-		Homepage:      cfg.Homepage,
-		License:       cfg.License,
-		Keywords:      strings.Join(keywords, " "),
-		Bindir:        cfg.Bindir,
-		ExtraInstall:  extraInstall,
-		Archs:         archInfos,
-		InstallGroups: installGroups,
-		UseFlags:      useFlags,
-		Dobin:         dobin,
-		Doconfd:       doconfd,
-		Dodir:         cfg.Dodir,
-		Dodoc:         ef.processStringArray(cfg.Dodoc),
-		Doenvd:        doenvd,
-		Doexe:         doexe,
-		Doheader:      doheader,
-		Doinitd:       doinitd,
-		Doins:         doins,
-		Doman:         ef.processStringArray(cfg.Doman),
-		Dosbin:        dosbin,
-		Dosym:         dosym,
-		Systemd:       systemd,
+		Name:             cfg.Name,
+		Description:      cfg.Description,
+		Homepage:         cfg.Homepage,
+		License:          cfg.License,
+		Keywords:         strings.Join(keywords, " "),
+		Bindir:           cfg.Bindir,
+		ExtraInstall:     extraInstall,
+		Archs:            archInfos,
+		InstallGroups:    installGroups,
+		UseFlags:         useFlags,
+		Dodir:            cfg.Dodir,
+		Dodoc:            ef.processStringArray(cfg.Dodoc),
+		SimpleInstallers: append(append(append(append(append(append([]installItemData{}, dobin...), doconfd...), doenvd...), doheader...), doinitd...), dosbin...),
+		Doexe:            doexe,
+		Doins:            doins,
+		Doman:            ef.processStringArray(cfg.Doman),
+		Dosym:            dosym,
+		Systemd:          systemd,
 	}
 
 	var eclasses []string
@@ -396,6 +391,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			item.Dir = "/usr/lib/systemd/system"
 			data.Doins = append(data.Doins, item)
 		}
+		data.Systemd = nil
+	} else if len(data.Systemd) > 0 {
+		data.SimpleInstallers = append(data.SimpleInstallers, data.Systemd...)
 		data.Systemd = nil
 	}
 
