@@ -49,36 +49,34 @@ type installGroup struct {
 }
 
 type installItemData struct {
-	Source   string
-	Target   string
-	Dir      string
-	Base     string
-	Use      []string
-	Keywords []string
-	Cmd      string
-	NewCmd   string
+	Source           string
+	Target           string
+	Dir              string
+	Base             string
+	Use              []string
+	Keywords         []string
+	InstallerCmd     string
+	InstallRenameCmd string
+	DirSwitchCmd     string
 }
 
 type ebuildData struct {
-	Name             string
-	Description      string
-	Homepage         string
-	License          string
-	Keywords         string
-	Bindir           string
-	ExtraInstall     string
-	Archs            []archData
-	InstallGroups    []installGroup
-	UseFlags         []config.GentooUseFlag
-	Dodir            []string
-	Dodoc            []string
-	Doexe            []installItemData
-	Doins            []installItemData
-	Doman            []string
-	Dosym            []installItemData
-	Systemd          []installItemData
-	Eclasses         []string
-	SimpleInstallers []installItemData
+	Name          string
+	Description   string
+	Homepage      string
+	License       string
+	Keywords      string
+	Bindir        string
+	ExtraInstall  string
+	Archs         []archData
+	InstallGroups []installGroup
+	UseFlags      []config.GentooUseFlag
+	Dodir         []string
+	Dodoc         []string
+	Doman         []string
+	Systemd       []installItemData
+	Eclasses      []string
+	Installers    []installItemData
 }
 
 func (d ebuildData) Validate() error {
@@ -88,7 +86,10 @@ func (d ebuildData) Validate() error {
 	if strings.TrimSpace(d.License) == "" {
 		return errors.New("gentoo license is required and cannot be empty")
 	}
-	for _, sym := range d.Dosym {
+	for _, sym := range d.Installers {
+		if sym.InstallerCmd != "dosym" {
+			continue
+		}
 		if sym.Target == "" {
 			return errors.New("dosym requires a destination")
 		}
@@ -277,7 +278,8 @@ func (v *extraFilesProcessor) validate(name, src string) error {
 	return nil
 }
 
-func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []config.GentooInstallItem) ([]installItemData, error) {
+func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []config.GentooInstallItem, defaultDir string) ([]installItemData, error) {
+	var installerCmd, installRenameCmd, dirSwitchCmd string
 	var items []installItemData
 	for _, d := range cfgItems {
 		var keywords []string
@@ -352,13 +354,33 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 				if base == "." || base == "" {
 					base = path.Base(filepath.ToSlash(srcPath))
 				}
+
+				installerCmd = sectionName
+				installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
+				dirSwitchCmd = ""
+				if sectionName == "systemd" {
+					installerCmd = "systemd_dounit"
+					installRenameCmd = "systemd_newunit"
+				} else if sectionName == "dosym" {
+					installerCmd = "dosym"
+					installRenameCmd = "dosym"
+				} else if sectionName == "doins" || sectionName == "doexe" {
+					dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
+					if dir == "" {
+						dir = defaultDir
+					}
+				}
+
 				items = append(items, installItemData{
-					Source:   srcPath,
-					Target:   target,
-					Dir:      dir,
-					Base:     base,
-					Use:      d.Use,
-					Keywords: keywords,
+					Source:           srcPath,
+					Target:           target,
+					Dir:              dir,
+					Base:             base,
+					Use:              d.Use,
+					Keywords:         keywords,
+					InstallerCmd:     installerCmd,
+					InstallRenameCmd: installRenameCmd,
+					DirSwitchCmd:     dirSwitchCmd,
 				})
 			} else {
 				bins := firstBins
@@ -388,24 +410,33 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 							base = path.Base(cleanedDst)
 						}
 					}
-					cmd := sectionName
-					newCmd := "new" + strings.TrimPrefix(sectionName, "do")
+
+					installerCmd = sectionName
+					installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
+					dirSwitchCmd = ""
 					if sectionName == "systemd" {
-						cmd = "systemd_dounit"
-						newCmd = "systemd_newunit"
+						installerCmd = "systemd_dounit"
+						installRenameCmd = "systemd_newunit"
 					} else if sectionName == "dosym" {
-						cmd = "dosym"
-						newCmd = "dosym"
+						installerCmd = "dosym"
+						installRenameCmd = "dosym"
+					} else if sectionName == "doins" || sectionName == "doexe" {
+						dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
+						if dir == "" {
+							dir = defaultDir
+						}
 					}
+
 					items = append(items, installItemData{
-						Source:   sourcePath,
-						Target:   target,
-						Dir:      dir,
-						Base:     base,
-						Use:      d.Use,
-						Keywords: keywords,
-						Cmd:      cmd,
-						NewCmd:   newCmd,
+						Source:           sourcePath,
+						Target:           target,
+						Dir:              dir,
+						Base:             base,
+						Use:              d.Use,
+						Keywords:         keywords,
+						InstallerCmd:     installerCmd,
+						InstallRenameCmd: installRenameCmd,
+						DirSwitchCmd:     dirSwitchCmd,
 					})
 				}
 			}
@@ -426,24 +457,32 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 			base = path.Base(filepath.ToSlash(src))
 		}
 
-		cmd := sectionName
-		newCmd := "new" + strings.TrimPrefix(sectionName, "do")
+		installerCmd = sectionName
+		installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
+		dirSwitchCmd = ""
 		if sectionName == "systemd" {
-			cmd = "systemd_dounit"
-			newCmd = "systemd_newunit"
+			installerCmd = "systemd_dounit"
+			installRenameCmd = "systemd_newunit"
 		} else if sectionName == "dosym" {
-			cmd = "dosym"
-			newCmd = "dosym"
+			installerCmd = "dosym"
+			installRenameCmd = "dosym"
+		} else if sectionName == "doins" || sectionName == "doexe" {
+			dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
+			if dir == "" {
+				dir = defaultDir
+			}
 		}
+
 		items = append(items, installItemData{
-			Source:   src,
-			Target:   d.Dst,
-			Dir:      dir,
-			Base:     base,
-			Use:      d.Use,
-			Keywords: keywords,
-			Cmd:      cmd,
-			NewCmd:   newCmd,
+			Source:           src,
+			Target:           d.Dst,
+			Dir:              dir,
+			Base:             base,
+			Use:              d.Use,
+			Keywords:         keywords,
+			InstallerCmd:     installerCmd,
+			InstallRenameCmd: installRenameCmd,
+			DirSwitchCmd:     dirSwitchCmd,
 		})
 	}
 	return items, nil

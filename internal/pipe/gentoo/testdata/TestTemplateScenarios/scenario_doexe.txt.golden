@@ -14,12 +14,12 @@ IUSE=""
 S="${WORKDIR}"
 
 src_install() {
-  exeinto "/opt/custom"
+  exeinto /opt/custom
   doexe "custom_bin"
   if use amd64; then
-    exeinto "/opt/other"
+    exeinto /opt/other
     newexe "renamed_bin_x86" "renamed_bin"
   fi
-  exeinto /usr/bin
+  exeinto
   doexe "default_bin"
 }

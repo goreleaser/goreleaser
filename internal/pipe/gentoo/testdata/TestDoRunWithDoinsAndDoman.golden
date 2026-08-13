@@ -17,7 +17,7 @@ S="${WORKDIR}"
 src_install() {
   exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
-  insinto "/etc/foo"
+  insinto /etc/foo
   newins "config.yaml" "foo.conf"
   insinto /
   doins "simple.yaml"

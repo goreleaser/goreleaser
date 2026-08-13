@@ -58,17 +58,35 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range .SimpleInstallers }}
+{{- $lastdir := "" }}
+{{- $lastswitchcmd := "" }}
+{{- range .Installers }}
+{{- $in_conditional := or .Keywords .Use }}
 {{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
+{{- if .DirSwitchCmd }}
+{{- $curdir := .Dir }}
+{{- if or (ne $lastdir $curdir) (ne $lastswitchcmd .DirSwitchCmd) $in_conditional }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .DirSwitchCmd }} {{ if eq $curdir "/" }}/{{ else }}{{ $curdir }}{{ end }}
+{{- if not $in_conditional }}{{ $lastdir = $curdir }}{{ $lastswitchcmd = .DirSwitchCmd }}{{ else }}{{ $lastdir = "" }}{{ $lastswitchcmd = "" }}{{ end }}
+{{- end }}
+{{- end }}
 {{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .NewCmd }} "{{ .Source }}" "{{ .Base }}"
+  {{- if eq .InstallerCmd "dosym" }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}" "{{ .Target }}"
+  {{- else }}
+  {{- if eq .Source .Base }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}"
+  {{- else }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallRenameCmd }} "{{ .Source }}" "{{ .Base }}"
+  {{- end }}
+  {{- end }}
 {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .Cmd }} "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}"
 {{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}fi
@@ -79,81 +97,6 @@ src_install() {
 {{- end }}
 {{- range .Dodir }}
   dodir "{{ . }}"
-{{- end }}
-{{- $lastexedir := "" }}
-{{- range .Doexe }}
-{{- $in_conditional := or .Keywords .Use }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-{{- $curexedir := $.Bindir }}
-{{- if .Dir }}{{ $curexedir = .Dir }}{{ end }}
-{{- if or (ne $lastexedir $curexedir) $in_conditional }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}exeinto {{ if .Dir }}"{{ .Dir }}"{{ else }}{{ $.Bindir }}{{ end }}
-{{- if not $in_conditional }}{{ $lastexedir = $curexedir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
-{{- end }}
-  {{- if eq .Source .Base }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doexe "{{ .Source }}"
-  {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newexe "{{ .Source }}" "{{ .Base }}"
-  {{- end }}
-{{- else }}
-{{- if or (ne $lastexedir $.Bindir) $in_conditional }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}exeinto {{ $.Bindir }}
-{{- if not $in_conditional }}{{ $lastexedir = $.Bindir }}{{ else }}{{ $lastexedir = "" }}{{ end }}
-{{- end }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doexe "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
-{{- range .Doins }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}insinto "{{ .Dir }}"
-  {{- if eq .Source .Base }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doins "{{ .Source }}"
-  {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newins "{{ .Source }}" "{{ .Base }}"
-  {{- end }}
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}insinto /
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doins "{{ .Source }}"
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
-{{- end }}
-{{- range .Dosym }}
-{{- if .Keywords }}
-  if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
-{{- end }}
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
-{{- end }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}dosym "{{ .Source }}" "{{ .Target }}"
-{{- if .Use }}
-  {{ if .Keywords }}  {{ end }}fi
-{{- end }}
-{{- if .Keywords }}
-  fi
-{{- end }}
 {{- end }}
 {{- range .Doman }}
   doman "{{ . }}"

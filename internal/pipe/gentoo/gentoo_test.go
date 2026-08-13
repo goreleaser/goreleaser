@@ -795,9 +795,9 @@ func TestTemplateScenarios(t *testing.T) {
 		{
 			name: "scenario_doexe",
 			doexe: []installItemData{
-				{Source: "custom_bin", Target: "/opt/custom/custom_bin", Dir: "/opt/custom", Base: "custom_bin"},
-				{Source: "renamed_bin_x86", Target: "/opt/other/renamed_bin", Dir: "/opt/other", Base: "renamed_bin", Keywords: []string{"amd64"}},
-				{Source: "default_bin", Target: "", Dir: "", Base: ""},
+				{Source: "custom_bin", Target: "/opt/custom/custom_bin", Dir: "/opt/custom", Base: "custom_bin", InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
+				{Source: "renamed_bin_x86", Target: "/opt/other/renamed_bin", Dir: "/opt/other", Base: "renamed_bin", Keywords: []string{"amd64"}, InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
+				{Source: "default_bin", Target: "", Dir: "", Base: "", InstallerCmd: "doexe", InstallRenameCmd: "newexe", DirSwitchCmd: "exeinto"},
 			},
 		},
 	}
@@ -814,22 +814,15 @@ func TestTemplateScenarios(t *testing.T) {
 				Archs         []any
 				InstallGroups []installGroup
 				UseFlags      []config.GentooUseFlag
-
-				Dodir []string
-				Dodoc []string
-
-				Doexe []installItemData
-
-				Doins []installItemData
-				Doman []string
-
-				Dosym            []installItemData
-				Systemd          []installItemData
-				Eclasses         []string
-				SimpleInstallers []installItemData
+				Dodir         []string
+				Dodoc         []string
+				Doman         []string
+				Systemd       []installItemData
+				Eclasses      []string
+				Installers    []installItemData
 			}{
 				InstallGroups: tc.installGroups,
-				Doexe:         tc.doexe,
+				Installers:    tc.doexe,
 				Bindir:        "/usr/bin",
 				UseFlags:      gentooUseFlags(config.Gentoo{}),
 			}
@@ -1636,7 +1629,7 @@ func TestEbuildData(t *testing.T) {
 		data := ebuildData{
 			Description: "foo",
 			License:     "MIT",
-			Dosym:       []installItemData{{Source: "foo"}},
+			Installers:  []installItemData{{InstallerCmd: "dosym", Source: "foo"}},
 		}
 		require.EqualError(t, data.Validate(), "dosym requires a destination")
 	})
@@ -1645,7 +1638,7 @@ func TestEbuildData(t *testing.T) {
 		data := ebuildData{
 			Description: "foo",
 			License:     "MIT",
-			Dosym:       []installItemData{{Source: "foo", Target: "bar"}},
+			Installers:  []installItemData{{InstallerCmd: "dosym", Source: "foo", Target: "bar"}},
 		}
 		require.NoError(t, data.Validate())
 	})
@@ -1979,10 +1972,10 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		require.Contains(t, str, "default_linux_amd64.tar.gz")
 		require.Contains(t, str, "plugin_linux_amd64.tar.gz")
 
-		require.Contains(t, str, `exeinto "/opt/bin"`)
+		require.Contains(t, str, `exeinto /opt/bin`)
 		require.Contains(t, str, `doexe "program1"`)
 		require.Contains(t, str, `if use plugin; then`)
-		require.Contains(t, str, `exeinto "/var/www/cgi-bin"`)
+		require.Contains(t, str, `exeinto /var/www/cgi-bin`)
 		require.Contains(t, str, `newexe "program2-bin" "program2"`)
 	})
 
@@ -2054,7 +2047,7 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 
 		require.NotContains(t, str, `doexe "myapp-helper"`)
 		require.Contains(t, str, `if use tools; then`)
-		require.Contains(t, str, `exeinto "/opt/myapp"`)
+		require.Contains(t, str, `exeinto /opt/myapp`)
 		require.Contains(t, str, `newexe "helpers/bar" "helper"`)
 	})
 
