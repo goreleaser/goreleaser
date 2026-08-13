@@ -71,7 +71,7 @@ src_install() {
 {{- if .DirSwitchCmd }}
 {{- $curdir := .Dir }}
 {{- if or (ne $lastdir $curdir) (ne $lastswitchcmd .DirSwitchCmd) $in_conditional }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .DirSwitchCmd }} {{ if eq $curdir "/" }}/{{ else }}{{ $curdir }}{{ end }}
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .DirSwitchCmd }}{{ if eq $curdir "/" }} /{{ else if $curdir }} {{ $curdir }}{{ end }}
 {{- if not $in_conditional }}{{ $lastdir = $curdir }}{{ $lastswitchcmd = .DirSwitchCmd }}{{ else }}{{ $lastdir = "" }}{{ $lastswitchcmd = "" }}{{ end }}
 {{- end }}
 {{- end }}
@@ -94,9 +94,6 @@ src_install() {
 {{- if .Keywords }}
   fi
 {{- end }}
-{{- end }}
-{{- range .Dodir }}
-  dodir "{{ . }}"
 {{- end }}
 {{- range .Doman }}
   doman "{{ . }}"
