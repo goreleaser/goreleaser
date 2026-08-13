@@ -390,7 +390,14 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	slices.Sort(eclasses)
 	eclasses = slices.Compact(eclasses)
 	data.Eclasses = eclasses
-	data.HasSystemdEclass = slices.Contains(eclasses, "systemd")
+	if !slices.Contains(eclasses, "systemd") && len(data.Systemd) > 0 {
+		for _, item := range data.Systemd {
+			item.Target = "1"
+			item.Dir = "/usr/lib/systemd/system"
+			data.Doins = append(data.Doins, item)
+		}
+		data.Systemd = nil
+	}
 
 	if err := data.Validate(); err != nil {
 		return err

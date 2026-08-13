@@ -257,19 +257,10 @@ src_install() {
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}if {{ range $i, $u := .Use }}{{ if $i }} && {{ end }}{{ if eq (slice $u 0 1) "!" }}! use {{ slice $u 1 }}{{ else }}use {{ $u }}{{ end }}{{ end }}; then
 {{- end }}
-{{- if $.HasSystemdEclass }}
 {{- if .Target }}
   {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_newunit "{{ .Source }}" "{{ .Base }}"
 {{- else }}
   {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}systemd_dounit "{{ .Source }}"
-{{- end }}
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}insinto /usr/lib/systemd/system
-{{- if .Target }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}newins "{{ .Source }}" "{{ .Base }}"
-{{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}doins "{{ .Source }}"
-{{- end }}
 {{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}fi
