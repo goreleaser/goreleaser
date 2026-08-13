@@ -358,13 +358,14 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 				installerCmd = sectionName
 				installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
 				dirSwitchCmd = ""
-				if sectionName == "systemd" {
+				switch sectionName {
+				case "systemd":
 					installerCmd = "systemd_dounit"
 					installRenameCmd = "systemd_newunit"
-				} else if sectionName == "dosym" {
+				case "dosym":
 					installerCmd = "dosym"
 					installRenameCmd = "dosym"
-				} else if sectionName == "doins" || sectionName == "doexe" {
+				case "doins", "doexe":
 					dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
 					if dir == "" {
 						dir = defaultDir
@@ -414,13 +415,14 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 					installerCmd = sectionName
 					installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
 					dirSwitchCmd = ""
-					if sectionName == "systemd" {
+					switch sectionName {
+					case "systemd":
 						installerCmd = "systemd_dounit"
 						installRenameCmd = "systemd_newunit"
-					} else if sectionName == "dosym" {
+					case "dosym":
 						installerCmd = "dosym"
 						installRenameCmd = "dosym"
-					} else if sectionName == "doins" || sectionName == "doexe" {
+					case "doins", "doexe":
 						dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
 						if dir == "" {
 							dir = defaultDir
@@ -460,13 +462,14 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 		installerCmd = sectionName
 		installRenameCmd = "new" + strings.TrimPrefix(sectionName, "do")
 		dirSwitchCmd = ""
-		if sectionName == "systemd" {
+		switch sectionName {
+		case "systemd":
 			installerCmd = "systemd_dounit"
 			installRenameCmd = "systemd_newunit"
-		} else if sectionName == "dosym" {
+		case "dosym":
 			installerCmd = "dosym"
 			installRenameCmd = "dosym"
-		} else if sectionName == "doins" || sectionName == "doexe" {
+		case "doins", "doexe":
 			dirSwitchCmd = strings.TrimPrefix(sectionName, "do") + "into"
 			if dir == "" {
 				dir = defaultDir

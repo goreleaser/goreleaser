@@ -241,7 +241,9 @@ func TestComplexInstallersTracking(t *testing.T) {
 			Repository: config.RepoRef{Name: "overlay"},
 			Bin:        true,
 			License:    "MIT",
-			Dobin: []config.GentooInstallItem{{Src: "bin1"}},
+			Dobin: []config.GentooInstallItem{
+				{Src: "bin1"},
+			},
 			Doexe: []config.GentooInstallItem{
 				{Src: "exe1", Dst: "/opt/foo/exe1"},
 				{Src: "exe2", Dst: "/opt/foo/exe2"},
