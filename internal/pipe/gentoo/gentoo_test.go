@@ -321,17 +321,6 @@ func TestDefaultRequiresBin(t *testing.T) {
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
-func TestDefaultRepositoryGitUrl(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Gentoos: []config.Gentoo{
-			{
-				Repository: config.RepoRef{Git: config.GitRepoRef{URL: "git@github.com:foo/bar.git"}},
-			},
-		},
-	}, testctx.WithVersion("1.0.0"))
-	require.EqualError(t, Pipe{}.Default(ctx), "repository.git.url is not supported for gentoo")
-}
-
 func TestDefaultSetsPath(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",

@@ -155,7 +155,7 @@ type overlaySettings struct {
 	hasCacheFormatsConfigured bool
 }
 
-func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo) (overlaySettings, error) {
+func loadOverlaySettings(ctx *context.Context, cfg config.Gentoo, repoClient any, repo client.Repo) (overlaySettings, error) {
 	settings := overlaySettings{
 		hashes: []string{"BLAKE2B", "SHA512"},
 		thin:   false,
@@ -272,7 +272,7 @@ func generateManifestLine(recordType, filename, pathStr string, content []byte, 
 	return line, nil
 }
 
-func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient client.Client, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
+func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, repoClient any, repo client.Repo, files *[]client.RepoFile, deletedEbuilds []string) error {
 	dir := packageDir(cfg)
 
 	metadataPath := path.Join(dir, "metadata.xml")
@@ -475,7 +475,7 @@ func handleGentooManifestAndMetadata(ctx *context.Context, cfg config.Gentoo, re
 	return nil
 }
 
-func loadManifestLines(ctx *context.Context, repoClient client.Client, repo client.Repo, manifestPath string) ([]string, error) {
+func loadManifestLines(ctx *context.Context, repoClient any, repo client.Repo, manifestPath string) ([]string, error) {
 	if dl, ok := repoClient.(client.FileDownloader); ok {
 		content, err := dl.DownloadFile(ctx, repo, manifestPath)
 		if err == nil {

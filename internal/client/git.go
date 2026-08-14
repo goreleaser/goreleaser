@@ -55,7 +55,7 @@ func (g *gitClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitA
 }
 
 // NewGitUploadClient creates a new git client.
-func NewGitUploadClient(branch string) FilesCreator {
+func NewGitUploadClient(branch string) *gitClient {
 	return &gitClient{
 		branch: branch,
 	}
