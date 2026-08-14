@@ -15,11 +15,11 @@ S="${WORKDIR}"
 
 src_install() {
   exeinto /opt/custom
-  doexe "custom_bin" || die "Failed to install file"
+  doexe "custom_bin" || die "Failed to install custom_bin"
   if use amd64; then
     exeinto /opt/other
-    newexe "renamed_bin_x86" "renamed_bin" || die "Failed to install file"
+    newexe "renamed_bin_x86" "renamed_bin" || die "Failed to install renamed_bin_x86"
   fi
   exeinto
-  doexe "default_bin" || die "Failed to install file"
+  doexe "default_bin" || die "Failed to install default_bin"
 }

@@ -297,6 +297,9 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			for i := range installs {
 				installs[i].Keywords = kws
 			}
+			if len(kws) == len(keywordsList) {
+				kws = nil // If it applies to all requested architectures, don't wrap it in a use conditional
+			}
 			installGroups = append(installGroups, installGroup{
 				Keywords: kws,
 				Installs: installs,

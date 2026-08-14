@@ -2370,8 +2370,8 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		require.NoError(t, err)
 		str := string(content)
 
-		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    doexe \"dir_amd64/myapp\" || die \"Failed to install file\"\n  fi")
-		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    doexe \"dir_arm64/myapp\" || die \"Failed to install file\"\n  fi")
+		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    doexe \"dir_amd64/myapp\" || die \"Failed to install dir_amd64/myapp\"\n  fi")
+		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    doexe \"dir_arm64/myapp\" || die \"Failed to install dir_arm64/myapp\"\n  fi")
 	})
 
 	t.Run("plain src stays literal even with wrappedIn archive", func(t *testing.T) {

@@ -17,19 +17,19 @@ S="${WORKDIR}"
 src_install() {
   exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
-  dobin "bin1" || die "Failed to install file"
+  dobin "bin1" || die "Failed to install bin1"
   exeinto /opt/foo
-  doexe "exe1" || die "Failed to install file"
-  doexe "exe2" || die "Failed to install file"
+  doexe "exe1" || die "Failed to install exe1"
+  doexe "exe2" || die "Failed to install exe2"
   exeinto /usr/local/bin
-  doexe "exe3" || die "Failed to install file"
+  doexe "exe3" || die "Failed to install exe3"
   insinto /etc/foo
-  doins "ins1" || die "Failed to install file"
+  doins "ins1" || die "Failed to install ins1"
   insinto /
-  doins "ins2" || die "Failed to install file"
+  doins "ins2" || die "Failed to install ins2"
   insinto /etc/foo
-  doins "ins3" || die "Failed to install file"
+  doins "ins3" || die "Failed to install ins3"
   insinto /usr/lib/systemd/system
-  doins "sys1.service" || die "Failed to install file"
-  newins "sys2.service" "sys2-rename.service" || die "Failed to install file"
+  doins "sys1.service" || die "Failed to install sys1.service"
+  newins "sys2.service" "sys2-rename.service" || die "Failed to install sys2.service"
 }

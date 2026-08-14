@@ -18,6 +18,6 @@ S="${WORKDIR}"
 src_install() {
   if use amd64 || use arm64; then
     insinto /etc/myapp
-    doins "config.yaml" || die "Failed to install file"
+    doins "config.yaml" || die "Failed to install config.yaml"
   fi
 }
