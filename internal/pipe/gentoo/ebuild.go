@@ -282,6 +282,10 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 	var installerCmd, installRenameCmd, dirSwitchCmd string
 	var items []installItemData
 	for _, d := range cfgItems {
+		if d.Src == "" && d.SrcID == "" {
+			return nil, fmt.Errorf("gentoo %s: either src or src_id is required", sectionName)
+		}
+
 		var keywords []string
 		for _, arch := range d.Archs {
 			kw, err := gentooArch(arch)
@@ -335,7 +339,7 @@ func (v *extraFilesProcessor) buildInstallItems(sectionName string, cfgItems []c
 			for _, art := range matchingArches[1:] {
 				w := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, "")
 				b := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
-				if w != firstWrappedIn || !slices.Equal(b, firstBins) {
+				if w != firstWrappedIn || (d.Src == "" && !slices.Equal(b, firstBins)) {
 					return nil, fmt.Errorf("gentoo %s: src_id %q has mismatched archive layouts across architectures; specify explicit src", sectionName, d.SrcID)
 				}
 			}

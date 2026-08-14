@@ -2154,9 +2154,11 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 
 		suppressed := collectSuppressedIDs(cfg)
 		for i := 1; i <= 10; i++ {
-			require.True(t, suppressed[fmt.Sprintf("id%d", i)])
+			archs, ok := suppressed[fmt.Sprintf("id%d", i)]
+			require.True(t, ok && len(archs) == 0)
 		}
-		require.False(t, suppressed["unsuppressed_id"])
+		_, ok := suppressed["unsuppressed_id"]
+		require.False(t, ok)
 	})
 
 	t.Run("unknown src_id returns error", func(t *testing.T) {
@@ -2609,4 +2611,140 @@ func TestHandleGentooManifestAndMetadataPrunesFullyDeletedBaseVersions(t *testin
 	require.Contains(t, manifestContent, "DIST foo_2.0.0_linux_amd64.tar.gz")
 	require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
 	require.Contains(t, manifestContent, "EBUILD foo-2.0.0.ebuild")
+}
+
+func TestGentooArchSpecificSuppression(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doexe: []config.GentooInstallItem{{
+				SrcID: "default",
+				Archs: []string{"amd64"},
+				Dst:   "/opt/bin/foo",
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm64.tar.gz",
+		Path:   "dist/default_linux_arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+	str := string(content)
+
+	require.Contains(t, str, "amd64? (")
+	require.Contains(t, str, "arm64? (")
+
+	require.Contains(t, str, "exeinto /opt/bin")
+	require.Contains(t, str, "newexe \"myapp\" \"foo\"")
+
+	require.Contains(t, str, "doexe \"myapp\"")
+}
+
+func TestGentooSrcValidation(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doexe: []config.GentooInstallItem{{
+				Dst: "/opt/bin/foo",
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+	require.ErrorContains(t, err, "gentoo doexe: either src or src_id is required")
+}
+
+func TestGentooMismatchedArchiveBypass(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doins: []config.GentooInstallItem{{
+				SrcID: "default",
+				Src:   "config.yaml",
+				Archs: []string{"amd64", "arm64"},
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp-amd64"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm64.tar.gz",
+		Path:   "dist/default_linux_arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp-arm64"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
 }
