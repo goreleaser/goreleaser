@@ -257,7 +257,7 @@ func TestGitClient(t *testing.T) {
 		repo := Repo{GitURL: url, PrivateKey: testlib.MakeNewSSHKey(t, ""), Name: "testdel"}
 		fc := NewGitUploadClient(repo.Branch)
 		require.NoError(t, fc.CreateFile(ctx, author, repo, []byte("foo"), "bar.txt", "add"))
-		df, ok := fc.(FileDeleter)
+		df, ok := any(fc).(FileDeleter)
 		require.True(t, ok)
 		require.NoError(t, df.DeleteFile(ctx, author, repo, "bar.txt", "del"))
 		_, err := os.Stat(filepath.Join(ctx.Config.Dist, "git", repo.Name+"-", "bar.txt"))
