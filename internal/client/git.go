@@ -54,8 +54,15 @@ func (g *gitClient) DeleteFile(ctx *context.Context, commitAuthor config.CommitA
 	return g.CreateFiles(ctx, commitAuthor, repo, message, []RepoFile{{Path: path, Delete: true}})
 }
 
+type GitUploadClient interface {
+	DirectoryLister
+	FileDownloader
+	FileDeleter
+	FilesCreator
+}
+
 // NewGitUploadClient creates a new git client.
-func NewGitUploadClient(branch string) *gitClient {
+func NewGitUploadClient(branch string) GitUploadClient {
 	return &gitClient{
 		branch: branch,
 	}
