@@ -44,6 +44,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if g.ID == "" {
 			g.ID = "default"
 		}
+		if g.Repository.Git.URL != "" {
+			return errors.New("repository.git.url is not supported for gentoo")
+		}
 		if !g.Bin {
 			return errors.New("bin must be true")
 		}
