@@ -80,13 +80,13 @@ src_install() {
   {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}" "{{ .Target }}"
   {{- else }}
   {{- if eq .Source .Base }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}" || die "Failed to install file"
   {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallRenameCmd }} "{{ .Source }}" "{{ .Base }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallRenameCmd }} "{{ .Source }}" "{{ .Base }}" || die "Failed to install file"
   {{- end }}
   {{- end }}
 {{- else }}
-  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}"
+  {{ if .Keywords }}  {{ end }}{{ if .Use }}  {{ end }}{{ .InstallerCmd }} "{{ .Source }}" || die "Failed to install file"
 {{- end }}
 {{- if .Use }}
   {{ if .Keywords }}  {{ end }}fi

@@ -20,6 +20,6 @@ src_install() {
   doexe "myapp" || die "Failed to install binary"
   if use amd64; then
     exeinto /opt/bin
-    newexe "myapp" "foo"
+    newexe "myapp" "foo" || die "Failed to install file"
   fi
 }
