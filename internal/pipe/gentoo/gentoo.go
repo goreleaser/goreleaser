@@ -706,21 +706,47 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 			}
 		}
 	} else if g.cfg.VersionRetentionStrategy == config.VersionRetentionStrategyKeepLatest {
-		newUniqueCount := 0
+		var allEbuilds []string
+		allEbuilds = append(allEbuilds, ebuilds...)
 		for _, n := range newFiles {
 			if !slices.Contains(ebuilds, n) {
-				newUniqueCount++
+				allEbuilds = append(allEbuilds, n)
 			}
 		}
-		allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
-		if len(ebuilds) > allowedToKeep {
+
+		slices.SortFunc(allEbuilds, func(i, j string) int {
+			vI := parseGentooVersion(i, prefix)
+			vJ := parseGentooVersion(j, prefix)
+			if vI != nil && vJ != nil {
+				if vI.GreaterThan(vJ) {
+					return -1
+				}
+				if vJ.GreaterThan(vI) {
+					return 1
+				}
+				return 0
+			}
+			if vI != nil {
+				return -1
+			}
+			if vJ != nil {
+				return 1
+			}
+			return strings.Compare(j, i)
+		})
+
+		if len(allEbuilds) > g.cfg.KeepVersions {
+			keptFiles := allEbuilds[:g.cfg.KeepVersions]
+
 			log.WithField("keep_versions", g.cfg.KeepVersions).
-				WithField("new_unique", newUniqueCount).
-				WithField("allowed_to_keep", allowedToKeep).
+				WithField("allowed_to_keep", g.cfg.KeepVersions).
 				WithField("total_old", len(ebuilds)).
 				Debug("keeping latest versions")
-			for _, n := range ebuilds[allowedToKeep:] {
-				deleter.Delete(n)
+
+			for _, n := range ebuilds {
+				if !slices.Contains(keptFiles, n) {
+					deleter.Delete(n)
+				}
 			}
 		}
 	}
