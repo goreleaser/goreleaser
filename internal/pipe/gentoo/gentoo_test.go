@@ -2610,3 +2610,38 @@ func TestHandleGentooManifestAndMetadataPrunesFullyDeletedBaseVersions(t *testin
 	require.NotContains(t, manifestContent, "EBUILD foo-1.0.0.ebuild")
 	require.Contains(t, manifestContent, "EBUILD foo-2.0.0.ebuild")
 }
+
+func TestRenameArchiveMissingVersion(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "app",
+		Dist:        dist,
+		Gentoos: []config.Gentoo{
+			{
+				ID:                       "default",
+				Bin:                      true,
+				License:                  "MIT",
+				Description:              "foo",
+				KeepVersions:             1,
+				VersionRetentionStrategy: config.VersionRetentionStrategyKeepLatest,
+			},
+		},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "app_linux_amd64.tar.gz",
+		Path:   "dist/app_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "app-bin", "app-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+	str := string(content)
+	require.Contains(t, str, "-> app-1.0.0-app_linux_amd64.tar.gz )")
+}

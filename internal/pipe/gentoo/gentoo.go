@@ -185,8 +185,13 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			return fmt.Errorf("multiple linux archives map to Gentoo architecture %q for ID %q (%s and %s); please filter artifacts", kw, id, prev.Name, art.Name)
 		}
 		seenArchID[kw][id] = art
+		fileName := art.Name
+		versionStr := gentooVersion(ctx.Version)
+		if !strings.Contains(fileName, versionStr) && !strings.Contains(fileName, ctx.Version) {
+			fileName = fmt.Sprintf("%s-%s-%s", cfg.Name, versionStr, fileName)
+		}
 		archMap[kw] = append(archMap[kw], archItem{
-			File: art.Name,
+			File: fileName,
 			URI:  url,
 		})
 		keywordSet["~"+kw] = struct{}{}
