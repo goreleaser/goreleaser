@@ -2660,15 +2660,8 @@ func TestGentooArchSpecificSuppression(t *testing.T) {
 	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
 	content, err := os.ReadFile(ebuildPath)
 	require.NoError(t, err)
-	str := string(content)
 
-	require.Contains(t, str, "amd64? (")
-	require.Contains(t, str, "arm64? (")
-
-	require.Contains(t, str, "exeinto /opt/bin")
-	require.Contains(t, str, "newexe \"myapp\" \"foo\"")
-
-	require.Contains(t, str, "doexe \"myapp\"")
+	golden.RequireEqual(t, content)
 }
 
 func TestGentooSrcValidation(t *testing.T) {
@@ -2747,4 +2740,10 @@ func TestGentooMismatchedArchiveBypass(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
 }
