@@ -214,6 +214,15 @@ var termuxArchReplacer = strings.NewReplacer(
 	"arm6", "arm",
 )
 
+// debArchVariant returns the Debian architecture variant for the given
+// artifact, if any. v1 is the baseline, so it gets no variant.
+func debArchVariant(art *artifact.Artifact) string {
+	if art.Goarch != "amd64" || art.Goamd64 == "v1" {
+		return ""
+	}
+	return art.Goamd64
+}
+
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve this.
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips                                                          // key used for the ConventionalFileName et al
@@ -488,7 +497,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
-				ArchVariant: artifacts[0].Goamd64,
+				ArchVariant: debArchVariant(artifacts[0]),
 				Compression: overridden.Deb.Compression,
 				Fields:      overridden.Deb.Fields,
 				Predepends:  overridden.Deb.Predepends,
