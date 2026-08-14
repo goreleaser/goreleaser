@@ -541,8 +541,6 @@ func gentooArch(goarch string) (string, error) {
 		return "arm64", nil
 	case "loong64":
 		return "loong", nil
-	case "ppc64le":
-		return "ppc64", nil
 	case "riscv64":
 		return "riscv", nil
 	case "s390x":
