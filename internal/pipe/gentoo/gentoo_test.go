@@ -1057,8 +1057,8 @@ func TestGentooArch(t *testing.T) {
 		{"arm64", "arm64", "arm64", false},
 		{"loong64", "loong64", "loong", false},
 		{"riscv64", "riscv64", "riscv", false},
-		{"ppc64le", "ppc64le", "ppc64", false},
 		{"s390x", "s390x", "s390", false},
+		{"unsupported ppc64le", "ppc64le", "", true},
 		{"unsupported mips64le", "mips64le", "", true},
 		{"unsupported sparc64", "sparc64", "", true},
 	}
