@@ -297,16 +297,12 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			for i := range installs {
 				installs[i].Keywords = kws
 			}
-
-			// We only drop the keywords constraint (i.e. make it global) if this group
-			// applies to ALL generated architectures.
-			var appliedToAll = len(kws) == len(keywordsList)
-			var wrapKeywords []string
-			if !appliedToAll {
-				wrapKeywords = kws
+			var applyKws []string
+			if len(kws) < len(keywordsList) {
+				applyKws = kws
 			}
 			installGroups = append(installGroups, installGroup{
-				Keywords: wrapKeywords,
+				Keywords: applyKws,
 				Installs: installs,
 			})
 		}
