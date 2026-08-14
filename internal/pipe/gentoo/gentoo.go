@@ -514,7 +514,7 @@ func collectPublishGroups(ctx *context.Context) ([]*publishGroup, error) {
 	return groups, nil
 }
 
-func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, error) {
+func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient any, repo client.Repo) ([]string, error) {
 	dir := packageDir(g.cfg)
 	stateRepo := repo
 	if g.cfg.Repository.PullRequest.Enabled {
@@ -762,9 +762,9 @@ func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
 		}
 	}
 
-	deletedEbuilds, err := g.applyVersionRetention(ctx, repoClient, repo)
-	if err != nil {
-		return err
+	var stateClient any = repoClient
+	if g.cfg.Repository.Git.URL != "" {
+		stateClient = client.NewGitUploadClient(repo.Branch)
 	}
 
 	stateRepo := repo
@@ -772,7 +772,12 @@ func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
 		stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
 	}
 
-	settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+	deletedEbuilds, err := g.applyVersionRetention(ctx, stateClient, repo)
+	if err != nil {
+		return err
+	}
+
+	settings, err := loadOverlaySettings(ctx, g.cfg, stateClient, stateRepo)
 	if err != nil {
 		return err
 	}
