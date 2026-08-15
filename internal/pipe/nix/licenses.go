@@ -290,6 +290,7 @@ var validLicenses = []string{
 	"universalFOSSException-10",
 	"unlicense",
 	"upl",
+	"valveSDK",
 	"vim",
 	"virtualbox-puel",
 	"vol-sl",
