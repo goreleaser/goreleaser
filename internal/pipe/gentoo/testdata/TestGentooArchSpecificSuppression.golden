@@ -17,7 +17,9 @@ S="${WORKDIR}"
 
 src_install() {
   exeinto /opt/bin
-  doexe "myapp" || die "Failed to install binary"
+  if use arm64; then
+    doexe "myapp" || die "Failed to install binary"
+  fi
   if use amd64; then
     exeinto /opt/bin
     newexe "myapp" "foo" || die "Failed to install myapp"

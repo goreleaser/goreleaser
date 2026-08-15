@@ -38,7 +38,7 @@ src_install() {
 {{- end }}
 {{- end }}
 {{- range .InstallGroups }}
-{{- if and .Keywords (gt (len $.InstallGroups) 1) }}
+{{- if .Keywords }}
   if {{ range $i, $k := .Keywords }}{{ if $i }} || {{ end }}use {{ $k }}{{ end }}; then
 {{- range .Installs }}
     {{- if eq .Source .Target }}
