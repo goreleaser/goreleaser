@@ -1600,6 +1600,9 @@
 					"description": {
 						"type": "string"
 					},
+					"version_representation": {
+						"type": "string"
+					},
 					"license": {
 						"type": "string"
 					},

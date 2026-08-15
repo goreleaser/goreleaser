@@ -482,6 +482,7 @@ type Gentoo struct {
 	CommitMessageTemplate    string                   `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Homepage                 string                   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	Description              string                   `yaml:"description,omitempty" json:"description,omitempty"`
+	VersionRepresentation    string                   `yaml:"version_representation,omitempty" json:"version_representation,omitempty"`
 	License                  string                   `yaml:"license,omitempty" json:"license,omitempty"`
 	Keywords                 StringArray              `yaml:"keywords,omitempty" json:"keywords,omitempty"`
 	Files                    []ExtraFile              `yaml:"files,omitempty" json:"files,omitempty"`
