@@ -363,7 +363,7 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 			Copyright:           cmp.Or(aloc.Copyright, winget.Copyright),
 			CopyrightURL:        cmp.Or(aloc.CopyrightURL, winget.CopyrightURL),
 			ShortDescription:    cmp.Or(aloc.ShortDescription, winget.ShortDescription),
-			Description:         strings.ReplaceAll(aloc.Description, "\t", "  "),
+			Description:         strings.ReplaceAll(cmp.Or(aloc.Description, winget.Description), "\t", "  "),
 			Moniker:             winget.Name,
 			Tags:                fixTags(tags),
 			ReleaseNotes:        cmp.Or(aloc.ReleaseNotes, winget.ReleaseNotes),
