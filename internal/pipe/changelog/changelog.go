@@ -310,15 +310,16 @@ func formatEntries(ctx *context.Context, entries []Item) ([]string, error) {
 func filterEntries(ctx *context.Context, entries []Item) ([]Item, error) {
 	filters := ctx.Config.Changelog.Filters
 	if len(filters.Include) > 0 {
-		var newEntries []Item
+		res := make([]*regexp.Regexp, 0, len(filters.Include))
 		for _, filter := range filters.Include {
 			r, err := regexp.Compile(filter)
 			if err != nil {
 				return entries, err
 			}
-			newEntries = append(newEntries, keep(r, entries)...)
+			res = append(res, r)
 		}
-		return newEntries, nil
+		// an entry matching several includes must still be listed once
+		return keepAny(res, entries), nil
 	}
 	for _, filter := range filters.Exclude {
 		r, err := regexp.Compile(filter)
@@ -345,9 +346,11 @@ func sortEntries(ctx *context.Context, entries []Item) []Item {
 	return entries
 }
 
-func keep(filter *regexp.Regexp, entries []Item) (result []Item) {
+func keepAny(filters []*regexp.Regexp, entries []Item) (result []Item) {
 	for _, entry := range entries {
-		if filter.MatchString(entry.Message) {
+		if slices.ContainsFunc(filters, func(r *regexp.Regexp) bool {
+			return r.MatchString(entry.Message)
+		}) {
 			result = append(result, entry)
 		}
 	}
