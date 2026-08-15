@@ -51,7 +51,7 @@ signs:
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
-    # Default: ["--output", "${signature}", "--detach-sign", "${artifact}"].
+    # Default: ["--output", "${signature}", "--detach-sig", "${artifact}"].
     # Templates: allowed.
     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 

@@ -49,7 +49,6 @@ archives:
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
     #
-    # Templates: allowed.
     meta: true
 
     # Archive name.
@@ -64,11 +63,12 @@ archives:
 
     # Sets the given file info to all the binaries included from the `builds`.
     #
-    # Default: copied from the source binary.
+    # The mode is always forced to 0755, so the binaries are executable.
+    #
+    # Default: mode 0755; other fields copied from the source binary.
     builds_info:
       group: root
       owner: root
-      mode: 0644
       # format is `time.RFC3339Nano`
       mtime: 2008-01-02T15:04:05Z
 
@@ -113,7 +113,7 @@ archives:
 
     # Additional files/globs you want to add to the archive.
     #
-    # Default: [ 'LICENSE*', 'README*', 'CHANGELOG', 'license*', 'readme*', 'changelog'].
+    # Default: [ 'license*', 'LICENSE*', 'readme*', 'README*', 'changelog*', 'CHANGELOG*' ].
     # Templates: allowed.
     files:
       - LICENSE.txt
@@ -288,7 +288,7 @@ will probably look like this:
 ```yaml {filename=".goreleaser.yaml"}
 archives:
   # Note: Replace gz with xz for xz.
-  - format: gz
+  - formats: ["gz"]
     files:
       - none*
 ```
@@ -307,7 +307,7 @@ so by setting `format` to `binary`:
 
 ```yaml {filename=".goreleaser.yaml"}
 archives:
-  - format: binary
+  - formats: ["binary"]
 ```
 
 You can then set a custom `name_template`, which will be the name used when

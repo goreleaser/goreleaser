@@ -84,9 +84,9 @@ release:
   # subsequent publishers and announcers.
   #
   # {{< g_inline_pro >}}
-  # Default: '{{ .PrefixedCurrentTag }}'.
+  # Default: '{{ .PrefixedTag }}'.
   # Templates: allowed.
-  tag: "{{ .CurrentTag }}"
+  tag: "{{ .Tag }}"
 
   # If set, will create a release discussion in the category specified.
   #
@@ -164,7 +164,7 @@ release:
     from_url:
       # Templates: allowed.
       url: https://foo.bar/footer.md
-      footers:
+      headers:
         x-api-token: "${MYCOMPANY_TOKEN}"
 
     # Loads from a local file.

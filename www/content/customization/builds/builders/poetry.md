@@ -27,7 +27,7 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     id: "my-build"
 
     # Use poetry.
@@ -107,6 +107,7 @@ You can use [global after hooks](/customization/builds/hooks/) to do it:
 ```yaml {filename=".goreleaser.yaml"}
 # global after hooks
 after:
-  - cmd: "poetry publish"
-    if: "{{ .IsRelease }}"
+  hooks:
+    - cmd: "poetry publish"
+      if: "{{ .IsRelease }}"
 ```

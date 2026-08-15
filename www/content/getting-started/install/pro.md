@@ -88,7 +88,7 @@ Once you do that, you can install the packages.
 Registries:
 
 - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-- [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
+- [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser-pro/pkgs/container/goreleaser-pro)
 
 **Example usage:**
 

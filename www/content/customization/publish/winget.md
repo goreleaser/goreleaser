@@ -70,6 +70,30 @@ winget:
     # Templates: allowed.
     default_locale: en-GB
 
+    # Additional locale manifests for the package.
+    #
+    # WinGet supports multiple locale manifests. Each one overrides specific
+    # fields for a given locale. Any field that is not set falls back to the
+    # default locale manifest value.
+    #
+    # The `locale` field is required and must not match the `default_locale`.
+    # Duplicate locales are rejected.
+    #
+    # Each additional locale manifest can override the following fields:
+    # publisher, publisher_url, publisher_support_url, privacy_url, author,
+    # package_name, homepage, license, license_url, copyright, copyright_url,
+    # short_description, description, tags, release_notes, release_notes_url,
+    # installation_notes.
+    #
+    # {{< g_inline_version "v2.18-unreleased" >}}
+    additional_locales:
+      - locale: pt-BR
+        short_description: "Portuguese (Brazil) description here."
+        tags:
+          - cli
+      - locale: fr-FR
+        short_description: "French description here."
+
     # Package name.
     #
     # Default: name.
@@ -150,6 +174,11 @@ winget:
     #
     # Templates: allowed.
     copyright_url: "https://goreleaser.com/copyright"
+
+    # Author.
+    #
+    # Templates: allowed.
+    author: "Carlos Becker"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
     # package - instead, it will be stored on the dist directory only,

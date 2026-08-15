@@ -15,7 +15,7 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     id: "my-build"
 
     # Use rust.
@@ -24,7 +24,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     #
-    # Default: Project directory name.
+    # Default: Project name.
     binary: program
 
     # List of targets to be built, in Rust's format.
@@ -112,7 +112,8 @@ You can use [global after hooks](/customization/builds/hooks/) to do it:
 ```yaml {filename=".goreleaser.yaml"}
 # global after hooks
 after:
-  - cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
+  hooks:
+    - cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
 ```
 
 ## Caveats

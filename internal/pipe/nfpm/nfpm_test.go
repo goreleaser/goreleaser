@@ -2027,7 +2027,7 @@ func TestTermuxArch(t *testing.T) {
 
 	got := map[string]string{}
 	for _, pkg := range packages {
-		got[pkg.Format()] = debControlArch(t, pkg.Path)
+		got[pkg.Format()] = debControlField(t, pkg.Path, "Architecture")
 	}
 
 	// the same arm64 binary must keep Termux's expected `aarch64` arch on
@@ -2039,9 +2039,10 @@ func TestTermuxArch(t *testing.T) {
 	}, got)
 }
 
-// debControlArch reads the Architecture field from the control file of the
-// given .deb (or .termux.deb) package.
-func debControlArch(tb testing.TB, path string) string {
+// debControlField reads the given field from the control file of the
+// given .deb (or .termux.deb) package. Returns an empty string if the field
+// isn't set.
+func debControlField(tb testing.TB, path, field string) string {
 	tb.Helper()
 	f, err := os.Open(path)
 	require.NoError(tb, err)
@@ -2073,14 +2074,77 @@ func debControlArch(tb testing.TB, path string) string {
 			bts, err := io.ReadAll(tr)
 			require.NoError(tb, err)
 			for line := range strings.Lines(string(bts)) {
-				if arch, ok := strings.CutPrefix(line, "Architecture:"); ok {
-					return strings.TrimSpace(arch)
+				if v, ok := strings.CutPrefix(line, field+":"); ok {
+					return strings.TrimSpace(v)
 				}
 			}
+			return ""
 		}
 	}
-	tb.Fatalf("Architecture field not found in %s control file", path)
+	tb.Fatalf("control file not found in %s", path)
 	return ""
+}
+
+func TestDebArchVariant(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				IDs:        []string{"default"},
+				Formats:    []string{"deb"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+				},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"))
+	for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    "mybin",
+			Path:    binPath,
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: goamd64,
+			Type:    artifact.Binary,
+			Extra:   map[string]any{artifact.ExtraID: "default"},
+		})
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.Binary,
+		Extra:  map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 5)
+
+	got := map[string]string{}
+	for _, pkg := range packages {
+		got[pkg.Name] = debControlField(t, pkg.Path, "Architecture-Variant")
+	}
+
+	// v1 is the baseline, and should not set an architecture variant.
+	require.Equal(t, map[string]string{
+		"foo_1.0.0_linux_amd64.deb":   "",
+		"foo_1.0.0_linux_amd64v2.deb": "amd64v2",
+		"foo_1.0.0_linux_amd64v3.deb": "amd64v3",
+		"foo_1.0.0_linux_amd64v4.deb": "amd64v4",
+		"foo_1.0.0_linux_arm64.deb":   "",
+	}, got)
 }
 
 func TestRunPipeMSIX(t *testing.T) {

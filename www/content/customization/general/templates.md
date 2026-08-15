@@ -101,10 +101,9 @@ You should be able to use all its fields on each item:
 - `.Goos`
 - `.Goarch`
 - `.Goarm`
-- `.Gomips`
+- `.Gomips` (also holds `GOMIPS64` on 64-bit targets)
 - `.Goamd64`
 - `.Goarm64` {{< g_inline_version "v2.4" >}}
-- `.Gomips64` {{< g_inline_version "v2.4" >}}
 - `.Goppc64` {{< g_inline_version "v2.4" >}}
 - `.Goriscv64` {{< g_inline_version "v2.4" >}}
 - `.Go386` {{< g_inline_version "v2.4" >}}
@@ -122,10 +121,9 @@ may have some extra fields:
 | `.Os`           | `GOOS`                                                          |
 | `.Arch`         | `GOARCH`                                                        |
 | `.Arm`          | `GOARM`                                                         |
-| `.Mips`         | `GOMIPS`                                                        |
+| `.Mips`         | `GOMIPS`, and `GOMIPS64` on 64-bit targets                       |
 | `.Amd64`        | `GOAMD64`                                                       |
 | `.Arm64`        | `GOARM64` {{< g_inline_version "v2.4" >}}                       |
-| `.Mips64`       | `GOMIPS64` {{< g_inline_version "v2.4" >}}                      |
 | `.Ppc64`        | `GOPPC64` {{< g_inline_version "v2.4" >}}                       |
 | `.Riscv64`      | `GORISCV64` {{< g_inline_version "v2.4" >}}                     |
 | `.I386`         | `GO386` {{< g_inline_version "v2.4" >}}                         |
@@ -175,6 +173,7 @@ On all fields, you have these available functions:
 | `dir .Path`                       | returns all but the last element of path, typically the path's directory. See [Dir](https://pkg.go.dev/path/filepath#Dir)         |
 | `base .Path`                      | returns the last element of path. See [Base](https://pkg.go.dev/path/filepath#Base)                                               |
 | `abs .ArtifactPath`               | returns an absolute representation of path. See [Abs](https://pkg.go.dev/path/filepath#Abs)                                       |
+| `join "a" "b"`                    | joins any number of path elements into a single path. See [Join](https://pkg.go.dev/path/filepath#Join)                          |
 | `filter "text" "regex"`           | keeps only the lines matching the given regex, analogous to `grep -E`                                                             |
 | `reverseFilter "text" "regex"`    | keeps only the lines **not** matching the given regex, analogous to `grep -vE`                                                    |
 | `title "foo"`                     | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title)                   |

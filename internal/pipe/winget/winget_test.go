@@ -690,6 +690,213 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "with-additional-locales",
+			expectPath: "manifests/f/Foo/additional/1.2.1/Foo.additional.",
+			winget: config.Winget{
+				Name:             "additional",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{
+						Locale:           "pt-BR",
+						ShortDescription: "foo bar zaz pt-BR",
+						Tags:             []string{"foo", "bar"},
+					},
+				},
+			},
+		},
+		{
+			name:       "with-multiple-additional-locales",
+			expectPath: "manifests/f/Foo/multi-locales/1.2.1/Foo.multi-locales.",
+			winget: config.Winget{
+				Name:             "multi-locales",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{
+						Locale:           "pt-BR",
+						ShortDescription: "portuguese description",
+					},
+					{
+						Locale:           "fr-FR",
+						ShortDescription: "french description",
+						Tags:             []string{"cli", "french"},
+					},
+				},
+			},
+		},
+		{
+			name:       "full-additional-locale",
+			expectPath: "manifests/f/Foo/full-locales/1.2.1/Foo.full-locales.",
+			winget: config.Winget{
+				Name:                "full-locales",
+				Publisher:           "Foo",
+				PublisherURL:        "https://foo.com",
+				PublisherSupportURL: "https://foo.com/support",
+				PrivacyURL:          "https://foo.com/privacy",
+				Author:              "Foo Author",
+				Homepage:            "https://foo.com",
+				License:             "MIT",
+				LicenseURL:          "https://foo.com/license",
+				Copyright:           "Copyright Foo",
+				CopyrightURL:        "https://foo.com/copyright",
+				ShortDescription:    "foo bar zaz",
+				Description:         "default description",
+				ReleaseNotesURL:     "https://foo.com/releases",
+				InstallationNotes:   "https://foo.com/install",
+				Tags:                []string{"default"},
+				IDs:                 []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{
+						Locale:              "pt-BR",
+						Publisher:           "Foo Brasil",
+						PublisherURL:        "https://foo.com.br",
+						PublisherSupportURL: "https://foo.com.br/support",
+						PrivacyURL:          "https://foo.com.br/privacy",
+						Author:              "Author Foo",
+						PackageName:         "foo-br",
+						Homepage:            "https://foo.com.br",
+						License:             "MIT BR",
+						LicenseURL:          "https://foo.com.br/license",
+						Copyright:           "Copyright BR",
+						CopyrightURL:        "https://foo.com.br/copyright",
+						ShortDescription:    "descricao curta",
+						Description:         "descricao completa",
+						Tags:                []string{"br", "cli"},
+						ReleaseNotes:        "notas de lancamento",
+						ReleaseNotesURL:     "https://foo.com.br/releases",
+						InstallationNotes:   "https://foo.com.br/install",
+					},
+				},
+			},
+		},
+		{
+			name:             "bad-additional-locale-field-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "bad-field-locale",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "pt-BR", Publisher: "{{ .Nope }}"},
+				},
+			},
+		},
+		{
+			name:             "bad-additional-locale-release-notes-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "bad-release-notes-locale",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "pt-BR", ReleaseNotes: "{{ .Nope }}"},
+				},
+			},
+		},
+		{
+			name:             "additional-locale-empty",
+			expectRunErrorIs: errAdditionalLocaleEmpty,
+			winget: config.Winget{
+				Name:             "empty-locale",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: ""},
+				},
+			},
+		},
+		{
+			name:             "additional-locale-duplicate",
+			expectRunErrorIs: errAdditionalLocaleDuplicate,
+			winget: config.Winget{
+				Name:             "dup-locale",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "pt-BR"},
+					{Locale: "pt-BR"},
+				},
+			},
+		},
+		{
+			name:             "additional-locale-is-default",
+			expectRunErrorIs: errAdditionalLocaleIsDefault,
+			winget: config.Winget{
+				Name:             "default-clash",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				DefaultLocale:    "en-GB",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "en-GB"},
+				},
+			},
+		},
+		{
+			name:             "bad-additional-locale-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "bad-tmpl-locale",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "{{.Nope}}"},
+				},
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -785,11 +992,16 @@ func TestRunPipe(t *testing.T) {
 				artifact.WingetInstaller,
 				artifact.WingetVersion,
 				artifact.WingetDefaultLocale,
+				artifact.WingetLocale,
 			)).List() {
 				bts, err := os.ReadFile(winget.Path)
 				require.NoError(t, err)
-				cfg := artifact.MustExtra[config.Winget](*winget, wingetConfigExtra)
-				golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type, cfg.DefaultLocale))
+				locale := artifact.ExtraOr(*winget, wingetLocaleExtra, "")
+				if locale == "" {
+					cfg := artifact.MustExtra[config.Winget](*winget, wingetConfigExtra)
+					locale = cfg.DefaultLocale
+				}
+				golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type, locale))
 			}
 
 			// publish
@@ -802,20 +1014,22 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, pipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 
-			require.Len(t, client.Messages, 3)
-			expected := map[string]bool{
-				"locale":    false,
-				"version":   false,
-				"installer": false,
+			expected := map[string]int{
+				"locale":    1 + len(tt.winget.AdditionalLocales),
+				"version":   1,
+				"installer": 1,
 			}
+			require.Len(t, client.Messages, expected["version"]+expected["installer"]+expected["locale"])
 			for _, msg := range client.Messages {
 				require.Regexp(t, "New version: \\w+\\.[\\w-]+ 1.2.1", msg)
 				for k, v := range expected {
 					if strings.Contains(msg, ": add "+k) {
-						require.False(t, v, "multiple commits for "+k)
-						expected[k] = true
+						expected[k] = v - 1
 					}
 				}
+			}
+			for k, v := range expected {
+				require.Equalf(t, 0, v, "missing commit for %s", k)
 			}
 
 			require.NotEmpty(t, client.Path)
@@ -829,6 +1043,73 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Winget: []config.Winget{{
+				Name:             "foo",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{Locale: "pt-BR"},
+					{Locale: "pt-BR"},
+				},
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, "rc1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
+	createFakeArtifact := func(id, goos, goarch, goamd64 string) {
+		path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+".zip")
+		art := artifact.Artifact{
+			Name:    "foo_" + goos + "_" + goarch + goamd64 + ".zip",
+			Path:    path,
+			Goos:    goos,
+			Goarch:  goarch,
+			Goamd64: goamd64,
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        id,
+				artifact.ExtraFormat:    "zip",
+				artifact.ExtraBinaries:  []string{"foo.exe"},
+				artifact.ExtraWrappedIn: "",
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+	createFakeArtifact("foo", "windows", "amd64", "v1")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+
+	err := pipe.runAll(ctx, client.NewMock())
+	require.ErrorIs(t, err, errAdditionalLocaleDuplicate)
+
+	// When a later additional locale is invalid, no winget artifact (version,
+	// installer, default locale, or any additional locale) may be registered.
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
+	)).List())
 }
 
 func TestErrNoArchivesFound(t *testing.T) {
@@ -910,11 +1191,16 @@ func TestFormatBinary(t *testing.T) {
 		artifact.WingetInstaller,
 		artifact.WingetVersion,
 		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
 	)).List() {
 		bts, err := os.ReadFile(winget.Path)
 		require.NoError(t, err)
-		cfg := artifact.MustExtra[config.Winget](*winget, wingetConfigExtra)
-		golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type, cfg.DefaultLocale))
+		locale := artifact.ExtraOr(*winget, wingetLocaleExtra, "")
+		if locale == "" {
+			cfg := artifact.MustExtra[config.Winget](*winget, wingetConfigExtra)
+			locale = cfg.DefaultLocale
+		}
+		golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type, locale))
 	}
 	require.NoError(t, pipe.publishAll(ctx, client))
 	require.True(t, client.CreatedFile)

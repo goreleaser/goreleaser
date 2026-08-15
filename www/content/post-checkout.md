@@ -11,8 +11,8 @@ A few notes on how to get started:
 - [x] GoReleaser Pro is distributed as a different binary than the free version.
       Make sure you have it installed by checking `goreleaser -v`.
 - [x] if you use GitHub Actions, make sure to set the `distribution` option to
-      `pro`. Don't forget to add the `GORELEASER_KEY` environment variable as
-      well.[^actions]
+      `goreleaser-pro`. Don't forget to add the `GORELEASER_KEY` environment
+      variable as well.[^actions]
 - [x] if you installed GoReleaser via a package manager, you'll need to install
       a different package. Usually it's the same name as the OSS, but with a
       `-pro` suffix, e.g. `goreleaser-pro` instead of `goreleaser`.[^install]

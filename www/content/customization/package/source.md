@@ -35,7 +35,7 @@ source:
   # Templates: allowed.
   files:
     - LICENSE.txt
-    - README_{{.Os}}.md
+    - README_{{ .ProjectName }}.md
     - CHANGELOG.md
     - docs/*
     - design/*.png
@@ -51,10 +51,16 @@ source:
       # Not all fields are supported by all formats available formats.
       # Default: file info of the source file.
       info:
+        # Templates: allowed.
         owner: root
+
+        # Templates: allowed.
         group: root
+
         mode: 0644
+
         # format is `time.RFC3339Nano`
+        # Templates: allowed.
         mtime: 2008-01-02T15:04:05Z
 
   # Additional templated files to add to the source archive.
@@ -68,9 +74,15 @@ source:
     - src: "LICENSE.md.tpl"
       dst: LICENSE.md
       info:
+        # Templates: allowed.
         owner: root
+
+        # Templates: allowed.
         group: root
+
         mode: 0644
+
+        # Templates: allowed.
         mtime: 2008-01-02T15:04:05Z
 ```
 

@@ -19,10 +19,10 @@ with an API key.
 
 ```yaml {filename=".goreleaser.yaml"}
 publishers:
-- name: artifactory
- cmd: >-
-   jfrog rt u "{{ .ArtifactName }}" "my-repository/{{ tolower .Env.PROJECT_KEY }}/{{ tolower .ProjectName }}/{{ .Version }}/"
- dir: "{{ dir .ArtifactPath }}"
+  - name: artifactory
+    cmd: >-
+      jfrog rt u "{{ .ArtifactName }}" "my-repository/{{ tolower .Env.PROJECT_KEY }}/{{ tolower .ProjectName }}/{{ .Version }}/"
+    dir: "{{ dir .ArtifactPath }}"
 ```
 
 Example of a [publishers](/customization/publish/publishers/) section pushing files
@@ -30,8 +30,8 @@ to an Artifactory instance using jfrog cli with api key in environment
 
 ```yaml {filename=".goreleaser.yaml"}
 publishers:
-- name: artifactory
- cmd: >-
-   jfrog rt u "{{ .ArtifactName }}" "my-repository/{{ tolower .Env.PROJECT_KEY }}/{{ tolower .ProjectName }}/{{ .Version }}/" --api-key "{{ .Env.ARTIFACTORY_API_KEY }}"
- dir: "{{ dir .ArtifactPath }}"
+  - name: artifactory
+    cmd: >-
+      jfrog rt u "{{ .ArtifactName }}" "my-repository/{{ tolower .Env.PROJECT_KEY }}/{{ tolower .ProjectName }}/{{ .Version }}/" --api-key "{{ .Env.ARTIFACTORY_API_KEY }}"
+    dir: "{{ dir .ArtifactPath }}"
 ```

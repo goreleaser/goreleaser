@@ -9,7 +9,7 @@ If you have multiple tokens set, you'll get this error.
 Here's an example:
 
 ```sh
-   ⨯ release failed after 0.02s error=gmultiple tokens found, but only one is allowed: GITHUB_TOKEN, GITLAB_TOKEN
+   ⨯ release failed after 0.02s error=multiple tokens found, but only one is allowed: GITHUB_TOKEN, GITLAB_TOKEN
 
 Learn more at https://goreleaser.com/errors/multiple-tokens
 ```

@@ -57,7 +57,6 @@ metadata:
   full_description:
     # Loads from an URL.
     from_url:
-      # Templates: allowed.
       url: https://foo.bar/README.md
       headers:
         x-api-token: "${MYCOMPANY_TOKEN}"
@@ -65,7 +64,6 @@ metadata:
     # Loads from a local file.
     # Overrides `from_url`.
     from_file:
-      # Templates: allowed.
       path: ./README.md
 
   # Default git author used to commit to AUR, Homebrew, Winget, Nix, etc.
@@ -83,8 +81,15 @@ metadata:
     # Templates: allowed.
     email: bot@goreleaser.com
 
+    # Use GitHub App token for signed commits.
+    # When enabled, the committer field is omitted from API calls,
+    # allowing GitHub to automatically sign commits with the GitHub App identity.
+    #
+    # Default: false.
+    use_github_app_token: false
+
     # Git commit signing configuration.
-    # Only works if repository is
+    # Only works if repository is of type 'git'.
     signing:
       # Enable commit signing.
       enabled: true

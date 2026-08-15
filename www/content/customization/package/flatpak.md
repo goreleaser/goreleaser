@@ -23,14 +23,14 @@ storage, or distributed directly to users.
 
 ## Configuration
 
-Here is a commented `flatpaks` section with all fields specified:
+Here is a commented `flatpak` section with all fields specified:
 
 ```yaml {filename=".goreleaser.yaml"}
 flatpak:
   - #
     # ID of this Flatpak config, must be unique.
     #
-    # Default: 'default'.
+    # Default: empty.
     id: foo
 
     # IDs of the builds which should be packaged.

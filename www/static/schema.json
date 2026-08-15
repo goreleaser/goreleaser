@@ -378,6 +378,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary"
 						],
 						"default": "tar.gz"
@@ -1556,6 +1559,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary",
 							"none"
 						],
@@ -2164,6 +2170,85 @@
 					},
 					"goriscv64": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Iru": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"api_token": {
+						"type": "string"
+					},
+					"library_item_id": {
+						"type": "string"
+					},
+					"install_type": {
+						"type": "string",
+						"enum": [
+							"package",
+							"zip",
+							"image"
+						],
+						"default": "zip"
+					},
+					"install_enforcement": {
+						"type": "string",
+						"enum": [
+							"install_once",
+							"continuously_enforce",
+							"no_enforcement"
+						],
+						"default": "install_once"
+					},
+					"unzip_location": {
+						"type": "string"
+					},
+					"audit_script": {
+						"type": "string"
+					},
+					"preinstall_script": {
+						"type": "string"
+					},
+					"postinstall_script": {
+						"type": "string"
+					},
+					"show_in_self_service": {
+						"type": "boolean"
+					},
+					"self_service_category_id": {
+						"type": "string"
+					},
+					"self_service_recommended": {
+						"type": "boolean"
+					},
+					"active": {
+						"type": "boolean"
+					},
+					"restart": {
+						"type": "boolean"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -3991,6 +4076,9 @@
 					"mcp": {
 						"$ref": "#/$defs/MCP"
 					},
+					"iru": {
+						"$ref": "#/$defs/Iru"
+					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
 					},
@@ -4457,21 +4545,6 @@
 					"signature": {
 						"$ref": "#/$defs/NFPMRPMSignature"
 					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMRPMScripts"
-					},
-					"prefixes": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"packager": {
-						"type": "string"
-					},
-					"buildhost": {
-						"type": "string"
-					},
 					"enabled": {
 						"type": "boolean"
 					},
@@ -4506,6 +4579,9 @@
 						"type": "string"
 					},
 					"url": {
+						"type": "string"
+					},
+					"packager": {
 						"type": "string"
 					},
 					"description": {
@@ -5504,6 +5580,12 @@
 							"$ref": "#/$defs/WingetDependency"
 						},
 						"type": "array"
+					},
+					"additional_locales": {
+						"items": {
+							"$ref": "#/$defs/WingetLocale"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -5528,6 +5610,72 @@
 				"type": "object",
 				"required": [
 					"package_identifier"
+				]
+			},
+			"WingetLocale": {
+				"properties": {
+					"locale": {
+						"type": "string"
+					},
+					"publisher": {
+						"type": "string"
+					},
+					"publisher_url": {
+						"type": "string"
+					},
+					"publisher_support_url": {
+						"type": "string"
+					},
+					"privacy_url": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"package_name": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"license_url": {
+						"type": "string"
+					},
+					"copyright": {
+						"type": "string"
+					},
+					"copyright_url": {
+						"type": "string"
+					},
+					"short_description": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"release_notes": {
+						"type": "string"
+					},
+					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"locale"
 				]
 			}
 		},

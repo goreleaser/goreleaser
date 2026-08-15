@@ -40,6 +40,10 @@ announce:
     # Default: '$SMTP_USERNAME'.
     username: ""
 
+    # Whether to skip the verification of the server's certificate chain and
+    # host name.
+    insecure_skip_verify: false
+
     # Body to use within the email.
     #
     # Default: 'You can view details from: {{ .ReleaseURL }}'.

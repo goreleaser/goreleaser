@@ -64,9 +64,7 @@ func TestRunPipe(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM: config.NFPMRPM{
-				Summary: "Example summary",
-			},
+			Summary:         "Example summary",
 			Enabled:         true,
 			ImportPath:      "github.com/example/example",
 			License:         "MIT",
@@ -129,7 +127,7 @@ func TestRunPipeConventionalFileName(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
+			Summary:          "Example summary",
 			Enabled:          true,
 			ImportPath:       "github.com/example/example",
 			License:          "MIT",
@@ -185,7 +183,7 @@ func TestRunPipeContentsTemplates(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM:    config.NFPMRPM{Summary: "Example summary"},
+			Summary:    "Example summary",
 			Enabled:    true,
 			ImportPath: "github.com/example/example",
 			License:    "MIT",
@@ -233,7 +231,7 @@ func TestRunPipeContentsInvalidMTime(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM:    config.NFPMRPM{Summary: "Example summary"},
+			Summary:    "Example summary",
 			Enabled:    true,
 			ImportPath: "github.com/example/example",
 			License:    "MIT",

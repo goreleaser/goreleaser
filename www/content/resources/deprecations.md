@@ -790,6 +790,31 @@ snapshot:
 {{< /tab >}}
 {{< /tabs >}}
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+nfpms:
+  - maintainer: ""
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+nfpms:
+  - maintainer: "Name <email>"
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
 ## Removed in v2
 
 ### archives.strip_parent_binary_folder
@@ -1274,31 +1299,6 @@ goreleaser release --rm-dist
 
 ```bash
 goreleaser release --clean
-```
-
-{{< /tab >}}
-{{< /tabs >}}
-
-### nfpms.maintainer
-
-> since 2022-05-07 (v1.9.0), removed 2024-05-26 (v2.0)
-
-nFPM will soon make mandatory setting the maintainer field.
-
-{{< tabs >}}
-{{< tab "Before" >}}
-
-```yaml
-nfpms:
-  - maintainer: ""
-```
-
-{{< /tab >}}
-{{< tab "After" >}}
-
-```yaml
-nfpms:
-  - maintainer: "Name <email>"
 ```
 
 {{< /tab >}}

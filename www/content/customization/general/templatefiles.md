@@ -33,7 +33,7 @@ template_files:
 
     # File mode.
     #
-    # Default: 0655.
+    # Default: 0644.
     mode: 0755
 ```
 

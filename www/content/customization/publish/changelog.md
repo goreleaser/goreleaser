@@ -131,10 +131,10 @@ changelog:
       # This feature is only available in GoReleaser Pro.
       groups:
         - title: "Docs"
-          regex: ".*docs.*"
+          regexp: ".*docs.*"
           order: 1
         - title: "CI"
-          regex: ".*build.*"
+          regexp: ".*build.*"
           order: 2
 
   # Divider to use between groups.

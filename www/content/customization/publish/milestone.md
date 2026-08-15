@@ -26,7 +26,7 @@ milestones:
 
     # Name of the milestone
     #
-    # Default: '{{ .Tag }}'.
+    # Default: '{{ .PrefixedTag }}'.
     name_template: "Current Release"
 ```
 

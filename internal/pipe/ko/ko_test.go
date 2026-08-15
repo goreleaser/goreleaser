@@ -627,8 +627,7 @@ func TestPublishLocalBaseImage(t *testing.T) {
 					ID:           "default",
 					Build:        "foo",
 					WorkingDir:   "./testdata/app/",
-					Repository:   "NOPE",
-					Repositories: []string{""},
+					Repositories: []string{"local-base-test"},
 					Tags:         []string{"latest", "{{.Tag}}"},
 					BaseImage:    "local-base:latest",
 					SBOM:         "none",
@@ -748,9 +747,23 @@ func TestPublishPipeError(t *testing.T) {
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})
 
-	t.Run("invalid flags tmpl", func(t *testing.T) {
+	t.Run("invalid local_domain tmpl", func(t *testing.T) {
 		ctx := makeCtx()
-		ctx.Config.Builds[0].Flags = []string{"{{.Nope}}"}
+		ctx.Config.Kos[0].LocalDomain = "{{.Nope}}"
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid base_image tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].BaseImage = "{{.Nope}}"
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid repositories tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].Repositories = []string{"{{.Nope}}"}
 		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})
@@ -781,15 +794,36 @@ func TestApplyTemplate(t *testing.T) {
 
 func TestGetLocalDomain(t *testing.T) {
 	t.Run("default local domain", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
 		ko := config.Ko{}
-		got := getLocalDomain(ko)
+		got, err := getLocalDomain(ctx, ko)
+		require.NoError(t, err)
 		require.Equal(t, "goreleaser.ko.local", got)
 	})
 
 	t.Run("custom local domain", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
 		ko := config.Ko{LocalDomain: "custom.domain"}
-		got := getLocalDomain(ko)
+		got, err := getLocalDomain(ctx, ko)
+		require.NoError(t, err)
 		require.Equal(t, "custom.domain", got)
+	})
+
+	t.Run("templated local domain", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Env: []string{"REGISTRY=kind.local"},
+		})
+		ko := config.Ko{LocalDomain: `{{ envOrDefault "REGISTRY" "goreleaser.ko.local" }}`}
+		got, err := getLocalDomain(ctx, ko)
+		require.NoError(t, err)
+		require.Equal(t, "kind.local", got)
+	})
+
+	t.Run("invalid template local domain", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		ko := config.Ko{LocalDomain: "{{.Nope}}"}
+		_, err := getLocalDomain(ctx, ko)
+		require.Error(t, err)
 	})
 }
 

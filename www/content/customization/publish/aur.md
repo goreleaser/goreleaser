@@ -104,6 +104,11 @@ aurs:
     backup:
       - /etc/foo.conf
 
+    # The release number of the package (the `pkgrel` field in the PKGBUILD).
+    #
+    # Default: '1'.
+    rel: "1"
+
     # Custom package instructions.
     # which is not always correct.
     #

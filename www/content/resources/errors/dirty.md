@@ -12,7 +12,7 @@ show you, which files were created/modified.
 Here's an example error:
 
 ```
-   ⨯ release failed after 0.02s error=git is currently in a dirty state
+   ⨯ release failed after 0.02s error=git is in a dirty state
 Please check in your pipeline what can be changing the following files:
  M modified.go
 ?? created.txt
