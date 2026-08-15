@@ -161,6 +161,13 @@ gentoo_overlays:
     # Templates: allowed.
     description: "Software to create fast and easy drum rolls."
 
+    # Strategy for mapping arbitrary versions into Gentoo package versions.
+    # By default, it maps common SemVer prereleases to Gentoo suffixes.
+    # Set to a different value if you want to alter the default behavior or validate your own.
+    #
+    # Default: "gentoo-version".
+    version_representation: "gentoo-version"
+
     # License of the packaged software (populates LICENSE in the ebuild).
     #
     # Required.

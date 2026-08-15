@@ -1600,6 +1600,12 @@
 					"description": {
 						"type": "string"
 					},
+					"version_representation": {
+						"type": "string",
+						"enum": [
+							"gentoo-version"
+						]
+					},
 					"license": {
 						"type": "string"
 					},
