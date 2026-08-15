@@ -241,10 +241,13 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 
 	for _, art := range arches {
 		artID := artifact.ExtraOr(*art, artifact.ExtraID, "default")
-		if suppressedIDs[artID] {
-			continue
-		}
 		kw, _ := gentooArch(art.Goarch)
+		if archs, ok := suppressedIDs[artID]; ok {
+			if len(archs) == 0 || slices.Contains(archs, kw) {
+				continue
+			}
+		}
+
 		bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
 		wrappedIn := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, "")
 		if len(bins) == 0 {
@@ -305,8 +308,12 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			for i := range installs {
 				installs[i].Keywords = kws
 			}
+			var applyKws []string
+			if len(kws) < len(keywordsList) {
+				applyKws = kws
+			}
 			installGroups = append(installGroups, installGroup{
-				Keywords: kws,
+				Keywords: applyKws,
 				Installs: installs,
 			})
 		}
@@ -886,12 +893,21 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
-func collectSuppressedIDs(cfg config.Gentoo) map[string]bool {
-	suppressed := make(map[string]bool)
+func collectSuppressedIDs(cfg config.Gentoo) map[string][]string {
+	suppressed := make(map[string][]string)
 	add := func(items []config.GentooInstallItem) {
 		for _, item := range items {
 			if item.SrcID != "" {
-				suppressed[item.SrcID] = true
+				var archs []string
+				for _, arch := range item.Archs {
+					kw, _ := gentooArch(arch)
+					archs = append(archs, kw)
+				}
+				if _, ok := suppressed[item.SrcID]; !ok || (len(suppressed[item.SrcID]) > 0 && len(archs) == 0) {
+					suppressed[item.SrcID] = archs
+				} else if len(suppressed[item.SrcID]) > 0 {
+					suppressed[item.SrcID] = append(suppressed[item.SrcID], archs...)
+				}
 			}
 		}
 	}

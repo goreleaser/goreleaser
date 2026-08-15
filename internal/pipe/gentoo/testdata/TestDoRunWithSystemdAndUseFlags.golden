@@ -18,11 +18,11 @@ src_install() {
   exeinto /opt/bin
   doexe "foo" || die "Failed to install binary"
   if ! use systemd; then
-    newinitd "foo.init" "foo"
+    newinitd "foo.init" "foo" || die "Failed to install foo.init"
   fi
   dosym "/usr/bin/foo" "/usr/bin/bar"
   if use systemd; then
     insinto /usr/lib/systemd/system
-    doins "foo.service"
+    doins "foo.service" || die "Failed to install foo.service"
   fi
 }

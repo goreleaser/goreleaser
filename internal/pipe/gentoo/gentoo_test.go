@@ -2169,9 +2169,78 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 
 		suppressed := collectSuppressedIDs(cfg)
 		for i := 1; i <= 10; i++ {
-			require.True(t, suppressed[fmt.Sprintf("id%d", i)])
+			archs, ok := suppressed[fmt.Sprintf("id%d", i)]
+			require.True(t, ok && len(archs) == 0)
 		}
-		require.False(t, suppressed["unsuppressed_id"])
+		_, ok := suppressed["unsuppressed_id"]
+		require.False(t, ok)
+	})
+
+	t.Run("collectSuppressedIDs unions multiple arch-specific entries for same src_id", func(t *testing.T) {
+		cfg := config.Gentoo{
+			Doexe: []config.GentooInstallItem{
+				{SrcID: "id1", Archs: []string{"amd64"}},
+				{SrcID: "id1", Archs: []string{"arm64"}},
+			},
+			Dobin: []config.GentooInstallItem{
+				{SrcID: "id2", Archs: []string{"amd64"}},
+			},
+			Doins: []config.GentooInstallItem{
+				{SrcID: "id2", Archs: []string{"arm"}},
+			},
+		}
+
+		suppressed := collectSuppressedIDs(cfg)
+		require.ElementsMatch(t, []string{"amd64", "arm64"}, suppressed["id1"])
+		require.ElementsMatch(t, []string{"amd64", "arm"}, suppressed["id2"])
+	})
+
+	t.Run("collectSuppressedIDs arch-specific entry followed by global entry", func(t *testing.T) {
+		cfg := config.Gentoo{
+			Doexe: []config.GentooInstallItem{
+				{SrcID: "id1", Archs: []string{"amd64"}},
+				{SrcID: "id1"},
+			},
+			Dobin: []config.GentooInstallItem{
+				{SrcID: "id2", Archs: []string{"amd64"}},
+			},
+			Doins: []config.GentooInstallItem{
+				{SrcID: "id2"},
+			},
+		}
+
+		suppressed := collectSuppressedIDs(cfg)
+		archs1, ok1 := suppressed["id1"]
+		require.True(t, ok1)
+		require.Empty(t, archs1)
+
+		archs2, ok2 := suppressed["id2"]
+		require.True(t, ok2)
+		require.Empty(t, archs2)
+	})
+
+	t.Run("collectSuppressedIDs global entry followed by arch-specific entry", func(t *testing.T) {
+		cfg := config.Gentoo{
+			Doexe: []config.GentooInstallItem{
+				{SrcID: "id1"},
+				{SrcID: "id1", Archs: []string{"amd64"}},
+			},
+			Dobin: []config.GentooInstallItem{
+				{SrcID: "id2"},
+			},
+			Doins: []config.GentooInstallItem{
+				{SrcID: "id2", Archs: []string{"amd64"}},
+			},
+		}
+
+		suppressed := collectSuppressedIDs(cfg)
+		archs1, ok1 := suppressed["id1"]
+		require.True(t, ok1)
+		require.Empty(t, archs1)
+
+		archs2, ok2 := suppressed["id2"]
+		require.True(t, ok2)
+		require.Empty(t, archs2)
 	})
 
 	t.Run("unknown src_id returns error", func(t *testing.T) {
@@ -2383,8 +2452,8 @@ func TestGentooSrcIDAndMultiArchiveSupport(t *testing.T) {
 		require.NoError(t, err)
 		str := string(content)
 
-		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    doexe \"dir_amd64/myapp\"\n  fi")
-		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    doexe \"dir_arm64/myapp\"\n  fi")
+		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    doexe \"dir_amd64/myapp\" || die \"Failed to install dir_amd64/myapp\"\n  fi")
+		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    doexe \"dir_arm64/myapp\" || die \"Failed to install dir_arm64/myapp\"\n  fi")
 	})
 
 	t.Run("plain src stays literal even with wrappedIn archive", func(t *testing.T) {
@@ -2626,6 +2695,142 @@ func TestHandleGentooManifestAndMetadataPrunesFullyDeletedBaseVersions(t *testin
 	require.Contains(t, manifestContent, "EBUILD foo-2.0.0.ebuild")
 }
 
+func TestGentooArchSpecificSuppression(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doexe: []config.GentooInstallItem{{
+				SrcID: "default",
+				Archs: []string{"amd64"},
+				Dst:   "/opt/bin/foo",
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm64.tar.gz",
+		Path:   "dist/default_linux_arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}
+
+func TestGentooSrcValidation(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doexe: []config.GentooInstallItem{{
+				Dst: "/opt/bin/foo",
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := doRun(ctx, ctx.Config.Gentoos[0], client.NewMock())
+	require.ErrorContains(t, err, "gentoo doexe: either src or src_id is required")
+}
+
+func TestGentooMismatchedArchiveBypass(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doins: []config.GentooInstallItem{{
+				SrcID: "default",
+				Src:   "config.yaml",
+				Dst:   "/etc/myapp/config.yaml",
+				Archs: []string{"amd64", "arm64"},
+			}},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp-amd64"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm64.tar.gz",
+		Path:   "dist/default_linux_arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp-arm64"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}
+
 func TestRenameArchiveMissingVersion(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -2659,4 +2864,207 @@ func TestRenameArchiveMissingVersion(t *testing.T) {
 	require.NoError(t, err)
 	str := string(content)
 	require.Contains(t, str, "-> app-1.0.0-app_linux_amd64.tar.gz )")
+}
+
+func TestGentooThreeArchSpecificSuppression(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "myapp",
+		Gentoos: []config.Gentoo{{
+			Category: "app-misc",
+			Name:     "myapp",
+			Bin:      true,
+			License:  "MIT",
+			Doexe: []config.GentooInstallItem{
+				{
+					SrcID: "default",
+					Archs: []string{"amd64"},
+					Dst:   "/opt/bin/foo-amd64",
+				},
+				{
+					SrcID: "default",
+					Archs: []string{"arm64"},
+					Dst:   "/opt/bin/foo-arm64",
+				},
+			},
+		}},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_amd64.tar.gz",
+		Path:   "dist/default_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm64.tar.gz",
+		Path:   "dist/default_linux_arm64.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "default_linux_arm.tar.gz",
+		Path:   "dist/default_linux_arm.tar.gz",
+		Goos:   "linux",
+		Goarch: "arm",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinaries: []string{"myapp"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}
+
+func TestGentooArchSuppressionPrecedence(t *testing.T) {
+	newCtx := func(items []config.GentooInstallItem) (*import_context.Context, string) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "myapp",
+			Gentoos: []config.Gentoo{{
+				Category: "app-misc",
+				Name:     "myapp",
+				Bin:      true,
+				License:  "MIT",
+				Doexe:    items,
+			}},
+		}, testctx.WithVersion("1.0.0"))
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "default_linux_amd64.tar.gz",
+			Path:   "dist/default_linux_amd64.tar.gz",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "default",
+				artifact.ExtraBinaries: []string{"myapp"},
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "default_linux_arm64.tar.gz",
+			Path:   "dist/default_linux_arm64.tar.gz",
+			Goos:   "linux",
+			Goarch: "arm64",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "default",
+				artifact.ExtraBinaries: []string{"myapp"},
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "default_linux_arm.tar.gz",
+			Path:   "dist/default_linux_arm.tar.gz",
+			Goos:   "linux",
+			Goarch: "arm",
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "default",
+				artifact.ExtraBinaries: []string{"myapp"},
+			},
+		})
+		return ctx, dist
+	}
+
+	t.Run("two arch-specific entries union suppressed architectures and fallback only on remaining arch", func(t *testing.T) {
+		ctx, dist := newCtx([]config.GentooInstallItem{
+			{
+				SrcID: "default",
+				Archs: []string{"amd64"},
+				Dst:   "/opt/bin/foo-amd64",
+			},
+			{
+				SrcID: "default",
+				Archs: []string{"arm64"},
+				Dst:   "/opt/bin/foo-arm64",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+		content, err := os.ReadFile(ebuildPath)
+		require.NoError(t, err)
+		str := string(content)
+
+		// Fallback binary 'doexe "myapp"' is generated ONLY for arm
+		require.Contains(t, str, "if use arm; then\n    doexe \"myapp\" || die \"Failed to install binary\"\n  fi")
+		require.Contains(t, str, "if use amd64; then\n    exeinto /opt/bin\n    newexe \"myapp\" \"foo-amd64\" || die \"Failed to install myapp\"\n  fi")
+		require.Contains(t, str, "if use arm64; then\n    exeinto /opt/bin\n    newexe \"myapp\" \"foo-arm64\" || die \"Failed to install myapp\"\n  fi")
+	})
+
+	t.Run("arch-specific entry followed by global entry suppresses fallback on all architectures", func(t *testing.T) {
+		ctx, dist := newCtx([]config.GentooInstallItem{
+			{
+				SrcID: "default",
+				Archs: []string{"amd64"},
+				Dst:   "/opt/bin/foo-amd64",
+			},
+			{
+				SrcID: "default",
+				Dst:   "/opt/bin/foo-global",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+		content, err := os.ReadFile(ebuildPath)
+		require.NoError(t, err)
+		str := string(content)
+
+		// Fallback binary 'doexe "myapp"' should not be present for any architecture
+		require.NotContains(t, str, `doexe "myapp"`)
+		require.Contains(t, str, `newexe "myapp" "foo-global"`)
+		require.Contains(t, str, `newexe "myapp" "foo-amd64"`)
+	})
+
+	t.Run("global entry followed by arch-specific entry maintains global suppression", func(t *testing.T) {
+		ctx, dist := newCtx([]config.GentooInstallItem{
+			{
+				SrcID: "default",
+				Dst:   "/opt/bin/foo-global",
+			},
+			{
+				SrcID: "default",
+				Archs: []string{"amd64"},
+				Dst:   "/opt/bin/foo-amd64",
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+		ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "myapp-bin", "myapp-bin-1.0.0.ebuild")
+		content, err := os.ReadFile(ebuildPath)
+		require.NoError(t, err)
+		str := string(content)
+
+		// Fallback binary 'doexe "myapp"' should not be present for any architecture
+		require.NotContains(t, str, `doexe "myapp"`)
+		require.Contains(t, str, `newexe "myapp" "foo-global"`)
+		require.Contains(t, str, `newexe "myapp" "foo-amd64"`)
+	})
 }
