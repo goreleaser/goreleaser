@@ -788,6 +788,28 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:       "additional-locale-description-fallback",
+			expectPath: "manifests/f/Foo/desc-fallback/1.2.1/Foo.desc-fallback.",
+			winget: config.Winget{
+				Name:             "desc-fallback",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				Description:      "default description",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{
+						Locale:           "pt-BR",
+						ShortDescription: "descricao curta",
+					},
+				},
+			},
+		},
+		{
 			name:             "bad-additional-locale-field-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
