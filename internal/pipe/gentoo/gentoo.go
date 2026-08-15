@@ -383,9 +383,11 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	var eclasses []string
-	eclasses = append(eclasses, cfg.Eclasses...)
-	slices.Sort(eclasses)
-	eclasses = slices.Compact(eclasses)
+	for _, e := range cfg.Eclasses {
+		if !slices.Contains(eclasses, e) {
+			eclasses = append(eclasses, e)
+		}
+	}
 	data.Eclasses = eclasses
 
 	if !slices.Contains(eclasses, "systemd") && len(data.Systemd) > 0 {

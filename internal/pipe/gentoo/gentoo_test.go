@@ -1738,11 +1738,11 @@ func TestEbuildData(t *testing.T) {
 			Name:        "foo",
 			Description: "Foo package",
 			License:     "MIT",
-			Eclasses:    []string{"desktop", "systemd"},
+			Eclasses:    []string{"systemd", "desktop", "systemd"},
 		}
 		content, err := data.RenderEbuild()
 		require.NoError(t, err)
-		require.Contains(t, content, "inherit desktop systemd")
+		require.Contains(t, content, "inherit systemd desktop")
 	})
 
 	t.Run("RenderMetaCache", func(t *testing.T) {
