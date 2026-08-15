@@ -300,6 +300,14 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			var applyKws []string
 			if len(kws) < len(keywordsList) {
 				applyKws = kws
+			} else {
+				// Otherwise, verify if any explicitly suppressed architectures exist for the artifacts
+				for _, inst := range installs {
+					if len(inst.Keywords) < len(keywordsList) {
+						applyKws = kws
+						break
+					}
+				}
 			}
 			installGroups = append(installGroups, installGroup{
 				Keywords: applyKws,
