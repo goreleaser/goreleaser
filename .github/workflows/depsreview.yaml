@@ -15,3 +15,5 @@ jobs:
         with:
           fail-on-severity: "critical"
           allow-licenses: BSD-2-Clause, BSD-3-Clause, MIT, Apache-2.0, MPL-2.0, ISC, LicenseRef-scancode-google-patent-license-golang
+          # GPL-3.0, but it's a CI-only action, not linked into the binary.
+          allow-dependencies-licenses: pkg:githubactions/go-task/setup-task
