@@ -330,3 +330,45 @@ func countNewEbuilds(ebuilds, newFiles []string, bucket func(string) string) map
 	}
 	return counts
 }
+
+func determineKeepLatestDeletions(ebuilds, newFiles []string, prefix string, keepVersions int) []string {
+	var allEbuilds []string
+	allEbuilds = append(allEbuilds, ebuilds...)
+	for _, n := range newFiles {
+		if !slices.Contains(ebuilds, n) {
+			allEbuilds = append(allEbuilds, n)
+		}
+	}
+
+	slices.SortFunc(allEbuilds, func(i, j string) int {
+		vI := parseGentooVersion(i, prefix)
+		vJ := parseGentooVersion(j, prefix)
+		if vI != nil && vJ != nil {
+			if vI.GreaterThan(vJ) {
+				return -1
+			}
+			if vJ.GreaterThan(vI) {
+				return 1
+			}
+			return 0
+		}
+		if vI != nil {
+			return -1
+		}
+		if vJ != nil {
+			return 1
+		}
+		return strings.Compare(j, i)
+	})
+
+	var toDelete []string
+	if len(allEbuilds) > keepVersions {
+		keptFiles := allEbuilds[:keepVersions]
+		for _, n := range ebuilds {
+			if !slices.Contains(keptFiles, n) {
+				toDelete = append(toDelete, n)
+			}
+		}
+	}
+	return toDelete
+}

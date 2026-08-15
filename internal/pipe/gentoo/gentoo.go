@@ -713,20 +713,14 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient an
 			}
 		}
 	} else if g.cfg.VersionRetentionStrategy == config.VersionRetentionStrategyKeepLatest {
-		newUniqueCount := 0
-		for _, n := range newFiles {
-			if !slices.Contains(ebuilds, n) {
-				newUniqueCount++
-			}
-		}
-		allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
-		if len(ebuilds) > allowedToKeep {
+		toDelete := determineKeepLatestDeletions(ebuilds, newFiles, prefix, g.cfg.KeepVersions)
+		if len(toDelete) > 0 {
 			log.WithField("keep_versions", g.cfg.KeepVersions).
-				WithField("new_unique", newUniqueCount).
-				WithField("allowed_to_keep", allowedToKeep).
+				WithField("allowed_to_keep", g.cfg.KeepVersions).
 				WithField("total_old", len(ebuilds)).
 				Debug("keeping latest versions")
-			for _, n := range ebuilds[allowedToKeep:] {
+
+			for _, n := range toDelete {
 				deleter.Delete(n)
 			}
 		}
