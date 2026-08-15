@@ -4,8 +4,8 @@ EAPI=8
 DESCRIPTION="myapp"
 HOMEPAGE=""
 SRC_URI="
-  amd64? ( https://dummyhost/download//default_linux_amd64.tar.gz -> default_linux_amd64.tar.gz )
-  arm64? ( https://dummyhost/download//default_linux_arm64.tar.gz -> default_linux_arm64.tar.gz )
+  amd64? ( https://dummyhost/download//default_linux_amd64.tar.gz -> myapp-1.0.0-default_linux_amd64.tar.gz )
+  arm64? ( https://dummyhost/download//default_linux_arm64.tar.gz -> myapp-1.0.0-default_linux_arm64.tar.gz )
 "
 
 LICENSE="MIT"

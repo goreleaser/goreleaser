@@ -185,8 +185,13 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 			return fmt.Errorf("multiple linux archives map to Gentoo architecture %q for ID %q (%s and %s); please filter artifacts", kw, id, prev.Name, art.Name)
 		}
 		seenArchID[kw][id] = art
+		fileName := art.Name
+		versionStr := gentooVersion(ctx.Version)
+		if !strings.Contains(fileName, versionStr) && !strings.Contains(fileName, ctx.Version) {
+			fileName = fmt.Sprintf("%s-%s-%s", cfg.Name, versionStr, fileName)
+		}
 		archMap[kw] = append(archMap[kw], archItem{
-			File: art.Name,
+			File: fileName,
 			URI:  url,
 		})
 		keywordSet["~"+kw] = struct{}{}
@@ -393,9 +398,11 @@ func doRun(ctx *context.Context, cfg config.Gentoo, cl client.ReleaseURLTemplate
 	}
 
 	var eclasses []string
-	eclasses = append(eclasses, cfg.Eclasses...)
-	slices.Sort(eclasses)
-	eclasses = slices.Compact(eclasses)
+	for _, e := range cfg.Eclasses {
+		if !slices.Contains(eclasses, e) {
+			eclasses = append(eclasses, e)
+		}
+	}
 	data.Eclasses = eclasses
 
 	if !slices.Contains(eclasses, "systemd") && len(data.Systemd) > 0 {
@@ -524,7 +531,7 @@ func collectPublishGroups(ctx *context.Context) ([]*publishGroup, error) {
 	return groups, nil
 }
 
-func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient client.Client, repo client.Repo) ([]string, error) {
+func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient any, repo client.Repo) ([]string, error) {
 	dir := packageDir(g.cfg)
 	stateRepo := repo
 	if g.cfg.Repository.PullRequest.Enabled {
@@ -721,20 +728,14 @@ func (g *publishGroup) applyVersionRetention(ctx *context.Context, repoClient cl
 			}
 		}
 	} else if g.cfg.VersionRetentionStrategy == config.VersionRetentionStrategyKeepLatest {
-		newUniqueCount := 0
-		for _, n := range newFiles {
-			if !slices.Contains(ebuilds, n) {
-				newUniqueCount++
-			}
-		}
-		allowedToKeep := max(0, g.cfg.KeepVersions-newUniqueCount)
-		if len(ebuilds) > allowedToKeep {
+		toDelete := determineKeepLatestDeletions(ebuilds, newFiles, prefix, g.cfg.KeepVersions)
+		if len(toDelete) > 0 {
 			log.WithField("keep_versions", g.cfg.KeepVersions).
-				WithField("new_unique", newUniqueCount).
-				WithField("allowed_to_keep", allowedToKeep).
+				WithField("allowed_to_keep", g.cfg.KeepVersions).
 				WithField("total_old", len(ebuilds)).
 				Debug("keeping latest versions")
-			for _, n := range ebuilds[allowedToKeep:] {
+
+			for _, n := range toDelete {
 				deleter.Delete(n)
 			}
 		}
@@ -772,9 +773,9 @@ func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
 		}
 	}
 
-	deletedEbuilds, err := g.applyVersionRetention(ctx, repoClient, repo)
-	if err != nil {
-		return err
+	var stateClient any = repoClient
+	if g.cfg.Repository.Git.URL != "" {
+		stateClient = client.NewGitUploadClient(repo.Branch)
 	}
 
 	stateRepo := repo
@@ -782,7 +783,12 @@ func (g *publishGroup) publish(ctx *context.Context, cl client.Client) error {
 		stateRepo.Branch = g.cfg.Repository.PullRequest.Base.Branch
 	}
 
-	settings, err := loadOverlaySettings(ctx, g.cfg, repoClient, stateRepo)
+	deletedEbuilds, err := g.applyVersionRetention(ctx, stateClient, repo)
+	if err != nil {
+		return err
+	}
+
+	settings, err := loadOverlaySettings(ctx, g.cfg, stateClient, stateRepo)
 	if err != nil {
 		return err
 	}

@@ -1057,8 +1057,8 @@ func TestGentooArch(t *testing.T) {
 		{"arm64", "arm64", "arm64", false},
 		{"loong64", "loong64", "loong", false},
 		{"riscv64", "riscv64", "riscv", false},
-		{"ppc64le", "ppc64le", "ppc64", false},
 		{"s390x", "s390x", "s390", false},
+		{"unsupported ppc64le", "ppc64le", "", true},
 		{"unsupported mips64le", "mips64le", "", true},
 		{"unsupported sparc64", "sparc64", "", true},
 	}
@@ -1738,11 +1738,11 @@ func TestEbuildData(t *testing.T) {
 			Name:        "foo",
 			Description: "Foo package",
 			License:     "MIT",
-			Eclasses:    []string{"desktop", "systemd"},
+			Eclasses:    []string{"systemd", "desktop", "systemd"},
 		}
 		content, err := data.RenderEbuild()
 		require.NoError(t, err)
-		require.Contains(t, content, "inherit desktop systemd")
+		require.Contains(t, content, "inherit systemd desktop")
 	})
 
 	t.Run("RenderMetaCache", func(t *testing.T) {
@@ -2747,4 +2747,39 @@ func TestGentooMismatchedArchiveBypass(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, content)
+}
+
+func TestRenameArchiveMissingVersion(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "app",
+		Dist:        dist,
+		Gentoos: []config.Gentoo{
+			{
+				ID:                       "default",
+				Bin:                      true,
+				License:                  "MIT",
+				Description:              "foo",
+				KeepVersions:             1,
+				VersionRetentionStrategy: config.VersionRetentionStrategyKeepLatest,
+			},
+		},
+	}, testctx.WithVersion("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "app_linux_amd64.tar.gz",
+		Path:   "dist/app_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, doRun(ctx, ctx.Config.Gentoos[0], client.NewMock()))
+
+	ebuildPath := filepath.Join(dist, "gentoo", "default", "app-misc", "app-bin", "app-bin-1.0.0.ebuild")
+	content, err := os.ReadFile(ebuildPath)
+	require.NoError(t, err)
+	str := string(content)
+	require.Contains(t, str, "-> app-1.0.0-app_linux_amd64.tar.gz )")
 }

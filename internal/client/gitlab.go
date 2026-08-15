@@ -91,21 +91,32 @@ func (c *gitlabClient) ListDir(ctx *context.Context, repo Repo, dir string) ([]s
 	opts := &gitlab.ListTreeOptions{
 		Path: &dir,
 		Ref:  &branch,
+		ListOptions: gitlab.ListOptions{
+			PerPage: 100,
+		},
 	}
-	tree, resp, err := gitlabDo(ctx, func() ([]*gitlab.TreeNode, *gitlab.Response, error) {
-		return c.client.Repositories.ListTree(repo.String(), opts)
-	})
-	if err != nil {
-		if resp != nil && resp.StatusCode == http.StatusNotFound {
-			return nil, nil
-		}
-		return nil, err
-	}
+
 	var names []string
-	for _, item := range tree {
-		if item != nil && item.Type == "blob" {
-			names = append(names, item.Name)
+	for {
+		tree, resp, err := gitlabDo(ctx, func() ([]*gitlab.TreeNode, *gitlab.Response, error) {
+			return c.client.Repositories.ListTree(repo.String(), opts)
+		})
+		if err != nil {
+			if resp != nil && resp.StatusCode == http.StatusNotFound {
+				return nil, nil
+			}
+			return nil, err
 		}
+		for _, item := range tree {
+			if item != nil && item.Type == "blob" {
+				names = append(names, item.Name)
+			}
+		}
+
+		if resp == nil || resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
 	}
 	return names, nil
 }
