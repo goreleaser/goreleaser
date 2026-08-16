@@ -424,7 +424,6 @@ func TestRunPipe(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, "."+pkg.Format(), pkg.Ext())
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm
@@ -445,6 +444,7 @@ func TestRunPipe(t *testing.T) {
 				ext = packager.ConventionalExtension()
 			}
 		}
+		require.Equal(t, ext, pkg.Ext())
 
 		switch pkg.Goos {
 		case "linux":
@@ -1553,6 +1553,55 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
+}
+
+func TestExtIsConventionalExtension(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	require.NoError(t, os.WriteFile(binPath, []byte("fake binary"), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "mybin",
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me",
+				Formats:    []string{"archlinux", "rpm", "deb", "termux.deb"},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	for _, goos := range []string{"linux", "android"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goarch: "amd64",
+			Goos:   goos,
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID: "default",
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	got := map[string]string{}
+	for _, pkg := range ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List() {
+		got[pkg.Format()] = pkg.Ext()
+	}
+	require.Equal(t, map[string]string{
+		"archlinux":  ".pkg.tar.zst",
+		"rpm":        ".rpm",
+		"deb":        ".deb",
+		"termux.deb": ".termux.deb",
+	}, got)
+
+	// the Ext extra field is what `ByExt` (e.g. uploads.exts) filters on, so
+	// it must match the actual file extension.
+	require.Len(t, ctx.Artifacts.Filter(artifact.ByExt("pkg.tar.zst")).List(), 1)
 }
 
 func TestIPKSpecificConfig(t *testing.T) {
