@@ -339,6 +339,60 @@ func TestRunPipeMetadata(t *testing.T) {
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 
+func TestRunPipeMetadataWithoutApps(t *testing.T) {
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
+	fakeSnapcraft(t)
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Assumes:      []string{"snapd2.38"},
+				Hooks: map[string]any{
+					"install": []string{"network"},
+				},
+				Plugs: map[string]any{
+					"personal-files": map[string]any{
+						"read": []string{"$HOME/test"},
+					},
+				},
+				IDs:              []string{"foo"},
+				ChannelTemplates: []string{"stable"},
+			},
+		},
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
+	addBinaries(t, ctx, "foo", dist)
+	require.NoError(t, Pipe{}.Run(ctx))
+	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
+	require.NoError(t, err)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
+	require.NoError(t, err)
+	require.Equal(t, []string{"snapd2.38"}, metadata.Assumes)
+	require.Equal(t, map[string]any{"install": []any{"network"}}, metadata.Hooks)
+	require.Equal(t, map[string]any{"read": []any{"$HOME/test"}}, metadata.Plugs["personal-files"])
+}
+
+// fakeSnapcraft puts a no-op `snapcraft` executable in the PATH, so tests that
+// only care about the generated metadata don't need a real snapcraft install.
+func fakeSnapcraft(tb testing.TB) {
+	tb.Helper()
+	dir := tb.TempDir()
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(dir, "snapcraft"),
+		[]byte("#!/bin/sh\nexit 0\n"),
+		0o755,
+	))
+	tb.Setenv("PATH", dir)
+}
+
 func TestNoSnapcraftInPath(t *testing.T) {
 	t.Setenv("PATH", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
