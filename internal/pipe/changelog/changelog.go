@@ -310,16 +310,16 @@ func formatEntries(ctx *context.Context, entries []Item) ([]string, error) {
 func filterEntries(ctx *context.Context, entries []Item) ([]Item, error) {
 	filters := ctx.Config.Changelog.Filters
 	if len(filters.Include) > 0 {
-		res := make([]*regexp.Regexp, 0, len(filters.Include))
+		includes := make([]*regexp.Regexp, 0, len(filters.Include))
 		for _, filter := range filters.Include {
 			r, err := regexp.Compile(filter)
 			if err != nil {
 				return entries, err
 			}
-			res = append(res, r)
+			includes = append(includes, r)
 		}
 		// an entry matching several includes must still be listed once
-		return keepAny(res, entries), nil
+		return keepAny(includes, entries), nil
 	}
 	for _, filter := range filters.Exclude {
 		r, err := regexp.Compile(filter)
