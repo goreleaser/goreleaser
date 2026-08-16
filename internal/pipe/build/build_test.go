@@ -482,6 +482,28 @@ func TestExtWindows(t *testing.T) {
 	require.Equal(t, ".lib", extFor("windows_386", config.BuildDetails{Buildmode: "c-archive"}))
 }
 
+// The node builder uses nodejs.org/dist target names, in which Windows is
+// spelled `win`, not `windows`.
+func TestExtWindowsNodeTargets(t *testing.T) {
+	require.Equal(t, ".exe", extFor("win-x64", config.BuildDetails{}))
+	require.Equal(t, ".exe", extFor("win-arm64", config.BuildDetails{}))
+	require.Empty(t, extFor("linux-x64", config.BuildDetails{}))
+	require.Empty(t, extFor("darwin-arm64", config.BuildDetails{}))
+}
+
+func TestBuildOptionsForNodeWindowsTarget(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: "dist"})
+	opts, err := buildOptionsForTarget(ctx, config.Build{
+		ID:      "foo",
+		Builder: "node",
+		Binary:  "foo",
+	}, "win-x64")
+	require.NoError(t, err)
+	require.Equal(t, ".exe", opts.Ext)
+	require.Equal(t, "foo.exe", opts.Name)
+	require.True(t, strings.HasSuffix(opts.Path, filepath.Join("dist", "foo_win-x64", "foo.exe")), opts.Path)
+}
+
 func TestExtWasm(t *testing.T) {
 	require.Equal(t, ".wasm", extFor("js_wasm", config.BuildDetails{}))
 	require.Equal(t, ".wasm", extFor("wasip1_wasm", config.BuildDetails{}))
