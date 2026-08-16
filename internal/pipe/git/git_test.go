@@ -53,6 +53,19 @@ func TestAnnotatedTags(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 
+func TestAnnotatedTagsWithApostrophes(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitAnnotatedTag(t, "v0.0.1", "don't break it\n\nit's the user's message")
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "don't break it", ctx.Git.TagSubject)
+	require.Equal(t, "don't break it\n\nit's the user's message", ctx.Git.TagContents)
+	require.Equal(t, "it's the user's message", ctx.Git.TagBody)
+}
+
 func TestBranch(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

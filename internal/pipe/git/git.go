@@ -260,8 +260,11 @@ func getSummary(ctx *context.Context) (string, error) {
 }
 
 func getTagWithFormat(ctx *context.Context, tag, format string) (string, error) {
-	out, err := git.Run(ctx, "tag", "-l", "--format='%("+format+")'", tag)
-	return strings.TrimSpace(strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n")), err
+	// the format is not quoted on purpose: git would print the quotes
+	// verbatim, and stripping them afterwards would also strip any
+	// apostrophes the tag message itself contains.
+	out, err := git.Run(ctx, "tag", "-l", "--format=%("+format+")", tag)
+	return strings.TrimSpace(out), err
 }
 
 func getTag(ctx *context.Context, excluding []string) (string, error) {
