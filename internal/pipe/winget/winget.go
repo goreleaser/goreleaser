@@ -604,9 +604,8 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)
-		// count every supported architecture: a manifest may only have one
-		// installer per architecture.
-		archCounts[archive.Goarch]++
+		// a manifest may only have one installer per architecture.
+		archCounts[item.Architecture]++
 	}
 
 	if binaryCount > 0 && zipCount > 0 {

@@ -1150,7 +1150,7 @@ func TestMakeInstallerMultipleArchivesSameArch(t *testing.T) {
 				ProjectName: "foo",
 			}, testctx.WithVersion("1.2.1"))
 
-			archives := make([]*artifact.Artifact, 0, 2)
+			var archives []*artifact.Artifact
 			for _, id := range []string{"a", "b"} {
 				path := filepath.Join(folder, "foo_"+id+".zip")
 				require.NoError(t, os.WriteFile(path, []byte("fake"), 0o644))
@@ -1161,15 +1161,14 @@ func TestMakeInstallerMultipleArchivesSameArch(t *testing.T) {
 					Goarch: goarch,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]any{
-						artifact.ExtraID:        id,
-						artifact.ExtraFormat:    "zip",
-						artifact.ExtraBinaries:  []string{"foo.exe"},
-						artifact.ExtraWrappedIn: "",
+						artifact.ExtraID:       id,
+						artifact.ExtraFormat:   "zip",
+						artifact.ExtraBinaries: []string{"foo.exe"},
 					},
 				})
 			}
 
-			_, err := makeInstaller(ctx, config.Winget{Goamd64: "v1"}, archives)
+			_, err := makeInstaller(ctx, config.Winget{}, archives)
 			require.ErrorIs(t, err, errMultipleArchives)
 		})
 	}
