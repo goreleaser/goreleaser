@@ -262,7 +262,7 @@ func extFor(target string, build config.BuildDetails) string {
 		if strings.Contains(target, "darwin") {
 			return ".dylib"
 		}
-		if strings.Contains(target, "windows") {
+		if isWindowsTarget(target) {
 			return ".dll"
 		}
 		if strings.Contains(target, "wasm") {
@@ -270,7 +270,7 @@ func extFor(target string, build config.BuildDetails) string {
 		}
 		return ".so"
 	case "c-archive":
-		if strings.Contains(target, "windows") {
+		if isWindowsTarget(target) {
 			return ".lib"
 		}
 		return ".a"
@@ -280,9 +280,19 @@ func extFor(target string, build config.BuildDetails) string {
 		return ".wasm"
 	}
 
-	if strings.Contains(target, "windows") {
+	if isWindowsTarget(target) {
 		return ".exe"
 	}
 
 	return ""
+}
+
+// isWindowsTarget reports whether the given target string targets Windows.
+//
+// Most builders spell it out as `windows`, but the node builder uses the
+// nodejs.org/dist naming, in which Windows targets are `win-x64` and
+// `win-arm64`.
+func isWindowsTarget(target string) bool {
+	return strings.Contains(target, "windows") ||
+		strings.HasPrefix(target, "win-")
 }
