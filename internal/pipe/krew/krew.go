@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
@@ -54,6 +55,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if krew.Goamd64 == "" {
 			krew.Goamd64 = "v1"
+		}
+		if krew.Goarm == "" {
+			krew.Goarm = experimental.DefaultGOARM()
 		}
 	}
 
