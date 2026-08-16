@@ -1141,6 +1141,40 @@ func TestErrNoArchivesFound(t *testing.T) {
 	}, "no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=v1 ids=[foo bar]")
 }
 
+func TestMakeInstallerMultipleArchivesSameArch(t *testing.T) {
+	for _, goarch := range []string{"amd64", "386", "arm64"} {
+		t.Run(goarch, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        folder,
+				ProjectName: "foo",
+			}, testctx.WithVersion("1.2.1"))
+
+			archives := make([]*artifact.Artifact, 0, 2)
+			for _, id := range []string{"a", "b"} {
+				path := filepath.Join(folder, "foo_"+id+".zip")
+				require.NoError(t, os.WriteFile(path, []byte("fake"), 0o644))
+				archives = append(archives, &artifact.Artifact{
+					Name:   "foo_" + id + ".zip",
+					Path:   path,
+					Goos:   "windows",
+					Goarch: goarch,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:        id,
+						artifact.ExtraFormat:    "zip",
+						artifact.ExtraBinaries:  []string{"foo.exe"},
+						artifact.ExtraWrappedIn: "",
+					},
+				})
+			}
+
+			_, err := makeInstaller(ctx, config.Winget{Goamd64: "v1"}, archives)
+			require.ErrorIs(t, err, errMultipleArchives)
+		})
+	}
+}
+
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",

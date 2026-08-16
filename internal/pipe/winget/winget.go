@@ -571,7 +571,8 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 		},
 	}
 
-	var amd64Count, i386count, zipCount, binaryCount int
+	var zipCount, binaryCount int
+	archCounts := map[string]int{}
 	for _, archive := range archives {
 		sha256, err := archive.Checksum("sha256")
 		if err != nil {
@@ -603,20 +604,19 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)
-		switch archive.Goarch {
-		case "386":
-			i386count++
-		case "amd64":
-			amd64Count++
-		}
+		// count every supported architecture: a manifest may only have one
+		// installer per architecture.
+		archCounts[archive.Goarch]++
 	}
 
 	if binaryCount > 0 && zipCount > 0 {
 		return Installer{}, errMixedFormats
 	}
 
-	if i386count > 1 || amd64Count > 1 {
-		return Installer{}, errMultipleArchives
+	for _, count := range archCounts {
+		if count > 1 {
+			return Installer{}, errMultipleArchives
+		}
 	}
 
 	return installer, nil
