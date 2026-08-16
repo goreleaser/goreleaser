@@ -336,6 +336,11 @@ func TestFuncMap(t *testing.T) {
 			Name:     "abs",
 			Expected: filepath.Join(wd, "file"),
 		},
+		{
+			Template: `{{ join "a" "b" ".." "c" }}`,
+			Name:     "join",
+			Expected: filepath.Join("a", "c"),
+		},
 	} {
 		out, err := New(ctx).Apply(tc.Template)
 		require.NoError(t, err)
