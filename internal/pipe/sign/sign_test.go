@@ -89,6 +89,28 @@ func TestSignDisabled(t *testing.T) {
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
+func TestSignDisabledDoesNotStopOthers(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dist, "artifact1"), []byte("foo"), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		Signs: []config.Sign{
+			{ID: "disabled", Artifacts: "none"},
+			{ID: "enabled", Artifacts: "all", Cmd: "false"},
+		},
+	})
+	ctx.Parallelism = 1
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "artifact1",
+		Path: filepath.Join(dist, "artifact1"),
+		Type: artifact.UploadableArchive,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Run(ctx)
+	require.ErrorContains(t, err, "exit status 1")
+}
+
 func TestSignInvalidArtifacts(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Signs: []config.Sign{{Artifacts: "foo"}}})
 	err := Pipe{}.Run(ctx)
