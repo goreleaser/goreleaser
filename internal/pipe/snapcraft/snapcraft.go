@@ -158,13 +158,20 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	// even if one of them is disabled, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, snap := range ctx.Config.Snapcrafts {
-		// TODO: deal with pipe.skip?
-		if err := doRun(ctx, snap); err != nil {
+		err := doRun(ctx, snap)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, snap config.Snapcraft) error {

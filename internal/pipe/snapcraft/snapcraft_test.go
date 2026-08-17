@@ -48,6 +48,46 @@ func TestRunPipeMissingInfo(t *testing.T) {
 	}
 }
 
+func TestRunPipeSomeDisabled(t *testing.T) {
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
+	fakeSnapcraft(t)
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate:     "disabled_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				IDs:              []string{"disabled"},
+				ChannelTemplates: []string{"stable"},
+				Disable:          "true",
+			},
+			{
+				NameTemplate:     "enabled_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				IDs:              []string{"enabled"},
+				ChannelTemplates: []string{"stable"},
+			},
+		},
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
+	addBinaries(t, ctx, "enabled", dist)
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	list := ctx.Artifacts.Filter(artifact.And(
+		artifact.ByType(artifact.PublishableSnapcraft),
+		artifact.ByGoarch("amd64"),
+	)).List()
+	require.Len(t, list, 1)
+	require.Equal(t, "enabled_amd64.snap", list[0].Name)
+}
+
 func TestRunPipe(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
