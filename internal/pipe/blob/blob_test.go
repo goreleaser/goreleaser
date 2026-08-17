@@ -2,6 +2,7 @@ package blob
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -170,6 +171,36 @@ func TestURL(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, "gs://foo", url)
+	})
+
+	t.Run("s3 force path style without endpoint", func(t *testing.T) {
+		for _, forcePathStyle := range []bool{true, false} {
+			t.Run(strconv.FormatBool(forcePathStyle), func(t *testing.T) {
+				url, err := urlFor(testctx.Wrap(t.Context()), config.Blob{
+					Bucket:           "foo",
+					Provider:         "s3",
+					Region:           "us-west-1",
+					S3ForcePathStyle: &forcePathStyle,
+				})
+				require.NoError(t, err)
+				require.Equal(
+					t,
+					"s3://foo?region=us-west-1&s3ForcePathStyle="+strconv.FormatBool(forcePathStyle),
+					url,
+				)
+			})
+		}
+	})
+
+	t.Run("s3 force path style false with endpoint", func(t *testing.T) {
+		url, err := urlFor(testctx.Wrap(t.Context()), config.Blob{
+			Bucket:           "foo",
+			Provider:         "s3",
+			Endpoint:         "s3.foobar.com",
+			S3ForcePathStyle: &[]bool{false}[0],
+		})
+		require.NoError(t, err)
+		require.Equal(t, "s3://foo?endpoint=s3.foobar.com&s3ForcePathStyle=false", url)
 	})
 
 	t.Run("s3 no opts", func(t *testing.T) {

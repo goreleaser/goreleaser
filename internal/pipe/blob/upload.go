@@ -57,11 +57,15 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 	if endpoint != "" {
 		query.Add("endpoint", endpoint)
-		if conf.S3ForcePathStyle == nil {
-			query.Add("s3ForcePathStyle", "true")
-		} else {
-			query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
-		}
+	}
+
+	switch {
+	case conf.S3ForcePathStyle != nil:
+		// explicitly set, always honor it.
+		query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
+	case endpoint != "":
+		// a custom endpoint implies path style.
+		query.Add("s3ForcePathStyle", "true")
 	}
 
 	region, err := tmpl.New(ctx).Apply(conf.Region)
