@@ -1070,6 +1070,56 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
+func TestRunPipeSomeSkipped(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: folder,
+			Krews: []config.Krew{
+				{
+					Description:      "Some desc",
+					ShortDescription: "Short desc",
+				},
+				{
+					Name:             "working",
+					Description:      "Some desc",
+					ShortDescription: "Short desc",
+					IDs:              []string{"foo"},
+				},
+			},
+		},
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"))
+
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Krews[0].Name)
+	testlib.AssertSkipped(t, runAll(ctx, client.NewMock()))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.KrewPluginManifest)).List()
+	require.Len(t, manifests, 1)
+	require.Equal(t, "working.yaml", manifests[0].Name)
+	require.Equal(t, []string{"foo"}, artifact.MustExtra[config.Krew](*manifests[0], krewConfigExtra).IDs)
+}
+
 func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())
