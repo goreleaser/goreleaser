@@ -788,6 +788,28 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:       "additional-locale-description-fallback",
+			expectPath: "manifests/f/Foo/desc-fallback/1.2.1/Foo.desc-fallback.",
+			winget: config.Winget{
+				Name:             "desc-fallback",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				Description:      "default description",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				AdditionalLocales: []config.WingetLocale{
+					{
+						Locale:           "pt-BR",
+						ShortDescription: "descricao curta",
+					},
+				},
+			},
+		},
+		{
 			name:             "bad-additional-locale-field-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
@@ -1117,6 +1139,39 @@ func TestErrNoArchivesFound(t *testing.T) {
 		goamd64: "v1",
 		ids:     []string{"foo", "bar"},
 	}, "no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=v1 ids=[foo bar]")
+}
+
+func TestMakeInstallerMultipleArchivesSameArch(t *testing.T) {
+	for _, goarch := range []string{"amd64", "386", "arm64"} {
+		t.Run(goarch, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        folder,
+				ProjectName: "foo",
+			}, testctx.WithVersion("1.2.1"))
+
+			var archives []*artifact.Artifact
+			for _, id := range []string{"a", "b"} {
+				path := filepath.Join(folder, "foo_"+id+".zip")
+				require.NoError(t, os.WriteFile(path, []byte("fake"), 0o644))
+				archives = append(archives, &artifact.Artifact{
+					Name:   "foo_" + id + ".zip",
+					Path:   path,
+					Goos:   "windows",
+					Goarch: goarch,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       id,
+						artifact.ExtraFormat:   "zip",
+						artifact.ExtraBinaries: []string{"foo.exe"},
+					},
+				})
+			}
+
+			_, err := makeInstaller(ctx, config.Winget{}, archives)
+			require.ErrorIs(t, err, errMultipleArchives)
+		})
+	}
 }
 
 func TestDefault(t *testing.T) {

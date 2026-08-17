@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -288,6 +289,53 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	require.True(t, ok, "tar.gz file was not uploaded")
 	_, ok = uploads.Load("deb")
 	require.True(t, ok, "deb file was not uploaded")
+}
+
+func TestRunPipe_MisconfiguredArtifactoryDoesNotStopOthers(t *testing.T) {
+	var uploads sync.Map
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	file := filepath.Join(t.TempDir(), "bin.tar.gz")
+	require.NoError(t, os.WriteFile(file, []byte("archive"), 0o644))
+
+	mux.HandleFunc("/uploads/bin.tar.gz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		uploads.Store("targz", true)
+	})
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "goreleaser",
+		Artifactories: []config.Upload{
+			{
+				Name:     "missing-secret",
+				Mode:     "archive",
+				Target:   server.URL + "/missing/",
+				Username: "deployuser",
+			},
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   server.URL + "/uploads/",
+				Username: "deployuser",
+			},
+		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=secret"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: file,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	require.True(t, pipe.IsSkip(err), err)
+	_, ok := uploads.Load("targz")
+	require.True(t, ok, "the upload after the misconfigured one should have run")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {

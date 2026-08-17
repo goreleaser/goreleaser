@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
@@ -55,6 +56,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if krew.Goamd64 == "" {
 			krew.Goamd64 = "v1"
 		}
+		if krew.Goarm == "" {
+			krew.Goarm = experimental.DefaultGOARM()
+		}
 	}
 
 	return nil
@@ -70,13 +74,20 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	// even if one of them is skipped, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, krew := range ctx.Config.Krews {
 		err := doRun(ctx, krew, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater) error {

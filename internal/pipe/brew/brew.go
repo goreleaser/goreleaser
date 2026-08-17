@@ -99,13 +99,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	// even if one of them is skipped, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, brew := range ctx.Config.Brews {
 		err := doRun(ctx, brew, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {

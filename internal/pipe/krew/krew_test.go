@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -981,6 +982,62 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitMessageTemplate)
 	require.Equal(t, "foo/bar", ctx.Config.Krews[0].Repository.Git.URL)
+	require.Equal(t, "v1", ctx.Config.Krews[0].Goamd64)
+	require.Equal(t, experimental.DefaultGOARM(), ctx.Config.Krews[0].Goarm)
+}
+
+// TestRunPipeDefaultGoarm ensures that, when goarm is not set, arm archives
+// built with the default GOARM are still included in the manifest.
+func TestRunPipeDefaultGoarm(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Krews: []config.Krew{
+			{
+				Name:             "foo",
+				ShortDescription: "Short desc",
+				Description:      "Desc",
+				Homepage:         "https://goreleaser.com",
+				Repository: config.RepoRef{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "test", Name: "test"},
+		},
+	}, testctx.GitHubTokenType, testctx.WithVersion("1.0.1"), testctx.WithCurrentTag("v1.0.1"))
+
+	for _, goarm := range []string{"6", "7"} {
+		name := "armv" + goarm + ".tar.gz"
+		path := filepath.Join(folder, name)
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  goarm,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "armv" + goarm,
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"foo"},
+			},
+		})
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	bts, err := os.ReadFile(filepath.Join(folder, "krew", "foo.yaml"))
+	require.NoError(t, err)
+	require.Contains(t, string(bts), "armv"+experimental.DefaultGOARM()+".tar.gz")
 }
 
 func TestGHFolder(t *testing.T) {
@@ -1011,6 +1068,56 @@ func TestRunSkipNoName(t *testing.T) {
 
 	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
+}
+
+func TestRunPipeSomeSkipped(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: folder,
+			Krews: []config.Krew{
+				{
+					Description:      "Some desc",
+					ShortDescription: "Short desc",
+				},
+				{
+					Name:             "working",
+					Description:      "Some desc",
+					ShortDescription: "Short desc",
+					IDs:              []string{"foo"},
+				},
+			},
+		},
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"))
+
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Krews[0].Name)
+	testlib.AssertSkipped(t, runAll(ctx, client.NewMock()))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.KrewPluginManifest)).List()
+	require.Len(t, manifests, 1)
+	require.Equal(t, "working.yaml", manifests[0].Name)
+	require.Equal(t, []string{"foo"}, artifact.MustExtra[config.Krew](*manifests[0], krewConfigExtra).IDs)
 }
 
 func manifestName(tb testing.TB) string {

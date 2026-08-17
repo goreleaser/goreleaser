@@ -9,6 +9,7 @@ sidebar:
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [Export OpenTelemetry traces](/customization/telemetry/) of your releases to your own collector (Enterprise plan);
 - [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);

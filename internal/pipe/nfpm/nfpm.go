@@ -214,6 +214,15 @@ var termuxArchReplacer = strings.NewReplacer(
 	"arm6", "arm",
 )
 
+// debArchVariant returns the Debian architecture variant for the given
+// artifact, if any. v1 is the baseline, so it gets no variant.
+func debArchVariant(art *artifact.Artifact) string {
+	if art.Goarch != "amd64" || art.Goamd64 == "v1" {
+		return ""
+	}
+	return art.Goamd64
+}
+
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve this.
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips                                                          // key used for the ConventionalFileName et al
@@ -299,7 +308,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		return err
 	}
 
-	packageName, err := tmpl.New(ctx).Apply(fpm.PackageName)
+	packageName, err := tmpl.New(ctx).Apply(overridden.PackageName)
 	if err != nil {
 		return err
 	}
@@ -307,8 +316,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	t := tmpl.New(ctx).
 		WithArtifact(artifacts[0]).
 		WithExtraFields(tmpl.Fields{
-			"Release":     fpm.Release,
-			"Epoch":       fpm.Epoch,
+			"Release":     overridden.Release,
+			"Epoch":       overridden.Epoch,
 			"PackageName": packageName,
 		})
 
@@ -461,10 +470,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Version:         ctx.Version,
 		Section:         fpm.Section,
 		Priority:        fpm.Priority,
-		Epoch:           fpm.Epoch,
-		Release:         fpm.Release,
-		Prerelease:      fpm.Prerelease,
-		VersionMetadata: fpm.VersionMetadata,
+		Epoch:           overridden.Epoch,
+		Release:         overridden.Release,
+		Prerelease:      overridden.Prerelease,
+		VersionMetadata: overridden.VersionMetadata,
 		Maintainer:      fpm.Maintainer,
 		Description:     fpm.Description,
 		Vendor:          fpm.Vendor,
@@ -488,7 +497,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
-				ArchVariant: artifacts[0].Goamd64,
+				ArchVariant: debArchVariant(artifacts[0]),
 				Compression: overridden.Deb.Compression,
 				Fields:      overridden.Deb.Fields,
 				Predepends:  overridden.Deb.Predepends,
@@ -664,7 +673,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Extra: map[string]any{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
-			artifact.ExtraExt:    "." + format,
+			artifact.ExtraExt:    ext,
 			extraFiles:           contents,
 		},
 	})

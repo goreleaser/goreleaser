@@ -289,6 +289,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"dir":            filepath.Dir,
 			"base":           filepath.Base,
 			"abs":            filepath.Abs,
+			"join":           filepath.Join,
 			"incmajor":       incMajor,
 			"incminor":       incMinor,
 			"incpatch":       incPatch,

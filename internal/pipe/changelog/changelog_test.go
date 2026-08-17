@@ -230,6 +230,33 @@ func TestChangelogInclude(t *testing.T) {
 	require.NotEmpty(t, string(bts))
 }
 
+func TestChangelogIncludeOverlapping(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "feat: add parser")
+	testlib.GitCommit(t, "fix: crash on empty")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Use: "git",
+			Filters: config.Filters{
+				Include: []string{
+					"^feat:",
+					"parser",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.2"), testctx.WithPreviousTag("v0.0.1"))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, 1, strings.Count(ctx.ReleaseNotes, "feat: add parser"))
+	require.NotContains(t, ctx.ReleaseNotes, "fix: crash on empty")
+}
+
 func TestChangelogForGitlab(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)

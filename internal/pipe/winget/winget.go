@@ -363,7 +363,7 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) er
 			Copyright:           cmp.Or(aloc.Copyright, winget.Copyright),
 			CopyrightURL:        cmp.Or(aloc.CopyrightURL, winget.CopyrightURL),
 			ShortDescription:    cmp.Or(aloc.ShortDescription, winget.ShortDescription),
-			Description:         strings.ReplaceAll(aloc.Description, "\t", "  "),
+			Description:         strings.ReplaceAll(cmp.Or(aloc.Description, winget.Description), "\t", "  "),
 			Moniker:             winget.Name,
 			Tags:                fixTags(tags),
 			ReleaseNotes:        cmp.Or(aloc.ReleaseNotes, winget.ReleaseNotes),
@@ -571,7 +571,8 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 		},
 	}
 
-	var amd64Count, i386count, zipCount, binaryCount int
+	var zipCount, binaryCount int
+	archCounts := map[string]int{}
 	for _, archive := range archives {
 		sha256, err := archive.Checksum("sha256")
 		if err != nil {
@@ -603,20 +604,18 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)
-		switch archive.Goarch {
-		case "386":
-			i386count++
-		case "amd64":
-			amd64Count++
-		}
+		// a manifest may only have one installer per architecture.
+		archCounts[item.Architecture]++
 	}
 
 	if binaryCount > 0 && zipCount > 0 {
 		return Installer{}, errMixedFormats
 	}
 
-	if i386count > 1 || amd64Count > 1 {
-		return Installer{}, errMultipleArchives
+	for _, count := range archCounts {
+		if count > 1 {
+			return Installer{}, errMultipleArchives
+		}
 	}
 
 	return installer, nil

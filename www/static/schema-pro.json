@@ -442,6 +442,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary"
 						],
 						"default": "tar.gz"
@@ -1938,6 +1941,9 @@
 							"gz",
 							"tar.xz",
 							"txz",
+							"tar.zst",
+							"tzst",
+							"xz",
 							"binary",
 							"none"
 						],
@@ -2710,6 +2716,85 @@
 						"type": "object"
 					}
 				]
+			},
+			"Iru": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"api_token": {
+						"type": "string"
+					},
+					"library_item_id": {
+						"type": "string"
+					},
+					"install_type": {
+						"type": "string",
+						"enum": [
+							"package",
+							"zip",
+							"image"
+						],
+						"default": "zip"
+					},
+					"install_enforcement": {
+						"type": "string",
+						"enum": [
+							"install_once",
+							"continuously_enforce",
+							"no_enforcement"
+						],
+						"default": "install_once"
+					},
+					"unzip_location": {
+						"type": "string"
+					},
+					"audit_script": {
+						"type": "string"
+					},
+					"preinstall_script": {
+						"type": "string"
+					},
+					"postinstall_script": {
+						"type": "string"
+					},
+					"show_in_self_service": {
+						"type": "boolean"
+					},
+					"self_service_category_id": {
+						"type": "string"
+					},
+					"self_service_recommended": {
+						"type": "boolean"
+					},
+					"active": {
+						"type": "boolean"
+					},
+					"restart": {
+						"type": "boolean"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"Ko": {
 				"properties": {
@@ -5031,6 +5116,9 @@
 					"mcp": {
 						"$ref": "#/$defs/MCP"
 					},
+					"iru": {
+						"$ref": "#/$defs/Iru"
+					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
 					},
@@ -5103,6 +5191,9 @@
 					},
 					"verify": {
 						"$ref": "#/$defs/Verify"
+					},
+					"telemetry": {
+						"$ref": "#/$defs/Telemetry"
 					},
 					"furies": {
 						"items": {
@@ -5611,21 +5702,6 @@
 					"signature": {
 						"$ref": "#/$defs/NFPMRPMSignature"
 					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMRPMScripts"
-					},
-					"prefixes": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"packager": {
-						"type": "string"
-					},
-					"buildhost": {
-						"type": "string"
-					},
 					"enabled": {
 						"type": "boolean"
 					},
@@ -5660,6 +5736,9 @@
 						"type": "string"
 					},
 					"url": {
+						"type": "string"
+					},
+					"packager": {
 						"type": "string"
 					},
 					"description": {
@@ -6327,6 +6406,15 @@
 								"type": "integer"
 							}
 						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Telemetry": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

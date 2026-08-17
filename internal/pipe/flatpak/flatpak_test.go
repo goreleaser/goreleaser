@@ -108,6 +108,37 @@ func TestRunPipeDisabledTemplate(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipeSomeDisabled(t *testing.T) {
+	testlib.OnlyOnLinux(t, "flatpak only works on linux")
+	testlib.CheckPath(t, "flatpak-builder")
+	testlib.CheckPath(t, "flatpak")
+	dist := filepath.Join(t.TempDir(), "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+
+	disabled := validFlatpak()
+	disabled.ID = "disabled"
+	disabled.Disable = "true"
+
+	enabled := validFlatpak()
+	enabled.ID = "enabled"
+	enabled.NameTemplate = "foo_{{.Arch}}"
+	enabled.AppID = "org.example.MyBin"
+	enabled.IDs = []string{"foo"}
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Flatpaks:    []config.Flatpak{disabled, enabled},
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
+	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+
+	list := ctx.Artifacts.Filter(artifact.ByType(artifact.Flatpak)).List()
+	require.NotEmpty(t, list, "the flatpak after the disabled one should have been built")
+	require.Equal(t, "enabled", artifact.ExtraOr(*list[0], artifact.ExtraID, ""))
+}
+
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	testlib.OnlyOnLinux(t, "flatpak only works on linux")
 	testlib.CheckPath(t, "flatpak-builder")
