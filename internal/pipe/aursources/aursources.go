@@ -107,6 +107,10 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 		&aur.Name,
 		&aur.Directory,
 		&aur.SkipUpload,
+		// needs to be evaluated here so `quoteField` sees the final value:
+		// the whole file is templated again later, and by then it is too late
+		// to escape quotes coming from the template result.
+		&aur.Description,
 	); err != nil {
 		return err
 	}

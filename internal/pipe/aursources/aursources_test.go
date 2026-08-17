@@ -833,3 +833,43 @@ func requireEqualRepoFiles(tb testing.TB, distDir, repoDir, name, url string) {
 		".SRCINFO": filepath.Join(distDir, "aur", name+".srcinfo"),
 	})
 }
+
+func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURSources: []config.AURSource{{
+				Description: "{{ .Env.DESC }}",
+			}},
+			Env: []string{`DESC=Let's go`},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "foo.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "foo.tar.gz",
+		Path: path,
+		Type: artifact.UploadableSourceArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
+		},
+	})
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo.pkgbuild"))
+	require.NoError(t, err)
+	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
+}
