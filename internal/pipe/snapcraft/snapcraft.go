@@ -303,6 +303,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		metadata.Name = snap.Name
 	}
 
+	metadata.Assumes = snap.Assumes
+	metadata.Hooks = snap.Hooks
+	metadata.Plugs = snap.Plugs
+
 	for targetPath, layout := range snap.Layout {
 		metadata.Layout[targetPath] = LayoutMetadata{
 			Symlink:  layout.Symlink,
@@ -398,9 +402,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 
 		metadata.Apps[name] = appMetadata
-		metadata.Assumes = snap.Assumes
-		metadata.Hooks = snap.Hooks
-		metadata.Plugs = snap.Plugs
 	}
 
 	out, err := yaml.Marshal(metadata)
