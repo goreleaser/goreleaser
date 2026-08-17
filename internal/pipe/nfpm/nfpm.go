@@ -308,7 +308,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		return err
 	}
 
-	packageName, err := tmpl.New(ctx).Apply(fpm.PackageName)
+	packageName, err := tmpl.New(ctx).Apply(overridden.PackageName)
 	if err != nil {
 		return err
 	}
@@ -316,8 +316,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	t := tmpl.New(ctx).
 		WithArtifact(artifacts[0]).
 		WithExtraFields(tmpl.Fields{
-			"Release":     fpm.Release,
-			"Epoch":       fpm.Epoch,
+			"Release":     overridden.Release,
+			"Epoch":       overridden.Epoch,
 			"PackageName": packageName,
 		})
 
@@ -470,10 +470,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Version:         ctx.Version,
 		Section:         fpm.Section,
 		Priority:        fpm.Priority,
-		Epoch:           fpm.Epoch,
-		Release:         fpm.Release,
-		Prerelease:      fpm.Prerelease,
-		VersionMetadata: fpm.VersionMetadata,
+		Epoch:           overridden.Epoch,
+		Release:         overridden.Release,
+		Prerelease:      overridden.Prerelease,
+		VersionMetadata: overridden.VersionMetadata,
 		Maintainer:      fpm.Maintainer,
 		Description:     fpm.Description,
 		Vendor:          fpm.Vendor,
