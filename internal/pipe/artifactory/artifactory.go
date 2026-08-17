@@ -8,7 +8,6 @@ import (
 	h "net/http"
 
 	"github.com/goreleaser/goreleaser/v2/internal/http"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -33,14 +32,6 @@ func (Pipe) Default(ctx *context.Context) error {
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
 func (Pipe) Publish(ctx *context.Context) error {
-	// Check requirements for every instance we have configured.
-	// If not fulfilled, we can skip this pipeline
-	for _, instance := range ctx.Config.Artifactories {
-		if skip := http.CheckConfig(ctx, &instance, "artifactory"); skip != nil {
-			return pipe.Skip(skip.Error())
-		}
-	}
-
 	return http.Upload(ctx, ctx.Config.Artifactories, "artifactory", checkResponse)
 }
 

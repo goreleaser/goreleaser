@@ -179,6 +179,10 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 }
 
 func uploadOne(ctx *context.Context, upload config.Upload, kind string, check ResponseChecker) error {
+	if err := CheckConfig(ctx, &upload, kind); err != nil {
+		return err
+	}
+
 	skip, err := tmpl.New(ctx).Bool(upload.Skip)
 	if err != nil {
 		return err

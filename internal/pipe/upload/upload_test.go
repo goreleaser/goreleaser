@@ -190,6 +190,54 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	require.True(t, ok, "deb file was not uploaded")
 }
 
+func TestRunPipe_MisconfiguredUploadDoesNotStopOthers(t *testing.T) {
+	var uploads sync.Map
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	file := filepath.Join(t.TempDir(), "bin.tar.gz")
+	require.NoError(t, os.WriteFile(file, []byte("archive"), 0o644))
+
+	mux.HandleFunc("/uploads/bin.tar.gz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		uploads.Store("targz", true)
+	})
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "goreleaser",
+		Uploads: []config.Upload{
+			{
+				Method:   http.MethodPut,
+				Name:     "missing-secret",
+				Mode:     "archive",
+				Target:   server.URL + "/missing/",
+				Username: "deployuser",
+			},
+			{
+				Method:   http.MethodPut,
+				Name:     "production",
+				Mode:     "archive",
+				Target:   server.URL + "/uploads/",
+				Username: "deployuser",
+			},
+		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=secret"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: file,
+	})
+
+	err := Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	require.True(t, pipe.IsSkip(err), err)
+	_, ok := uploads.Load("targz")
+	require.True(t, ok, "the upload after the misconfigured one should have run")
+}
+
 func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
