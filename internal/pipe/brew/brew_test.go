@@ -1310,6 +1310,64 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
+func TestRunPipeNoRepoNameDoesNotStopOthers(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Brews: []config.Homebrew{
+			{
+				Name: "skipped",
+				Repository: config.RepoRef{
+					Owner: "foo",
+				},
+			},
+			{
+				Name:    "runs",
+				Goamd64: "v1",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				IDs: []string{"foo"},
+			},
+		},
+	}, testctx.WithCurrentTag("v1.0.1"), testctx.WithVersion("1.0.1"))
+
+	path := filepath.Join(folder, "bin.tar.gz")
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Brews[0].Repository.Name)
+
+	client := client.NewMock()
+	testlib.AssertSkipped(t, runAll(ctx, client))
+
+	formulae := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewFormula)).List()
+	require.Len(t, formulae, 1)
+	require.Equal(t, "runs.rb", formulae[0].Name)
+	_, err = os.Stat(formulae[0].Path)
+	require.NoError(t, err)
+
+	brew := artifact.MustExtra[config.Homebrew](*formulae[0], brewConfigExtra)
+	require.Equal(t, []string{"foo"}, brew.IDs)
+}
+
 func TestInstalls(t *testing.T) {
 	t.Run("provided", func(t *testing.T) {
 		install, err := installs(
