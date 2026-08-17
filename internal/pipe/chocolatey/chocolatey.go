@@ -18,7 +18,12 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-var errNoWindowsArchive = errors.New("chocolatey requires at least one windows archive")
+var (
+	errNoWindowsArchive = errors.New("chocolatey requires at least one windows archive")
+	// a chocolateyinstall.ps1 may only have one url/checksum pair per
+	// architecture.
+	errMultipleArchives = errors.New("found multiple archives for the same platform, please consider filtering by id")
+)
 
 // nuget package extension.
 const nupkgFormat = "nupkg"
@@ -291,6 +296,7 @@ func dataFor(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.C
 		choco.URLTemplate = url
 	}
 
+	archCounts := map[string]int{}
 	for _, artifact := range artifacts {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
@@ -309,6 +315,13 @@ func dataFor(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.C
 		}
 
 		result.Packages = append(result.Packages, pkg)
+		archCounts[artifact.Goarch]++
+	}
+
+	for _, count := range archCounts {
+		if count > 1 {
+			return templateData{}, errMultipleArchives
+		}
 	}
 
 	return result, nil
