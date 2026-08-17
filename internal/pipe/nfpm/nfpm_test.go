@@ -1604,6 +1604,68 @@ func TestExtIsConventionalExtension(t *testing.T) {
 	require.Len(t, ctx.Artifacts.Filter(artifact.ByExt("pkg.tar.zst")).List(), 1)
 }
 
+func TestOverridesVersionFields(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	require.NoError(t, os.WriteFile(binPath, []byte("fake binary"), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "mybin",
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me",
+				Formats:    []string{"deb", "rpm"},
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "{{ .PackageName }}_e{{ .Epoch }}_r{{ .Release }}_" +
+						"{{ trimsuffix .ConventionalFileName .ConventionalExtension }}",
+					PackageName:     "mybin",
+					Epoch:           "1",
+					Release:         "1",
+					Prerelease:      "alpha1",
+					VersionMetadata: "top",
+				},
+				Overrides: map[string]config.NFPMOverridables{
+					"rpm": {
+						PackageName:     "mybin-rpm",
+						Epoch:           "7",
+						Release:         "9",
+						Prerelease:      "beta1",
+						VersionMetadata: "git",
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	// .PackageName, .Epoch and .Release come from the template fields, while
+	// the conventional file name is built by nfpm out of the package name,
+	// prerelease, version metadata and release.
+	got := map[string]string{}
+	for _, pkg := range ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List() {
+		got[pkg.Format()] = pkg.Name
+	}
+	require.Equal(t, map[string]string{
+		"deb": "mybin_e1_r1_mybin_1.0.0~alpha1+top-1_amd64.deb",
+		"rpm": "mybin-rpm_e7_r9_mybin-rpm-1.0.0~beta1+git-9.x86_64.rpm",
+	}, got)
+}
+
 func TestIPKSpecificConfig(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
