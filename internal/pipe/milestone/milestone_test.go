@@ -151,6 +151,28 @@ func TestPublishCloseEnabled(t *testing.T) {
 	require.Equal(t, "v1.0.0", client.ClosedMilestone)
 }
 
+func TestPublishCloseSomeDisabled(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Milestones: []config.Milestone{
+			{
+				Close: false,
+			},
+			{
+				Close:        true,
+				NameTemplate: defaultNameTemplate,
+				Repo: config.Repo{
+					Name:  "configrepo",
+					Owner: "configowner",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v1.0.0"))
+
+	client := client.NewMock()
+	testlib.AssertSkipped(t, doPublish(ctx, client))
+	require.Equal(t, "v1.0.0", client.ClosedMilestone)
+}
+
 func TestPublishCloseError(t *testing.T) {
 	config := config.Project{
 		Milestones: []config.Milestone{

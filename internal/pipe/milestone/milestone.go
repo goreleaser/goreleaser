@@ -54,11 +54,15 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, vcsClient client.Client) error {
+	// even if one of them is not set to close, we still go through all of them,
+	// and return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for i := range ctx.Config.Milestones {
 		milestone := &ctx.Config.Milestones[i]
 
 		if !milestone.Close {
-			return pipe.Skip("closing not enabled")
+			skips.Remember(pipe.Skip("closing not enabled"))
+			continue
 		}
 
 		name, err := tmpl.New(ctx).Apply(milestone.NameTemplate)
@@ -88,5 +92,5 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 		}
 	}
 
-	return nil
+	return skips.Evaluate()
 }
