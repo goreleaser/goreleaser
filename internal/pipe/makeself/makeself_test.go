@@ -22,6 +22,10 @@ func TestDescription(t *testing.T) {
 	require.Equal(t, "makeself packages", Pipe{}.String())
 }
 
+func TestDependencies(t *testing.T) {
+	require.Equal(t, []string{"makeself"}, Pipe{}.Dependencies(testctx.Wrap(t.Context())))
+}
+
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Makeself))
