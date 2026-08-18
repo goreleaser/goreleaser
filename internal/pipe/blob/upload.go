@@ -61,10 +61,8 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 
 	switch {
 	case conf.S3ForcePathStyle != nil:
-		// explicitly set, always honor it.
 		query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
 	case endpoint != "":
-		// a custom endpoint implies path style.
 		query.Add("s3ForcePathStyle", "true")
 	}
 

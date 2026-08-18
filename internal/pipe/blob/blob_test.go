@@ -193,11 +193,12 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("s3 force path style false with endpoint", func(t *testing.T) {
+		forcePathStyle := false
 		url, err := urlFor(testctx.Wrap(t.Context()), config.Blob{
 			Bucket:           "foo",
 			Provider:         "s3",
 			Endpoint:         "s3.foobar.com",
-			S3ForcePathStyle: &[]bool{false}[0],
+			S3ForcePathStyle: &forcePathStyle,
 		})
 		require.NoError(t, err)
 		require.Equal(t, "s3://foo?endpoint=s3.foobar.com&s3ForcePathStyle=false", url)
