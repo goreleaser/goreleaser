@@ -33,6 +33,7 @@ var validLicenses = []string{
 	"bitstreamVera",
 	"bitTorrent10",
 	"bitTorrent11",
+	"blessing",
 	"boehmGC",
 	"bola11",
 	"boost",
