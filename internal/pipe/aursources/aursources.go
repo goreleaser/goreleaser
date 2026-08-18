@@ -107,9 +107,7 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 		&aur.Name,
 		&aur.Directory,
 		&aur.SkipUpload,
-		// needs to be evaluated here so `quoteField` sees the final value:
-		// the whole file is templated again later, and by then it is too late
-		// to escape quotes coming from the template result.
+		// must be expanded here so `quoteField` sees the final value.
 		&aur.Description,
 	); err != nil {
 		return err
@@ -258,7 +256,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 func toPkgBuildArray(ss []string) string {
 	result := make([]string, 0, len(ss))
 	for _, s := range ss {
-		result = append(result, fmt.Sprintf("'%s'", s))
+		result = append(result, quoteField(s))
 	}
 	return strings.Join(result, " ")
 }

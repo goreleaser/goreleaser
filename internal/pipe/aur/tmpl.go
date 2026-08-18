@@ -40,9 +40,9 @@ pkgname='{{ .Name }}'
 pkgver={{ .Version }}
 pkgrel={{ .Rel }}
 pkgdesc={{ quoteField .Desc }}
-url='{{ .Homepage }}'
+url={{ quoteField .Homepage }}
 arch=({{ pkgArray .Arches }})
-license=('{{ .License }}')
+license=({{ quoteField .License }})
 {{- with .Provides }}
 provides=({{ pkgArray . }})
 {{- end }}

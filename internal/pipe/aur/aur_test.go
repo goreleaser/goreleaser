@@ -927,6 +927,9 @@ func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
 			ProjectName: "foo",
 			AURs: []config.AUR{{
 				Description: "{{ .Env.DESC }}",
+				Homepage:    "https://example.com/~o'brien",
+				License:     "Nobody's",
+				Provides:    []string{"fo'o", "bar"},
 			}},
 			Env: []string{`DESC=Let's go`},
 		},
@@ -960,4 +963,7 @@ func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
 	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
 	require.NoError(t, err)
 	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
+	require.Contains(t, string(bts), `url="https://example.com/~o'brien"`)
+	require.Contains(t, string(bts), `license=("Nobody's")`)
+	require.Contains(t, string(bts), `provides=("fo'o" 'bar')`)
 }
