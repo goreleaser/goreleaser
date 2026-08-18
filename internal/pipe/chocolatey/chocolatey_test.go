@@ -230,6 +230,38 @@ func Test_buildTemplate(t *testing.T) {
 	golden.RequireEqualExt(t, out, ".script.ps1")
 }
 
+func Test_dataForMultipleArchivesSameArch(t *testing.T) {
+	folder := t.TempDir()
+	file := filepath.Join(folder, "archive")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+
+	for _, goarch := range []string{"386", "amd64"} {
+		t.Run(goarch, func(t *testing.T) {
+			ctx := testctx.Wrap(t.Context(), testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			artifacts := []*artifact.Artifact{
+				{
+					Name:    "client_1.0.0_windows_" + goarch + ".zip",
+					Goos:    "windows",
+					Goarch:  goarch,
+					Goamd64: "v1",
+					Path:    file,
+				},
+				{
+					Name:    "server_1.0.0_windows_" + goarch + ".zip",
+					Goos:    "windows",
+					Goarch:  goarch,
+					Goamd64: "v1",
+					Path:    file,
+				},
+			}
+
+			data, err := dataFor(ctx, client.NewMock(), config.Chocolatey{Name: "app"}, artifacts)
+			require.ErrorIs(t, err, errMultipleArchives)
+			require.Empty(t, data.Packages)
+		})
+	}
+}
+
 func TestPublish(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
