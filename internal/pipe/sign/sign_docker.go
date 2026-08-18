@@ -49,7 +49,9 @@ func (DockerPipe) Default(ctx *context.Context) error {
 
 // Publish signs and pushes the docker images signatures.
 func (DockerPipe) Publish(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	// skip-aware so that a config with `artifacts: none` doesn't mask the
+	// errors of the other configs.
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockerSigns {
 		cfg := ctx.Config.DockerSigns[i]
 		g.Go(func() error {

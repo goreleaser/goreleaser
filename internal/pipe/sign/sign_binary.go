@@ -65,7 +65,9 @@ func (BinaryPipe) Default(ctx *context.Context) error {
 
 // Run signs and pushes the binary images signatures.
 func (BinaryPipe) Run(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	// skip-aware so that a config with `artifacts: none` doesn't mask the
+	// errors of the other configs.
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.BinarySigns {
 		cfg := ctx.Config.BinarySigns[i]
 		g.Go(func() error {

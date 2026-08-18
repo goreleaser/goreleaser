@@ -42,6 +42,26 @@ func TestDockerSignDisabled(t *testing.T) {
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
+func TestDockerSignDisabledDoesNotStopOthers(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+		DockerSigns: []config.Sign{
+			{ID: "disabled", Artifacts: "none"},
+			{ID: "enabled", Artifacts: "images", Cmd: "false"},
+		},
+	})
+	ctx.Parallelism = 1
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "img",
+		Path: "img",
+		Type: artifact.DockerImage,
+	})
+
+	require.NoError(t, DockerPipe{}.Default(ctx))
+	err := DockerPipe{}.Publish(ctx)
+	require.ErrorContains(t, err, "exit status 1")
+}
+
 func TestDockerSignInvalidArtifacts(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		DockerSigns: []config.Sign{
