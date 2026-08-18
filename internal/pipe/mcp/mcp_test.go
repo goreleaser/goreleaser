@@ -285,6 +285,105 @@ func TestPublishWithTemplates(t *testing.T) {
 	require.NoError(t, pipe.Publish(ctx))
 }
 
+func TestPublishDisabled(t *testing.T) {
+	for name, disable := range map[string]string{
+		"true":     "true",
+		"template": "{{ .Env.NOPE }}",
+	} {
+		t.Run(name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+				t.Error("should not have published anything")
+			}))
+			defer srv.Close()
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				MCP: config.MCP{
+					MCPDetails: config.MCPDetails{
+						Name:    "test-server",
+						Title:   "Test Server",
+						Disable: disable,
+						Auth: config.MCPAuth{
+							Type: "none",
+						},
+					},
+				},
+			}, testctx.WithEnv(map[string]string{"NOPE": "true"}))
+			ctx.Version = "1.0.0"
+
+			p := &Pipe{registry: srv.URL}
+			p.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
+				return &mockAuthProvider{token: "test-token"}, nil
+			}
+			require.NoError(t, p.Default(ctx))
+			testlib.AssertSkipped(t, p.Publish(ctx))
+		})
+	}
+
+	t.Run("auto on a prerelease", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+			t.Error("should not have published anything")
+		}))
+		defer srv.Close()
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				MCPDetails: config.MCPDetails{
+					Name:    "test-server",
+					Title:   "Test Server",
+					Disable: "auto",
+					Auth: config.MCPAuth{
+						Type: "none",
+					},
+				},
+			},
+		}, testctx.WithSemver(1, 0, 0, "rc1"))
+		ctx.Version = "1.0.0-rc1"
+
+		p := &Pipe{registry: srv.URL}
+		p.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
+			return &mockAuthProvider{token: "test-token"}, nil
+		}
+		require.NoError(t, p.Default(ctx))
+		testlib.AssertSkipped(t, p.Publish(ctx))
+	})
+
+	t.Run("not disabled", func(t *testing.T) {
+		var published bool
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			published = true
+			w.WriteHeader(http.StatusCreated)
+			assert.NoError(t, json.NewEncoder(w).Encode(apiv0.ServerResponse{
+				Meta: apiv0.ResponseMeta{
+					Official: &apiv0.RegistryExtensions{Status: "pending"},
+				},
+			}))
+		}))
+		defer srv.Close()
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				MCPDetails: config.MCPDetails{
+					Name:    "test-server",
+					Title:   "Test Server",
+					Disable: "false",
+					Auth: config.MCPAuth{
+						Type: "none",
+					},
+				},
+			},
+		})
+		ctx.Version = "1.0.0"
+
+		p := &Pipe{registry: srv.URL}
+		p.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
+			return &mockAuthProvider{token: "test-token"}, nil
+		}
+		require.NoError(t, p.Default(ctx))
+		require.NoError(t, p.Publish(ctx))
+		require.True(t, published)
+	})
+}
+
 func TestPublishInvalidTemplate(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
