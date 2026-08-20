@@ -371,7 +371,9 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 	}
 	if len(d.Platforms) > 1 {
 		for i := 1; i < len(annotationFlags); i += 2 {
-			annotationFlags[i] = "index:" + strings.TrimPrefix(annotationFlags[i], "index:")
+			if !hasAnnotationScope(annotationFlags[i]) {
+				annotationFlags[i] = "index:" + annotationFlags[i]
+			}
 		}
 	}
 
@@ -574,6 +576,18 @@ func parsePlatform(p string) platform {
 		result.arm = strings.TrimPrefix(parts[2], "v")
 	}
 	return result
+}
+
+// hasAnnotationScope reports whether a `key=value` annotation already carries a
+// buildx scope prefix.
+//
+// buildx parses annotations as `[type:]key=value`, taking everything before the
+// first colon of the key as the scope list, so a colon there means the user
+// picked the scopes themselves. Invalid scopes are passed through as-is for
+// buildx to report.
+func hasAnnotationScope(annotation string) bool {
+	key, _, _ := strings.Cut(annotation, "=")
+	return strings.Contains(key, ":")
 }
 
 // tplMapFlags templates all keys and values in the given map, returning a

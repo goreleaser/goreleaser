@@ -258,6 +258,84 @@ func TestMakeArgs(t *testing.T) {
 	})
 }
 
+func TestMakeArgsAnnotationScopes(t *testing.T) {
+	multi := []string{"linux/amd64", "linux/arm64"}
+	for name, tt := range map[string]struct {
+		annotations map[string]string
+		platforms   []string
+		expect      []string
+	}{
+		"unscoped defaults to index": {
+			annotations: map[string]string{"foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"index:foo=bar"},
+		},
+		"explicit index is not doubled": {
+			annotations: map[string]string{"index:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"index:foo=bar"},
+		},
+		"manifest scope is kept": {
+			annotations: map[string]string{"manifest:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"manifest:foo=bar"},
+		},
+		"multiple scopes are kept": {
+			annotations: map[string]string{"index,manifest:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"index,manifest:foo=bar"},
+		},
+		"platform qualified scope is kept": {
+			annotations: map[string]string{"manifest[linux/amd64]:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"manifest[linux/amd64]:foo=bar"},
+		},
+		"descriptor scopes are kept": {
+			annotations: map[string]string{
+				"index-descriptor:foo":    "bar",
+				"manifest-descriptor:baz": "qux",
+			},
+			platforms: multi,
+			expect: []string{
+				"index-descriptor:foo=bar",
+				"manifest-descriptor:baz=qux",
+			},
+		},
+		"colon in value is not a scope": {
+			annotations: map[string]string{"foo": "https://example.com"},
+			platforms:   multi,
+			expect:      []string{"index:foo=https://example.com"},
+		},
+		"single platform is left alone": {
+			annotations: map[string]string{"foo": "bar"},
+			platforms:   []string{"linux/amd64"},
+			expect:      []string{"foo=bar"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+				Dockerfile:  "Dockerfile",
+				Images:      []string{"ghcr.io/foo/bar"},
+				Tags:        []string{"latest"},
+				Platforms:   tt.platforms,
+				Annotations: tt.annotations,
+			}, nil)
+			require.NoError(t, err)
+			require.Equal(t, tt.expect, annotationsOf(da.args))
+		})
+	}
+}
+
+func annotationsOf(args []string) []string {
+	var result []string
+	for i, arg := range args {
+		if arg == "--annotation" {
+			result = append(result, args[i+1])
+		}
+	}
+	return result
+}
+
 func TestDisable(t *testing.T) {
 	t.Run("disabled", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{

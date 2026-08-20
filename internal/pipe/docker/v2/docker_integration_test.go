@@ -207,7 +207,8 @@ func TestPublish(t *testing.T) {
 						"org.opencontainers.image.licenses": "MIT",
 					},
 					Annotations: map[string]string{
-						"index:org.opencontainers.image.description": "My multi-arch image",
+						"index:org.opencontainers.image.description":       "My multi-arch image",
+						"index,manifest:org.opencontainers.image.revision": "abc123",
 					},
 				},
 				{
@@ -274,10 +275,24 @@ func TestPublish(t *testing.T) {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 		}
 
-		manifest := inspectManifest(t, "localhost:5060/foo:v1.0.0")
+		idx := inspectIndex(t, "localhost:5060/foo:v1.0.0")
 		require.Equal(t, map[string]string{
 			"org.opencontainers.image.description": "My multi-arch image",
-		}, manifest.Annotations)
+			"org.opencontainers.image.revision":    "abc123",
+		}, idx.Annotations)
+
+		var annotated []string
+		for _, desc := range idx.Manifests {
+			if desc.Platform == nil || desc.Platform.Architecture == "unknown" {
+				continue
+			}
+			manifest := inspectManifest(t, "localhost:5060/foo@"+desc.Digest.String())
+			require.Equal(t, map[string]string{
+				"org.opencontainers.image.revision": "abc123",
+			}, manifest.Annotations, "platform %s", desc.Platform)
+			annotated = append(annotated, desc.Platform.String())
+		}
+		require.Equal(t, []string{"linux/amd64", "linux/arm64"}, annotated)
 
 		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
 	})
@@ -420,6 +435,20 @@ func inspectImage(tb testing.TB, image string) []inspectResponse {
 
 func inspectManifest(tb testing.TB, image string) v1.Manifest {
 	tb.Helper()
+	var t v1.Manifest
+	require.NoError(tb, json.Unmarshal(inspectRaw(tb, image), &t))
+	return t
+}
+
+func inspectIndex(tb testing.TB, image string) v1.IndexManifest {
+	tb.Helper()
+	var t v1.IndexManifest
+	require.NoError(tb, json.Unmarshal(inspectRaw(tb, image), &t))
+	return t
+}
+
+func inspectRaw(tb testing.TB, image string) []byte {
+	tb.Helper()
 	out, err := exec.CommandContext(
 		tb.Context(),
 		"docker",
@@ -430,10 +459,7 @@ func inspectManifest(tb testing.TB, image string) v1.Manifest {
 		image,
 	).CombinedOutput()
 	require.NoError(tb, err, "output: %s", string(out))
-
-	var t v1.Manifest
-	require.NoError(tb, json.Unmarshal(out, &t))
-	return t
+	return out
 }
 
 func hasSBOM(tb testing.TB, image string) bool {
