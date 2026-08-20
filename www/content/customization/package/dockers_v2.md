@@ -441,6 +441,8 @@ a single platform, such as `docker pull`, to see the annotations.
 Everything before the first colon of a key is handed to `buildx` as given, so
 an invalid scope is reported by `buildx` itself.
 
+See: [Docker Docs: Annotations > Specify annotation level](https://docs.docker.com/build/metadata/annotations/#specify-annotation-level)
+
 ## Docker manifests vs Docker images
 
 This will always use `docker buildx`, which, by default, builds Docker
