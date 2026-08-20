@@ -1202,8 +1202,8 @@ type Checksum struct {
 // Added in v2.12.
 type Retry struct {
 	Attempts uint          `yaml:"attempts,omitempty" json:"attempts,omitempty"`
-	Delay    time.Duration `yaml:"delay,omitempty" json:"delay,omitempty"`
-	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty"`
+	Delay    time.Duration `yaml:"delay,omitempty" json:"delay,omitempty" jsonschema:"type=string"`
+	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty" jsonschema:"type=string"`
 }
 
 // Docker image config.
