@@ -123,6 +123,8 @@ dockers_v2:
 
     # Annotations to be added to the image.
     #
+    # Keys may carry a scope prefix, see "Annotation scopes" below.
+    #
     # Items with empty keys or values will be ignored.
     #
     # Templates: allowed.
@@ -137,6 +139,9 @@ dockers_v2:
       # You can also use `.BaseImage` and `.BaseImageDigest`. {{< g_inline_version "v2.16" >}}
       "org.opencontainers.image.base.name": "{{.BaseImage}}"
       "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
+
+      # Keys may be scoped to where the annotation lands. {{< g_inline_version "v2.18" >}}
+      "index,manifest:org.opencontainers.image.licenses": "MIT"
 
     # Platforms to build.
     #
@@ -397,6 +402,44 @@ docker run --privileged --rm tonistiigi/binfmt --install all
 ```
 
 For what it's worth, this feature was built and tested with buildx v0.24.0.
+
+## Annotation scopes
+
+Annotation keys may be prefixed with the scopes `buildx` should apply them to,
+using its `[type:]key=value` syntax. {{< g_inline_version "v2.18" >}}
+
+The available scopes are:
+
+- `index`: the image index, i.e. the multi-platform manifest list.
+- `manifest`: each per-platform image manifest.
+- `index-descriptor` and `manifest-descriptor`: the descriptors that point to
+  them.
+
+Scopes may be comma-separated, and each one may be qualified with a platform:
+
+```yaml {filename=".goreleaser.yaml"}
+dockers_v2:
+  - annotations:
+      # Index only, the default on multi-platform builds.
+      "org.opencontainers.image.description": "My software"
+
+      # Index and every per-platform manifest.
+      "index,manifest:org.opencontainers.image.revision": "{{.FullCommit}}"
+
+      # The linux/amd64 manifest only.
+      "manifest[linux/amd64]:com.example.arch": "amd64"
+```
+
+On multi-platform builds, keys without a scope default to `index:`, so that
+tools which inspect the tag itself (such as `docker buildx imagetools inspect`)
+see them. Note this differs from a plain `docker buildx build`, which annotates
+the per-platform manifests instead.
+
+Scope your keys with `manifest` if you need consumers that resolve a tag down to
+a single platform, such as `docker pull`, to see the annotations.
+
+Everything before the first colon of a key is handed to `buildx` as given, so
+an invalid scope is reported by `buildx` itself.
 
 ## Docker manifests vs Docker images
 
