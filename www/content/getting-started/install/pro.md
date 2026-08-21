@@ -205,6 +205,25 @@ cosign verify \
   goreleaser/goreleaser-pro
 ```
 
+## SBOMs
+
+Each archive has a Software Bill of Materials in [SPDX][] JSON format,
+generated with [Syft][].
+The file name is the archive name plus the `.sbom.json` suffix.
+
+Download them from the releases page:
+
+{{% g_button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+
+For example, to get the SBOM of the Linux x86-64 archive:
+
+```bash
+wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/goreleaser-pro_Linux_x86_64.tar.gz.sbom.json'
+```
+
+The SBOM files are also in `checksums.txt`, so you can verify them with the
+steps in [Verifying the artifacts](#verifying-the-artifacts).
+
 ## Nightly builds
 
 Nightly build are pre-releases of the current code into the main branch.
@@ -223,3 +242,5 @@ environment variable to `nightly`.
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [cosign]: https://github.com/sigstore/cosign
+[spdx]: https://spdx.dev
+[syft]: https://github.com/anchore/syft
