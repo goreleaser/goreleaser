@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -1132,6 +1133,70 @@ func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {
 		artifact.WingetDefaultLocale,
 		artifact.WingetLocale,
 	)).List())
+}
+
+func TestRunPipeSkippedWingetDoesNotStopOthers(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Winget: []config.Winget{
+				{
+					// no license: skipped.
+					Name:             "skipped",
+					Publisher:        "Foo",
+					ShortDescription: "foo bar zaz",
+					IDs:              []string{"foo"},
+					Repository: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+				},
+				{
+					Name:             "valid",
+					Publisher:        "Foo",
+					License:          "MIT",
+					ShortDescription: "foo bar zaz",
+					IDs:              []string{"foo"},
+					Repository: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
+	path := filepath.Join(folder, "dist/foo_windows_amd64v1.zip")
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte("fake"), 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_windows_amd64v1.zip",
+		Path:    path,
+		Goos:    "windows",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "zip",
+			artifact.ExtraBinaries:  []string{"foo.exe"},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+
+	p := Pipe{}
+	require.NoError(t, p.Default(ctx))
+
+	err := p.runAll(ctx, client.NewMock())
+	require.True(t, pipe.IsSkip(err), "expected a skip error, got %v", err)
+
+	// the entry after the skipped one must still have produced its manifests.
+	require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.WingetVersion)).List(), 1)
 }
 
 func TestErrNoArchivesFound(t *testing.T) {

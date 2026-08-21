@@ -103,13 +103,20 @@ func (p Pipe) Publish(ctx *context.Context) error {
 }
 
 func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	// even if one of them is skipped, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, winget := range ctx.Config.Winget {
 		err := p.doRun(ctx, winget, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater) error {
