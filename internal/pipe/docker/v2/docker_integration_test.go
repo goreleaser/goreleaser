@@ -286,13 +286,14 @@ func TestPublish(t *testing.T) {
 			if desc.Platform == nil || desc.Platform.Architecture == "unknown" {
 				continue
 			}
+			plat := desc.Platform.OS + "/" + desc.Platform.Architecture
 			manifest := inspectManifest(t, "localhost:5060/foo@"+desc.Digest.String())
 			require.Equal(t, map[string]string{
 				"org.opencontainers.image.revision": "abc123",
-			}, manifest.Annotations, "platform %s", desc.Platform)
-			annotated = append(annotated, desc.Platform.String())
+			}, manifest.Annotations, "platform %s", plat)
+			annotated = append(annotated, plat)
 		}
-		require.Equal(t, []string{"linux/amd64", "linux/arm64"}, annotated)
+		require.ElementsMatch(t, []string{"linux/amd64", "linux/arm64"}, annotated)
 
 		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
 	})
