@@ -371,7 +371,9 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 	}
 	if len(d.Platforms) > 1 {
 		for i := 1; i < len(annotationFlags); i += 2 {
-			annotationFlags[i] = "index:" + strings.TrimPrefix(annotationFlags[i], "index:")
+			if !hasAnnotationScope(annotationFlags[i]) {
+				annotationFlags[i] = "index:" + annotationFlags[i]
+			}
 		}
 	}
 
@@ -574,6 +576,36 @@ func parsePlatform(p string) platform {
 		result.arm = strings.TrimPrefix(parts[2], "v")
 	}
 	return result
+}
+
+// annotationScopes are the annotation types buildx accepts, optionally
+// qualified with a platform, e.g. `manifest[linux/amd64]`.
+var annotationScopes = []string{
+	"index",
+	"manifest",
+	"index-descriptor",
+	"manifest-descriptor",
+}
+
+// hasAnnotationScope reports whether a `key=value` annotation already carries a
+// buildx scope prefix.
+//
+// buildx parses annotations as `[types:]key=value`, in which types is a
+// comma-separated list of [annotationScopes]. Keys with any other prefix are
+// scoped by us, as buildx would reject them.
+func hasAnnotationScope(annotation string) bool {
+	key, _, _ := strings.Cut(annotation, "=")
+	scopes, _, ok := strings.Cut(key, ":")
+	if !ok {
+		return false
+	}
+	for scope := range strings.SplitSeq(scopes, ",") {
+		scope, _, _ = strings.Cut(scope, "[")
+		if !slices.Contains(annotationScopes, scope) {
+			return false
+		}
+	}
+	return true
 }
 
 // tplMapFlags templates all keys and values in the given map, returning a
