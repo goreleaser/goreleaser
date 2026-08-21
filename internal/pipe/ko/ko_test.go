@@ -45,13 +45,11 @@ func TestDefault(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID:  "test",
-				Dir: ".",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"{{.Env.LDFLAGS}}"},
-					Flags:   []string{"{{.Env.FLAGS}}"},
-					Env:     []string{"SOME_ENV={{.Env.LE_ENV}}"},
-				},
+				ID:      "test",
+				Dir:     ".",
+				Ldflags: []string{"{{.Env.LDFLAGS}}"},
+				Flags:   []string{"{{.Env.FLAGS}}"},
+				Env:     []string{"SOME_ENV={{.Env.LE_ENV}}"},
 			},
 		},
 		Kos: []config.Ko{
@@ -280,12 +278,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 				ProjectName: "test",
 				Builds: []config.Build{
 					{
-						ID: "foo",
-						BuildDetails: config.BuildDetails{
-							Ldflags: []string{"-s", "-w"},
-							Flags:   []string{"-tags", "netgo"},
-							Env:     []string{"GOCACHE=" + gocacheOnce()},
-						},
+						ID:      "foo",
+						Ldflags: []string{"-s", "-w"},
+						Flags:   []string{"-tags", "netgo"},
+						Env:     []string{"GOCACHE=" + gocacheOnce()},
 					},
 				},
 				Kos: []config.Ko{
@@ -455,12 +451,10 @@ func TestSnapshot(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID: "foo",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-s", "-w"},
-					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + gocacheOnce()},
-				},
+				ID:      "foo",
+				Ldflags: []string{"-s", "-w"},
+				Flags:   []string{"-tags", "netgo"},
+				Env:     []string{"GOCACHE=" + gocacheOnce()},
 			},
 		},
 		Kos: []config.Ko{
@@ -492,12 +486,10 @@ func TestDisable(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID: "foo",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-s", "-w"},
-					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + gocacheOnce()},
-				},
+				ID:      "foo",
+				Ldflags: []string{"-s", "-w"},
+				Flags:   []string{"-tags", "netgo"},
+				Env:     []string{"GOCACHE=" + gocacheOnce()},
 			},
 		},
 		Kos: []config.Ko{

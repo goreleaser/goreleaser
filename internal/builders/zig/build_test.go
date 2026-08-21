@@ -72,9 +72,7 @@ func TestWithDefaults(t *testing.T) {
 			Command: "build",
 			Dir:     ".",
 			Targets: defaultTargets(),
-			BuildDetails: config.BuildDetails{
-				Flags: []string{"-Doptimize=ReleaseSafe"},
-			},
+			Flags:   []string{"-Doptimize=ReleaseSafe"},
 		}, build)
 	})
 
@@ -128,11 +126,9 @@ func TestBuild(t *testing.T) {
 				ID:           "default",
 				Dir:          "./proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"-Doptimize={{.Env.OPTIM}}"},
-					Env: []string{
-						"OPTIM={{.Env.OPTIMIZE_FOR}}",
-					},
+				Flags:        []string{"-Doptimize={{.Env.OPTIM}}"},
+				Env: []string{
+					"OPTIM={{.Env.OPTIMIZE_FOR}}",
 				},
 			},
 		},

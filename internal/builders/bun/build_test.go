@@ -97,9 +97,7 @@ func TestWithDefaults(t *testing.T) {
 			Dir:     ".",
 			Main:    ".",
 			Targets: defaultTargets(),
-			BuildDetails: config.BuildDetails{
-				Flags: []string{"--compile"},
-			},
+			Flags:   []string{"--compile"},
 		}, build)
 	})
 

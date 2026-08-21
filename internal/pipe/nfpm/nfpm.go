@@ -481,122 +481,120 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		License:         fpm.License,
 		Changelog:       fpm.Changelog,
 		MTime:           fpm.ParsedMTime,
-		Overridables: nfpm.Overridables{
-			Umask:      overridden.Umask,
-			Conflicts:  overridden.Conflicts,
-			Depends:    overridden.Dependencies,
-			Recommends: overridden.Recommends,
-			Provides:   overridden.Provides,
-			Suggests:   overridden.Suggests,
-			Replaces:   overridden.Replaces,
-			Contents:   contents,
-			Scripts: nfpm.Scripts{
-				PreInstall:  overridden.Scripts.PreInstall,
-				PostInstall: overridden.Scripts.PostInstall,
-				PreRemove:   overridden.Scripts.PreRemove,
-				PostRemove:  overridden.Scripts.PostRemove,
+		Umask:           overridden.Umask,
+		Conflicts:       overridden.Conflicts,
+		Depends:         overridden.Dependencies,
+		Recommends:      overridden.Recommends,
+		Provides:        overridden.Provides,
+		Suggests:        overridden.Suggests,
+		Replaces:        overridden.Replaces,
+		Contents:        contents,
+		Scripts: nfpm.Scripts{
+			PreInstall:  overridden.Scripts.PreInstall,
+			PostInstall: overridden.Scripts.PostInstall,
+			PreRemove:   overridden.Scripts.PreRemove,
+			PostRemove:  overridden.Scripts.PostRemove,
+		},
+		Deb: nfpm.Deb{
+			ArchVariant: debArchVariant(artifacts[0]),
+			Compression: overridden.Deb.Compression,
+			Fields:      overridden.Deb.Fields,
+			Predepends:  overridden.Deb.Predepends,
+			Scripts: nfpm.DebScripts{
+				Rules:     overridden.Deb.Scripts.Rules,
+				Templates: overridden.Deb.Scripts.Templates,
+				Config:    overridden.Deb.Scripts.Config,
 			},
-			Deb: nfpm.Deb{
-				ArchVariant: debArchVariant(artifacts[0]),
-				Compression: overridden.Deb.Compression,
-				Fields:      overridden.Deb.Fields,
-				Predepends:  overridden.Deb.Predepends,
-				Scripts: nfpm.DebScripts{
-					Rules:     overridden.Deb.Scripts.Rules,
-					Templates: overridden.Deb.Scripts.Templates,
-					Config:    overridden.Deb.Scripts.Config,
-				},
-				Triggers: nfpm.DebTriggers{
-					Interest:        overridden.Deb.Triggers.Interest,
-					InterestAwait:   overridden.Deb.Triggers.InterestAwait,
-					InterestNoAwait: overridden.Deb.Triggers.InterestNoAwait,
-					Activate:        overridden.Deb.Triggers.Activate,
-					ActivateAwait:   overridden.Deb.Triggers.ActivateAwait,
-					ActivateNoAwait: overridden.Deb.Triggers.ActivateNoAwait,
-				},
-				Breaks: overridden.Deb.Breaks,
-				Signature: nfpm.DebSignature{
-					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       debKeyFile,
-						KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
-						// TODO: Method, Type, KeyID
-					},
-					Type: overridden.Deb.Signature.Type,
-				},
+			Triggers: nfpm.DebTriggers{
+				Interest:        overridden.Deb.Triggers.Interest,
+				InterestAwait:   overridden.Deb.Triggers.InterestAwait,
+				InterestNoAwait: overridden.Deb.Triggers.InterestNoAwait,
+				Activate:        overridden.Deb.Triggers.Activate,
+				ActivateAwait:   overridden.Deb.Triggers.ActivateAwait,
+				ActivateNoAwait: overridden.Deb.Triggers.ActivateNoAwait,
 			},
-			RPM: nfpm.RPM{
-				Summary:     overridden.RPM.Summary,
-				Group:       overridden.RPM.Group,
-				Compression: overridden.RPM.Compression,
-				Prefixes:    overridden.RPM.Prefixes,
-				Packager:    overridden.RPM.Packager,
-				BuildHost:   overridden.RPM.BuildHost,
-				Signature: nfpm.RPMSignature{
-					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       rpmKeyFile,
-						KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
-						// TODO: KeyID
-					},
+			Breaks: overridden.Deb.Breaks,
+			Signature: nfpm.DebSignature{
+				PackageSignature: nfpm.PackageSignature{
+					KeyFile:       debKeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
+					// TODO: Method, Type, KeyID
 				},
-				Scripts: nfpm.RPMScripts{
-					PreTrans:  overridden.RPM.Scripts.PreTrans,
-					PostTrans: overridden.RPM.Scripts.PostTrans,
+				Type: overridden.Deb.Signature.Type,
+			},
+		},
+		RPM: nfpm.RPM{
+			Summary:     overridden.RPM.Summary,
+			Group:       overridden.RPM.Group,
+			Compression: overridden.RPM.Compression,
+			Prefixes:    overridden.RPM.Prefixes,
+			Packager:    overridden.RPM.Packager,
+			BuildHost:   overridden.RPM.BuildHost,
+			Signature: nfpm.RPMSignature{
+				PackageSignature: nfpm.PackageSignature{
+					KeyFile:       rpmKeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+					// TODO: KeyID
 				},
 			},
-			APK: nfpm.APK{
-				Signature: nfpm.APKSignature{
-					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       apkKeyFile,
-						KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
-					},
-					KeyName: apkKeyName,
-				},
-				Scripts: nfpm.APKScripts{
-					PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
-					PostUpgrade: overridden.APK.Scripts.PostUpgrade,
-				},
+			Scripts: nfpm.RPMScripts{
+				PreTrans:  overridden.RPM.Scripts.PreTrans,
+				PostTrans: overridden.RPM.Scripts.PostTrans,
 			},
-			ArchLinux: nfpm.ArchLinux{
-				Pkgbase:  overridden.ArchLinux.Pkgbase,
-				Packager: overridden.ArchLinux.Packager,
-				Scripts: nfpm.ArchLinuxScripts{
-					PreUpgrade:  overridden.ArchLinux.Scripts.PreUpgrade,
-					PostUpgrade: overridden.ArchLinux.Scripts.PostUpgrade,
+		},
+		APK: nfpm.APK{
+			Signature: nfpm.APKSignature{
+				PackageSignature: nfpm.PackageSignature{
+					KeyFile:       apkKeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
 				},
+				KeyName: apkKeyName,
 			},
-			IPK: nfpm.IPK{
-				ABIVersion:    overridden.IPK.ABIVersion,
-				AutoInstalled: overridden.IPK.AutoInstalled,
-				Alternatives:  overridden.IPK.ToNFPAlts(),
-				Essential:     overridden.IPK.Essential,
-				Predepends:    overridden.IPK.Predepends,
-				Tags:          overridden.IPK.Tags,
-				Fields:        overridden.IPK.Fields,
+			Scripts: nfpm.APKScripts{
+				PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
+				PostUpgrade: overridden.APK.Scripts.PostUpgrade,
 			},
-			MSIX: nfpm.MSIX{
-				Arch:      overridden.MSIX.Arch,
-				Publisher: overridden.MSIX.Publisher,
-				Identity: nfpm.MSIXIdentity{
-					ResourceID: overridden.MSIX.Identity.ResourceID,
-				},
-				Properties: nfpm.MSIXProperties{
-					DisplayName:          overridden.MSIX.Properties.DisplayName,
-					PublisherDisplayName: overridden.MSIX.Properties.PublisherDisplayName,
-					Logo:                 overridden.MSIX.Properties.Logo,
-				},
-				Applications: msixApplications(overridden.MSIX.Applications),
-				Dependencies: nfpm.MSIXDependencies{
-					TargetDeviceFamilies: msixTargetDeviceFamilies(overridden.MSIX.Dependencies.TargetDeviceFamilies),
-				},
-				Capabilities: nfpm.MSIXCapabilities{
-					Capabilities:       overridden.MSIX.Capabilities.Capabilities,
-					DeviceCapabilities: overridden.MSIX.Capabilities.DeviceCapabilities,
-					Restricted:         overridden.MSIX.Capabilities.Restricted,
-				},
-				Signature: nfpm.MSIXSignature{
-					PFXFile:       msixPFXFile,
-					KeyPassphrase: getPassphraseFromEnv(ctx, "MSIX", fpm.ID),
-				},
+		},
+		ArchLinux: nfpm.ArchLinux{
+			Pkgbase:  overridden.ArchLinux.Pkgbase,
+			Packager: overridden.ArchLinux.Packager,
+			Scripts: nfpm.ArchLinuxScripts{
+				PreUpgrade:  overridden.ArchLinux.Scripts.PreUpgrade,
+				PostUpgrade: overridden.ArchLinux.Scripts.PostUpgrade,
+			},
+		},
+		IPK: nfpm.IPK{
+			ABIVersion:    overridden.IPK.ABIVersion,
+			AutoInstalled: overridden.IPK.AutoInstalled,
+			Alternatives:  overridden.IPK.ToNFPAlts(),
+			Essential:     overridden.IPK.Essential,
+			Predepends:    overridden.IPK.Predepends,
+			Tags:          overridden.IPK.Tags,
+			Fields:        overridden.IPK.Fields,
+		},
+		MSIX: nfpm.MSIX{
+			Arch:      overridden.MSIX.Arch,
+			Publisher: overridden.MSIX.Publisher,
+			Identity: nfpm.MSIXIdentity{
+				ResourceID: overridden.MSIX.Identity.ResourceID,
+			},
+			Properties: nfpm.MSIXProperties{
+				DisplayName:          overridden.MSIX.Properties.DisplayName,
+				PublisherDisplayName: overridden.MSIX.Properties.PublisherDisplayName,
+				Logo:                 overridden.MSIX.Properties.Logo,
+			},
+			Applications: msixApplications(overridden.MSIX.Applications),
+			Dependencies: nfpm.MSIXDependencies{
+				TargetDeviceFamilies: msixTargetDeviceFamilies(overridden.MSIX.Dependencies.TargetDeviceFamilies),
+			},
+			Capabilities: nfpm.MSIXCapabilities{
+				Capabilities:       overridden.MSIX.Capabilities.Capabilities,
+				DeviceCapabilities: overridden.MSIX.Capabilities.DeviceCapabilities,
+				Restricted:         overridden.MSIX.Capabilities.Restricted,
+			},
+			Signature: nfpm.MSIXSignature{
+				PFXFile:       msixPFXFile,
+				KeyPassphrase: getPassphraseFromEnv(ctx, "MSIX", fpm.ID),
 			},
 		},
 	}

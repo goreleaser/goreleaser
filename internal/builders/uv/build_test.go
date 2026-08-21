@@ -95,16 +95,12 @@ func TestBuild(t *testing.T) {
 			{
 				ID:           "proj-wheel",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Buildmode: "wheel",
-				},
+				Buildmode:    "wheel",
 			},
 			{
 				ID:           "proj-sdist",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Buildmode: "sdist",
-				},
+				Buildmode:    "sdist",
 			},
 		},
 	})
@@ -187,16 +183,12 @@ func TestBuildSpecificModes(t *testing.T) {
 			{
 				ID:           "wheel",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Buildmode: "wheel",
-				},
+				Buildmode:    "wheel",
 			},
 			{
 				ID:           "sdist",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Buildmode: "sdist",
-				},
+				Buildmode:    "sdist",
 			},
 		},
 	})

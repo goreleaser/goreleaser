@@ -126,18 +126,16 @@ func TestChTimes(t *testing.T) {
 
 func TestTemplateEnv(t *testing.T) {
 	build := config.Build{
-		BuildDetails: config.BuildDetails{
-			Env: []string{
-				"FOO={{.Env.FU}}",
-				"BAR={{.Env.FOO}}_{{.Env.FU}}",
-				`OS={{- if eq .Os "windows" -}}
+		Env: []string{
+			"FOO={{.Env.FU}}",
+			"BAR={{.Env.FOO}}_{{.Env.FU}}",
+			`OS={{- if eq .Os "windows" -}}
 					w
 				{{- else if eq .Os "darwin" -}}
 					d
 				{{- else if eq .Os "linux" -}}
 					l
 				{{- end -}}`,
-			},
 		},
 	}
 	tpl := tmpl.New(testctx.Wrap(t.Context())).SetEnv("FU=foobar").WithArtifact(&artifact.Artifact{

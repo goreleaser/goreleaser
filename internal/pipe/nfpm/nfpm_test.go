@@ -47,10 +47,8 @@ func TestRunPipeError(t *testing.T) {
 		Dist: t.TempDir(),
 		NFPMs: []config.NFPM{
 			{
-				Formats: []string{"deb"},
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "{{.ConventionalFileName}}",
-				},
+				Formats:          []string{"deb"},
+				FileNameTemplate: "{{.ConventionalFileName}}",
 			},
 		},
 	})
@@ -74,13 +72,11 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 		ProjectName: "nope",
 		NFPMs: []config.NFPM{
 			{
-				Bindir:  "/usr/bin",
-				Formats: []string{"nope"},
-				Builds:  []string{"foo"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName:      "foo",
-					FileNameTemplate: defaultNameTemplate,
-				},
+				Bindir:           "/usr/bin",
+				Formats:          []string{"nope"},
+				Builds:           []string{"foo"},
+				PackageName:      "foo",
+				FileNameTemplate: defaultNameTemplate,
 			},
 		},
 	}, testctx.WithVersion("1.2.3"), testctx.WithCurrentTag("v1.2.3"))
@@ -152,68 +148,66 @@ func TestRunPipe(t *testing.T) {
 					CArchive: libPrefix + "/c-archives",
 					CShared:  libPrefix + "/c-shareds",
 				},
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
-					PackageName:      "foo",
-					Dependencies:     []string{"make"},
-					Recommends:       []string{"svn"},
-					Suggests:         []string{"bzr"},
-					Replaces:         []string{"fish"},
-					Conflicts:        []string{"git"},
-					Provides:         []string{"ash"},
-					Release:          "10",
-					Epoch:            "20",
-					Scripts: config.NFPMScripts{
-						PreInstall:  "./testdata/pre_install{{.Env.EXT}}",
-						PostInstall: "./testdata/post_install{{.Env.EXT}}",
-						PreRemove:   "./testdata/pre_remove{{.Env.EXT}}",
-						PostRemove:  "./testdata/post_remove{{.Env.EXT}}",
+				FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
+				PackageName:      "foo",
+				Dependencies:     []string{"make"},
+				Recommends:       []string{"svn"},
+				Suggests:         []string{"bzr"},
+				Replaces:         []string{"fish"},
+				Conflicts:        []string{"git"},
+				Provides:         []string{"ash"},
+				Release:          "10",
+				Epoch:            "20",
+				Scripts: config.NFPMScripts{
+					PreInstall:  "./testdata/pre_install{{.Env.EXT}}",
+					PostInstall: "./testdata/post_install{{.Env.EXT}}",
+					PreRemove:   "./testdata/pre_remove{{.Env.EXT}}",
+					PostRemove:  "./testdata/post_remove{{.Env.EXT}}",
+				},
+				Contents: []config.NFPMContent{
+					{
+						Destination: "/var/log/foobar",
+						Type:        "dir",
+						FileInfo:    fileInfo,
 					},
-					Contents: []config.NFPMContent{
-						{
-							Destination: "/var/log/foobar",
-							Type:        "dir",
-							FileInfo:    fileInfo,
-						},
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-							FileInfo:    fileInfo,
-						},
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/etc/nope.conf",
-							Type:        "config",
-							FileInfo:    fileInfo,
-						},
-						{
-							Destination: "/etc/mydir",
-							Type:        "dir",
-							FileInfo:    fileInfo,
-						},
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/etc/nope-rpm.conf",
-							FileInfo:    fileInfo,
-							Type:        "config",
-							Packager:    "rpm",
-						},
-						{
-							Source:      "/etc/nope.conf",
-							Destination: "/etc/nope2.conf",
-							FileInfo:    fileInfo,
-							Type:        "symlink",
-						},
-						{
-							Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
-							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
-							FileInfo:    fileInfo,
-						},
-						{
-							Source:      "./testdata/folder",
-							Destination: "/etc/folder",
-							FileInfo:    fileInfo,
-						},
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
+						FileInfo:    fileInfo,
+					},
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/etc/nope.conf",
+						Type:        "config",
+						FileInfo:    fileInfo,
+					},
+					{
+						Destination: "/etc/mydir",
+						Type:        "dir",
+						FileInfo:    fileInfo,
+					},
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/etc/nope-rpm.conf",
+						FileInfo:    fileInfo,
+						Type:        "config",
+						Packager:    "rpm",
+					},
+					{
+						Source:      "/etc/nope.conf",
+						Destination: "/etc/nope2.conf",
+						FileInfo:    fileInfo,
+						Type:        "symlink",
+					},
+					{
+						Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
+						Destination: "/etc/nope3_{{ .ProjectName }}.conf",
+						FileInfo:    fileInfo,
+					},
+					{
+						Source:      "./testdata/folder",
+						Destination: "/etc/folder",
+						FileInfo:    fileInfo,
 					},
 				},
 			},
@@ -601,15 +595,13 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/",
 				Bindir:      "/usr/bin",
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: `
+				FileNameTemplate: `
 						{{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
 						{{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
 						{{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
 						{{- .ConventionalExtension -}}
 					`,
-					PackageName: "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
-				},
+				PackageName: "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
@@ -922,13 +914,11 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "{{.asdsd}",
-							Destination: "testfile",
-						},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "{{.asdsd}",
+						Destination: "testfile",
 					},
 				},
 				Formats: []string{"deb"},
@@ -955,15 +945,13 @@ func TestRunPipeInvalidContentMTimeReportsCorrectValue(t *testing.T) {
 			{
 				// top-level MTime is empty, so the bug would show an empty
 				// value in the error instead of the actual invalid value.
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-							FileInfo: config.FileInfo{
-								MTime: "not-a-date",
-							},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
+						FileInfo: config.FileInfo{
+							MTime: "not-a-date",
 						},
 					},
 				},
@@ -1020,15 +1008,13 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		ProjectName: "asd",
 		NFPMs: []config.NFPM{
 			{
-				Formats: []string{"deb", "rpm", "ipk"},
-				Builds:  []string{"default"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/var/lib/test/testfile.txt",
-						},
+				Formats:     []string{"deb", "rpm", "ipk"},
+				Builds:      []string{"default"},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/var/lib/test/testfile.txt",
 					},
 				},
 			},
@@ -1095,11 +1081,9 @@ func TestDefaultSet(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
-				Builds: []string{"foo"},
-				Bindir: "/bin",
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "foo",
-				},
+				Builds:           []string{"foo"},
+				Bindir:           "/bin",
+				FileNameTemplate: "foo",
 			},
 		},
 	})
@@ -1115,10 +1099,8 @@ func TestOverrides(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
-				Bindir: "/bin",
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "foo",
-				},
+				Bindir:           "/bin",
+				FileNameTemplate: "foo",
 				Overrides: map[string]config.NFPMOverridables{
 					"deb": {
 						FileNameTemplate: "bar",
@@ -1153,22 +1135,20 @@ func TestDebSpecificConfig(t *testing.T) {
 			Dist:        dist,
 			NFPMs: []config.NFPM{
 				{
-					ID:         "someid",
-					Builds:     []string{"default"},
-					Formats:    []string{"deb"},
-					Maintainer: "foo",
-					NFPMOverridables: config.NFPMOverridables{
-						PackageName: "foo",
-						Contents: []config.NFPMContent{
-							{
-								Source:      "testdata/testfile.txt",
-								Destination: "/usr/share/testfile.txt",
-							},
+					ID:          "someid",
+					Builds:      []string{"default"},
+					Formats:     []string{"deb"},
+					Maintainer:  "foo",
+					PackageName: "foo",
+					Contents: []config.NFPMContent{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
 						},
-						Deb: config.NFPMDeb{
-							Signature: config.NFPMDebSignature{
-								KeyFile: "./testdata/privkey.gpg",
-							},
+					},
+					Deb: config.NFPMDeb{
+						Signature: config.NFPMDebSignature{
+							KeyFile: "./testdata/privkey.gpg",
 						},
 					},
 				},
@@ -1287,21 +1267,19 @@ func TestRPMSpecificConfig(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:      "someid",
-				Builds:  []string{"default"},
-				Formats: []string{"rpm"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
+				ID:          "someid",
+				Builds:      []string{"default"},
+				Formats:     []string{"rpm"},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
 					},
-					RPM: config.NFPMRPM{
-						Signature: config.NFPMRPMSignature{
-							KeyFile: "./testdata/privkey.gpg",
-						},
+				},
+				RPM: config.NFPMRPM{
+					Signature: config.NFPMRPMSignature{
+						KeyFile: "./testdata/privkey.gpg",
 					},
 				},
 			},
@@ -1360,16 +1338,14 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:      "someid",
-				Builds:  []string{"default"},
-				Formats: []string{"rpm"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					RPM: config.NFPMRPM{
-						Scripts: config.NFPMRPMScripts{
-							PreTrans:  "/does/not/exist_pretrans.sh",
-							PostTrans: "/does/not/exist_posttrans.sh",
-						},
+				ID:          "someid",
+				Builds:      []string{"default"},
+				Formats:     []string{"rpm"},
+				PackageName: "foo",
+				RPM: config.NFPMRPM{
+					Scripts: config.NFPMRPMScripts{
+						PreTrans:  "/does/not/exist_pretrans.sh",
+						PostTrans: "/does/not/exist_posttrans.sh",
 					},
 				},
 			},
@@ -1422,22 +1398,20 @@ func TestAPKSpecificConfig(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Maintainer: "me@me",
-				Builds:     []string{"default"},
-				Formats:    []string{"apk"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
+				ID:          "someid",
+				Maintainer:  "me@me",
+				Builds:      []string{"default"},
+				Formats:     []string{"apk"},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
 					},
-					APK: config.NFPMAPK{
-						Signature: config.NFPMAPKSignature{
-							KeyFile: "./testdata/rsa.priv",
-						},
+				},
+				APK: config.NFPMAPK{
+					Signature: config.NFPMAPKSignature{
+						KeyFile: "./testdata/rsa.priv",
 					},
 				},
 			},
@@ -1500,21 +1474,19 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Maintainer: "me@me",
-				Builds:     []string{"default"},
-				Formats:    []string{"apk"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
+				ID:          "someid",
+				Maintainer:  "me@me",
+				Builds:      []string{"default"},
+				Formats:     []string{"apk"},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
 					},
-					APK: config.NFPMAPK{
-						Scripts: scripts,
-					},
+				},
+				APK: config.NFPMAPK{
+					Scripts: scripts,
 				},
 			},
 		},
@@ -1618,15 +1590,13 @@ func TestOverridesVersionFields(t *testing.T) {
 				ID:         "someid",
 				Maintainer: "me",
 				Formats:    []string{"deb", "rpm"},
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "{{ .PackageName }}_e{{ .Epoch }}_r{{ .Release }}_" +
-						"{{ trimsuffix .ConventionalFileName .ConventionalExtension }}",
-					PackageName:     "mybin",
-					Epoch:           "1",
-					Release:         "1",
-					Prerelease:      "alpha1",
-					VersionMetadata: "top",
-				},
+				FileNameTemplate: "{{ .PackageName }}_e{{ .Epoch }}_r{{ .Release }}_" +
+					"{{ trimsuffix .ConventionalFileName .ConventionalExtension }}",
+				PackageName:     "mybin",
+				Epoch:           "1",
+				Release:         "1",
+				Prerelease:      "alpha1",
+				VersionMetadata: "top",
 				Overrides: map[string]config.NFPMOverridables{
 					"rpm": {
 						PackageName:     "mybin-rpm",
@@ -1681,34 +1651,32 @@ func TestIPKSpecificConfig(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Maintainer: "me@me",
-				Builds:     []string{"default"},
-				Formats:    []string{"ipk"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
+				ID:          "someid",
+				Maintainer:  "me@me",
+				Builds:      []string{"default"},
+				Formats:     []string{"ipk"},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
+					},
+				},
+				IPK: config.NFPMIPK{
+					ABIVersion: "1.0",
+					Alternatives: []config.NFPMIPKAlternative{
 						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
+							Priority: 100,
+							Target:   "/usr/bin/mybin",
+							LinkName: "/usr/bin/myaltbin",
 						},
 					},
-					IPK: config.NFPMIPK{
-						ABIVersion: "1.0",
-						Alternatives: []config.NFPMIPKAlternative{
-							{
-								Priority: 100,
-								Target:   "/usr/bin/mybin",
-								LinkName: "/usr/bin/myaltbin",
-							},
-						},
-						AutoInstalled: true,
-						Essential:     true,
-						Predepends:    []string{"libc"},
-						Tags:          []string{"foo", "bar"},
-						Fields: map[string]string{
-							"CustomField": "customValue",
-						},
+					AutoInstalled: true,
+					Essential:     true,
+					Predepends:    []string{"libc"},
+					Tags:          []string{"foo", "bar"},
+					Fields: map[string]string{
+						"CustomField": "customValue",
 					},
 				},
 			},
@@ -1768,48 +1736,46 @@ func TestMeta(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:          "someid",
-				Bindir:      "/usr/bin",
-				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm"},
-				Section:     "somesection",
-				Priority:    "standard",
-				Description: "Some description",
-				License:     "MIT",
-				Maintainer:  "me@me",
-				Vendor:      "asdf",
-				Homepage:    "https://goreleaser.github.io",
-				Meta:        true,
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
-					PackageName:      "foo",
-					Dependencies:     []string{"make"},
-					Recommends:       []string{"svn"},
-					Suggests:         []string{"bzr"},
-					Replaces:         []string{"fish"},
-					Conflicts:        []string{"git"},
-					Release:          "10",
-					Epoch:            "20",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/etc/nope.conf",
-							Type:        "config",
-						},
-						{
-							Source:      "./testdata/testfile.txt",
-							Destination: "/etc/nope-rpm.conf",
-							Type:        "config",
-							Packager:    "rpm",
-						},
-						{
-							Destination: "/var/log/foobar",
-							Type:        "dir",
-						},
+				ID:               "someid",
+				Bindir:           "/usr/bin",
+				Builds:           []string{"default"},
+				Formats:          []string{"deb", "rpm"},
+				Section:          "somesection",
+				Priority:         "standard",
+				Description:      "Some description",
+				License:          "MIT",
+				Maintainer:       "me@me",
+				Vendor:           "asdf",
+				Homepage:         "https://goreleaser.github.io",
+				Meta:             true,
+				FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
+				PackageName:      "foo",
+				Dependencies:     []string{"make"},
+				Recommends:       []string{"svn"},
+				Suggests:         []string{"bzr"},
+				Replaces:         []string{"fish"},
+				Conflicts:        []string{"git"},
+				Release:          "10",
+				Epoch:            "20",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
+					},
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/etc/nope.conf",
+						Type:        "config",
+					},
+					{
+						Source:      "./testdata/testfile.txt",
+						Destination: "/etc/nope-rpm.conf",
+						Type:        "config",
+						Packager:    "rpm",
+					},
+					{
+						Destination: "/var/log/foobar",
+						Type:        "dir",
 					},
 				},
 			},
@@ -1869,17 +1835,15 @@ func TestMetaNoBinaries(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.github.io",
 				Meta:        true,
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
-						{
-							Destination: "/var/log/foobar",
-							Type:        "dir",
-						},
+				PackageName: "foo",
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
+					},
+					{
+						Destination: "/var/log/foobar",
+						Type:        "dir",
 					},
 				},
 			},
@@ -1915,32 +1879,30 @@ func TestSkipSign(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:      "someid",
-				Builds:  []string{"default"},
-				Formats: []string{"deb", "rpm", "apk"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName:      "foo",
-					FileNameTemplate: defaultNameTemplate,
-					Contents: []config.NFPMContent{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
-						},
+				ID:               "someid",
+				Builds:           []string{"default"},
+				Formats:          []string{"deb", "rpm", "apk"},
+				PackageName:      "foo",
+				FileNameTemplate: defaultNameTemplate,
+				Contents: []config.NFPMContent{
+					{
+						Source:      "testdata/testfile.txt",
+						Destination: "/usr/share/testfile.txt",
 					},
-					Deb: config.NFPMDeb{
-						Signature: config.NFPMDebSignature{
-							KeyFile: "/does/not/exist.gpg",
-						},
+				},
+				Deb: config.NFPMDeb{
+					Signature: config.NFPMDebSignature{
+						KeyFile: "/does/not/exist.gpg",
 					},
-					RPM: config.NFPMRPM{
-						Signature: config.NFPMRPMSignature{
-							KeyFile: "/does/not/exist.gpg",
-						},
+				},
+				RPM: config.NFPMRPM{
+					Signature: config.NFPMRPMSignature{
+						KeyFile: "/does/not/exist.gpg",
 					},
-					APK: config.NFPMAPK{
-						Signature: config.NFPMAPKSignature{
-							KeyFile: "/does/not/exist.gpg",
-						},
+				},
+				APK: config.NFPMAPK{
+					Signature: config.NFPMAPKSignature{
+						KeyFile: "/does/not/exist.gpg",
 					},
 				},
 			},
@@ -2005,9 +1967,7 @@ func TestBinDirTemplating(t *testing.T) {
 				Maintainer:  "{{ .Env.MAINTAINER }}",
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-				},
+				PackageName: "foo",
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
@@ -2069,13 +2029,11 @@ func TestTemplateExt(t *testing.T) {
 		Dist: t.TempDir(),
 		NFPMs: []config.NFPM{
 			{
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "a_{{ .ConventionalExtension }}_b",
-					PackageName:      "foo",
-				},
-				Meta:       true,
-				Maintainer: "foo@bar",
-				Formats:    []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
+				FileNameTemplate: "a_{{ .ConventionalExtension }}_b",
+				PackageName:      "foo",
+				Meta:             true,
+				Maintainer:       "foo@bar",
+				Formats:          []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
 			},
 		},
 	})
@@ -2109,13 +2067,11 @@ func TestTermuxArch(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Maintainer: "me@me",
-				IDs:        []string{"default"},
-				Formats:    []string{"deb", "termux.deb"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-				},
+				ID:          "someid",
+				Maintainer:  "me@me",
+				IDs:         []string{"default"},
+				Formats:     []string{"deb", "termux.deb"},
+				PackageName: "foo",
 			},
 		},
 	})
@@ -2207,13 +2163,11 @@ func TestDebArchVariant(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Maintainer: "me@me",
-				IDs:        []string{"default"},
-				Formats:    []string{"deb"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-				},
+				ID:          "someid",
+				Maintainer:  "me@me",
+				IDs:         []string{"default"},
+				Formats:     []string{"deb"},
+				PackageName: "foo",
 			},
 		},
 	}, testctx.WithVersion("1.0.0"))
@@ -2272,21 +2226,19 @@ func TestRunPipeMSIX(t *testing.T) {
 		Env:         []string{"PUBLISHER=CN=Me"},
 		NFPMs: []config.NFPM{
 			{
-				ID:      "someid",
-				Bindir:  "/usr/bin",
-				IDs:     []string{"foo"},
-				Formats: []string{"msix"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName:      "mybin",
-					FileNameTemplate: "{{.ConventionalFileName}}",
-					MSIX: config.NFPMMSIX{
-						Publisher: "{{ .Env.PUBLISHER }}",
-						Properties: config.NFPMMSIXProperties{
-							Logo: logoPath,
-						},
-						Applications: []config.NFPMMSIXApplication{
-							{ID: "App", Executable: "mybin.exe"},
-						},
+				ID:               "someid",
+				Bindir:           "/usr/bin",
+				IDs:              []string{"foo"},
+				Formats:          []string{"msix"},
+				PackageName:      "mybin",
+				FileNameTemplate: "{{.ConventionalFileName}}",
+				MSIX: config.NFPMMSIX{
+					Publisher: "{{ .Env.PUBLISHER }}",
+					Properties: config.NFPMMSIXProperties{
+						Logo: logoPath,
+					},
+					Applications: []config.NFPMMSIXApplication{
+						{ID: "App", Executable: "mybin.exe"},
 					},
 				},
 			},
@@ -2335,22 +2287,20 @@ func TestRunPipeMSIXMixedFormats(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				ID:         "someid",
-				Bindir:     "/usr/bin",
-				IDs:        []string{"foo"},
-				Formats:    []string{"deb", "msix"},
-				Maintainer: "me@me",
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName:      "mybin",
-					FileNameTemplate: "{{.ConventionalFileName}}",
-					MSIX: config.NFPMMSIX{
-						Publisher: "CN=Me",
-						Properties: config.NFPMMSIXProperties{
-							Logo: logoPath,
-						},
-						Applications: []config.NFPMMSIXApplication{
-							{ID: "App", Executable: "mybin.exe"},
-						},
+				ID:               "someid",
+				Bindir:           "/usr/bin",
+				IDs:              []string{"foo"},
+				Formats:          []string{"deb", "msix"},
+				Maintainer:       "me@me",
+				PackageName:      "mybin",
+				FileNameTemplate: "{{.ConventionalFileName}}",
+				MSIX: config.NFPMMSIX{
+					Publisher: "CN=Me",
+					Properties: config.NFPMMSIXProperties{
+						Logo: logoPath,
+					},
+					Applications: []config.NFPMMSIXApplication{
+						{ID: "App", Executable: "mybin.exe"},
 					},
 				},
 			},

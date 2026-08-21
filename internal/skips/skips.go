@@ -44,12 +44,12 @@ const (
 func String(ctx *context.Context) string {
 	keys := slices.Sorted(maps.Keys(ctx.Skips))
 	str := strings.Join(keys, ", ")
-	if idx := strings.LastIndex(str, ","); idx > -1 {
+	if before, after, found := strings.CutLast(str, ","); found {
 		comma := ""
 		if len(keys) > 2 {
 			comma = ","
 		}
-		str = str[:idx] + comma + " and" + str[idx+1:]
+		str = before + comma + " and" + after
 	}
 	return str
 }

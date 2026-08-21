@@ -134,8 +134,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 // xrpcHTTP wraps an xrpc.Error with retryx.HTTP so that status-code-based
 // retry classification works for Bluesky SDK calls.
 func xrpcHTTP(err error) error {
-	var xe *xrpc.Error
-	if errors.As(err, &xe) {
+	if xe, ok := errors.AsType[*xrpc.Error](err); ok {
 		return retryx.HTTP(err, &http.Response{StatusCode: xe.StatusCode})
 	}
 	return err

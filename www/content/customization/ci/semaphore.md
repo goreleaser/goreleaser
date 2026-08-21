@@ -20,7 +20,7 @@ blocks:
       prologue:
         commands:
           # set go version
-          - sem-version go 1.26
+          - sem-version go 1.27
           - "export GOPATH=~/go"
           - "export PATH=/home/semaphore/go/bin:$PATH"
           - checkout
@@ -58,7 +58,7 @@ blocks:
         - name: goreleaser
       prologue:
         commands:
-          - sem-version go 1.26
+          - sem-version go 1.27
           - "export GOPATH=~/go"
           - "export PATH=/home/semaphore/go/bin:$PATH"
           - checkout
