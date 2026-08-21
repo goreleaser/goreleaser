@@ -306,6 +306,16 @@ func TestMakeArgsAnnotationScopes(t *testing.T) {
 			platforms:   multi,
 			expect:      []string{"index:foo=https://example.com"},
 		},
+		"unknown scope is part of the key": {
+			annotations: map[string]string{"bogus:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"index:bogus:foo=bar"},
+		},
+		"one unknown scope in the list invalidates it": {
+			annotations: map[string]string{"index,bogus:foo": "bar"},
+			platforms:   multi,
+			expect:      []string{"index:index,bogus:foo=bar"},
+		},
 		"single platform is left alone": {
 			annotations: map[string]string{"foo": "bar"},
 			platforms:   []string{"linux/amd64"},

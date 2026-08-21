@@ -578,16 +578,34 @@ func parsePlatform(p string) platform {
 	return result
 }
 
+// annotationScopes are the annotation types buildx accepts, optionally
+// qualified with a platform, e.g. `manifest[linux/amd64]`.
+var annotationScopes = []string{
+	"index",
+	"manifest",
+	"index-descriptor",
+	"manifest-descriptor",
+}
+
 // hasAnnotationScope reports whether a `key=value` annotation already carries a
 // buildx scope prefix.
 //
-// buildx parses annotations as `[type:]key=value`, taking everything before the
-// first colon of the key as the scope list, so a colon there means the user
-// picked the scopes themselves. Invalid scopes are passed through as-is for
-// buildx to report.
+// buildx parses annotations as `[types:]key=value`, in which types is a
+// comma-separated list of [annotationScopes]. Keys with any other prefix are
+// scoped by us, as buildx would reject them.
 func hasAnnotationScope(annotation string) bool {
 	key, _, _ := strings.Cut(annotation, "=")
-	return strings.Contains(key, ":")
+	scopes, _, ok := strings.Cut(key, ":")
+	if !ok {
+		return false
+	}
+	for scope := range strings.SplitSeq(scopes, ",") {
+		scope, _, _ = strings.Cut(scope, "[")
+		if !slices.Contains(annotationScopes, scope) {
+			return false
+		}
+	}
+	return true
 }
 
 // tplMapFlags templates all keys and values in the given map, returning a
