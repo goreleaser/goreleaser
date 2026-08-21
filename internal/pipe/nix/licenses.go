@@ -235,6 +235,7 @@ var validLicenses = []string{
 	"ocamlLgplLinkingException",
 	"ocamlpro_nc",
 	"odbl",
+	"ofl10",
 	"ofl",
 	"ogluk30",
 	"oml",
