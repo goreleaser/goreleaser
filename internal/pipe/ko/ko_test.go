@@ -148,6 +148,19 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+func TestBuildBuildOptionsEmptyMain(t *testing.T) {
+	// ko.main is optional: an empty main must still resolve the package in
+	// the working directory.
+	ctx := testctx.Wrap(t.Context())
+	opts, err := buildBuildOptions(ctx, config.Ko{
+		ID:           "default",
+		WorkingDir:   "./testdata/app/",
+		Repositories: []string{"localhost:5000/goreleasertest/testapp"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "testapp", opts.importPath)
+}
+
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
