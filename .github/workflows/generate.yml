@@ -78,7 +78,7 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Notify
-        uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3 # v1.0.1
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
         with:
           to: ${{ secrets.TELEGRAM_NIGHTLY_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
