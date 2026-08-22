@@ -84,7 +84,7 @@ The most common fields are:
 | ------------------- | ---------- | ---------------------------------------------------------- |
 | `ID`                | `string`   | The artifact ID from the configuration                     |
 | `Binary`            | `string`   | The binary name (for archives with a single binary)        |
-| `Binaries`          | `[]string` | List of binary names (for archives with multiple binaries) |
+| `Binaries`          | `[]string` | List of binary paths inside an archive                     |
 | `Ext`               | `string`   | The file extension (including the leading `.`)             |
 | `Format`            | `string`   | The archive format (e.g., `tar.gz`, `zip`)                 |
 | `WrappedIn`         | `string`   | The directory name the files are wrapped in                |
