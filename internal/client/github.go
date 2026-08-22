@@ -847,7 +847,7 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	c.checkRateLimit(ctx)
 	// The GitHub API/SDK does not provide lookup by title functionality currently.
 	opts := &github.MilestoneListOptions{
-		ListOptions: github.ListOptions{PerPage: 100},
+		PerPage: 100,
 	}
 
 	for {

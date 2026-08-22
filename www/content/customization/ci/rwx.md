@@ -33,7 +33,7 @@ tasks:
   - key: go
     call: golang/install 1.2.0
     with:
-      go-version: "1.26"
+      go-version: "1.27"
 
   - key: goreleaser
     run: |

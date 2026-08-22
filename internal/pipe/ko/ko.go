@@ -379,6 +379,10 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
 	localImportPath := cfg.Main
+	if localImportPath == "" {
+		// ko.main is optional, and go1.27+ rejects an empty package pattern.
+		localImportPath = "."
+	}
 
 	dir := filepath.Clean(cfg.WorkingDir)
 	if dir == "." {

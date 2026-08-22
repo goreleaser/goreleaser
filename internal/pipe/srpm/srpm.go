@@ -185,18 +185,16 @@ func (Pipe) Run(ctx *context.Context) error {
 		Vendor:      srpm.Vendor,
 		Homepage:    srpm.URL,
 		License:     srpm.License,
-		Overridables: nfpm.Overridables{
-			Contents: contents,
-			RPM: nfpm.RPM{
-				Group:       srpm.Group,
-				Summary:     srpm.Summary,
-				Compression: srpm.Compression,
-				Packager:    srpm.Packager,
-				Signature: nfpm.RPMSignature{
-					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       srpm.Signature.KeyFile,
-						KeyPassphrase: ctx.Env["SRPM_PASSPHRASE"],
-					},
+		Contents:    contents,
+		RPM: nfpm.RPM{
+			Group:       srpm.Group,
+			Summary:     srpm.Summary,
+			Compression: srpm.Compression,
+			Packager:    srpm.Packager,
+			Signature: nfpm.RPMSignature{
+				PackageSignature: nfpm.PackageSignature{
+					KeyFile:       srpm.Signature.KeyFile,
+					KeyPassphrase: ctx.Env["SRPM_PASSPHRASE"],
 				},
 			},
 		},

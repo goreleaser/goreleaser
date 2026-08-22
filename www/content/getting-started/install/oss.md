@@ -184,7 +184,7 @@ apk add --allow-untrusted goreleaser*.apk
 go install github.com/goreleaser/goreleaser/v2@latest
 ```
 
-Requires Go 1.26.
+Requires Go 1.27.
 
 ## Bash Script
 

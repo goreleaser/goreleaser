@@ -56,19 +56,17 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	HomebrewCask: config.HomebrewCask{
-		Description: "Some desc",
-		Homepage:    "https://google.com",
-		Binaries:    []string{"mybin"},
-		Completions: config.HomebrewCaskCompletions{
-			Fish: "mybin.fish",
-			Bash: "mybin.bash",
-			Zsh:  "mybin.zsh",
-		},
-		Manpages: []string{
-			"mybin.1.gz",
-			"mybin2.1.gz",
-		},
+	Description: "Some desc",
+	Homepage:    "https://google.com",
+	Binaries:    []string{"mybin"},
+	Completions: config.HomebrewCaskCompletions{
+		Fish: "mybin.fish",
+		Bash: "mybin.bash",
+		Zsh:  "mybin.zsh",
+	},
+	Manpages: []string{
+		"mybin.1.gz",
+		"mybin2.1.gz",
 	},
 	Name:                 "test",
 	Version:              "0.1.3",

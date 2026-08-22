@@ -33,9 +33,7 @@ func TestWithDefaults(t *testing.T) {
 			Command: "zigbuild",
 			Dir:     ".",
 			Targets: defaultTargets(),
-			BuildDetails: config.BuildDetails{
-				Flags: []string{"--release"},
-			},
+			Flags:   []string{"--release"},
 		}, build)
 	})
 
@@ -98,8 +96,8 @@ members = ["crate-a", "crate-b", "crate-c"]
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: "dist",
 		Builds: []config.Build{{
-			Dir:          ".",
-			BuildDetails: config.BuildDetails{Flags: []string{"--release"}},
+			Dir:   ".",
+			Flags: []string{"--release"},
 		}},
 	})
 
@@ -147,9 +145,7 @@ func TestBuild(t *testing.T) {
 				Dir:          ".",
 				Targets:      []string{target},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"--release"},
-				},
+				Flags:        []string{"--release"},
 			},
 		},
 	})
@@ -235,9 +231,7 @@ func TestBuildArm(t *testing.T) {
 				Dir:          ".",
 				Targets:      []string{target},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"--release"},
-				},
+				Flags:        []string{"--release"},
 			},
 		},
 	})
