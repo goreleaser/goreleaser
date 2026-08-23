@@ -104,7 +104,10 @@ type ForkSyncer interface {
 
 // PullRequestOpener can open pull requests.
 type PullRequestOpener interface {
-	OpenPullRequest(ctx *context.Context, base, head Repo, title string, draft bool) error
+	// OpenPullRequest opens a pull request and returns its URL. A nil error
+	// with an empty url means no PR was actually opened (e.g. it already
+	// exists, or there are no commits between base and head).
+	OpenPullRequest(ctx *context.Context, base, head Repo, title string, draft bool) (url string, err error)
 }
 
 // ReleaseChecker can check whether a release can be created for the current
@@ -205,4 +208,13 @@ func fillDeprecated(i ChangelogItem) ChangelogItem {
 
 func must[T any](t *T) *T {
 	return cmp.Or(t, new(T))
+}
+
+// IsDraftRelease reports whether the release stays a draft, and is thus never
+// actually published, per each forge's own draft semantics.
+func IsDraftRelease(ctx *context.Context) bool {
+	if ctx.TokenType == context.TokenTypeGitLab {
+		return false // GitLab has no draft releases
+	}
+	return ctx.Config.Release.Draft
 }

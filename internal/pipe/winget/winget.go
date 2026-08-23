@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -443,8 +444,12 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	}
 
 	if winget.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFiles(ctx, author, repo, msg, files)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFiles(ctx, author, repo, msg, files); err != nil {
+			return err
+		}
+		summary.Appendf("Updated winget package `%s` in `%s`", winget.PackageIdentifier, cmp.Or(repo.String(), winget.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, winget.Repository.Token)
@@ -481,6 +486,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 
 	if !winget.Repository.PullRequest.Enabled {
 		log.Debug("wingets.pull_request disabled")
+		summary.Appendf("Updated winget package `%s` in `%s`", winget.PackageIdentifier, repo.String())
 		return nil
 	}
 
@@ -494,7 +500,14 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (winget package `%s`): %s", cmp.Or(base.String(), repo.String()), winget.PackageIdentifier, url)
+	}
+	return nil
 }
 
 func langserverLineFor(tp artifact.Type) string {

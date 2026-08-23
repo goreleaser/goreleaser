@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/modelcontextprotocol/registry/cmd/publisher/auth"
@@ -197,6 +198,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			WithField("name", server.Name).
 			WithField("status", serverResponse.Meta.Official.Status).
 			Info("published to MCP registry")
+		summary.Appendf("Published `%s` to the MCP registry", server.Name)
 
 		return nil
 	}, retryx.IsRetriable)

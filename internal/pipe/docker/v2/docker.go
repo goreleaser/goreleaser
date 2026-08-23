@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -170,7 +171,13 @@ func (p Publish) Publish(ctx *context.Context) error {
 			return buildImage(ctx, d, extraArgs...)
 		})
 	}
-	return g.Wait()
+	err := g.Wait()
+	// reports whatever was actually pushed, even if another configuration was
+	// skipped or failed.
+	for _, img := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List() {
+		summary.Appendf("Pushed Docker image `%s`", img.Name)
+	}
+	return err
 }
 
 func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, error) {

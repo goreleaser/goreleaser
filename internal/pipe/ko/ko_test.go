@@ -481,8 +481,10 @@ func TestSnapshot(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.2.0"), testctx.Snapshot)
 
+	readSummary := testlib.CaptureSummary(t)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
+	require.Empty(t, readSummary(), "snapshots only load images locally, nothing is pushed")
 
 	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
 	require.Len(t, manifests, 1)

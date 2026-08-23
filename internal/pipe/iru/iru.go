@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -124,7 +125,11 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			return p.publishArtifact(ctx, cfg, art)
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	summary.Appendf("Published %d Custom Apps to Iru (`%s`)", len(artifacts), cfg.URL)
+	return nil
 }
 
 // effectiveInstallType and effectiveInstallEnforcement return the values the

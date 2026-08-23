@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -325,8 +326,12 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 
 	if cfg.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, content, gpath, msg)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+			return err
+		}
+		summary.Appendf("Updated krew plugin `%s` in `%s`", manifest.Name, cmp.Or(repo.String(), cfg.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, cfg.Repository.Token)
@@ -354,6 +359,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 
 	if !cfg.Repository.PullRequest.Enabled {
 		log.Debug("krews.pull_request disabled")
+		summary.Appendf("Updated krew plugin `%s` in `%s`", manifest.Name, repo.String())
 		return nil
 	}
 
@@ -367,7 +373,14 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, msg, cfg.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, msg, cfg.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (krew plugin `%s`): %s", cmp.Or(base.String(), repo.String()), manifest.Name, url)
+	}
+	return nil
 }
 
 func buildManifestPath(folder, filename string) string {

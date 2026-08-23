@@ -540,6 +540,7 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 
+			readSummary := testlib.CaptureSummary(t)
 			client := client.NewMock()
 			bpipe := Pipe{
 				alwaysZeroHasher{},
@@ -605,6 +606,7 @@ func TestRunPipe(t *testing.T) {
 			if tt.nix.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)
 				require.True(t, client.SyncedFork)
+				require.Contains(t, strings.Join(readSummary(), "\n"), "): https://github.com/goreleaser/goreleaser/pull/1")
 			}
 			if tt.nix.Path != "" {
 				require.Equal(t, tt.nix.Path, client.Path)

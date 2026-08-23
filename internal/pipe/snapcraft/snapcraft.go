@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -500,6 +501,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	}
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)
+	summary.Appendf("Pushed snap `%s` to the Snap Store", snap.Name)
 	return nil
 }
 

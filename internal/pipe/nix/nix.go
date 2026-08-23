@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -409,8 +410,12 @@ func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *a
 	}
 
 	if nix.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, []byte(content), gpath, msg)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, []byte(content), gpath, msg); err != nil {
+			return err
+		}
+		summary.Appendf("Updated nixpkg `%s` in `%s`", pkg.Name, cmp.Or(repo.String(), nix.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, nix.Repository.Token)
@@ -438,6 +443,7 @@ func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *a
 
 	if !nix.Repository.PullRequest.Enabled {
 		log.Debug("nix.pull_request disabled")
+		summary.Appendf("Updated nixpkg `%s` in `%s`", pkg.Name, repo.String())
 		return nil
 	}
 
@@ -451,7 +457,14 @@ func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *a
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, msg, nix.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, msg, nix.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (nixpkg `%s`): %s", cmp.Or(base.String(), repo.String()), pkg.Name, url)
+	}
+	return nil
 }
 
 func doBuildPkg(ctx *context.Context, data templateData) (string, error) {
