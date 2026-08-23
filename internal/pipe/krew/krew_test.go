@@ -395,12 +395,14 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
+	readSummary := testlib.CaptureSummary(t)
 	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
+	require.Contains(t, readSummary(), "- Opened pull request to `og/bar` (krew plugin `foo.yaml`): https://github.com/goreleaser/goreleaser/pull/1")
 	golden.RequireEqualYaml(t, []byte(client.Content))
 }
 

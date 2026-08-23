@@ -742,9 +742,9 @@ func (c *gitlabClient) OpenPullRequest(
 	base, head Repo,
 	title string,
 	draft bool,
-) error {
+) (string, error) {
 	if err := c.checkIsPrivateToken(); err != nil {
-		return fmt.Errorf("open merge request: %w", err)
+		return "", fmt.Errorf("open merge request: %w", err)
 	}
 	var targetProjectID int64
 	if base.Owner != "" {
@@ -759,7 +759,7 @@ func (c *gitlabClient) OpenPullRequest(
 				log = log.WithField("statusCode", res.StatusCode)
 			}
 			log.WithError(err).Warn("error getting base project id")
-			return err
+			return "", err
 		}
 		targetProjectID = p.ID
 	}
@@ -770,7 +770,7 @@ func (c *gitlabClient) OpenPullRequest(
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {
-			return err
+			return "", err
 		}
 		base.Branch = def
 	}
@@ -799,8 +799,8 @@ func (c *gitlabClient) OpenPullRequest(
 		return c.client.MergeRequests.CreateMergeRequest(fmt.Sprintf("%s/%s", head.Owner, head.Name), mrOptions)
 	})
 	if err != nil {
-		return fmt.Errorf("could not create pull request: %w", err)
+		return "", fmt.Errorf("could not create pull request: %w", err)
 	}
 	log.WithField("url", pr.WebURL).Info("pull request created")
-	return nil
+	return pr.WebURL, nil
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -996,6 +997,7 @@ func TestRunPipe(t *testing.T) {
 				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
 			})
 
+			readSummary := testlib.CaptureSummary(t)
 			client := client.NewMock()
 			pipe := Pipe{}
 
@@ -1063,6 +1065,7 @@ func TestRunPipe(t *testing.T) {
 			if tt.winget.Repository.PullRequest.Enabled {
 				require.True(t, client.SyncedFork)
 				require.True(t, client.OpenedPullRequest)
+				require.Contains(t, strings.Join(readSummary(), "\n"), "): https://github.com/goreleaser/goreleaser/pull/1")
 			}
 		})
 	}

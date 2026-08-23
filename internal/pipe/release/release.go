@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -154,6 +155,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		if err := client.PublishRelease(ctx, releaseID); err != nil {
 			return err
 		}
+		addReleaseSummary(ctx, 0)
 		return pipe.Skip("release.skip_upload is set")
 	}
 
@@ -183,7 +185,8 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	)
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
+	uploadable := ctx.Artifacts.Filter(filters).List()
+	for _, artifact := range uploadable {
 		g.Go(func() error {
 			log.WithField("name", artifact.Name).
 				Info("uploading to release")
@@ -197,5 +200,43 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	return client.PublishRelease(ctx, releaseID)
+	if err := client.PublishRelease(ctx, releaseID); err != nil {
+		return err
+	}
+	addReleaseSummary(ctx, len(uploadable))
+	return nil
+}
+
+// addReleaseSummary records the release in the run summary.
+func addReleaseSummary(ctx *context.Context, assets int) {
+	if client.IsDraftRelease(ctx) {
+		// a draft release is created but never published, so reporting it as
+		// "published" would be misleading.
+		return
+	}
+	var detail string
+	switch assets {
+	case 0:
+		detail = "no assets"
+	case 1:
+		detail = "1 asset"
+	default:
+		detail = fmt.Sprintf("%d assets", assets)
+	}
+	msg := fmt.Sprintf("Published %s to %s with %s", ctx.Version, releaseTarget(ctx), detail)
+	if ctx.ReleaseURL != "" {
+		msg += ": " + ctx.ReleaseURL
+	}
+	summary.Append(msg)
+}
+
+func releaseTarget(ctx *context.Context) string {
+	switch ctx.TokenType {
+	case context.TokenTypeGitLab:
+		return "GitLab"
+	case context.TokenTypeGitea:
+		return "Gitea"
+	default:
+		return "GitHub"
+	}
 }

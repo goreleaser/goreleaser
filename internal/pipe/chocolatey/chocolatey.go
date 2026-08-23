@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -214,6 +215,11 @@ func doPush(ctx *context.Context, art *artifact.Artifact) error {
 
 	log.Info("package sent")
 
+	msg := fmt.Sprintf("Pushed `%s` to Chocolatey", choco.Name)
+	if choco.SourceRepo != "" {
+		msg += fmt.Sprintf(" (`%s`)", choco.SourceRepo)
+	}
+	summary.Append(msg)
 	return nil
 }
 

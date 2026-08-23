@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -383,5 +384,9 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 			Content: content,
 		})
 	}
-	return cli.CreateFiles(ctx, author, repo, msg, files)
+	if err := cli.CreateFiles(ctx, author, repo, msg, files); err != nil {
+		return err
+	}
+	summary.Appendf("Pushed AUR source package `%s` to `%s`", cfg.Name, cfg.GitURL)
+	return nil
 }

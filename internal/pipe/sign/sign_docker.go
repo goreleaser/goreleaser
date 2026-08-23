@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -82,7 +83,14 @@ func (DockerPipe) Publish(ctx *context.Context) error {
 			}
 
 			filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
+			images := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+			if err := sign(ctx, cfg, images); err != nil {
+				return err
+			}
+			for _, img := range images {
+				summary.Appendf("Signed Docker image `%s`", img.Name)
+			}
+			return nil
 		})
 	}
 	return g.Wait()

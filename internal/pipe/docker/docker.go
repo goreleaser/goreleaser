@@ -27,6 +27,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -400,6 +401,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).
 		WithField("digest", digest).
 		Info("image pushed")
+	summary.Appendf("Pushed Docker image `%s`", image.Name)
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,

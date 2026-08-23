@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -175,8 +176,12 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 	}
 
 	if brew.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, content, gpath, msg)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+			return err
+		}
+		summary.Appendf("Updated homebrew cask `%s` in `%s`", cask.Name, cmp.Or(repo.String(), brew.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, brew.Repository.Token)
@@ -204,6 +209,7 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 
 	if !brew.Repository.PullRequest.Enabled {
 		log.Debug("homebrew_casks.pull_request disabled")
+		summary.Appendf("Updated homebrew cask `%s` in `%s`", cask.Name, repo.String())
 		return nil
 	}
 
@@ -217,7 +223,14 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (homebrew cask `%s`): %s", cmp.Or(base.String(), repo.String()), cask.Name, url)
+	}
+	return nil
 }
 
 func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLTemplater) error {

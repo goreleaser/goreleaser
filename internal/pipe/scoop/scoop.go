@@ -3,6 +3,7 @@ package scoop
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -236,8 +238,12 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	gpath := path.Join(scoop.Directory, manifest.Name)
 
 	if scoop.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, content, gpath, commitMessage)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, content, gpath, commitMessage); err != nil {
+			return err
+		}
+		summary.Appendf("Updated scoop manifest `%s` in `%s`", manifest.Name, cmp.Or(repo.String(), scoop.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, scoop.Repository.Token)
@@ -265,6 +271,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 
 	if !scoop.Repository.PullRequest.Enabled {
 		log.Debug("scoop.pull_request disabled")
+		summary.Appendf("Updated scoop manifest `%s` in `%s`", manifest.Name, repo.String())
 		return nil
 	}
 
@@ -278,7 +285,14 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, commitMessage, scoop.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, commitMessage, scoop.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (scoop manifest `%s`): %s", cmp.Or(base.String(), repo.String()), manifest.Name, url)
+	}
+	return nil
 }
 
 // Manifest represents a scoop.sh App Manifest.

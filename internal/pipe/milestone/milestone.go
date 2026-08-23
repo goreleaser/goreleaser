@@ -6,6 +6,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -89,7 +90,9 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 				WithField("repo", repo.String()).
 				WithError(err).
 				Warn("could not close milestone")
+			continue
 		}
+		summary.Appendf("Closed milestone `%s` in `%s`", name, repo.String())
 	}
 
 	return skips.Evaluate()
