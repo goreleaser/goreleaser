@@ -140,7 +140,7 @@ dockers_v2:
       "org.opencontainers.image.base.name": "{{.BaseImage}}"
       "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
-      # Keys may be scoped to where the annotation lands. {{< g_inline_version "v2.18-unreleased" >}}
+      # Keys may be scoped to where the annotation lands. {{< g_inline_version "v2.18" >}}
       "index,manifest:org.opencontainers.image.licenses": "MIT"
 
     # Platforms to build.
@@ -406,7 +406,7 @@ For what it's worth, this feature was built and tested with buildx v0.24.0.
 ## Annotation scopes
 
 Annotation keys may be prefixed with the scopes `buildx` should apply them to,
-using its `[type:]key=value` syntax. {{< g_inline_version "v2.18-unreleased" >}}
+using its `[type:]key=value` syntax. {{< g_inline_version "v2.18" >}}
 
 The available scopes are:
 

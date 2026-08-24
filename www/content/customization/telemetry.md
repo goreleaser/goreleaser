@@ -5,7 +5,7 @@ weight: 80
 
 {{< g_featenterprise >}}
 
-{{< g_version "v2.18-unreleased" >}}
+{{< g_version "v2.18" >}}
 
 GoReleaser can export [OpenTelemetry][otel] traces of your releases, so you can
 see where the time goes: which pipes are slow, which builds dominate, which

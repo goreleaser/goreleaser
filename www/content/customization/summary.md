@@ -3,7 +3,7 @@ title: "Release Summary"
 weight: 37
 ---
 
-{{< g_version "v2.18-unreleased" >}}
+{{< g_version "v2.18" >}}
 
 When running inside [GitHub Actions](/customization/ci/actions/), GoReleaser
 writes a summary of what your release published to the [job summary

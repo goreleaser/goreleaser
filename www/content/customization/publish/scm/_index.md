@@ -196,7 +196,7 @@ release:
   # Preflight checks run before the build, to surface likely problems early
   # instead of after a full build.
   #
-  # {{< g_inline_version "v2.18-unreleased" >}}
+  # {{< g_inline_version "v2.18" >}}
   preflight:
     # Abort the release before building if a preflight check fails — for
     # instance, when the token lacks permission to publish, or the current tag

@@ -170,7 +170,7 @@ Following environment variables can be used as `step.env` keys
 
 ## Job Summary
 
-{{< g_version "v2.18-unreleased" >}}
+{{< g_version "v2.18" >}}
 
 GoReleaser adds a [release summary](/customization/summary/) to the job summary
 view, listing what the run published and linking to it. GitHub Actions sets the
