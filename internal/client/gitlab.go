@@ -2,6 +2,7 @@ package client
 
 import (
 	"cmp"
+	"crypto/subtle"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -732,7 +733,7 @@ func checkUseJobToken(ctx context.Context, token string) bool {
 		// We may be creating a new client with a non-CI_JOB_TOKEN, for
 		// things like Homebrew publishing. We can't use the
 		// CI_JOB_TOKEN there
-		return token == ciToken
+		return subtle.ConstantTimeCompare([]byte(token), []byte(ciToken)) == 1
 	}
 	return false
 }
