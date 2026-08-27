@@ -52,9 +52,13 @@ func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
 	return nil
 }
 
-func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {
+// MockPullRequestURL is the URL [Mock.OpenPullRequest] pretends to have
+// opened a pull request at.
+const MockPullRequestURL = "https://github.com/goreleaser/goreleaser/pull/1"
+
+func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) (string, error) {
 	c.OpenedPullRequest = true
-	return nil
+	return MockPullRequestURL, nil
 }
 
 func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) ([]ChangelogItem, error) {

@@ -168,6 +168,15 @@ Following environment variables can be used as `step.env` keys
 | `GITHUB_TOKEN`   | [GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) as provided by `secrets` |
 | `GORELEASER_KEY` | Your [GoReleaser Pro](https://goreleaser.com/pro) License Key, in case you are using the `goreleaser-pro` distribution                              |
 
+## Job Summary
+
+{{< g_version "v2.18" >}}
+
+GoReleaser adds a [release summary](/customization/summary/) to the job summary
+view, listing what the run published and linking to it. GitHub Actions sets the
+`GITHUB_STEP_SUMMARY` environment variable it needs, so there is nothing to
+configure.
+
 ## Token Permissions
 
 The following

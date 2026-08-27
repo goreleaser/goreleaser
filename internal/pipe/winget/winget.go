@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -103,13 +104,20 @@ func (p Pipe) Publish(ctx *context.Context) error {
 }
 
 func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	// even if one of them is skipped, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, winget := range ctx.Config.Winget {
 		err := p.doRun(ctx, winget, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater) error {
@@ -436,8 +444,12 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	}
 
 	if winget.Repository.Git.URL != "" {
-		return client.NewGitUploadClient(repo.Branch).
-			CreateFiles(ctx, author, repo, msg, files)
+		if err := client.NewGitUploadClient(repo.Branch).
+			CreateFiles(ctx, author, repo, msg, files); err != nil {
+			return err
+		}
+		summary.Appendf("Updated winget package `%s` in `%s`", winget.PackageIdentifier, cmp.Or(repo.String(), winget.Repository.Git.URL))
+		return nil
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, winget.Repository.Token)
@@ -474,6 +486,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 
 	if !winget.Repository.PullRequest.Enabled {
 		log.Debug("wingets.pull_request disabled")
+		summary.Appendf("Updated winget package `%s` in `%s`", winget.PackageIdentifier, repo.String())
 		return nil
 	}
 
@@ -487,7 +500,14 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return errors.New("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)
+	url, err := pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)
+	if err != nil {
+		return err
+	}
+	if url != "" {
+		summary.Appendf("Opened pull request to `%s` (winget package `%s`): %s", cmp.Or(base.String(), repo.String()), winget.PackageIdentifier, url)
+	}
+	return nil
 }
 
 func langserverLineFor(tp artifact.Type) string {

@@ -41,6 +41,28 @@ func TestBinarySignDisabled(t *testing.T) {
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
+func TestBinarySignDisabledDoesNotStopOthers(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dist, "bin"), []byte("foo"), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		BinarySigns: []config.BinarySign{
+			{ID: "disabled", Artifacts: "none"},
+			{ID: "enabled", Artifacts: "binary", Cmd: "false"},
+		},
+	})
+	ctx.Parallelism = 1
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "bin",
+		Path: filepath.Join(dist, "bin"),
+		Type: artifact.Binary,
+	})
+
+	require.NoError(t, BinaryPipe{}.Default(ctx))
+	err := BinaryPipe{}.Run(ctx)
+	require.ErrorContains(t, err, "exit status 1")
+}
+
 func TestBinarySignInvalidOption(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		BinarySigns: []config.BinarySign{

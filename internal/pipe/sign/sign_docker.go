@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -49,7 +50,9 @@ func (DockerPipe) Default(ctx *context.Context) error {
 
 // Publish signs and pushes the docker images signatures.
 func (DockerPipe) Publish(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	// skip-aware so that a config with `artifacts: none` doesn't mask the
+	// errors of the other configs.
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockerSigns {
 		cfg := ctx.Config.DockerSigns[i]
 		g.Go(func() error {
@@ -80,7 +83,14 @@ func (DockerPipe) Publish(ctx *context.Context) error {
 			}
 
 			filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
+			images := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+			if err := sign(ctx, cfg, images); err != nil {
+				return err
+			}
+			for _, img := range images {
+				summary.Appendf("Signed Docker image `%s`", img.Name)
+			}
+			return nil
 		})
 	}
 	return g.Wait()

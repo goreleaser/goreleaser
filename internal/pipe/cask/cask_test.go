@@ -56,19 +56,17 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	HomebrewCask: config.HomebrewCask{
-		Description: "Some desc",
-		Homepage:    "https://google.com",
-		Binaries:    []string{"mybin"},
-		Completions: config.HomebrewCaskCompletions{
-			Fish: "mybin.fish",
-			Bash: "mybin.bash",
-			Zsh:  "mybin.zsh",
-		},
-		Manpages: []string{
-			"mybin.1.gz",
-			"mybin2.1.gz",
-		},
+	Description: "Some desc",
+	Homepage:    "https://google.com",
+	Binaries:    []string{"mybin"},
+	Completions: config.HomebrewCaskCompletions{
+		Fish: "mybin.fish",
+		Bash: "mybin.bash",
+		Zsh:  "mybin.zsh",
+	},
+	Manpages: []string{
+		"mybin.1.gz",
+		"mybin2.1.gz",
 	},
 	Name:                 "test",
 	Version:              "0.1.3",
@@ -1070,12 +1068,14 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
+	readSummary := testlib.CaptureSummary(t)
 	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
+	require.Contains(t, readSummary(), "- Opened pull request to `foo/bar` (homebrew cask `foo.rb`): https://github.com/goreleaser/goreleaser/pull/1")
 	golden.RequireEqualRb(t, []byte(client.Content))
 }
 

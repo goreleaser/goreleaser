@@ -84,7 +84,9 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	// skip-aware so that a config with `artifacts: none` doesn't mask the
+	// errors of the other configs, and doesn't prevent the refresh below.
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.Signs {
 		cfg := ctx.Config.Signs[i]
 		g.Go(func() error {
@@ -126,11 +128,15 @@ func (Pipe) Run(ctx *context.Context) error {
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil && !pipe.IsSkip(err) {
 		return err
 	}
 
-	return ctx.Artifacts.Refresh()
+	if rerr := ctx.Artifacts.Refresh(); rerr != nil {
+		return rerr
+	}
+	return err
 }
 
 func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact) error {

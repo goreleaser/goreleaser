@@ -95,10 +95,8 @@ func TestBuild(t *testing.T) {
 			{
 				Builder: "fake",
 				Binary:  "testing.v{{.Version}}",
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"-n"},
-					Env:   []string{"BLAH=1"},
-				},
+				Flags:   []string{"-n"},
+				Env:     []string{"BLAH=1"},
 			},
 		},
 	}
@@ -122,10 +120,8 @@ func TestRunPipe(t *testing.T) {
 			{
 				Builder: "fake",
 				Binary:  "testing",
-				BuildDetails: config.BuildDetails{
-					Flags:   []string{"-v"},
-					Ldflags: []string{"-X main.test=testing"},
-				},
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
 				Targets: []string{"linux_amd64"},
 			},
 		},
@@ -149,11 +145,9 @@ func TestRunFullPipe(t *testing.T) {
 				ID:      "build1",
 				Builder: "fake",
 				Binary:  "testing",
-				BuildDetails: config.BuildDetails{
-					Flags:   []string{"-v"},
-					Ldflags: []string{"-X main.test=testing"},
-					Env:     []string{"THE_OS={{ .Os }}"},
-				},
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
+				Env:     []string{"THE_OS={{ .Os }}"},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
 						{Cmd: testlib.Touch(pre)},
@@ -192,10 +186,8 @@ func TestRunFullPipeFail(t *testing.T) {
 			{
 				Builder: "fakeFail",
 				Binary:  "testing",
-				BuildDetails: config.BuildDetails{
-					Flags:   []string{"-v"},
-					Ldflags: []string{"-X main.test=testing"},
-				},
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
 						{Cmd: testlib.Touch(pre)},
@@ -293,10 +285,8 @@ func TestDefaultExpandEnv(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
-				BuildDetails: config.BuildDetails{
-					Env: []string{
-						"XFOO=bar_$XBAR",
-					},
+				Env: []string{
+					"XFOO=bar_$XBAR",
 				},
 			},
 		},
@@ -377,13 +367,11 @@ func TestDefaultPartialBuilds(t *testing.T) {
 				Main:   "./cmd/main.go",
 			},
 			{
-				ID:     "build2",
-				Binary: "foo",
-				Dir:    "baz",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-s -w"},
-				},
-				Goarch: []string{"386"},
+				ID:      "build2",
+				Binary:  "foo",
+				Dir:     "baz",
+				Ldflags: []string{"-s -w"},
+				Goarch:  []string{"386"},
 			},
 		},
 	})
@@ -766,9 +754,7 @@ func TestRunHookFailWithLogs(t *testing.T) {
 			{
 				Builder: "fakeFail",
 				Binary:  "testing",
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"-v"},
-				},
+				Flags:   []string{"-v"},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
 						{Cmd: "sh -c 'echo foo; exit 1'"},

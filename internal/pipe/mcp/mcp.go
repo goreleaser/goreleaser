@@ -9,12 +9,15 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/modelcontextprotocol/registry/cmd/publisher/auth"
@@ -67,8 +70,20 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Publish(ctx *context.Context) error {
-	warnExperimental()
 	mcp := ctx.Config.MCP
+
+	disable, err := tmpl.New(ctx).Apply(mcp.Disable)
+	if err != nil {
+		return fmt.Errorf("could not evaluate mcp.disable: %w", err)
+	}
+	if strings.TrimSpace(disable) == "true" {
+		return pipe.Skip("mcp.disable is set")
+	}
+	if strings.TrimSpace(disable) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' disable, skipping mcp publish")
+	}
+
+	warnExperimental()
 
 	if err := tmpl.New(ctx).ApplyAll(
 		&mcp.Name,
@@ -183,6 +198,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			WithField("name", server.Name).
 			WithField("status", serverResponse.Meta.Official.Status).
 			Info("published to MCP registry")
+		summary.Appendf("Published `%s` to the MCP registry", server.Name)
 
 		return nil
 	}, retryx.IsRetriable)

@@ -51,7 +51,7 @@
         # An optional token that can be provided for opening the pull request.
         #
         # Templates: allowed.
-        # {{< g_inline_version "v2.18-unreleased" >}}
+        # {{< g_inline_version "v2.18" >}}
         token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
 
         # If the pull request template has checkboxes, enabling this will

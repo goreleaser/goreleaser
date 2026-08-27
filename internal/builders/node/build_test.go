@@ -85,7 +85,7 @@ func TestWithDefaults(t *testing.T) {
 
 	t.Run("rejects flags", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
-			BuildDetails: config.BuildDetails{Flags: []string{"--x"}},
+			Flags: []string{"--x"},
 		})
 		require.ErrorContains(t, err, "flags is not supported")
 	})

@@ -85,7 +85,7 @@ winget:
     # short_description, description, tags, release_notes, release_notes_url,
     # installation_notes.
     #
-    # {{< g_inline_version "v2.18-unreleased" >}}
+    # {{< g_inline_version "v2.18" >}}
     additional_locales:
       - locale: pt-BR
         short_description: "Portuguese (Brazil) description here."

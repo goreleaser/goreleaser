@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -57,11 +58,13 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 	if endpoint != "" {
 		query.Add("endpoint", endpoint)
-		if conf.S3ForcePathStyle == nil {
-			query.Add("s3ForcePathStyle", "true")
-		} else {
-			query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
-		}
+	}
+
+	switch {
+	case conf.S3ForcePathStyle != nil:
+		query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
+	case endpoint != "":
+		query.Add("s3ForcePathStyle", "true")
 	}
 
 	region, err := tmpl.New(ctx).Apply(conf.Region)
@@ -136,7 +139,8 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	defer up.Close()
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range artifactList(ctx, conf) {
+	artifacts := artifactList(ctx, conf)
+	for _, artifact := range artifacts {
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
 			dataFile := artifact.Path
@@ -157,7 +161,14 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	if uploaded := len(artifacts) + len(files); uploaded > 0 {
+		target, _, _ := strings.Cut(bucketURL, "?")
+		summary.Appendf("Uploaded %d files to `%s`", uploaded, target)
+	}
+	return nil
 }
 
 func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {

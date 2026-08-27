@@ -34,6 +34,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -346,6 +347,10 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		ref.Name(),
 		ref.Context().Digest(ref.Identifier()).DigestStr(),
 	))
+	if !ctx.Snapshot {
+		// snapshots only load the image into the local daemon.
+		summary.Appendf("Pushed Docker image `%s`", ref.Name())
+	}
 
 	if ctx.Snapshot || len(opts.imageRepos) == 1 {
 		// do not copy images when snapshoting, as these images will be
@@ -362,6 +367,7 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 				return err
 			}
 			ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+			summary.Appendf("Pushed Docker image `%s`", dst)
 		}
 	}
 
@@ -379,6 +385,10 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
 	localImportPath := cfg.Main
+	if localImportPath == "" {
+		// ko.main is optional, and go1.27+ rejects an empty package pattern.
+		localImportPath = "."
+	}
 
 	dir := filepath.Clean(cfg.WorkingDir)
 	if dir == "." {

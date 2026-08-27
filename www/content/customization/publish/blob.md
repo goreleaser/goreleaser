@@ -96,9 +96,10 @@ blobs:
       - src: LICENSE.tpl
         dst: LICENSE.txt
 
-    # Allow to disable `s3ForcePathStyle`.
+    # Whether to use path-style addressing (`s3ForcePathStyle`).
+    # Requires provider to be `s3`.
     #
-    # Default: true.
+    # Default: true if `endpoint` is set, otherwise the AWS SDK default.
     s3_force_path_style: false
 
     # ACL to be applied to all files in this configuration.

@@ -25,6 +25,8 @@ chocolateys:
     # IDs of the archives to use.
     # Empty means all IDs.
     # Attention: archives must not be in the 'binary' format.
+    # A package can only have one archive per architecture, so if your build
+    # produces several Windows archives for the same GOARCH, filter them here.
     ids:
       - foo
       - bar

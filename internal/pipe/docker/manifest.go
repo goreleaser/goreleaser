@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -157,6 +158,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			log.WithField("image", name).
 				WithField("digest", digest).
 				Info("artifact pushed")
+			summary.Appendf("Pushed Docker manifest `%s`", name)
 
 			art.Extra[artifact.ExtraDigest] = digest
 			ctx.Artifacts.Add(art)

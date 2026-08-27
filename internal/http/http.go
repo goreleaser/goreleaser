@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -265,7 +266,13 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 			return uploadAsset(ctx, upload, artifact, kind, check)
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	if len(artifacts) > 0 {
+		summary.Appendf("Uploaded %d files to `%s`", len(artifacts), upload.Name)
+	}
+	return nil
 }
 
 // uploadAsset uploads file to target and logs all actions.

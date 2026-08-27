@@ -5,6 +5,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 
 	// langs to init.
@@ -59,4 +60,25 @@ func TestHealthCheckers(t *testing.T) {
 
 func TestDependencyCheckers(t *testing.T) {
 	require.NotEmpty(t, DependencyCheckers)
+}
+
+// Pipes that document requiring an external binary in $PATH must be part of
+// the dependency checkers, otherwise `goreleaser healthcheck` reports a clean
+// bill of health for a config that cannot run.
+func TestDependencyCheckersCoverExternalBinaries(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Makeselfs: []config.Makeself{{Script: "install.sh"}},
+		UPXs:      []config.UPX{{Enabled: "true"}},
+	})
+	var tools []string
+	for _, hc := range DependencyCheckers {
+		if skipper, ok := hc.(interface {
+			Skip(*context.Context) bool
+		}); ok && skipper.Skip(ctx) {
+			continue
+		}
+		tools = append(tools, hc.Dependencies(ctx)...)
+	}
+	require.Contains(t, tools, "makeself")
+	require.Contains(t, tools, "upx")
 }

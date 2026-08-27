@@ -316,14 +316,14 @@ func (c *githubClient) OpenPullRequest(
 	base, head Repo,
 	title string,
 	draft bool,
-) error {
+) (string, error) {
 	c.checkRateLimit(ctx)
 	base.Owner = cmp.Or(base.Owner, head.Owner)
 	base.Name = cmp.Or(base.Name, head.Name)
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {
-			return err
+			return "", err
 		}
 		base.Branch = def
 	}
@@ -357,12 +357,13 @@ func (c *githubClient) OpenPullRequest(
 	if err != nil {
 		if res != nil && res.StatusCode == http.StatusUnprocessableEntity {
 			log.WithError(err).Warn("pull request validation failed")
-			return nil
+			return "", nil
 		}
-		return fmt.Errorf("could not create pull request: %w", err)
+		return "", fmt.Errorf("could not create pull request: %w", err)
 	}
-	log.WithField("url", pr.GetHTMLURL()).Info("pull request created")
-	return nil
+	url := pr.GetHTMLURL()
+	log.WithField("url", url).Info("pull request created")
+	return url, nil
 }
 
 func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
@@ -847,7 +848,7 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	c.checkRateLimit(ctx)
 	// The GitHub API/SDK does not provide lookup by title functionality currently.
 	opts := &github.MilestoneListOptions{
-		ListOptions: github.ListOptions{PerPage: 100},
+		PerPage: 100,
 	}
 
 	for {

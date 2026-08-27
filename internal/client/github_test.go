@@ -25,6 +25,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// prErr discards the PR URL so OpenPullRequest can be asserted with require.NoError.
+func prErr(_ string, err error) error { return err }
+
 func TestNewGitHubClient(t *testing.T) {
 	t.Parallel()
 	t.Run("good urls", func(t *testing.T) {
@@ -472,7 +475,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 		Name:   "something",
 		Branch: "foo",
 	}
-	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, base, head, "some title", false)))
 }
 
 func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
@@ -511,7 +514,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, repo, Repo{}, "some title", false)))
 }
 
 func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
@@ -558,9 +561,9 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 		Name:  "something",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, repo, Repo{
 		Branch: "foo",
-	}, "some title", true))
+	}, "some title", true)))
 }
 
 func TestGitHubOpenPullRequestPRExists(t *testing.T) {
@@ -595,7 +598,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, repo, Repo{}, "some title", false)))
 }
 
 func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
@@ -635,7 +638,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 		Branch: "foo",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, Repo{}, repo, "some title", false)))
 }
 
 func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
@@ -675,7 +678,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, repo, Repo{}, "some title", false)))
 }
 
 func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
@@ -2013,7 +2016,7 @@ func TestGitHubOpenPullRequestDefaultBranchError(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(
+	_, err = client.OpenPullRequest(
 		ctx,
 		Repo{Owner: "someone", Name: "something"},
 		Repo{Branch: "foo"},
@@ -2046,7 +2049,7 @@ func TestGitHubOpenPullRequest422(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
-	err = client.OpenPullRequest(
+	_, err = client.OpenPullRequest(
 		ctx,
 		Repo{Owner: "someone", Name: "something", Branch: "main"},
 		Repo{Branch: "foo"},

@@ -917,3 +917,53 @@ func requireEqualRepoFiles(tb testing.TB, distDir, repoDir, name, url string) {
 		".SRCINFO": filepath.Join(distDir, "aur", name+"-bin.srcinfo"),
 	})
 }
+
+func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{{
+				Description: "{{ .Env.DESC }}",
+				Homepage:    "https://example.com/~o'brien",
+				License:     "Nobody's",
+				Provides:    []string{"fo'o", "bar"},
+			}},
+			Env: []string{`DESC=Let's go`},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "foo_linux_amd64")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
+	require.NoError(t, err)
+	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
+	require.Contains(t, string(bts), `url="https://example.com/~o'brien"`)
+	require.Contains(t, string(bts), `license=("Nobody's")`)
+	require.Contains(t, string(bts), `provides=("fo'o" 'bar')`)
+}

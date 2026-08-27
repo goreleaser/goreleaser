@@ -45,13 +45,11 @@ func TestDefault(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID:  "test",
-				Dir: ".",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"{{.Env.LDFLAGS}}"},
-					Flags:   []string{"{{.Env.FLAGS}}"},
-					Env:     []string{"SOME_ENV={{.Env.LE_ENV}}"},
-				},
+				ID:      "test",
+				Dir:     ".",
+				Ldflags: []string{"{{.Env.LDFLAGS}}"},
+				Flags:   []string{"{{.Env.FLAGS}}"},
+				Env:     []string{"SOME_ENV={{.Env.LE_ENV}}"},
 			},
 		},
 		Kos: []config.Ko{
@@ -148,6 +146,19 @@ func TestSkip(t *testing.T) {
 
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestBuildBuildOptionsEmptyMain(t *testing.T) {
+	// ko.main is optional: an empty main must still resolve the package in
+	// the working directory.
+	ctx := testctx.Wrap(t.Context())
+	opts, err := buildBuildOptions(ctx, config.Ko{
+		ID:           "default",
+		WorkingDir:   "./testdata/app/",
+		Repositories: []string{"localhost:5000/goreleasertest/testapp"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "testapp", opts.importPath)
 }
 
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
@@ -280,12 +291,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 				ProjectName: "test",
 				Builds: []config.Build{
 					{
-						ID: "foo",
-						BuildDetails: config.BuildDetails{
-							Ldflags: []string{"-s", "-w"},
-							Flags:   []string{"-tags", "netgo"},
-							Env:     []string{"GOCACHE=" + gocacheOnce()},
-						},
+						ID:      "foo",
+						Ldflags: []string{"-s", "-w"},
+						Flags:   []string{"-tags", "netgo"},
+						Env:     []string{"GOCACHE=" + gocacheOnce()},
 					},
 				},
 				Kos: []config.Ko{
@@ -455,12 +464,10 @@ func TestSnapshot(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID: "foo",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-s", "-w"},
-					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + gocacheOnce()},
-				},
+				ID:      "foo",
+				Ldflags: []string{"-s", "-w"},
+				Flags:   []string{"-tags", "netgo"},
+				Env:     []string{"GOCACHE=" + gocacheOnce()},
 			},
 		},
 		Kos: []config.Ko{
@@ -474,8 +481,10 @@ func TestSnapshot(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.2.0"), testctx.Snapshot)
 
+	readSummary := testlib.CaptureSummary(t)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
+	require.Empty(t, readSummary(), "snapshots only load images locally, nothing is pushed")
 
 	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
 	require.Len(t, manifests, 1)
@@ -492,12 +501,10 @@ func TestDisable(t *testing.T) {
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID: "foo",
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-s", "-w"},
-					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + gocacheOnce()},
-				},
+				ID:      "foo",
+				Ldflags: []string{"-s", "-w"},
+				Flags:   []string{"-tags", "netgo"},
+				Env:     []string{"GOCACHE=" + gocacheOnce()},
 			},
 		},
 		Kos: []config.Ko{

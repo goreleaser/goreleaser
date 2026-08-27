@@ -540,6 +540,7 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 
+			readSummary := testlib.CaptureSummary(t)
 			client := client.NewMock()
 			bpipe := Pipe{
 				alwaysZeroHasher{},
@@ -605,6 +606,7 @@ func TestRunPipe(t *testing.T) {
 			if tt.nix.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)
 				require.True(t, client.SyncedFork)
+				require.Contains(t, strings.Join(readSummary(), "\n"), "): https://github.com/goreleaser/goreleaser/pull/1")
 			}
 			if tt.nix.Path != "" {
 				require.Equal(t, tt.nix.Path, client.Path)
@@ -628,6 +630,65 @@ func TestRunSkipNoNix(t *testing.T) {
 	p.hasher = unavailableHasher{}
 	require.NoError(t, p.Default(ctx))
 	testlib.AssertSkipped(t, p.Run(ctx))
+}
+
+func TestRunPipeSomeSkipped(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Nix: []config.Nix{
+				{
+					// no repository.name: gets skipped.
+					Name: "skipped",
+				},
+				{
+					Name: "bar",
+					IDs:  []string{"foo"},
+					Repository: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
+
+	for _, goarch := range []string{"amd64", "arm64"} {
+		name := "foo_linux_" + goarch + ".tar.gz"
+		path := filepath.Join(folder, "dist", name)
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   "linux",
+			Goarch: goarch,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "foo",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: "",
+			},
+		})
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	p := Pipe{alwaysZeroHasher{}}
+	require.NoError(t, p.Default(ctx))
+	testlib.AssertSkipped(t, p.runAll(ctx, client.NewMock()))
+	require.Len(
+		t,
+		ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List(),
+		1,
+		"second nix package should have run",
+	)
 }
 
 func TestErrNoArchivesFound(t *testing.T) {

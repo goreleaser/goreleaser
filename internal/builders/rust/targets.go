@@ -73,11 +73,10 @@ func stripGlibcVersion(target string) (string, bool) {
 		return target, false
 	}
 	// only gnu-based ABIs use glibc (not gnullvm which is Windows/LLVM)
-	lastDash := strings.LastIndex(prefix, "-")
-	if lastDash == -1 {
+	_, abi, found := strings.CutLast(prefix, "-")
+	if !found {
 		return target, false
 	}
-	abi := prefix[lastDash+1:]
 	if strings.HasPrefix(abi, "gnu") && abi != "gnullvm" {
 		return prefix, true
 	}

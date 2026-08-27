@@ -896,7 +896,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 		Name:   "something",
 		Branch: "foo",
 	}
-	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, base, head, "some title", false)))
 }
 
 func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
@@ -951,7 +951,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 		Branch: "foo",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, Repo{}, repo, "some title", false)))
 }
 
 func TestGitLabOpenPullRequestDraft(t *testing.T) {
@@ -1006,7 +1006,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", true))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, Repo{}, repo, "some title", true)))
 }
 
 func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
@@ -1055,7 +1055,7 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 		Branch: "foo",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, Repo{Branch: "main"}, repo, "some title", false))
+	require.NoError(t, prErr(client.OpenPullRequest(ctx, Repo{Branch: "main"}, repo, "some title", false)))
 }
 
 func TestGitLabVersionEnv(t *testing.T) {
@@ -1257,7 +1257,7 @@ func TestGitLabOpenPullRequestGetProjectError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
 	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
-	err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someoneelse", Name: "something", Branch: "feature"}, "test PR", false)
+	_, err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someoneelse", Name: "something", Branch: "feature"}, "test PR", false)
 	require.Error(t, err)
 }
 
@@ -1280,7 +1280,7 @@ func TestGitLabOpenPullRequestDefaultBranchError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
 	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
-	err = client.OpenPullRequest(ctx, Repo{}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
+	_, err = client.OpenPullRequest(ctx, Repo{}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
 	require.Error(t, err)
 }
 
@@ -1305,7 +1305,7 @@ func TestGitLabOpenPullRequestCreateError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
 	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
-	err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
+	_, err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "could not create pull request")
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -107,6 +108,8 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 		&aur.Name,
 		&aur.Directory,
 		&aur.SkipUpload,
+		// must be expanded here so `quoteField` sees the final value.
+		&aur.Description,
 	); err != nil {
 		return err
 	}
@@ -254,7 +257,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 func toPkgBuildArray(ss []string) string {
 	result := make([]string, 0, len(ss))
 	for _, s := range ss {
-		result = append(result, fmt.Sprintf("'%s'", s))
+		result = append(result, quoteField(s))
 	}
 	return strings.Join(result, " ")
 }
@@ -381,5 +384,9 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 			Content: content,
 		})
 	}
-	return cli.CreateFiles(ctx, author, repo, msg, files)
+	if err := cli.CreateFiles(ctx, author, repo, msg, files); err != nil {
+		return err
+	}
+	summary.Appendf("Pushed AUR source package `%s` to `%s`", cfg.Name, cfg.GitURL)
+	return nil
 }

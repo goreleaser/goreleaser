@@ -38,6 +38,9 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Makeself) || len(ctx.Config.Makeselfs) == 0
 }
 
+// Dependencies returns the binaries this pipe needs.
+func (Pipe) Dependencies(*context.Context) []string { return []string{"makeself"} }
+
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("makeselfs")

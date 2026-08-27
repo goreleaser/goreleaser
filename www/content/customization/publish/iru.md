@@ -4,7 +4,7 @@ linkTitle: Iru
 weight: 165
 ---
 
-{{< g_version "v2.18-unreleased" >}}
+{{< g_version "v2.18" >}}
 
 GoReleaser can publish artifacts as _Custom Apps_ to
 [iru.com](https://www.iru.com) (formerly Kandji) endpoint management, making

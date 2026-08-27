@@ -9,10 +9,12 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapcraft"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/upx"
 	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -59,6 +61,8 @@ var DependencyCheckers = []DependencyChecker{
 	chocolatey.Pipe{},
 	nix.New(),
 	flatpak.Pipe{},
+	makeself.Pipe{},
+	upx.Pipe{},
 }
 
 type system struct{}

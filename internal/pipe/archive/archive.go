@@ -169,7 +169,7 @@ func createMeta(ctx *context.Context, arch config.Archive, format string) error 
 	return create(ctx, arch, nil, format)
 }
 
-func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
+func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) (err error) {
 	template := tmpl.New(ctx)
 	if len(binaries) > 0 {
 		template = template.WithArtifact(binaries[0])
@@ -194,7 +194,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		return fmt.Errorf("failed to create directory %s: %w", archivePath, err)
 	}
 	lock.Unlock()
-	defer archiveFile.Close()
+	defer func() {
+		if closeErr := archiveFile.Close(); err == nil && closeErr != nil {
+			err = fmt.Errorf("failed to close archive file %s: %w", archivePath, closeErr)
+		}
+	}()
 
 	log := log.WithField("name", archivePath)
 	log.Info("archiving")
@@ -208,7 +212,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		return err
 	}
 	a = NewEnhancedArchive(a, wrap)
-	defer a.Close()
+	defer func() {
+		if closeErr := a.Close(); err == nil && closeErr != nil {
+			err = fmt.Errorf("failed to close archive %s: %w", archivePath, closeErr)
+		}
+	}()
 
 	files, err := archivefiles.Eval(template, arch.Files)
 	if err != nil {

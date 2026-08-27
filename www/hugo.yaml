@@ -126,9 +126,9 @@ params:
     enable: true
     base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
   banner:
-    key: "announcement-v2.17"
+    key: "announcement-v2.18"
     message: |
-      🎉 [GoReleaser v2.17 is out!](/blog/goreleaser-v2.17) with Windows MSIX packages, post-release verification, and more!
+      🎉 [GoReleaser v2.18 is out!](/blog/goreleaser-v2.18) with release summaries, preflight checks, OpenTelemetry traces, and more!
 
 permalinks:
   page:

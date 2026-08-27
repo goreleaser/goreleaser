@@ -4546,10 +4546,10 @@
 						"type": "integer"
 					},
 					"delay": {
-						"type": "integer"
+						"type": "string"
 					},
 					"max_delay": {
-						"type": "integer"
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

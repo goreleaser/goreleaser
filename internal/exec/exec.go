@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -81,7 +82,13 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 		})
 	}
 
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	if len(artifacts) > 0 {
+		summary.Appendf("Ran custom publisher `%s` on %d artifacts", publisher.Name, len(artifacts))
+	}
+	return nil
 }
 
 func executeCommand(c *command, artifact *artifact.Artifact) error {

@@ -1,6 +1,7 @@
 package release
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,44 @@ import (
 
 func TestPipeDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
+}
+
+func TestAddReleaseSummary(t *testing.T) {
+	run := func(t *testing.T, ctx *context.Context, assets int) string {
+		t.Helper()
+		path := filepath.Join(t.TempDir(), "summary.md")
+		t.Setenv("GITHUB_STEP_SUMMARY", path)
+		addReleaseSummary(ctx, assets)
+		bts, err := os.ReadFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			return ""
+		}
+		require.NoError(t, err)
+		return string(bts)
+	}
+
+	t.Run("published records an entry", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{}, testctx.GitHubTokenType, testctx.WithVersion("1.2.3"))
+		require.Equal(t, "- Published 1.2.3 to GitHub with 3 assets\n", run(t, ctx, 3))
+	})
+	t.Run("draft records nothing", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{Draft: true},
+		}, testctx.GitHubTokenType)
+		require.Empty(t, run(t, ctx, 3))
+	})
+	t.Run("gitea reports draft", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{Draft: true},
+		}, testctx.GiteaTokenType)
+		require.Empty(t, run(t, ctx, 3))
+	})
+	t.Run("gitlab ignores draft", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{Draft: true},
+		}, testctx.GitLabTokenType, testctx.WithVersion("1.2.3"))
+		require.Equal(t, "- Published 1.2.3 to GitLab with 3 assets\n", run(t, ctx, 3))
+	})
 }
 
 func TestReleaseRepo(t *testing.T) {
