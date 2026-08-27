@@ -130,6 +130,7 @@ var validLicenses = []string{
 	"fsl11Asl20",
 	"ftl",
 	"g4sl",
+	"gccException20",
 	"gccException31",
 	"geogebra",
 	"generaluser",
