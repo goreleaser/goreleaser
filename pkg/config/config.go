@@ -206,6 +206,7 @@ type APKBuild struct {
 	GitURL                string       `yaml:"git_url,omitempty" json:"git_url,omitempty"`
 	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
 	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
 	Disable               string       `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }

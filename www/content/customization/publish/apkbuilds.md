@@ -4,7 +4,7 @@ linkTitle: APKBUILD
 weight: 125
 ---
 
-{{< g_version "v2.18" >}}
+{{< g_version "v2.19" >}}
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and
 publish an [`APKBUILD`][apkbuild] that packages prebuilt Linux binaries.
@@ -29,6 +29,7 @@ apkbuilds:
   - # Package name.
     #
     # Default: ProjectName.
+    # Templates: allowed.
     name: package
 
     # Artifact IDs to filter for.
@@ -40,6 +41,7 @@ apkbuilds:
 
     # Your app's homepage.
     # Required.
+    # Templates: allowed.
     homepage: "https://example.com/"
 
     # Your app's description.
@@ -58,6 +60,7 @@ apkbuilds:
 
     # SPDX identifier of your app's license.
     # Required.
+    # Templates: allowed.
     license: "MIT"
 
     # SSH private key used to commit to the Git repository.
@@ -74,7 +77,13 @@ apkbuilds:
     # The file will still be available in the dist directory.
     #
     # If set to auto, prereleases will not be published.
+    # Templates: allowed.
     skip_upload: true
+
+    # GOAMD64 version to use when filtering artifacts.
+    #
+    # Default: 'v1'.
+    goamd64: "v1"
 
     # Packages for which this package provides an alternative.
     provides:
@@ -94,7 +103,7 @@ apkbuilds:
 
     # abuild options.
     #
-    # Default: ['!check'], because this integration packages prebuilt binaries.
+    # '!check' is always included because this integration packages prebuilt binaries.
     options:
       - "!check"
 

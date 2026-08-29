@@ -66,6 +66,9 @@ func TestToAPKVersion(t *testing.T) {
 	for input, expected := range map[string]string{
 		"1.2.3":           "1.2.3",
 		"1.2.3-beta.1":    "1.2.3_beta1",
+		"1.2.3-alpha1":    "1.2.3_alpha1",
+		"1.2.3-beta1":     "1.2.3_beta1",
+		"1.2.3-rc1":       "1.2.3_rc1",
 		"1.2.3-rc.2":      "1.2.3_rc2",
 		"1.2.3-preview.1": "1.2.3_pre_p0_p1",
 		"1.2.3-rc-1":      "1.2.3_rc_p1",
@@ -86,6 +89,24 @@ func TestToAPKVersion(t *testing.T) {
 	}
 
 	require.NotEqual(t, toAPKVersion("1.2.3-beta.1.0"), toAPKVersion("1.2.3-beta.10"))
+	require.LessOrEqual(t, len(toAPKVersionNumber("SNAPSHOT-deadbeef")), 20)
+}
+
+func TestToAPKVersionOrder(t *testing.T) {
+	testlib.CheckPath(t, "apk")
+	versions := []string{
+		"1.2.3-alpha1",
+		"1.2.3-beta1",
+		"1.2.3-rc1",
+		"1.2.3",
+	}
+	for i := 1; i < len(versions); i++ {
+		older := toAPKVersion(versions[i-1])
+		newer := toAPKVersion(versions[i])
+		output, err := exec.CommandContext(t.Context(), "apk", "version", "--test", older, newer).CombinedOutput()
+		require.NoError(t, err, string(output))
+		require.Equalf(t, "<", strings.TrimSpace(string(output)), "%s should sort before %s", older, newer)
+	}
 }
 
 func TestDefaultPackage(t *testing.T) {
@@ -132,7 +153,10 @@ func TestDefaultPackage(t *testing.T) {
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-		APKBuilds:   []config.APKBuild{{}},
+		APKBuilds: []config.APKBuild{
+			{},
+			{Options: []string{"!strip"}},
+		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 
@@ -140,9 +164,11 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "foo", got.Name)
 	require.Equal(t, "0", got.Rel)
 	require.Equal(t, []string{"!check"}, got.Options)
+	require.Equal(t, "v1", got.Goamd64)
 	require.Equal(t, defaultCommitMsg, got.CommitMessageTemplate)
 	require.Equal(t, "goreleaserbot", got.CommitAuthor.Name)
 	require.Equal(t, "bot@goreleaser.com", got.CommitAuthor.Email)
+	require.Equal(t, []string{"!strip", "!check"}, ctx.Config.APKBuilds[1].Options)
 }
 
 func TestSkip(t *testing.T) {
@@ -242,14 +268,16 @@ func TestRunAllArchitectures(t *testing.T) {
 	require.Contains(t, string(content), `arch='aarch64 armhf armv7 ppc64le riscv64 s390x x86 x86_64'`)
 	require.Contains(t, string(content), `options='!check' # prebuilt binaries`)
 	require.Contains(t, string(content), `install -Dm755 "$srcdir/wrapped-x86_64/foo" "$pkgdir/usr/bin/foo"`)
+	require.Contains(t, string(content), "\t\tx86_64)\n\t\t\tinstall -Dm755")
 	require.NotContains(t, string(content), "ignored_v3")
 
-	cmd := exec.Command("sh", "-n", file)
+	testlib.CheckPath(t, "sh")
+	cmd := exec.CommandContext(t.Context(), "sh", "-n", file)
 	require.NoError(t, cmd.Run())
 
 	for _, arch := range architectures {
 		t.Run(arch.alpine, func(t *testing.T) {
-			cmd := exec.Command("sh", "-c", `. "$1"; printf '%s\n%s\n%s\n' "$_source" "$_url" "$sha512sums"`, "sh", file)
+			cmd := exec.CommandContext(t.Context(), "sh", "-c", `. "$1"; printf '%s\n%s\n%s\n' "$_source" "$_url" "$sha512sums"`, "sh", file)
 			cmd.Env = append(os.Environ(), "CARCH="+arch.alpine)
 			out, err := cmd.CombinedOutput()
 			require.NoError(t, err, string(out))
@@ -260,7 +288,7 @@ func TestRunAllArchitectures(t *testing.T) {
 			require.Len(t, strings.Fields(lines[2])[0], 128)
 			require.Equal(t, lines[0], strings.Fields(lines[2])[1])
 
-			cmd = exec.Command("sh", "-c", `. "$1"; install() { printf '%s\n' "$@"; }; package`, "sh", file)
+			cmd = exec.CommandContext(t.Context(), "sh", "-c", `. "$1"; install() { printf '%s\n' "$@"; }; package`, "sh", file)
 			cmd.Env = append(os.Environ(), "CARCH="+arch.alpine, "srcdir=/src", "pkgdir=/pkg")
 			out, err = cmd.CombinedOutput()
 			require.NoError(t, err, string(out))
@@ -278,6 +306,8 @@ func TestRunAllArchitectures(t *testing.T) {
 }
 
 func TestRunAndPublish(t *testing.T) {
+	summaryFile := filepath.Join(t.TempDir(), "summary.md")
+	t.Setenv("GITHUB_STEP_SUMMARY", summaryFile)
 	repoURL := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
 	dist := t.TempDir()
@@ -325,6 +355,9 @@ func TestRunAndPublish(t *testing.T) {
 	content, err := os.ReadFile(published)
 	require.NoError(t, err)
 	require.Contains(t, string(content), `install -Dm755 "$srcdir/$_source" "$pkgdir/usr/bin/foo"`)
+	summary, err := os.ReadFile(summaryFile)
+	require.NoError(t, err)
+	require.Contains(t, string(summary), "Pushed Alpine Linux package `foo` to `"+repoURL+"`")
 }
 
 func TestDuplicateNamesPublishIndependentlyToDefaultBranches(t *testing.T) {
@@ -470,6 +503,59 @@ func TestMultipleArchiveFormatsUseDeterministicChoice(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(content), "foo.tar.gz")
 	require.NotContains(t, string(content), "foo.zip")
+}
+
+func TestArchivePreferredOverBinaryForSameID(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			IDs:         []string{"foo"},
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	for _, art := range []artifact.Artifact{
+		{
+			Name: "foo", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+			Extra: map[string]any{artifact.ExtraID: "foo", artifact.ExtraFormat: "binary", artifact.ExtraBinary: "foo"},
+		},
+		{
+			Name: "foo.tar.gz", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableArchive,
+			Extra: map[string]any{artifact.ExtraID: "foo", artifact.ExtraFormat: "tar.gz", artifact.ExtraBinaries: []string{"foo"}},
+		},
+	} {
+		addArtifact(t, ctx, art)
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+	require.NoError(t, err)
+	require.Contains(t, string(content), "foo.tar.gz")
+}
+
+func TestConfiguredGoamd64(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			Goamd64:     "v3",
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	addArtifact(t, ctx, artifact.Artifact{
+		Name: "foo-v3.tar.gz", Goos: "linux", Goarch: "amd64", Goamd64: "v3", Type: artifact.UploadableArchive,
+		Extra: map[string]any{artifact.ExtraFormat: "tar.gz", artifact.ExtraBinaries: []string{"foo"}},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
 }
 
 func TestWhitespacePackageUsesInferredInstructions(t *testing.T) {

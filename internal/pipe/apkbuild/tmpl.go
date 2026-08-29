@@ -71,12 +71,12 @@ source="$_source::$_url"
 
 package() {
 {{- if .Package }}
-{{ fixLines .Package }}
+{{ fixLines .Package 1 }}
 {{- else }}
 	case "$CARCH" in
 {{- range .ReleasePackages }}
 		{{ .Arch }})
-{{ fixLines .Package }}
+{{ fixLines .Package 3 }}
 			;;
 {{- end }}
 	esac

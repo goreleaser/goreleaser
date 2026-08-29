@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"cmp"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"os"
@@ -22,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -59,8 +61,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Rel == "" {
 			pkg.Rel = "0"
 		}
-		if len(pkg.Options) == 0 {
-			pkg.Options = []string{"!check"}
+		if !slices.Contains(pkg.Options, "!check") {
+			pkg.Options = append(pkg.Options, "!check")
+		}
+		if pkg.Goamd64 == "" {
+			pkg.Goamd64 = "v1"
 		}
 	}
 	return nil
@@ -110,7 +115,7 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64("v1"),
+				artifact.ByGoamd64(apk.Goamd64),
 			),
 			artifact.ByGoarch("386"),
 			artifact.ByGoarch("arm64"),
@@ -203,8 +208,17 @@ func selectArtifacts(artifacts []*artifact.Artifact) []*artifact.Artifact {
 		}
 
 		current := result[index]
-		if current.Type != artifact.UploadableArchive || art.Type != artifact.UploadableArchive ||
-			current.ID() != art.ID() || current.Format() == art.Format() {
+		if current.ID() != art.ID() {
+			result = append(result, art)
+			continue
+		}
+		if current.Type != art.Type {
+			if art.Type == artifact.UploadableArchive {
+				result[index] = art
+			}
+			continue
+		}
+		if art.Type != artifact.UploadableArchive || current.Format() == art.Format() {
 			result = append(result, art)
 			continue
 		}
@@ -288,13 +302,14 @@ func applyTemplate(ctx *context.Context, source string, data templateData) (stri
 	return out.String(), nil
 }
 
-func fixLines(s string) string {
+func fixLines(s string, depth int) string {
 	lines := strings.Split(s, "\n")
+	indent := strings.Repeat("\t", depth)
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
 		lines[i] = line
 		if line != "" {
-			lines[i] = "\t" + lines[i]
+			lines[i] = indent + lines[i]
 		}
 	}
 	return strings.Join(lines, "\n")
@@ -358,7 +373,8 @@ func toAPKPrerelease(prerelease string) string {
 		{name: "pre", suffix: "pre"},
 		{name: "rc", suffix: "rc"},
 	} {
-		if value != candidate.name && !strings.HasPrefix(value, candidate.name+".") && !strings.HasPrefix(value, candidate.name+"-") {
+		rest, ok := strings.CutPrefix(value, candidate.name)
+		if !ok || rest != "" && rest[0] != '.' && rest[0] != '-' && (rest[0] < '0' || rest[0] > '9') {
 			continue
 		}
 
@@ -370,8 +386,20 @@ func toAPKPrerelease(prerelease string) string {
 		if candidate.name == "preview" {
 			result += "_p0"
 		}
-		rest := strings.TrimPrefix(value, candidate.name)
 		if rest == "" {
+			return result
+		}
+		if rest[0] >= '0' && rest[0] <= '9' {
+			parts := strings.Split(rest, ".")
+			for _, part := range parts {
+				if part == "" || strings.Trim(part, "0123456789") != "" {
+					return result + "_p" + toAPKVersionNumber(rest)
+				}
+			}
+			result += parts[0]
+			if len(parts) > 1 {
+				result += "_p" + strings.Join(parts[1:], "_p")
+			}
 			return result
 		}
 
@@ -395,12 +423,8 @@ func toAPKPrerelease(prerelease string) string {
 }
 
 func toAPKVersionNumber(value string) string {
-	var result strings.Builder
-	result.WriteByte('1')
-	for i := range len(value) {
-		_, _ = fmt.Fprintf(&result, "%03d", value[i])
-	}
-	return result.String()
+	sum := sha256.Sum256([]byte(value))
+	return strconv.FormatUint(binary.BigEndian.Uint64(sum[:]), 10)
 }
 
 func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
@@ -523,8 +547,12 @@ func doPublish(ctx *context.Context, file *artifact.Artifact) error {
 	if err != nil {
 		return err
 	}
-	return uploader.CreateFiles(ctx, author, repo, message, []client.RepoFile{{
+	if err := uploader.CreateFiles(ctx, author, repo, message, []client.RepoFile{{
 		Path:    path.Join(cfg.Directory, file.Name),
 		Content: content,
-	}})
+	}}); err != nil {
+		return err
+	}
+	summary.Appendf("Pushed Alpine Linux package `%s` to `%s`", cfg.Name, cfg.GitURL)
+	return nil
 }

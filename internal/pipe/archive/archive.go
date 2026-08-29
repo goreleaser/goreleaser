@@ -243,7 +243,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
-		bins = append(bins, dst)
+		bins = append(bins, binary.Name)
 	}
 	art := &artifact.Artifact{
 		Type: artifact.UploadableArchive,

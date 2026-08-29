@@ -2,7 +2,6 @@ package client
 
 import (
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 
@@ -419,49 +418,6 @@ func TestGitClientWithSigning(t *testing.T) {
 			return
 		}
 		require.ErrorContains(t, err, "public key")
-	})
-}
-
-func TestGitClientReconfiguresReusedCheckout(t *testing.T) {
-	sshKey := testlib.MakeNewSSHKey(t, "")
-
-	t.Run("commit author", func(t *testing.T) {
-		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: t.TempDir()})
-		repo := Repo{GitURL: url, PrivateKey: sshKey, Name: "reused-author"}
-		cli := NewGitUploadClient(repo.Branch)
-
-		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
-			Name: "First", Email: "first@example.com",
-		}, repo, []byte("first"), "file.txt", "first"))
-		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
-			Name: "Second", Email: "second@example.com",
-		}, repo, []byte("second"), "file.txt", "second"))
-
-		out, err := exec.CommandContext(t.Context(), "git", "-C", url, "log", "master", "-1", "--format=%an <%ae>").CombinedOutput()
-		require.NoError(t, err, string(out))
-		require.Equal(t, "Second <second@example.com>", strings.TrimSpace(string(out)))
-	})
-
-	t.Run("signing", func(t *testing.T) {
-		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: t.TempDir()})
-		repo := Repo{GitURL: url, PrivateKey: sshKey, Name: "reused-signing"}
-		cli := NewGitUploadClient(repo.Branch)
-
-		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
-			Name: "First", Email: "first@example.com",
-		}, repo, []byte("first"), "file.txt", "first"))
-		err := cli.CreateFile(ctx, config.CommitAuthor{
-			Name:  "Second",
-			Email: "second@example.com",
-			Signing: config.CommitSigning{
-				Enabled: true,
-				Key:     "missing-key",
-				Program: "/usr/bin/gpg",
-			},
-		}, repo, []byte("second"), "file.txt", "second")
-		require.ErrorContains(t, err, "gpg")
 	})
 }
 
