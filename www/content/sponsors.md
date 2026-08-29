@@ -158,7 +158,6 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Time.so](https://time.so/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Video Downloader](https://orbitdownloader.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [YouTube Transcript](https://transcript.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
-- [Quesma](https://quesma.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Alexey Palazhchenko](https://about.me/alexey.palazhchenko?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ben Lechlitner](https://asphaltbuffet.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Christopher Butler](https://github.com/techsaint?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
