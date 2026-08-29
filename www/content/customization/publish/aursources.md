@@ -13,6 +13,10 @@ a `PKGBUILD` to an _Arch User Repository_ based on sources.
 > Before going further on this, make sure to read
 > [AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
 
+> [!NOTE]
+> `aur_sources` requires a [source archive][sourcearchive] to be configured.
+> Make sure to enable `source.enabled: true` in your configuration.
+
 This page describes the available options.
 
 ```yaml {filename=".goreleaser.yaml"}
@@ -199,3 +203,5 @@ aur_sources:
 > [!NOTE]
 > For more info about what each field does, please refer to
 > [Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).
+
+[sourcearchive]: /customization/package/source/

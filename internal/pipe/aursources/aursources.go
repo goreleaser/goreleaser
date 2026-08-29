@@ -30,7 +30,7 @@ const (
 	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var ErrNoArchivesFound = errors.New("no source archives found: make sure to enable source.enabled")
 
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
