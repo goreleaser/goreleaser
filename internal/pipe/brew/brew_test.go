@@ -1402,6 +1402,21 @@ func TestInstalls(t *testing.T) {
 		}, install)
 	})
 
+	t.Run("from archive with stripped binary directory", func(t *testing.T) {
+		install, err := installs(
+			testctx.Wrap(t.Context()),
+			config.Homebrew{},
+			&artifact.Artifact{
+				Type: artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{`bin.install "foo"`}, install)
+	})
+
 	t.Run("from binary", func(t *testing.T) {
 		install, err := installs(
 			testctx.Wrap(t.Context()),
