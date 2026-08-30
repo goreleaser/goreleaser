@@ -123,7 +123,7 @@ after:
 GoReleaser will translate Rust's Os/Arch triple into a GOOS/GOARCH pair, so
 templates should work the same as before.
 The original target name is available in templates as `.Target`, and so are
-`.Vendor` and `.Environment`.
+`.Vendor`, `.Abi`, and `.Libc`.
 
 ### Environment setup
 
@@ -157,7 +157,7 @@ a default version of glibc that varies based on the release of Zig (v15
 releases default to glibc 2.31) (see
 [cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild#specify-glibc-version)).
 
-To override the default verison of glibc, you can append that version to the
+To override the default version of glibc, you can append that version to the
 `target` in question, e.g. `x86_64-unknown-linux-gnu.2.38`.
 
 [^fail]:

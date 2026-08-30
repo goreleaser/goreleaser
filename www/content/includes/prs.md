@@ -1,7 +1,7 @@
 ## Pull Requests
 
 GoReleaser allows you to, instead of pushing directly to the main branch, push
-to a feature branch, and open a pull requests with the changes.
+to a feature branch, and open a pull request with the changes.
 
 When `pull_request.enabled` is `true` and you don't set a `branch`, GoReleaser
 defaults it to `{{ .ProjectName }}-{{ .Version }}`, so each release opens its own
@@ -52,5 +52,5 @@ This will:
 
 - Opening pull requests to a forked repository (`go-github` does not have the
   required fields to do it).
-- Since this can fail for a myriad of reasons, if an error happen, it'll log it
+- Since this can fail for a myriad of reasons, if an error happens, it'll log it
   to the release output, but will not fail the pipeline.

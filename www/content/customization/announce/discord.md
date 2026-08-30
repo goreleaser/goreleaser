@@ -4,13 +4,13 @@ weight: 20
 ---
 
 To use [Discord](https://discord.com/), you need
-to [create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks), and set following
+to [create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) and set the following
 environment variables on your pipeline:
 
 - `DISCORD_WEBHOOK_ID`
 - `DISCORD_WEBHOOK_TOKEN`
 
-After this, you can add following section to your `.goreleaser.yaml` config:
+After this, you can add the following section to your `.goreleaser.yaml` config:
 
 ```yaml {filename=".goreleaser.yaml"}
 announce:

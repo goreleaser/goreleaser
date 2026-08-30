@@ -3,8 +3,8 @@ title: "Building in a private monorepo, publishing in to a public repository"
 weight: 30
 ---
 
-One fairly common usecase is on open-core projects is to have the code in a
-private monorepo, but publish its binaries to a public repository.
+A fairly common use case in open-core projects is to keep the code in a private
+monorepo but publish its binaries to a public repository.
 
 This cookbook gives some suggestions on how to handle that.
 
@@ -20,7 +20,7 @@ monorepo:
 ```
 
 With that you can already push a tag `app1/v1.0.0`, for example, and GoReleaser
-should gracefully handling everything.
+should gracefully handle everything.
 
 But, if you want the release to happen in another repository, you'll also need
 to add some [release](/customization/publish/scm/) settings:

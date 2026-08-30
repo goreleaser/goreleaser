@@ -35,8 +35,8 @@ env_files:
 
 > [!WARNING]
 > If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
-> to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
-> Gitlab only may access protected variables if the job is run for protected refs
+> to store any of the values needed by GoReleaser, ensure that you are protecting the tags as CI jobs in
+> GitLab only may access protected variables if the job is run for protected refs
 > ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
 > [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
 
@@ -70,7 +70,7 @@ If none are set, they default to GitLab's public URLs.
 
 ## Generic Package Registry
 
-GitLab introduced the [Generic Package Registry](https://docs.gitlab.com/ee/user/packages/package_registry/index.html) in Gitlab 13.5.
+GitLab introduced the [Generic Package Registry](https://docs.gitlab.com/ee/user/packages/package_registry/index.html) in GitLab 13.5.
 
 Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/administration/settings/account_and_limit_settings.html).
 Notably, hosted GitLab instances have a 10MB attachment limit, which cannot be changed.

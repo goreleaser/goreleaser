@@ -1238,8 +1238,16 @@ func TestBuildTests(t *testing.T) {
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	out, err := exec.CommandContext(t.Context(), "git", "clone", "https://github.com/goreleaser/test-mod", "-b", "v0.1.1", "--depth=1", ".").CombinedOutput()
-	require.NoError(t, err, string(out))
+	// the unproxied dir only has to hold a main package: build.Build parses it
+	// to check that UnproxiedMain has a main function. Writing it beats
+	// cloning goreleaser/test-mod, which needs the network to say the same
+	// thing.
+	writeGoodMain(t, folder)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "go.mod"),
+		[]byte("module github.com/goreleaser/test-mod\n"),
+		0o666,
+	))
 
 	proxied := filepath.Join(folder, "dist/proxy/default")
 	require.NoError(t, os.MkdirAll(proxied, 0o750))
@@ -1260,7 +1268,7 @@ import _ "github.com/goreleaser/test-mod"
 
 	cmd := exec.CommandContext(t.Context(), "go", "mod", "tidy")
 	cmd.Dir = proxied
-	out, err = cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	require.NoError(t, err, string(out))
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
