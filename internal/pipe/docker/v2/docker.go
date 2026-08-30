@@ -124,6 +124,13 @@ func (Base) Default(ctx *context.Context) error {
 
 // Run implements pipeline.Piper.
 func (p Snapshot) Run(ctx *context.Context) error {
+	enabled, err := anyEnabled(ctx)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return pipe.Skip("configuration is disabled")
+	}
 	checkBuildxDriver(ctx)
 	log.Warn("snapshot build: will not push any images")
 
@@ -160,6 +167,13 @@ func (p Snapshot) Run(ctx *context.Context) error {
 
 // Publish implements publish.Publisher.
 func (p Publish) Publish(ctx *context.Context) error {
+	enabled, err := anyEnabled(ctx)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return pipe.Skip("configuration is disabled")
+	}
 	checkBuildxDriver(ctx)
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
@@ -171,7 +185,7 @@ func (p Publish) Publish(ctx *context.Context) error {
 			return buildImage(ctx, d, extraArgs...)
 		})
 	}
-	err := g.Wait()
+	err = g.Wait()
 	// reports whatever was actually pushed, even if another configuration was
 	// skipped or failed.
 	for _, img := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List() {
@@ -721,6 +735,23 @@ func isDriverValid(driver string) bool {
 
 // testForceNoDaemon is a test-only flag to simulate daemon unavailability.
 var testForceNoDaemon = false
+
+// anyEnabled reports whether at least one configuration is enabled. Probing
+// docker costs two subprocesses, so there is no point paying for them when
+// every configuration is disabled.
+func anyEnabled(ctx *context.Context) (bool, error) {
+	tpl := tmpl.New(ctx)
+	for _, d := range ctx.Config.DockersV2 {
+		disable, err := tpl.Bool(d.Disable)
+		if err != nil {
+			return false, err
+		}
+		if !disable {
+			return true, nil
+		}
+	}
+	return false, nil
+}
 
 // isDockerDaemonAvailable checks if the docker daemon is accessible.
 func isDockerDaemonAvailable(ctx stdctx.Context) bool {
