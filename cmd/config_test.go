@@ -19,7 +19,8 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 		"goreleaser.yaml",
 	} {
 		t.Run(name, func(t *testing.T) {
-			folder := setup(t)
+			folder := mktmp(t)
+			createGoReleaserYaml(t)
 			require.NoError(t, os.MkdirAll(filepath.Dir(name), 0o755))
 			require.NoError(t, os.Rename(
 				filepath.Join(folder, "goreleaser.yml"),
@@ -38,7 +39,7 @@ some_possibly_pro_option: {}
 `
 
 func TestProConfigFile(t *testing.T) {
-	folder := setup(t)
+	folder := mktmp(t)
 	require.NoError(t, os.WriteFile(
 		filepath.Join(folder, "goreleaser.yml"),
 		[]byte(proConfig),
@@ -64,18 +65,14 @@ func TestProConfigFile(t *testing.T) {
 }
 
 func TestConfigFileDoesntExist(t *testing.T) {
-	folder := setup(t)
-	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
-	require.NoError(t, err)
+	mktmp(t)
 	proj, err := loadConfig(true, "")
 	require.NoError(t, err)
 	require.Equal(t, config.Project{}, proj)
 }
 
 func TestConfigFileFromStdin(t *testing.T) {
-	folder := setup(t)
-	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
-	require.NoError(t, err)
+	mktmp(t)
 	proj, err := loadConfig(true, "-")
 	require.NoError(t, err)
 	require.Equal(t, config.Project{}, proj)
