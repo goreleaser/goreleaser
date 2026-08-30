@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -880,7 +881,8 @@ func TestDependencies(t *testing.T) {
 }
 
 func TestSignerWroteNothing(t *testing.T) {
-	sign := func(tb testing.TB, dist string, cfg config.Sign) error {
+	// TODO(v3): this should fail, and the artifact should not be recorded.
+	sign := func(tb testing.TB, dist string, cfg config.Sign) (*context.Context, string) {
 		tb.Helper()
 		require.NoError(tb, os.WriteFile(filepath.Join(dist, "checksums.txt"), []byte("foo"), 0o644))
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -893,42 +895,53 @@ func TestSignerWroteNothing(t *testing.T) {
 			Type: artifact.Checksum,
 		})
 		require.NoError(tb, Pipe{}.Default(ctx))
-		return Pipe{}.Run(ctx)
+
+		var logs bytes.Buffer
+		log.Log = log.New(&logs)
+		tb.Cleanup(func() { log.Log = log.New(os.Stderr) })
+
+		require.NoError(tb, Pipe{}.Run(ctx))
+		return ctx, logs.String()
 	}
 
 	t.Run("signature", func(t *testing.T) {
 		dist := t.TempDir()
 		cmd, args := shell("echo ${signature}")
-		err := sign(t, dist, config.Sign{
+		ctx, logs := sign(t, dist, config.Sign{
 			Artifacts: "checksum",
 			Cmd:       cmd,
 			Args:      args,
 		})
 		// the artifact path is slashed by Artifacts.Add, and the signature
 		// name is templated from it.
-		require.EqualError(t, err, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.sig")))
+		require.Contains(t, logs, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.sig")))
+		require.Contains(t, logs, "this will be an error in v3")
+		require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List(), 1)
 	})
 
 	t.Run("certificate", func(t *testing.T) {
 		dist := t.TempDir()
-		cmd, args := shell("echo signed > ${signature}; echo ${certificate}")
-		err := sign(t, dist, config.Sign{
+		cmd, args := shell("echo signed > ${signature}")
+		_, logs := sign(t, dist, config.Sign{
 			Artifacts:   "checksum",
 			Cmd:         cmd,
 			Args:        args,
 			Certificate: "${artifact}.pem",
 		})
-		require.EqualError(t, err, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.pem")))
+		require.Contains(t, logs, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.pem")))
+		require.NotContains(t, logs, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.sig")))
 	})
 
 	t.Run("signs in place", func(t *testing.T) {
 		dist := t.TempDir()
 		cmd, args := shell("echo signed >> ${artifact}")
-		require.NoError(t, sign(t, dist, config.Sign{
+		_, logs := sign(t, dist, config.Sign{
 			Artifacts: "checksum",
 			Cmd:       cmd,
 			Args:      args,
-		}))
+		})
+		// it warns, but signing in place must keep working until v3.
+		require.Contains(t, logs, "the signer did not write")
 	})
 }
 

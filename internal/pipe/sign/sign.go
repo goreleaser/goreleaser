@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 
@@ -265,8 +264,9 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	signErr := func(err error) error {
-		return gerrors.Wrap(
+	log.Info("signing")
+	if err := cmd.Run(); err != nil {
+		return nil, gerrors.Wrap(
 			err,
 			gerrors.WithMessage("could not sign artifact"),
 			gerrors.WithDetails(
@@ -275,11 +275,6 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			),
 			gerrors.WithOutput(b.String()),
 		)
-	}
-
-	log.Info("signing")
-	if err := cmd.Run(); err != nil {
-		return nil, signErr(err)
 	}
 
 	var result []*artifact.Artifact
@@ -296,9 +291,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	if cfg.Signature != "" {
-		if err := checkWritten(args, env["signature"]); err != nil {
-			return nil, signErr(err)
-		}
+		checkWritten(log, env["signature"])
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Signature,
 			Name: name,
@@ -310,9 +303,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	if cert != "" {
-		if err := checkWritten(args, env["certificate"]); err != nil {
-			return nil, signErr(err)
-		}
+		checkWritten(log, env["certificate"])
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Certificate,
 			Name: cert,
@@ -326,23 +317,15 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	return result, nil
 }
 
-// checkWritten makes sure the signer wrote the file the command line told it
-// to write: an artifact that points to a file that does not exist only fails
-// much later, while uploading it.
+// TODO(v3): fail instead of warning, and do not record the artifact.
 //
-// A command that was not given the path is left alone: signing in place is
-// allowed, and such a command never writes a signature.
-func checkWritten(args []string, path string) error {
-	if path == "" || !slices.ContainsFunc(args, func(arg string) bool {
-		return strings.Contains(arg, path)
-	}) {
-		return nil
+// checkWritten warns when the signer did not write the file it was configured
+// to write. The artifact is recorded anyway, pointing to a file that does not
+// exist, which only fails much later, while uploading it.
+func checkWritten(logger *log.Entry, path string) {
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		logger.Warnf("the signer did not write %s: this will be an error in v3", path)
 	}
-	_, err := os.Stat(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		return fmt.Errorf("the signer did not write %s", path)
-	}
-	return err
 }
 
 func expand(s string, env map[string]string) string {

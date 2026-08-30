@@ -152,7 +152,7 @@ cosign verify-blob --key cosign.pub --signature binary.sig binary
 ## Limitations
 
 The same [limitations of the `signs` pipe](/customization/sign/sign/#limitations)
-apply: if you point the command at `${signature}` or `${certificate}`, that file
-must exist once the command finishes.
+apply: if you set `signature` or `certificate`, that file should exist once the
+command finishes, and GoReleaser warns when it does not.
 
 [cosign]: https://github.com/sigstore/cosign

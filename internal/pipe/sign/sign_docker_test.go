@@ -296,7 +296,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 			sigs = append(sigs, sig.Name)
 			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
 			bts, err := os.ReadFile(sig.Path)
-			require.NoErrorf(tb, err, "%q was recorded but not written", sig.Name)
+			require.NoErrorf(tb, err, "%q was recorded but not written, dist has %v", sig.Name, ls(tb, "dist"))
 			require.NotEmptyf(tb, bts, "%q is empty", sig.Name)
 			if sig.Type == artifact.Certificate {
 				block, _ := pem.Decode(bts)
