@@ -77,7 +77,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
 	cmd := "sh"
-	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${signature}"}
+	// the cases below are about which artifacts get signed and what the
+	// signature is named, not about cosign. They used to append
+	// `&& cosign sign --key=... ${artifact}@${digest} --yes > ${signature}`,
+	// whose output overwrote the echo and which nothing asserted, at about
+	// 0.65s per artifact. The two cases that run cosign for real still do.
+	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
 	password := "password"
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
@@ -271,6 +276,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 		).List() {
 			sigs = append(sigs, sig.Name)
 			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+			bts, err := os.ReadFile(sig.Path)
+			require.NoErrorf(tb, err, "signature %q was recorded but not written", sig.Name)
+			require.NotEmptyf(tb, bts, "signature %q is empty", sig.Name)
 		}
 		require.Equal(tb, cfg.Expected, sigs)
 	}
