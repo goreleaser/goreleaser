@@ -25,7 +25,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	testlib.Mktmp(t)
+	t.Parallel()
 
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{

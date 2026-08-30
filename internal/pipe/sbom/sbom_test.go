@@ -278,6 +278,7 @@ func TestDisable(t *testing.T) {
 }
 
 func TestSBOMCatalogArtifacts(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		desc           string
 		ctx            *context.Context
@@ -501,6 +502,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 			testSBOMCataloging(
 				t,
 				test.ctx,
@@ -560,7 +562,8 @@ func testSBOMCataloging(
 ) {
 	tb.Helper()
 
-	// resolve fakesyft path before Mktmp changes the working directory
+	// the pipe runs the command with its working directory set to dist, so the
+	// tool path has to be absolute.
 	fakesyft := "./testdata/fakesyft"
 	if testlib.IsWindows() {
 		fakesyft += ".bat"
@@ -568,7 +571,7 @@ func testSBOMCataloging(
 	fakesyft, err := filepath.Abs(fakesyft)
 	require.NoError(tb, err)
 
-	tmpdir := testlib.Mktmp(tb)
+	tmpdir := tb.TempDir()
 
 	ctx.Config.Dist = tmpdir
 	ctx.Version = "1.2.2"

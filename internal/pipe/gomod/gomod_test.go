@@ -107,7 +107,8 @@ func TestCustomEnv(t *testing.T) {
 }
 
 func TestRunCustomDir(t *testing.T) {
-	dir := testlib.Mktmp(t)
+	t.Parallel()
+	dir := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "src"), 0o755))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(dir, "src/main.go"),
