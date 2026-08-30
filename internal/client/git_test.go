@@ -2,6 +2,7 @@ package client
 
 import (
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -55,6 +56,15 @@ func TestGitClient(t *testing.T) {
 		))
 		require.Equal(t, "fake content updated", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 		require.Equal(t, "fake2 content", string(testlib.CatFileFromBareRepository(t, url, "fake2.txt")))
+
+		// the author comes from the config the clone is created with, and
+		// nothing else pinned it: dropping user.name broke no test.
+		out, err := exec.CommandContext(
+			t.Context(),
+			"git", "-C", url, "log", "-1", "--format=%an <%ae>", "master",
+		).CombinedOutput()
+		require.NoError(t, err, string(out))
+		require.Equal(t, "Foo <foo@bar.com>", strings.TrimSpace(string(out)))
 	})
 
 	t.Run("with new branch", func(t *testing.T) {

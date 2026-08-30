@@ -86,38 +86,34 @@ func (g *gitClient) CreateFiles(
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
 
-		if err := cloneRepo(ctx, parent, url, name, env); err != nil {
+		// `git clone -c` writes these into the new repository's config, so the
+		// clone does the work of one `git config --local` per setting. That is
+		// four to seven processes saved on every publish, which matters on
+		// windows, where process creation is expensive.
+		conf := []string{
+			"user.name=" + commitAuthor.Name,
+			"user.email=" + commitAuthor.Email,
+			"init.defaultBranch=" + cmp.Or(g.branch, "master"),
+		}
+		if commitAuthor.Signing.Enabled {
+			conf = append(conf, "commit.gpgSign=true")
+			if commitAuthor.Signing.Key != "" {
+				conf = append(conf, "user.signingKey="+commitAuthor.Signing.Key)
+			}
+			if commitAuthor.Signing.Program != "" {
+				conf = append(conf, "gpg.program="+commitAuthor.Signing.Program)
+			}
+			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
+				conf = append(conf, "gpg.format="+commitAuthor.Signing.Format)
+			}
+		} else {
+			conf = append(conf, "commit.gpgSign=false")
+		}
+
+		if err := cloneRepo(ctx, parent, url, name, env, conf); err != nil {
 			return err
 		}
 
-		gitCmds := [][]string{
-			{"config", "--local", "user.name", commitAuthor.Name},
-			{"config", "--local", "user.email", commitAuthor.Email},
-			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
-		}
-
-		// append git flags for signing to overall comand if configured
-		if commitAuthor.Signing.Enabled {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "true"})
-
-			if commitAuthor.Signing.Key != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
-			}
-
-			if commitAuthor.Signing.Program != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
-			}
-
-			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
-			}
-		} else {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "false"})
-		}
-
-		if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
-			return fmt.Errorf("git: failed to setup local repository: %w", err)
-		}
 		if g.branch != "" {
 			if err := runGitCmds(ctx, cwd, env, [][]string{
 				{"checkout", g.branch},
@@ -221,7 +217,12 @@ func isPasswordError(err error) bool {
 	return errors.As(err, &kerr)
 }
 
-func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
+func cloneRepo(ctx *context.Context, parent, url, name string, env, conf []string) error {
+	args := []string{"clone"}
+	for _, c := range conf {
+		args = append(args, "-c", c)
+	}
+	args = append(args, url, name)
 	if err := retryx.Do(
 		ctx,
 		ctx.Config.Retry,
@@ -235,7 +236,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			log.WithField("url", redact.String(url, ctx.Env.Strings())).
 				WithField("dir", dir).
 				Info("cloning")
-			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
+			return runGitCmds(ctx, parent, env, [][]string{args})
 		},
 		retryx.IsNetworkError,
 	); err != nil {
