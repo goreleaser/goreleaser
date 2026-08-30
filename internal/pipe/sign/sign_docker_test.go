@@ -1,6 +1,7 @@
 package sign
 
 import (
+	"github.com/goreleaser/go-shellwords"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,10 +83,13 @@ func TestDockerSignArtifacts(t *testing.T) {
 	// whose output overwrote the echo and which nothing asserted, at about
 	// 0.65s per artifact. The two cases that run cosign for real still do.
 	//
-	// through a shell, because of the redirect, and testlib picks cmd.exe on
-	// windows: ${signature} is a native path there, and sh reads its
-	// backslashes as escapes, so the redirect writes distfoo.sig.
-	cmd, args := testlib.ShCArgs("echo ${artifact}@${digest} > ${signature}")
+	// through a shell, because of the redirect. testlib.ShC picks cmd.exe on
+	// windows -- ${signature} is a native path there, and sh reads its
+	// backslashes as escapes -- and shellwords splits it the same way
+	// goreleaser splits a hook, since config.Sign keeps Cmd and Args apart.
+	signer, err := shellwords.Parse(testlib.ShC("echo ${artifact}@${digest} > ${signature}"))
+	require.NoError(t, err)
+	cmd, args := signer[0], signer[1:]
 	password := "password"
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
