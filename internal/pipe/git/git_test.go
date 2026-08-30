@@ -4,7 +4,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -27,6 +29,9 @@ func TestSingleCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	// an author date far in the past, while the committer date stays now, so
+	// the CommitDate assertion below fails if getCommit reads %at.
+	t.Setenv("GIT_AUTHOR_DATE", "2000-01-01T00:00:00Z")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
 	ctx := testctx.Wrap(t.Context())
@@ -36,6 +41,20 @@ func TestSingleCommit(t *testing.T) {
 	require.Equal(t, "commit1", ctx.Git.TagSubject)
 	require.Equal(t, "commit1", ctx.Git.TagContents)
 	require.NotEmpty(t, ctx.Git.FirstCommit)
+
+	// getCommit reads all three out of one `git show`, so nothing else pins
+	// them to the right field: swapping %h and %H in its format used to pass.
+	require.Len(t, ctx.Git.FullCommit, 40)
+	require.Equal(t, ctx.Git.FullCommit, ctx.Git.Commit)
+	require.NotEmpty(t, ctx.Git.ShortCommit)
+	require.Less(t, len(ctx.Git.ShortCommit), len(ctx.Git.FullCommit))
+	require.True(
+		t,
+		strings.HasPrefix(ctx.Git.FullCommit, ctx.Git.ShortCommit),
+		"short commit %q is not a prefix of full commit %q",
+		ctx.Git.ShortCommit, ctx.Git.FullCommit,
+	)
+	require.WithinDuration(t, time.Now(), ctx.Git.CommitDate, time.Minute)
 }
 
 func TestAnnotatedTags(t *testing.T) {

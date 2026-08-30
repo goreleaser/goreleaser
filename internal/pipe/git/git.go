@@ -70,11 +70,11 @@ var fakeInfo = context.GitInfo{
 }
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
-	if !git.IsRepo(ctx) && ctx.Snapshot {
-		log.Warn("accepting to run without a git repository because this is a snapshot")
-		return fakeInfo, nil
-	}
 	if !git.IsRepo(ctx) {
+		if ctx.Snapshot {
+			log.Warn("accepting to run without a git repository because this is a snapshot")
+			return fakeInfo, nil
+		}
 		return context.GitInfo{}, ErrNotRepository
 	}
 	info, err := getGitInfo(ctx)
@@ -93,21 +93,13 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current branch: %w", err)
 	}
-	short, err := getShortCommit(ctx)
-	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
-	}
-	full, err := getFullCommit(ctx)
+	short, full, date, err := getCommit(ctx)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
 	first, err := getFirstCommit(ctx)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get first commit: %w", err)
-	}
-	date, err := getCommitDate(ctx)
-	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
 	summary, err := getSummary(ctx)
 	if err != nil {
@@ -152,19 +144,9 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 
-	subject, err := getTagWithFormat(ctx, tag, "contents:subject")
-	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("couldn't get tag subject: %w", err)
-	}
-
-	contents, err := getTagWithFormat(ctx, tag, "contents")
+	subject, contents, body, err := getTagContents(ctx, tag)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag contents: %w", err)
-	}
-
-	body, err := getTagWithFormat(ctx, tag, "contents:body")
-	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("couldn't get tag content body: %w", err)
 	}
 
 	previous, err := getPreviousTag(ctx, tag, excluding)
@@ -227,28 +209,28 @@ func getBranch(ctx *context.Context) (string, error) {
 	return git.Clean(git.Run(ctx, "rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
 }
 
-func getCommitDate(ctx *context.Context) (time.Time, error) {
-	ct, err := git.Clean(git.Run(ctx, "show", "--format='%ct'", "HEAD", "--quiet"))
+// getCommit returns the short hash, full hash and committer date of HEAD.
+//
+// One `git show` rather than three that differ only in --format: process
+// creation is expensive on windows, and every run of this pipe lands here.
+func getCommit(ctx *context.Context) (short, full string, date time.Time, err error) {
+	out, err := git.Run(ctx, "show", "--format=%h%n%H%n%ct", "HEAD", "--quiet")
 	if err != nil {
-		return time.Time{}, err
+		return "", "", time.Time{}, err
 	}
+	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	if len(lines) != 3 {
+		return "", "", time.Time{}, fmt.Errorf("unexpected git show output: %q", out)
+	}
+	short, full, ct := lines[0], lines[1], lines[2]
 	if ct == "" {
-		return time.Time{}, nil
+		return short, full, time.Time{}, nil
 	}
 	i, err := strconv.ParseInt(ct, 10, 64)
 	if err != nil {
-		return time.Time{}, err
+		return "", "", time.Time{}, err
 	}
-	t := time.Unix(i, 0).UTC()
-	return t, nil
-}
-
-func getShortCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format=%h", "HEAD", "--quiet"))
-}
-
-func getFullCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format=%H", "HEAD", "--quiet"))
+	return short, full, time.Unix(i, 0).UTC(), nil
 }
 
 func getFirstCommit(ctx *context.Context) (string, error) {
@@ -259,12 +241,26 @@ func getSummary(ctx *context.Context) (string, error) {
 	return git.Clean(git.Run(ctx, "describe", "--always", "--dirty", "--tags"))
 }
 
-func getTagWithFormat(ctx *context.Context, tag, format string) (string, error) {
-	// the format is not quoted on purpose: git would print the quotes
-	// verbatim, and stripping them afterwards would also strip any
-	// apostrophes the tag message itself contains.
-	out, err := git.Run(ctx, "tag", "-l", "--format=%("+format+")", tag)
-	return strings.TrimSpace(out), err
+// getTagContents returns the subject, full contents and body of the given
+// tag's message.
+//
+// One `git tag -l` rather than three that differ only in the format: the three
+// fields are separated by NUL, which a tag message cannot contain. The format
+// is not quoted on purpose: git would print the quotes verbatim, and stripping
+// them afterwards would also strip any apostrophes the message contains.
+func getTagContents(ctx *context.Context, tag string) (subject, contents, body string, err error) {
+	out, err := git.Run(ctx, "tag", "-l", "--format=%(contents:subject)%00%(contents)%00%(contents:body)", tag)
+	if err != nil {
+		return "", "", "", err
+	}
+	parts := strings.Split(out, "\x00")
+	if len(parts) != 3 {
+		return "", "", "", fmt.Errorf("unexpected git tag output for %q: %q", tag, out)
+	}
+	return strings.TrimSpace(parts[0]),
+		strings.TrimSpace(parts[1]),
+		strings.TrimSpace(parts[2]),
+		nil
 }
 
 func getTag(ctx *context.Context, excluding []string) (string, error) {
