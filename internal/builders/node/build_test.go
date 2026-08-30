@@ -100,7 +100,12 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 
 func TestExtractFromTarGz(t *testing.T) {
 	const entry = "node-v25.5.0-linux-x64/bin/node"
-	payload := "#!/bin/sh\nexec node \"$@\"\n"
+	// Larger than deflate's 32KiB history window, and compressible, so
+	// the fixture spans a window boundary and more than one block —
+	// the decoder state a replacement inflate could get wrong. A
+	// three-entry toy archive would fit in a single block and prove
+	// nothing.
+	payload := strings.Repeat("#!/bin/sh\nexec node \"$@\"\n", 2000)
 	archive := writeTarGz(t, map[string]string{
 		"node-v25.5.0-linux-x64/README.md": "readme",
 		entry:                              payload,
@@ -189,7 +194,17 @@ func TestBuild(t *testing.T) {
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
 
+	tmpRoot := testlib.ScopeTempDir(t)
 	require.NoError(t, Default.Build(ctx, build, options))
+
+	// Build owns the scratch dir holding the target node binary, and
+	// downloadHostBinary owns the downloaded archive. Neither may
+	// outlive the build: a six-target release used to strand about
+	// 1.2GB here. Matched by prefix rather than asserting an empty
+	// dir, because `node --build-sea` inherits TMPDIR too.
+	left, err := filepath.Glob(filepath.Join(tmpRoot, "goreleaser-node*"))
+	require.NoError(t, err)
+	require.Empty(t, left, "node build left temp entries behind")
 
 	bins := ctx.Artifacts.List()
 	require.Len(t, bins, 1)
