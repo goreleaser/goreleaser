@@ -66,13 +66,21 @@ func Touch(name string) string {
 	return "touch " + name
 }
 
+// ShCArgs returns the command and the arguments that run cmd through a shell,
+// for callers that keep the two apart. [ShC] is the same decision as a single
+// command line.
+func ShCArgs(cmd string) (string, []string) {
+	if IsWindows() {
+		return "cmd.exe", []string{"/c", cmd}
+	}
+	return "sh", []string{"-c", cmd}
+}
+
 // ShC returns the command line for the given cmd wrapped into a `sh -c` in
 // linux/mac, and the cmd.exe command in windows.
 func ShC(cmd string) string {
-	if IsWindows() {
-		return fmt.Sprintf("cmd.exe /c '%s'", cmd)
-	}
-	return fmt.Sprintf("sh -c '%s'", cmd)
+	shell, args := ShCArgs(cmd)
+	return fmt.Sprintf("%s %s '%s'", shell, args[0], cmd)
 }
 
 // Exit returns a command that exits the given status, handling windows.
