@@ -47,10 +47,23 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         include:
+          # -count=1 turns the go test cache off. CI never gets a hit from it:
+          # every run is a new commit, and on ubuntu -coverpkg=./... makes each
+          # test binary depend on every package, so all 124 are invalidated
+          # (measured: 0 of 124 cached, every run). The cost is still paid,
+          # though. With the cache on, go passes -test.testlogfile to every
+          # test binary and then hashes every file each test touched to build
+          # the key, and this suite opens a lot of files: internal/pipe/archive
+          # alone logs 1887 operations. File metadata calls cost far more on
+          # windows, so it suffered most: measured on one runner back to back,
+          # identical flags apart from -count=1, 331s with the cache on and
+          # 129s without.
+          - os: ubuntu-latest
+            test-args: TEST_OPTIONS=-count=1
           # the race detector is OS-independent and coverage is only uploaded
           # from ubuntu, so skip both on windows to speed up the slowest job.
           - os: windows-latest
-            test-args: RACE=false COVER=false
+            test-args: RACE=false COVER=false TEST_OPTIONS=-count=1
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
