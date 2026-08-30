@@ -55,10 +55,11 @@ func newHealthcheckCmd() *healthcheckCmd {
 			defer log.ResetPadding()
 
 			var errs []error
+			checked := &sync.Map{}
 			for _, hc := range healthcheck.DependencyCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
 					for _, tool := range hc.Dependencies(ctx) {
-						if err := checkPath(ctx, tool); err != nil {
+						if err := checkPath(ctx, checked, tool); err != nil {
 							errs = append(errs, err)
 						}
 					}
@@ -92,8 +93,6 @@ func newHealthcheckCmd() *healthcheckCmd {
 	return root
 }
 
-var toolsChecked = &sync.Map{}
-
 func check(name string, err error) error {
 	if err == nil {
 		st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
@@ -105,8 +104,10 @@ func check(name string, err error) error {
 	return err
 }
 
-func checkPath(ctx stdctx.Context, tool string) error {
-	if _, ok := toolsChecked.LoadOrStore(tool, true); ok {
+// checkPath reports whether tool is usable. checked dedupes tools listed by
+// more than one pipe within a single healthcheck run.
+func checkPath(ctx stdctx.Context, checked *sync.Map, tool string) error {
+	if _, ok := checked.LoadOrStore(tool, true); ok {
 		return nil
 	}
 	args := strings.Fields(tool)
