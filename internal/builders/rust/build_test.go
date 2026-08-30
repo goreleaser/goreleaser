@@ -124,7 +124,7 @@ func TestBuild(t *testing.T) {
 	// gets corrupted when this package and the zig package build in parallel.
 	// Use a per-test cache so they cannot race.
 	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	t.Setenv("ZIG_GLOBAL_CACHE_DIR", filepath.Join(folder, ".zig-global-cache"))
+	testlib.SharedZigCache(t)
 	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
@@ -210,7 +210,7 @@ func TestBuildArm(t *testing.T) {
 	// gets corrupted when this package and the zig package build in parallel.
 	// Use a per-test cache so they cannot race.
 	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	t.Setenv("ZIG_GLOBAL_CACHE_DIR", filepath.Join(folder, ".zig-global-cache"))
+	testlib.SharedZigCache(t)
 	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
