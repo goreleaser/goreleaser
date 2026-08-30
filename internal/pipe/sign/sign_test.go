@@ -1019,3 +1019,17 @@ func copyFile(src, dst string) (string, []string) {
 	}
 	return "cp", []string{src, dst}
 }
+
+// ls lists the names in dir, for failure messages.
+func ls(tb testing.TB, dir string) []string {
+	tb.Helper()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return []string{err.Error()}
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names
+}

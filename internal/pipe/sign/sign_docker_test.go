@@ -267,7 +267,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 		}
 
 		require.NoError(tb, DockerPipe{}.Default(ctx))
-		require.NoError(tb, DockerPipe{}.Publish(ctx))
+		if err := (DockerPipe{}).Publish(ctx); err != nil {
+			// the signer runs in a shell, so say where its files landed:
+			// "the signer did not write X" is otherwise indistinguishable
+			// from the shell having written X somewhere else.
+			tb.Fatalf("publish failed: %v\ncwd %s: %v\ndist: %v", err, tmp, ls(tb, "."), ls(tb, "dist"))
+		}
 		var sigs []string
 		for _, sig := range ctx.Artifacts.Filter(
 			artifact.Or(
