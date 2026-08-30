@@ -1,7 +1,6 @@
 package nix
 
 import (
-	stdctx "context"
 	"crypto/sha256"
 	"html/template"
 	"maps"
@@ -45,15 +44,11 @@ func TestSkip(t *testing.T) {
 }
 
 func TestHasher(t *testing.T) {
-	// produced by `nix-hash --type sha256 --flat --base32 testdata/file.bin`.
-	// It pins the encoding: nix's base32 is a fixed format, so this value can
-	// only change if our implementation breaks.
-	const reference = "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl"
-
 	t.Run("reference vector", func(t *testing.T) {
-		sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
+		// produced by `nix-hash --type sha256 --flat --base32 testdata/file.bin`.
+		sha, err := realHasher.Hash("./testdata/file.bin")
 		require.NoError(t, err)
-		require.Equal(t, reference, sha)
+		require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 	})
 
 	t.Run("all zeroes", func(t *testing.T) {
@@ -69,7 +64,7 @@ func TestHasher(t *testing.T) {
 	})
 
 	t.Run("missing file", func(t *testing.T) {
-		_, err := realHasher.Hash(t.Context(), "./testdata/does-not-exist.bin")
+		_, err := realHasher.Hash("./testdata/does-not-exist.bin")
 		require.Error(t, err)
 	})
 }
@@ -756,7 +751,7 @@ func linuxDep(s string) config.NixDependency {
 
 type fakeHasher map[string]string
 
-func (m fakeHasher) Hash(_ stdctx.Context, path string) (string, error) {
+func (m fakeHasher) Hash(path string) (string, error) {
 	return m[filepath.Base(path)], nil
 }
 
@@ -764,7 +759,7 @@ const zeroHash = "0000000000000000000000000000000000000000000000000000"
 
 type alwaysZeroHasher struct{}
 
-func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
+func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
 
 func TestDynamicallyLinked(t *testing.T) {
 	folder := t.TempDir()

@@ -18,8 +18,6 @@ import (
 	"strings"
 	"text/template"
 
-	stdctx "context"
-
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -323,7 +321,7 @@ func preparePkg(
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		sha, err := hasher.Hash(ctx, art.Path)
+		sha, err := hasher.Hash(art.Path)
 		if err != nil {
 			return "", err
 		}
@@ -596,7 +594,7 @@ func depNames(deps []config.NixDependency) []string {
 }
 
 type fileHasher interface {
-	Hash(ctx stdctx.Context, name string) (string, error)
+	Hash(name string) (string, error)
 }
 
 // nixBase32Alphabet is nix's own base32 alphabet: it drops e, o, u and t.
@@ -622,12 +620,11 @@ func nixBase32(h []byte) string {
 var realHasher fileHasher = goHasher{}
 
 // goHasher reproduces `nix-hash --type sha256 --flat --base32`, which is
-// simply the sha256 of the file rendered in nix's base32. Doing it here means
-// users do not need nix installed to publish a nix package, and saves a
-// process per artifact.
+// simply the sha256 of the file rendered in nix's base32, so that users do not
+// need nix installed to publish a nix package.
 type goHasher struct{}
 
-func (goHasher) Hash(_ stdctx.Context, name string) (string, error) {
+func (goHasher) Hash(name string) (string, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return "", fmt.Errorf("could not hash file: %s: %w", name, err)
