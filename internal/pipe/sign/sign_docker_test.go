@@ -78,8 +78,13 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
+	// the cases below are about which artifacts get signed and how the
+	// signature is named, not about cosign. Appending
+	// `&& cosign sign ... > ${signature}` overwrote the echo with cosign's
+	// stdout, which is empty: the new non-empty assertion catches it. The
+	// `no signature file` case still runs cosign for real.
 	cmd := "sh"
-	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${signature}"}
+	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
 	password := "password"
 
 	// cosign only issues a certificate when it signs keylessly, so it cannot
