@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -81,18 +82,17 @@ func TestDockerSignArtifacts(t *testing.T) {
 	// the cases below are about which artifacts get signed and how the
 	// signature is named, not about cosign. Appending
 	// `&& cosign sign ... > ${signature}` overwrote the echo with cosign's
-	// stdout, which is empty: the new non-empty assertion catches it. The
+	// stdout, which is empty: the non-empty assertion catches it. The
 	// `no signature file` case still runs cosign for real.
 	//
-	// cmd.exe on windows, because ${signature} is a native path and sh eats
-	// its backslashes: CI showed the redirect writing distfoo.sig next to
-	// dist, not dist\foo.sig.
-	cmd := "sh"
-	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
-	if testlib.IsWindows() {
-		cmd = "cmd.exe"
-		args = []string{"/c", "echo ${artifact}@${digest} > ${signature}"}
-	}
+	// through a shell, because of the redirect. testlib.ShC picks cmd.exe on
+	// windows -- ${signature} is a native path there, and sh reads its
+	// backslashes as escapes, which made the redirect write distfoo.sig next
+	// to dist -- and shellwords splits it the same way goreleaser splits a
+	// hook, since config.Sign keeps Cmd and Args apart.
+	signer, err := shellwords.Parse(testlib.ShC("echo ${artifact}@${digest} > ${signature}"))
+	require.NoError(t, err)
+	cmd, args := signer[0], signer[1:]
 	password := "password"
 
 	// cosign only issues a certificate when it signs keylessly, so it cannot
