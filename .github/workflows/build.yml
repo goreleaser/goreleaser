@@ -124,8 +124,26 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix profile add nixpkgs#pkgs.nixfmt nixpkgs#alejandra
+      - name: setup-nix-formatters
+        # `nix profile add nixpkgs#...` resolves and builds from nixpkgs, which
+        # took 18s. Both projects publish static linux binaries, so fetching
+        # them directly takes about a second. It also pins the versions: the
+        # format tests compare against golden files, so floating with whatever
+        # nixpkgs currently ships could break them at any time.
+        #
+        # Release assets are mutable and dependabot can't see a URL in a `run`
+        # block, so the checksums pin the contents, not just the tag.
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/alejandra" \
+            https://github.com/kamadorueda/alejandra/releases/download/4.0.0/alejandra-x86_64-unknown-linux-musl
+          curl -fsSL -o "$HOME/.local/bin/nixfmt" \
+            https://github.com/NixOS/nixfmt/releases/download/v1.4.0/nixfmt
+          echo "a23b9d47cba945805c6169541046de890e94e07a5aa416c86dee15bca2da6216  $HOME/.local/bin/alejandra" | sha256sum -c -
+          echo "62488394d5233283096466350487ed46470366f57db4bec824a87ecbacce960a  $HOME/.local/bin/nixfmt" | sha256sum -c -
+          chmod +x "$HOME/.local/bin/alejandra" "$HOME/.local/bin/nixfmt"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
