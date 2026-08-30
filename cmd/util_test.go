@@ -34,10 +34,10 @@ func mktmp(tb testing.TB) string {
 	return folder
 }
 
-func setup(tb testing.TB) string {
+func setup(tb testing.TB) {
 	tb.Helper()
 
-	folder := mktmp(tb)
+	mktmp(tb)
 
 	createGoReleaserYaml(tb)
 	createMainGo(tb)
@@ -51,8 +51,6 @@ func setup(tb testing.TB) string {
 	testlib.GitCommit(tb, "assd")
 	testlib.GitTag(tb, "v0.0.2")
 	testlib.GitRemoteAdd(tb, "git@github.com:goreleaser/fake.git")
-
-	return folder
 }
 
 func createFile(tb testing.TB, filename, contents string) {
