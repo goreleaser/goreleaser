@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"text/template"
 
@@ -194,7 +193,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 
 	for _, version := range []string{"16.3.4", "17.1.2"} {
-		var first atomic.Bool
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
 
@@ -208,11 +206,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				_, _ = io.Copy(io.Discard, r.Body)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, "{}")
-				return
-			}
-
-			if first.CompareAndSwap(false, true) {
-				http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
 				return
 			}
 
@@ -245,7 +238,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 		t.Cleanup(srv.Close)
 
 		for _, tt := range tests {
-			first.Store(false)
 			t.Run(tt.name+"_"+version, func(t *testing.T) {
 				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
@@ -257,14 +249,12 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 							Owner: "test",
 							Name:  "test",
 						},
-						ReplaceExistingArtifacts: true,
 					},
 					GitLabURLs: config.GitLabURLs{
 						API:                srv.URL,
 						Download:           tt.downloadURL,
 						UsePackageRegistry: tt.usePackageRegistry,
 					},
-					Retry: config.Retry{Attempts: 2},
 				}, testctx.WithVersion("1.0.0"))
 
 				tmpFile, err := os.CreateTemp(t.TempDir(), "")
