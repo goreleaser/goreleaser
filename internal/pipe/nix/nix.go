@@ -64,9 +64,8 @@ type Pipe struct {
 	hasher fileHasher
 }
 
-func (Pipe) String() string                           { return "nixpkgs" }
-func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return nil }
+func (Pipe) String() string        { return "nixpkgs" }
+func (Pipe) ContinueOnError() bool { return true }
 
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0

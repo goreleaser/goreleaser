@@ -60,6 +60,14 @@ func TestHasher(t *testing.T) {
 		require.Equal(t, zeroHash, nixBase32(make([]byte, sha256.Size)))
 	})
 
+	// the vectors above only emit 27 of the 32 characters; with this one, a
+	// typo anywhere in the alphabet fails the test.
+	t.Run("full alphabet", func(t *testing.T) {
+		// printf goreleaser > f && nix-hash --type sha256 --flat --base32 f
+		sum := sha256.Sum256([]byte("goreleaser"))
+		require.Equal(t, "19a48kbsv6pr8x1bnbbs61f80wilnc2dcgahb70xbmb73pr0s7sk", nixBase32(sum[:]))
+	})
+
 	t.Run("missing file", func(t *testing.T) {
 		_, err := realHasher.Hash(t.Context(), "./testdata/does-not-exist.bin")
 		require.Error(t, err)
@@ -675,10 +683,6 @@ func TestErrNoArchivesFound(t *testing.T) {
 		goamd64: "v1",
 		ids:     []string{"foo", "bar"},
 	}, "no archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=v1 ids=[foo bar]")
-}
-
-func TestDependencies(t *testing.T) {
-	require.Empty(t, Pipe{}.Dependencies(nil))
 }
 
 func TestBinInstallFormats(t *testing.T) {
