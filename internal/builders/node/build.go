@@ -147,7 +147,13 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	targetNode, err := ensureNode(ctx, build.Dir, target.Target)
+	targetNodeDir, err := os.MkdirTemp("", "goreleaser-node-*")
+	if err != nil {
+		return err
+	}
+	defer func() { _ = os.RemoveAll(targetNodeDir) }()
+
+	targetNode, err := ensureNode(ctx, build.Dir, target.Target, targetNodeDir)
 	if err != nil {
 		return err
 	}
