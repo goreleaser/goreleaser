@@ -1613,7 +1613,8 @@ func TestToProxiedImportPath(t *testing.T) {
 }
 
 func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
 	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
@@ -1646,7 +1647,8 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 }
 
 func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
 	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
@@ -1668,7 +1670,8 @@ func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
 }
 
 func TestCheckBuildElipsisWithExplicitBinaryError(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
 	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
@@ -1691,7 +1694,8 @@ func TestCheckBuildElipsisWithExplicitBinaryError(t *testing.T) {
 }
 
 func TestCheckBuildElipsisSingleMain(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
 
@@ -1717,7 +1721,8 @@ func TestCheckBuildElipsisSingleMain(t *testing.T) {
 }
 
 func TestCheckBuildElipsisSingleMainWithExplicitBinary(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
 

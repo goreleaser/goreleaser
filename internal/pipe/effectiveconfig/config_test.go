@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +15,8 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

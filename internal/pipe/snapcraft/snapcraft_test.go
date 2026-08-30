@@ -143,7 +143,8 @@ func TestRunPipe(t *testing.T) {
 
 func TestBadTemplate(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// fails before packing.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -177,7 +178,8 @@ func TestBadTemplate(t *testing.T) {
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// fails before packing.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -201,7 +203,8 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 
 func TestRunPipeWithName(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// metadata-only, see TestRunPipeMetadata.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -237,7 +240,9 @@ func TestRunPipeWithName(t *testing.T) {
 
 func TestRunPipeMetadata(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// only the metadata goreleaser generates is asserted here, and the pipe
+	// does not check the packed file, so a real snapcraft is not needed.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -449,7 +454,9 @@ func TestNoSnapcraftInPath(t *testing.T) {
 
 func TestRunNoArguments(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// only the metadata goreleaser generates is asserted here, and the pipe
+	// does not check the packed file, so a real snapcraft is not needed.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -485,7 +492,9 @@ func TestRunNoArguments(t *testing.T) {
 
 func TestCompleter(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// only the metadata goreleaser generates is asserted here, and the pipe
+	// does not check the packed file, so a real snapcraft is not needed.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -524,7 +533,9 @@ func TestCompleter(t *testing.T) {
 
 func TestCommand(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// only the metadata goreleaser generates is asserted here, and the pipe
+	// does not check the packed file, so a real snapcraft is not needed.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -561,7 +572,8 @@ func TestCommand(t *testing.T) {
 
 func TestExtraFile(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
-	testlib.CheckPath(t, "snapcraft")
+	// only the prime/ contents goreleaser writes are asserted.
+	fakeSnapcraft(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))

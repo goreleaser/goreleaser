@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -289,79 +290,84 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeDifferentBinaryCount(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0o755))
-	for _, arch := range []string{"darwinamd64", "linuxamd64"} {
-		createFakeBinary(t, dist, arch, "bin/mybin")
-	}
-	createFakeBinary(t, dist, "darwinamd64", "bin/foobar")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Dist:        dist,
-		ProjectName: "foobar",
-		Archives: []config.Archive{
-			{
-				ID:           "myid",
-				Formats:      []string{"tar.gz"},
-				Builds:       []string{"default", "foobar"},
-				NameTemplate: defaultNameTemplate,
+	t.Parallel()
+	// Pipe.Run adds artifacts to the context and writes archives into Dist, so
+	// each subtest needs its own context and its own dist directory.
+	setup := func(t *testing.T, allowDifferentBinaryCount bool) *context.Context {
+		t.Helper()
+		dist := filepath.Join(t.TempDir(), "dist")
+		require.NoError(t, os.Mkdir(dist, 0o755))
+		for _, arch := range []string{"darwinamd64", "linuxamd64"} {
+			createFakeBinary(t, dist, arch, "bin/mybin")
+		}
+		createFakeBinary(t, dist, "darwinamd64", "bin/foobar")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "foobar",
+			Archives: []config.Archive{
+				{
+					ID:                        "myid",
+					Formats:                   []string{"tar.gz"},
+					Builds:                    []string{"default", "foobar"},
+					NameTemplate:              defaultNameTemplate,
+					AllowDifferentBinaryCount: allowDifferentBinaryCount,
+				},
 			},
-		},
-	})
+		})
 
-	darwinBuild := &artifact.Artifact{
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Name:   "bin/mybin",
-		Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraBinary: "bin/mybin",
-			artifact.ExtraID:     "default",
-		},
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Goos:   "darwin",
+			Goarch: "amd64",
+			Name:   "bin/mybin",
+			Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "bin/mybin",
+				artifact.ExtraID:     "default",
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Goos:   "darwin",
+			Goarch: "amd64",
+			Name:   "bin/foobar",
+			Path:   filepath.Join(dist, "darwinamd64", "bin", "foobar"),
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "bin/foobar",
+				artifact.ExtraID:     "foobar",
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Goos:   "linux",
+			Goarch: "amd64",
+			Name:   "bin/mybin",
+			Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "bin/mybin",
+				artifact.ExtraID:     "default",
+			},
+		})
+		ctx.Version = "0.0.1"
+		ctx.Git.CurrentTag = "v0.0.1"
+		return ctx
 	}
-	darwinBuild2 := &artifact.Artifact{
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Name:   "bin/foobar",
-		Path:   filepath.Join(dist, "darwinamd64", "bin", "foobar"),
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraBinary: "bin/foobar",
-			artifact.ExtraID:     "foobar",
-		},
-	}
-	linuxArmBuild := &artifact.Artifact{
-		Goos:   "linux",
-		Goarch: "amd64",
-		Name:   "bin/mybin",
-		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraBinary: "bin/mybin",
-			artifact.ExtraID:     "default",
-		},
-	}
-
-	ctx.Artifacts.Add(darwinBuild)
-	ctx.Artifacts.Add(darwinBuild2)
-	ctx.Artifacts.Add(linuxArmBuild)
-	ctx.Version = "0.0.1"
-	ctx.Git.CurrentTag = "v0.0.1"
 
 	t.Run("check enabled", func(t *testing.T) {
-		ctx.Config.Archives[0].AllowDifferentBinaryCount = false
-		require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+		t.Parallel()
+		err := Pipe{}.Run(setup(t, false))
+		require.EqualError(t, err, "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
 	})
 
 	t.Run("check disabled", func(t *testing.T) {
-		ctx.Config.Archives[0].AllowDifferentBinaryCount = true
-		require.NoError(t, Pipe{}.Run(ctx))
+		t.Parallel()
+		require.NoError(t, Pipe{}.Run(setup(t, true)))
 	})
 }
 
 func TestRunPipeNoBinaries(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -427,7 +433,8 @@ func tarInfo(t *testing.T, path, name string) *tar.Header {
 }
 
 func TestRunPipeBinary(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
@@ -564,7 +571,8 @@ func TestRunPipeDistRemoved(t *testing.T) {
 }
 
 func TestRunPipeInvalidGlob(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
@@ -649,7 +657,8 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
@@ -684,7 +693,8 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
@@ -722,7 +732,8 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
@@ -1289,7 +1300,8 @@ func TestSkip(t *testing.T) {
 }
 
 func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	createFakeBinary(t, dist, "windowsamd64", "mybin.exe")

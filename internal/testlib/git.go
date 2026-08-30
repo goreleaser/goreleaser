@@ -4,6 +4,7 @@ import (
 	"context"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -14,12 +15,11 @@ import (
 // GitInit inits a new git project.
 func GitInit(tb testing.TB) {
 	tb.Helper()
-	out, err := fakeGit("init")
+	// a single `init -b main` instead of init + checkout + branch -D: process
+	// creation is expensive on Windows, and this helper runs ~70 times.
+	out, err := fakeGit("init", "-b", "main")
 	require.NoError(tb, err)
 	require.Contains(tb, out, "Initialized empty Git repository")
-	require.NoError(tb, err)
-	GitCheckoutBranch(tb, "main")
-	_, _ = fakeGit("branch", "-D", "master")
 }
 
 // GitRemoteAdd adds the given url as remote.
@@ -76,6 +76,16 @@ func GitAdd(tb testing.TB) {
 	out, err := fakeGit("add", "-A")
 	require.NoError(tb, err)
 	require.Empty(tb, out)
+}
+
+// GitRemoteTrackingRef points refs/remotes/<remote>/<branch> at HEAD, so a
+// test can set an upstream without fetching from a real remote.
+func GitRemoteTrackingRef(tb testing.TB, remote, branch string) {
+	tb.Helper()
+	head, err := fakeGit("rev-parse", "HEAD")
+	require.NoError(tb, err)
+	_, err = fakeGit("update-ref", "refs/remotes/"+remote+"/"+branch, strings.TrimSpace(head))
+	require.NoError(tb, err)
 }
 
 func fakeGit(args ...string) (string, error) {

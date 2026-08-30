@@ -295,7 +295,12 @@ func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
 			},
 		},
 		GitLabURLs: config.GitLabURLs{
-			API: "http://goreleaser-notexists",
+			// .invalid never resolves (RFC 2606) and the trailing dot makes it
+			// fully qualified, so the resolver answers NXDOMAIN at once instead
+			// of walking the search domains. A bare single-label name made CI
+			// report a timeout instead, which the SDK's HTTP client treats as
+			// retriable, and the test spent 23s in backoff.
+			API: "http://goreleaser-notexists.invalid.",
 		},
 	})
 	client, err := newGitLab(ctx, "test-token")
