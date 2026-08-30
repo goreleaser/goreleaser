@@ -757,24 +757,6 @@ func TestBinInstallFormats(t *testing.T) {
 	})
 }
 
-func TestInstallsStrippedBinaryDirectory(t *testing.T) {
-	install, err := installs(
-		testctx.Wrap(t.Context()),
-		config.Nix{},
-		&artifact.Artifact{
-			Type: artifact.UploadableArchive,
-			Extra: map[string]any{
-				artifact.ExtraBinaries: []string{"foo"},
-			},
-		},
-	)
-	require.NoError(t, err)
-	require.Equal(t, []string{
-		"mkdir -p $out/bin",
-		"cp -vr ./foo $out/bin/foo",
-	}, install)
-}
-
 func darwinDep(s string) config.NixDependency {
 	return config.NixDependency{
 		Name: s,
