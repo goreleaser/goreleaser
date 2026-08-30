@@ -36,7 +36,11 @@ func TestCheckPath(t *testing.T) {
 	checked := &sync.Map{}
 	require.NoError(t, checkPath(t.Context(), checked, "go"))
 	require.NoError(t, checkPath(t.Context(), checked, "git version"))
-	require.Error(t, checkPath(t.Context(), checked, "docker something-inalid"))
+	// `go` rather than `docker`: this case is about a tool that is on PATH but
+	// whose command fails, and docker is not guaranteed to be installed -- when
+	// it is not, the LookPath branch answers instead and the case proves
+	// nothing. It is also slow to refuse: 5.26s on the windows job.
+	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
 }
 
