@@ -212,19 +212,15 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 
 			if strings.Contains(r.URL.Path, "version") {
 				fmt.Fprintf(w, `{"version":%q}`, version)
-				w.WriteHeader(http.StatusOK)
 				return
 			}
 
 			if !strings.Contains(r.URL.Path, "assets/links") {
 				_, _ = io.Copy(io.Discard, r.Body)
-				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, "{}")
 				return
 			}
 
-			defer w.WriteHeader(http.StatusOK)
-			defer fmt.Fprint(w, "{}")
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -248,6 +244,8 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 					return
 				}
 			}
+
+			fmt.Fprint(w, "{}")
 		}))
 		t.Cleanup(srv.Close)
 
