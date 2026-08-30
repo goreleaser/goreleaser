@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
@@ -43,12 +45,42 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		if err != nil {
-			return retryx.HTTP(err, must(resp).Response)
-		}
-		return nil
+		return gitlabError(err, resp)
 	}, retryx.IsRetriable)
 	return result, resp, err
+}
+
+// gitlabError wraps an error from the go-gitlab SDK into a retryx.HTTPError,
+// translating the rate-limit headers of a 429 into a RetryAfter the retry layer
+// can honor. The SDK's own retry layer is disabled (see newGitLab), so this is
+// the only place that reads them.
+func gitlabError(err error, resp *gitlab.Response) error {
+	if err == nil {
+		return nil
+	}
+	he := retryx.HTTPError{Err: err}
+	if r := must(resp).Response; r != nil {
+		he.Status = r.StatusCode
+		if he.Status == http.StatusTooManyRequests {
+			he.RetryAfter = rateLimitRetryAfter(r.Header)
+		}
+	}
+	return he
+}
+
+// rateLimitRetryAfter returns how long to wait before retrying a rate-limited
+// request, from either the RateLimit-Reset (unix timestamp) or the Retry-After
+// (seconds) header. It returns 0 when neither header gives a usable value.
+func rateLimitRetryAfter(header http.Header) time.Duration {
+	if v, err := strconv.ParseInt(header.Get("RateLimit-Reset"), 10, 64); err == nil && v > 0 {
+		if wait := time.Until(time.Unix(v, 0)); wait > 0 {
+			return wait
+		}
+	}
+	if v, err := strconv.Atoi(header.Get("Retry-After")); err == nil && v > 0 {
+		return time.Duration(v) * time.Second
+	}
+	return 0
 }
 
 // newGitLab returns a gitlab client implementation.
@@ -64,6 +96,10 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 		gitlab.WithHTTPClient(&http.Client{
 			Transport: transport,
 		}),
+		// the SDK retries 429s and 5xx on its own, with its own budget and
+		// backoff. retryx does that too, honoring the user configuration, so
+		// let it own the retries.
+		gitlab.WithoutRetries(),
 	}, opts...)
 	if ctx.Config.GitLabURLs.API != "" {
 		apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.API)
@@ -91,14 +127,16 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 	return &gitlabClient{
 		client:       client,
 		authType:     authType,
-		isV17OrLater: isV17(client),
+		isV17OrLater: isV17(ctx, client),
 	}, nil
 }
 
-func isV17(client *gitlab.Client) bool {
+func isV17(ctx *context.Context, client *gitlab.Client) bool {
 	v := os.Getenv("CI_SERVER_VERSION")
 	if v == "" {
-		gitlabVersion, _, err := client.Version.GetVersion(nil)
+		gitlabVersion, _, err := gitlabDo(ctx, func() (*gitlab.Version, *gitlab.Response, error) {
+			return client.Version.GetVersion(nil)
+		})
 		if err != nil {
 			log.WithError(err).Warn("could not get gitlab version")
 			return false
@@ -597,7 +635,7 @@ func (c *gitlabClient) Upload(
 				file,
 				nil,
 			); err != nil {
-				return retryx.HTTP(err, must(resp).Response)
+				return gitlabError(err, resp)
 			}
 
 			baseLinkURL, err = c.client.GenericPackages.FormatPackageURL(
@@ -619,7 +657,7 @@ func (c *gitlabClient) Upload(
 				nil,
 			)
 			if err != nil {
-				return retryx.HTTP(err, must(resp).Response)
+				return gitlabError(err, resp)
 			}
 
 			baseLinkURL = projectFile.URL
@@ -653,23 +691,10 @@ func (c *gitlabClient) Upload(
 			opt,
 		)
 		if err != nil {
-			// this status means the asset already exists
-			if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
-				if !ctx.Config.Release.ReplaceExistingArtifacts {
-					return retryx.Unrecoverable(err)
-				}
-				// if the user allowed to delete assets, we delete it, and return a
-				// retriable error.
-				if _, _, err := c.client.ReleaseLinks.DeleteReleaseLink(
-					projectID,
-					releaseID,
-					releaseLink.ID,
-				); err != nil {
-					return retryx.Unrecoverable(err)
-				}
-				return retryx.Retriable(err)
+			if resp != nil && resp.StatusCode == http.StatusBadRequest {
+				return c.replaceReleaseLink(ctx, projectID, releaseID, name, err)
 			}
-			return retryx.HTTP(err, must(resp).Response)
+			return gitlabError(err, resp)
 		}
 
 		log.WithField("id", releaseLink.ID).
@@ -683,6 +708,72 @@ func (c *gitlabClient) Upload(
 
 		return nil
 	}, retryx.IsRetriable)
+}
+
+// replaceReleaseLink handles a failed release link creation that is likely
+// caused by a link with the same name already existing: it deletes the existing
+// link, if the user allowed it, and returns a retriable error so the upload
+// happens again.
+//
+// The failed creation does not return the ID of the existing link, so it has to
+// be found in the release link list first.
+func (c *gitlabClient) replaceReleaseLink(
+	ctx *context.Context,
+	projectID, releaseID, name string,
+	createErr error,
+) error {
+	if !ctx.Config.Release.ReplaceExistingArtifacts {
+		return retryx.Unrecoverable(createErr)
+	}
+
+	link, err := c.getReleaseLinkByName(projectID, releaseID, name)
+	if err != nil {
+		return err
+	}
+	if link == nil {
+		// the creation failed for some other reason.
+		return retryx.Unrecoverable(createErr)
+	}
+
+	if _, resp, err := c.client.ReleaseLinks.DeleteReleaseLink(
+		projectID,
+		releaseID,
+		link.ID,
+	); err != nil {
+		return gitlabError(err, resp)
+	}
+
+	log.WithField("id", link.ID).
+		WithField("name", name).
+		Debug("deleted existing release link")
+
+	return retryx.Retriable(createErr)
+}
+
+// getReleaseLinkByName returns the release link with the given name, or nil if
+// the release has none.
+func (c *gitlabClient) getReleaseLinkByName(
+	projectID, releaseID, name string,
+) (*gitlab.ReleaseLink, error) {
+	opts := &gitlab.ListReleaseLinksOptions{}
+	for {
+		links, resp, err := c.client.ReleaseLinks.ListReleaseLinks(projectID, releaseID, opts)
+		if err != nil {
+			return nil, gitlabError(err, resp)
+		}
+
+		for _, link := range links {
+			if link != nil && link.Name == name {
+				return link, nil
+			}
+		}
+
+		if resp == nil || resp.NextPage == 0 {
+			return nil, nil
+		}
+
+		opts.Page = resp.NextPage
+	}
 }
 
 // getMilestoneByTitle returns a milestone by title.

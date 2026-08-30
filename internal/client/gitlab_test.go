@@ -194,7 +194,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 
 	for _, version := range []string{"16.3.4", "17.1.2"} {
-		var first atomic.Bool
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
 
@@ -208,11 +207,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				_, _ = io.Copy(io.Discard, r.Body)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, "{}")
-				return
-			}
-
-			if first.CompareAndSwap(false, true) {
-				http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
 				return
 			}
 
@@ -245,7 +239,6 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 		t.Cleanup(srv.Close)
 
 		for _, tt := range tests {
-			first.Store(false)
 			t.Run(tt.name+"_"+version, func(t *testing.T) {
 				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
@@ -257,14 +250,12 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 							Owner: "test",
 							Name:  "test",
 						},
-						ReplaceExistingArtifacts: true,
 					},
 					GitLabURLs: config.GitLabURLs{
 						API:                srv.URL,
 						Download:           tt.downloadURL,
 						UsePackageRegistry: tt.usePackageRegistry,
 					},
-					Retry: config.Retry{Attempts: 2},
 				}, testctx.WithVersion("1.0.0"))
 
 				tmpFile, err := os.CreateTemp(t.TempDir(), "")
@@ -283,6 +274,49 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestGitLabUploadRetriesAreOurs(t *testing.T) {
+	t.Parallel()
+
+	var creates atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		_, _ = io.Copy(io.Discard, r.Body)
+
+		switch {
+		case strings.Contains(r.URL.Path, "version"):
+			fmt.Fprint(w, `{"version":"17.1.2"}`)
+		case !strings.Contains(r.URL.Path, "assets/links"):
+			fmt.Fprint(w, "{}")
+		default:
+			creates.Add(1)
+			http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Release: config.Release{
+			GitLab: config.Repo{Owner: "test", Name: "test"},
+		},
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Retry:      config.Retry{Attempts: 2},
+	}, testctx.WithVersion("1.0.0"))
+
+	tmpFile, err := os.CreateTemp(t.TempDir(), "")
+	require.NoError(t, err)
+	_ = tmpFile.Close()
+
+	client, err := newGitLab(ctx, ctx.Token)
+	require.NoError(t, err)
+
+	require.Error(t, client.Upload(ctx, "1234", &artifact.Artifact{
+		Name: "test",
+		Path: tmpFile.Name(),
+	}))
+	// the SDK must not retry on its own: 2 attempts configured, 2 requests.
+	require.EqualValues(t, 2, creates.Load())
 }
 
 func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
@@ -1066,15 +1100,15 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 func TestGitLabVersionEnv(t *testing.T) {
 	t.Run("18", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "18.0.0")
-		require.True(t, isV17(nil))
+		require.True(t, isV17(testctx.Wrap(t.Context()), nil))
 	})
 	t.Run("17", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "17.0.0")
-		require.True(t, isV17(nil))
+		require.True(t, isV17(testctx.Wrap(t.Context()), nil))
 	})
 	t.Run("16", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "16.0.0")
-		require.False(t, isV17(nil))
+		require.False(t, isV17(testctx.Wrap(t.Context()), nil))
 	})
 }
 
@@ -1525,48 +1559,84 @@ func TestGitLabPublishRelease(t *testing.T) {
 
 func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		if strings.HasPrefix(r.URL.Path, "/api/v4/version") {
-			fmt.Fprint(w, `{"version":"18.0.0"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost {
-			fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, `{"id":1,"name":"test.tar.gz","direct_asset_url":"http://example.com/test.tar.gz"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodDelete {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{}`)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "{}")
-	}))
-	t.Cleanup(srv.Close)
-
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitLabURLs: config.GitLabURLs{
-			API:      srv.URL,
-			Download: srv.URL,
+	for name, tt := range map[string]struct {
+		links       string
+		replace     bool
+		wantDeletes int64
+		wantErr     string
+	}{
+		"replaces it": {
+			links:       `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:     true,
+			wantDeletes: 1,
 		},
-		Release: config.Release{
-			GitLab: config.Repo{
-				Owner: "someone",
-				Name:  "something",
-			},
-			ReplaceExistingArtifacts: true,
+		"replace disabled": {
+			links:   `[{"id":2,"name":"test.tar.gz"}]`,
+			wantErr: "has already been taken",
 		},
-	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
-	client, err := newGitLab(ctx, "test-token")
-	require.NoError(t, err)
+		"no link with that name": {
+			links:   `[{"id":1,"name":"other"}]`,
+			replace: true,
+			wantErr: "has already been taken",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			var deletes atomic.Int64
+			var created atomic.Bool
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				_, _ = io.Copy(io.Discard, r.Body)
+				switch {
+				case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+					fmt.Fprint(w, `{"version":"18.0.0"}`)
+				case strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost:
+					fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
+				case !strings.Contains(r.URL.Path, "assets/links"):
+					fmt.Fprint(w, "{}")
+				case r.Method == http.MethodGet:
+					fmt.Fprint(w, tt.links)
+				case r.Method == http.MethodDelete:
+					deletes.Add(1)
+					fmt.Fprint(w, `{"id":2,"name":"test.tar.gz"}`)
+				case !created.Swap(true):
+					// the link already exists, so the first create fails.
+					http.Error(
+						w,
+						`{"message":{"name":["has already been taken"]}}`,
+						http.StatusBadRequest,
+					)
+				default:
+					fmt.Fprint(w, `{"id":3,"name":"test.tar.gz"}`)
+				}
+			}))
+			t.Cleanup(srv.Close)
 
-	a := &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"}
-	err = client.Upload(ctx, "v1.0.0", a)
-	require.Error(t, err)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				GitLabURLs: config.GitLabURLs{
+					API:      srv.URL,
+					Download: srv.URL,
+				},
+				Release: config.Release{
+					GitLab: config.Repo{
+						Owner: "someone",
+						Name:  "something",
+					},
+					ReplaceExistingArtifacts: tt.replace,
+				},
+				Retry: config.Retry{Attempts: 2},
+			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			client, err := newGitLab(ctx, "test-token")
+			require.NoError(t, err)
+
+			a := &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"}
+			err = client.Upload(ctx, "v1.0.0", a)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.wantErr)
+			}
+			require.Equal(t, tt.wantDeletes, deletes.Load())
+		})
+	}
 }
