@@ -3,12 +3,13 @@ title: Building Go modules
 weight: 60
 ---
 
-With the default configs, you can already build a Go module without issues.
+With the default configuration, you can build a Go module without issues.
 
-But, if you want to access module information in runtime (e.g. `debug.BuildInfo` or `go version -m $binary`), you'll
-need to setup GoReleaser to "proxy" that module before building it.
+But if you want to access module information at runtime (for example, through
+`debug.BuildInfo` or `go version -m $binary`), you need to set up GoReleaser to
+"proxy" that module before building it.
 
-To do that, you can simply add this to your config:
+To do that, add this to your configuration:
 
 ```yaml {filename=".goreleaser.yaml"}
 gomod:
@@ -18,7 +19,7 @@ gomod:
 In practice, what this does is:
 
 - for each of your builds, create a `dist/proxy/{{ build.id }}`;
-- creates a `go.mod` that requires your **main module** at the **current tag**;
+- creates a `go.mod` for a module named after the **build id**;
 - copy the project's `go.sum` to that directory.
 - runs `go get module@version`
 

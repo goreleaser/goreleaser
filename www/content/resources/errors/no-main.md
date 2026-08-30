@@ -3,7 +3,7 @@ title: "Build does not contain a main function"
 weight: 60
 ---
 
-This usually happens if you're trying to build a library or if you didn't setup
+This usually happens if you're trying to build a library or if you didn't set up
 the `builds.main` section in your `.goreleaser.yaml` and your `main.go` is not
 in the root directory.
 
@@ -33,7 +33,7 @@ builds:
   - main: ./path/to/your/main/pkg/
 ```
 
-For more info, check the [builds documentation](/customization/builds/builders/go/).
+For more information, check the [builds documentation](/customization/builds/builders/go/).
 
 ## If you ran goreleaser outside the root of the project
 
@@ -50,4 +50,4 @@ builds:
     no_main_check: true
 ```
 
-For more info, check the [builds documentation](/customization/builds/builders/go/).
+For more information, check the [builds documentation](/customization/builds/builders/go/).

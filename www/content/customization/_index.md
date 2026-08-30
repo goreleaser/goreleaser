@@ -3,19 +3,18 @@ title: "Introduction"
 weight: 1
 ---
 
-GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
+GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml]
+file.
 
-You can generate an example config by running
-`goreleaser init` or start from scratch.
+Run `goreleaser init` to generate an example config, or start from scratch.
 
-You can also check if your config is valid by running
-`goreleaser check`, which will tell you if are
-using deprecated or invalid options.
+Run `goreleaser check` to verify your config: it tells you whether you're using
+deprecated or invalid options.
 
 ## JSON Schema
 
-GoReleaser also has a [jsonschema][] file, which you can use to have better
-editor support:
+GoReleaser publishes a [JSON Schema][jsonschema] file, which you can use to get
+better editor support:
 
 {{< tabs >}}
 
@@ -25,8 +24,8 @@ editor support:
 https://goreleaser.com/static/schema.json
 ```
 
-You can also specify it in your `.goreleaser.yml` config file by adding a
-comment like the following:
+You can also reference it from your config file by adding a comment like the
+following:
 
 ```yaml {filename=".goreleaser.yaml"}
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
@@ -39,8 +38,8 @@ comment like the following:
 https://goreleaser.com/static/schema-pro.json
 ```
 
-You can also specify it in your `.goreleaser.yml` config file by adding a
-comment like the following:
+You can also reference it from your config file by adding a comment like the
+following:
 
 ```yaml {filename=".goreleaser.yaml"}
 # yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
@@ -49,7 +48,7 @@ comment like the following:
 {{< /tab >}}
 {{< /tabs >}}
 
-You can also generate it for your specific version using the
+To generate the schema for the exact version you run, use the
 `goreleaser jsonschema` command.
 
 ### Pin the schema version
@@ -62,14 +61,14 @@ for `__VERSION__` (latest):
 {{< tab name="OSS" >}}
 
 ```sh
-https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/docs/static/schema.json
+https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema.json
 ```
 
 {{< /tab >}}
 {{< tab name="Pro" >}}
 
 ```sh
-https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/docs/static/schema-pro.json
+https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema-pro.json
 ```
 
 {{< /tab >}}
@@ -87,4 +86,4 @@ https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/docs/sta
     - `goreleaser.yml`
     - `goreleaser.yaml`
 
-[jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
+[jsonschema]: https://json-schema.org/draft/2020-12/json-schema-validation.html

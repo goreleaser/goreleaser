@@ -4,7 +4,7 @@ weight: 110
 ---
 
 You may want to set up your project to auto-deploy your new tags on
-[Travis](https://travis-ci.org), for example:
+[Travis](https://www.travis-ci.com), for example:
 
 ```yaml {filename=".travis.yml"}
 language: go

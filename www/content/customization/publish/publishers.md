@@ -178,7 +178,7 @@ publishers:
 > This will run as the last step of the publishing phase.
 
 These settings should allow you to push your artifacts to any number of
-endpoints, which may require non-trivial authentication or has otherwise complex
-requirements.
+endpoints, which may require non-trivial authentication or have otherwise
+complex requirements.
 
 {{< g_templates >}}

@@ -5,7 +5,7 @@ weight: 80
 
 {{< g_featpro >}}
 
-GoReleaser can create MSI installers for windows binaries using [msitools][].
+GoReleaser can create MSI installers for Windows binaries using [msitools][].
 
 The `msi` section specifies how the **installers** should be created:
 
@@ -28,7 +28,7 @@ msi:
     #
     # Templates: allowed.
     # Required.
-    wxs: ./windows/app.wsx
+    wxs: ./windows/app.wxs
 
     # IDs of the archives to use.
     # Empty means all IDs.
@@ -113,12 +113,12 @@ msi:
 ```
 
 On Windows, it'll try to use the `candle` and `light` binaries from the
-[Wix Toolkit][wix] instead if schema is v3. It'll use `wix` otherwise..
+[Wix Toolkit][wix] instead if schema is v3. It'll use `wix` otherwise.
 
 If you use any extensions, make sure to install them first. You can do so with
 `wix extension add -g <extension name>`.
 
-Here's an example `wsx` file that you can build upon:
+Here's an example `wxs` file that you can build upon:
 
 {{< tabs >}}
 {{< tab "Schema v4" >}}
@@ -252,8 +252,7 @@ Here's an example `wsx` file that you can build upon:
 1. Some options available in the [Wix Toolset][wix] won't work with
    [msitools][], run a snapshot build and verify the generated installers.
    Also note that [msitools][] only supports some parts of the v3 schema.
-1. Only `amd64` and `386` are supported.
-   `arm64` support was added in GoReleaser v2.7.
+1. Only `amd64`, `386`, and — since GoReleaser v2.7 — `arm64` are supported.
 1. Be mindful of schema versions. Also worth noting that extension names might
    be different in v4[^exts].
 

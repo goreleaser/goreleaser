@@ -28,8 +28,8 @@ archives:
 ```
 
 In this scenario, GoReleaser will complain because the archive will have a
-different binary count depending on which platform its being archived, since
-it'll have 2 binaries on `darwin` and only 1 on `linux`.
+different binary count depending on which platform it's being archived for,
+since it'll have two binaries on `darwin` and only one on `linux`.
 
 
 From here on, you have a couple of options:

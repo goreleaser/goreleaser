@@ -3,15 +3,15 @@ title: "Continuous Integration"
 weight: 70
 ---
 
-GoReleaser was built from the very first commit with the idea of
-running it as part of the CI pipeline in mind.
+GoReleaser was designed from its first commit to run as part of your
+CI pipeline.
 
 ## Supported CIs
 
 {{< cards cols="2" >}}
 {{< card title="GitHub Actions" link="actions" >}}
 {{< card title="Azure Pipelines" link="azurepipelines" >}}
-{{< card title="Circle CI" link="circle" >}}
+{{< card title="CircleCI" link="circle" >}}
 {{< card title="Cirrus CI" link="cirrus" >}}
 {{< card title="Google CloudBuild" link="cloudbuild" >}}
 {{< card title="Codefresh" link="codefresh" >}}

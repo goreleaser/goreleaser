@@ -3,9 +3,9 @@ title: "Teams"
 weight: 110
 ---
 
-To use [Teams](https://www.microsoft.com/de-de/microsoft-teams/group-chat-software), you need
-to [create a Webhook](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
-, and set following environment variable on your pipeline:
+To use [Teams](https://www.microsoft.com/en-us/microsoft-teams/group-chat-software), you need to
+[create a Webhook](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook),
+and set the following environment variable on your pipeline:
 
 - `TEAMS_WEBHOOK`
 

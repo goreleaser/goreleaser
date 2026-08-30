@@ -3,11 +3,11 @@ title: "Using the `main.version` ldflag"
 weight: 130
 ---
 
-By default, GoReleaser will set the following 3 _ldflags_:
+By default, GoReleaser will set the following three _ldflags_:
 
 - `main.version`: Current Git tag (the `v` prefix is stripped) or the name of
   the snapshot, if you're using the `--snapshot` flag
-- `main.commit`: Current git commit SHA
+- `main.commit`: Current Git commit SHA
 - `main.date`: Date in the
   [RFC3339](https://pkg.go.dev/time#pkg-constants) format
 

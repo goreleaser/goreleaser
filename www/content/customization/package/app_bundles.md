@@ -70,7 +70,7 @@ app_bundles:
         strip_parent: true
 
         # File info.
-        # Not all fields are supported by all formats available formats.
+        # Not all fields are supported by all available formats.
         #
         # Default: copied from the source file.
         info:
@@ -107,7 +107,7 @@ app_bundles:
         dst: LICENSE.md
 
         # File info.
-        # Not all fields are supported by all formats available formats.
+        # Not all fields are supported by all available formats.
         #
         # Default: copied from the source file.
         info:
