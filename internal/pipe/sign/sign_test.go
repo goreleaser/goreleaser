@@ -904,7 +904,9 @@ func TestSignerWroteNothing(t *testing.T) {
 			Cmd:       cmd,
 			Args:      args,
 		})
-		require.EqualError(t, err, "the signer did not write "+filepath.Join(dist, "checksums.txt.sig"))
+		// the artifact path is slashed by Artifacts.Add, and the signature
+		// name is templated from it.
+		require.EqualError(t, err, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.sig")))
 	})
 
 	t.Run("certificate", func(t *testing.T) {
@@ -916,7 +918,7 @@ func TestSignerWroteNothing(t *testing.T) {
 			Args:        args,
 			Certificate: "${artifact}.pem",
 		})
-		require.EqualError(t, err, "the signer did not write "+filepath.Join(dist, "checksums.txt.pem"))
+		require.EqualError(t, err, "the signer did not write "+filepath.ToSlash(filepath.Join(dist, "checksums.txt.pem")))
 	})
 
 	t.Run("signs in place", func(t *testing.T) {
