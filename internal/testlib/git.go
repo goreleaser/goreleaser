@@ -14,12 +14,11 @@ import (
 // GitInit inits a new git project.
 func GitInit(tb testing.TB) {
 	tb.Helper()
-	out, err := fakeGit("init")
+	// a single `init -b main` instead of init + checkout + branch -D: process
+	// creation is expensive on Windows, and this helper runs ~70 times.
+	out, err := fakeGit("init", "-b", "main")
 	require.NoError(tb, err)
 	require.Contains(tb, out, "Initialized empty Git repository")
-	require.NoError(tb, err)
-	GitCheckoutBranch(tb, "main")
-	_, _ = fakeGit("branch", "-D", "master")
 }
 
 // GitRemoteAdd adds the given url as remote.

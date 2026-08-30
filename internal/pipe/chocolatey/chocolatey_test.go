@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -51,7 +50,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	testlib.Mktmp(t)
+	t.Parallel()
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myproject",

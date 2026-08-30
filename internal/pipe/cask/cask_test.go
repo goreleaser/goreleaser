@@ -1176,7 +1176,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	testlib.Mktmp(t)
+	t.Parallel()
 	repo := config.RepoRef{
 		Owner:  "owner",
 		Name:   "name",
