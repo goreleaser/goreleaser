@@ -23,6 +23,6 @@ GOOS=darwin GOARCH=amd64 go build ./...
 CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build ./...
 ```
 
-If the first fails, but the seconds succeeds, you need to set up
-[CGO](/resources/limitations/cgo/). If both fail, your dependency don't have an
-implementation for some methods for Darwin amd64 (in this example).
+If the first fails but the second succeeds, you need to set up
+[CGO](/resources/limitations/cgo/). If both fail, your dependency doesn't have
+an implementation for some methods for Darwin amd64 (in this example).

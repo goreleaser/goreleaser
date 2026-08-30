@@ -3,8 +3,8 @@ title: "Multi-platform Docker images"
 weight: 50
 ---
 
-On GoReleaser there are two main ways of doing that: the easier one is to use
-the [ko integration][ko].
+GoReleaser offers two main ways to do this. The easier one is to use the
+[Ko integration][ko].
 
 [ko]: /customization/package/ko/
 
@@ -37,12 +37,12 @@ dockers:
     goarch: arm64
 ```
 
-This will, on build time, create two Docker images (`myorg/myuser:v1.2.3-amd64`
+This will, at build time, create two Docker images (`myorg/myuser:v1.2.3-amd64`
 and `myorg/myuser:v1.2.3-arm64`).
 
 Now, if we want to make them both available as a single image
 (`myorg/myuser:v1.2.3`), we'll need to add a manifest configuration that will
-publish them behind that single name. Here's how it would look like:
+publish them behind that single name. Here's what it looks like:
 
 ```yaml {filename=".goreleaser.yaml"}
 docker_manifests:
@@ -56,11 +56,11 @@ And that is it!
 
 ## Other things to pay attention to
 
-For `buildx` to work properly, you'll need to install `qemu`. On GitHub actions,
+For `buildx` to work properly, you'll need to install QEMU. On GitHub Actions,
 the easiest way is to use
 [docker/setup-qemu-action](https://github.com/docker/setup-qemu-action).
 
 It's also important that the `FROM` in your `Dockerfile` is multi-platform,
 otherwise it'll not work.
 
-As long as you have Qemu and Docker set up, everything should just work.
+As long as you have QEMU and Docker set up, everything should work.

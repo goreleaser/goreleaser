@@ -21,11 +21,11 @@ the file is already there.
 There isn't much you can do here, except report to GitHub and maybe try to run
 the release from somewhere else.
 
-I already reported multiple times, but it seems themselves are having a hard
-time reproducing it.
+I've reported this multiple times, but it seems they're having a hard time
+reproducing it.
 
-See also: [this](https://github.com/orgs/community/discussions/14341) and
-[this](https://github.com/google/go-github/issues/2113).
+See also this [GitHub community discussion](https://github.com/orgs/community/discussions/14341)
+and this [go-github issue](https://github.com/google/go-github/issues/2113).
 
 ### 2. Your configuration is somehow creating more than one file with the same name
 

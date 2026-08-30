@@ -5,14 +5,14 @@ weight: 100
 ---
 
 GoReleaser can also generate `snap` packages.
-[Snaps](http://snapcraft.io/) are a new packaging format, that will let you
+[Snaps](https://snapcraft.io/) are a packaging format that lets you
 publish your project directly to the Ubuntu store.
 From there it will be installable in all the
-[supported Linux distros](https://snapcraft.io/docs/core/install), with
+[supported Linux distros](https://snapcraft.io/docs/installing-snapd), with
 automatic and transactional updates.
 
 > [!WARNING]
-> Snapcraft packages can't be build inside a Docker container.
+> Snapcraft packages can't be built inside a Docker container.
 
 You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 
@@ -79,7 +79,7 @@ snapcrafts:
     # Channels in store where snap will be pushed.
     #
     # More info about channels here:
-    # https://snapcraft.io/docs/reference/channels
+    # https://snapcraft.io/docs/channels
     #
     # Default:
     #   grade is 'stable': ["edge", "beta", "candidate", "stable"]
@@ -110,7 +110,7 @@ snapcrafts:
     # can only read and write in its own namespace is recommended. Extra
     # permissions for strict snaps can be declared as `plugs` for the app, which
     # are explained later. More info about confinement here:
-    # https://snapcraft.io/docs/reference/confinement
+    # https://snapcraft.io/docs/snap-confinement
     #
     # Default: 'strict'
     confinement: strict
@@ -131,7 +131,7 @@ snapcrafts:
     assumes:
       - snapd2.38
 
-    # his top-level keyword to define a hook with a plug to access more
+    # This top-level keyword defines a hook with a plug to access more
     # privileges.
     hooks:
       install:
@@ -197,7 +197,7 @@ snapcrafts:
     apps:
       # The name of the app must be the same name as the binary built or the snapcraft name.
       drumroll:
-        # If you any to pass args to your binary, you can add them with the
+        # If you want to pass args to your binary, you can add them with the
         # args option.
         args: --foo
 
@@ -229,7 +229,7 @@ snapcrafts:
         command_chain: ["foo", "bar", "baz"]
 
         # An identifier to a desktop-id within an external appstream file.
-        # https://snapcraft.io/docs/using-external-metadata
+        # https://documentation.ubuntu.com/snapcraft/stable/how-to/crafting/configure-package-information/
         common_id: "com.example.drumroll"
 
         # Bash completion snippet. More information about completion here:

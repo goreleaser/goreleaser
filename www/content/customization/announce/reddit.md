@@ -3,8 +3,8 @@ title: "Reddit"
 weight: 80
 ---
 
-For it to work, you'll need to [create a new Reddit app](https://www.reddit.com/prefs/apps), and set some environment
-variables on your pipeline:
+For it to work, you'll need to [create a new Reddit app](https://www.reddit.com/prefs/apps), and set the following
+environment variables on your pipeline:
 
 - `REDDIT_SECRET`
 - `REDDIT_PASSWORD`
@@ -38,7 +38,7 @@ announce:
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out!'.
     # Templates: allowed.
-    title_template: ''GoReleaser {{ .Tag }} was just released!''
+    title_template: 'GoReleaser {{ .Tag }} was just released!'
 ```
 
 {{< g_templates >}}

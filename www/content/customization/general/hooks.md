@@ -13,7 +13,7 @@ GoReleaser allows this with the global hooks feature.
 The `before` section allows for global hooks that will be executed
 **before** the release is started.
 
-The configuration is straightforward, here is an example will all possible
+The configuration is straightforward, here is an example with all possible
 options:
 
 ```yaml {filename=".goreleaser.yaml"}
@@ -35,7 +35,7 @@ The `before` section allows for global hooks that will be executed
 **before** the release is started. Likewise, the `after` section allows for
 global hooks that will be executed **after** the release is started.
 
-The configuration is straightforward, here is an example will all possible
+The configuration is straightforward, here is an example with all possible
 options:
 
 ```yaml {filename=".goreleaser.yaml"}
@@ -80,12 +80,11 @@ after:
 {{< /tab >}}
 {{< /tabs >}}
 
-Note that if any of the hooks fails the release process is aborted.
+Note that if any of the hooks fails, the release process is aborted.
 
 ## Complex commands
 
-If you need to do anything more complex, it is recommended to create a shell
-script and call it instead. You can also go crazy with `sh -c "my commands"`,
-but it gets ugly really fast.
+If you need to do anything more complex, create a shell script and call it
+instead. You can also use `sh -c "my commands"`, but that gets messy quickly.
 
 {{< g_templates >}}

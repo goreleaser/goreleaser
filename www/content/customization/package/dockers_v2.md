@@ -361,7 +361,7 @@ The idea is that you reuse the previously built binaries instead of building
 them again when creating the Docker image.
 
 The build context itself is a temporary directory which contains the
-binaries and packages for the each of the defined target platforms.
+binaries and packages for each of the defined target platforms.
 You can then `COPY` them into your image (mind the use of `$TARGETPLATFORM`
 above).
 

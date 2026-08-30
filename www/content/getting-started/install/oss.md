@@ -30,7 +30,7 @@ brew install goreleaser
 ```
 
 > [!WARNING]
-> The formula in homebrew-core might be slightly outdated.
+> The [formula in homebrew-core][] might be slightly outdated.
 > Use our homebrew tap to always get the latest updates.
 
 [formula in homebrew-core]: https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb
@@ -105,17 +105,16 @@ nix-shell -p goreleaser
 ```
 
 > [!WARNING]
-> The package in nixpkgs might be slightly outdated, as it is not
+> The [package in nixpkgs][] might be slightly outdated, as it is not
 > updated automatically.
 > Use our NUR to always get the latest updates.
 
-[package in nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix
+[package in nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/go/goreleaser/package.nix
 
 ## NUR
 
-First, you'll need to add our [NUR][nur] to your nix configuration.
-You can follow the guides
-[here](https://github.com/nix-community/NUR#installation).
+First, you'll need to add our [NUR][nur] to your Nix configuration.
+Follow the [NUR installation guide](https://github.com/nix-community/NUR#installation).
 
 Once you do that, you can install the packages.
 
@@ -151,14 +150,13 @@ docker run --rm --privileged \
 ```
 
 > [!WARNING]
-> The provided docker image does not support the Snapcraft feature.
+> The provided Docker image does not support the Snapcraft feature.
 
 The `DOCKER_REGISTRY` environment variable can be left empty when you are
-releasing to the public docker registry.
+releasing to the public Docker registry.
 
-If you need more things, you are encouraged to keep your own image. You can
-always use GoReleaser's [own Dockerfile][dockerfile] as an example though
-and iterate from that.
+If you need more than that, keep your own image.
+You can use the [GoReleaser Dockerfile][dockerfile] as a starting point.
 
 > [!NOTE]
 > There are also `:nightly` tags available with the latest nightly builds.
@@ -188,12 +186,12 @@ Requires Go 1.27.
 
 ## Bash Script
 
-This script does not install anything, it just downloads, verifies and runs
-GoReleaser.
-Its purpose is to be used within scripts and CIs.
+This script does not install anything.
+It downloads, verifies, and runs GoReleaser, so you can use it in scripts and
+CI pipelines.
 
 ```bash
-curl -sfL https://goreleaser.com/static/run | bash VERSION=__VERSION__ -s -- check
+curl -sfL https://goreleaser.com/static/run | VERSION=__VERSION__ bash -s -- check
 ```
 
 > [!NOTE]
@@ -215,29 +213,31 @@ desired location:
 
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.sigstore.json` files from the
+1. Download the files you want, plus the `checksums.txt` and
+   `checksums.txt.sigstore.json` files, from the
    [releases](https://github.com/goreleaser/goreleaser/releases) page:
 
-```bash
-wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
-wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sigstore.json'
-```
+   ```bash
+   wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
+   wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sigstore.json'
+   ```
 
 1. Verify the signature:
 
-```bash
-cosign verify-blob \
-  --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
-  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-  --bundle checksums.txt.sigstore.json \
-  ./checksums.txt
-```
+   ```bash
+   cosign verify-blob \
+     --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
+     --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+     --bundle checksums.txt.sigstore.json \
+     ./checksums.txt
+   ```
 
-1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
+1. If the signature is valid, verify that the SHA256 sums match the downloaded
+   binary:
 
-```bash
-sha256sum --ignore-missing -c checksums.txt
-```
+   ```bash
+   sha256sum --ignore-missing -c checksums.txt
+   ```
 
 #### Attestations
 
@@ -282,8 +282,8 @@ steps in [Verifying the artifacts](#verifying-the-artifacts).
 
 ## Nightly builds
 
-Nightly build are pre-releases of the current code into the main branch.
-Use it for testing out new features only.
+Nightly builds are pre-releases of the current code in the main branch.
+Use them for testing out new features only.
 
 Download the pre-compiled binaries from the
 [nightly release](https://github.com/goreleaser/goreleaser/releases/nightly)

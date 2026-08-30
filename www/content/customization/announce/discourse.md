@@ -12,20 +12,20 @@ category.
 
 ## Setup
 
-To setup, a forum admin will need to create an API key at
+To set up this announcer, a forum admin needs to create an API key at
 `https://<your.forum.hostname>/admin/api/keys`.
-While not required, for security the recommended settings are:
+While not required, these settings are recommended for security:
 
 - User level -> Single user
 - Scope -> Granular
   - `(x) topics/write`
 
-Where GoReleaser is running, the following environment variable should be set
-with the API key as the value:
+On the machine where GoReleaser runs, set the following environment variable to
+the API key:
 
 - `DISCOURSE_API_KEY`
 
-After this, you can add following section to your `.goreleaser.yaml`
+After this, you can add the following section to your `.goreleaser.yaml`
 configuration:
 
 ```yaml {filename=".goreleaser.yaml"}
@@ -83,4 +83,4 @@ Here are some common error codes and what they **might** mean:
 - 403 - The API Key doesn't have the correct permission it needs or the
   `username` key in GoReleaser configuration doesn't match what's configured in
   Discourse.
-- 5XX - The Discourse forum is having a bad day and throwing back errors.
+- 5XX - The Discourse forum is returning server errors.

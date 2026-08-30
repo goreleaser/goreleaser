@@ -4,8 +4,6 @@ linkTitle: GemFury
 weight: 70
 ---
 
-# GemFury - apt and rpm repositories
-
 {{< g_featpro >}}
 
 You can easily create `deb` and `yum` repositories on [Fury][fury] using GoReleaser.

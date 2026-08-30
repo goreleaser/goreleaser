@@ -35,7 +35,7 @@ universal_binaries:
     name_template: "{{.ProjectName}}_{{.Version}}"
 
     # Whether to remove the previous single-arch binaries from the artifact list.
-    # If left as false, your end release might have as much as three
+    # If left as false, your end release might have as many as three
     # archives for macOS: 'amd64', 'arm64' and 'all'.
     replace: true
 

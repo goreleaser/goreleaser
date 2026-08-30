@@ -11,18 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRelease(t *testing.T) {
-	setup(t)
-	cmd := newReleaseCmd()
-	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
-	require.NoError(t, cmd.cmd.Execute())
-}
-
 func TestReleaseAutoSnapshot(t *testing.T) {
+	// --auto-snapshot on a clean tree does not imply --snapshot, so this also
+	// covers a release that runs the validation pipe.
 	t.Run("clean", func(t *testing.T) {
 		setup(t)
 		cmd := newReleaseCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish", "--timeout=1m", "--parallelism=2", "--deprecated"})
 		require.NoError(t, cmd.cmd.Execute())
 		require.FileExists(t, "dist/fake_0.0.2_checksums.txt", "should have created checksums when run with --snapshot")
 	})
@@ -31,7 +26,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 		setup(t)
 		createFile(t, "foo", "force dirty tree")
 		cmd := newReleaseCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish", "--timeout=1m", "--parallelism=2", "--deprecated"})
 		require.NoError(t, cmd.cmd.Execute())
 		matches, err := filepath.Glob("./dist/fake_0.0.2-SNAPSHOT-*_checksums.txt")
 		require.NoError(t, err)

@@ -85,7 +85,7 @@ sboms:
 
     # IDs of the artifacts to catalog.
     #
-    # If `artifacts` is "source" or "any" then this fields has no effect.
+    # If `artifacts` is "source" or "any" then this field has no effect.
     ids:
       - foo
       - bar
@@ -100,7 +100,7 @@ sboms:
 
 ### Available variable names
 
-These environment variables might be available in the fields that are accept
+These environment variables might be available in the fields that accept
 templates:
 
 - `${artifact}`: the path to the artifact that will be cataloged (unless

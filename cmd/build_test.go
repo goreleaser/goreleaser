@@ -12,18 +12,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuild(t *testing.T) {
-	setup(t)
-	cmd := newBuildCmd()
-	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
-	require.NoError(t, cmd.cmd.Execute())
-}
-
 func TestBuildAutoSnapshot(t *testing.T) {
+	// --auto-snapshot on a clean tree does not imply --snapshot, so this also
+	// covers a build that runs the validation pipe.
 	t.Run("clean", func(t *testing.T) {
 		setup(t)
 		cmd := newBuildCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 		require.NoError(t, cmd.cmd.Execute())
 		matches, err := filepath.Glob("./dist/fake_*/fake")
 		require.NoError(t, err)
@@ -34,7 +29,7 @@ func TestBuildAutoSnapshot(t *testing.T) {
 		setup(t)
 		createFile(t, "foo", "force dirty tree")
 		cmd := newBuildCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 		require.NoError(t, cmd.cmd.Execute())
 		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
 		require.NoError(t, err)

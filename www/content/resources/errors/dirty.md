@@ -6,8 +6,8 @@ weight: 20
 GoReleaser requires a clean git state to work.
 
 If you see this error, it means that something in your build process is either
-creating or editing files before GoReleaser is called. The error message should
-show you, which files were created/modified.
+creating or editing files before GoReleaser is called. The error message shows
+you which files were created or modified.
 
 Here's an example error:
 
@@ -24,9 +24,9 @@ From here on, you have a couple of options:
 
 - add the file to `.gitignore` (recommended if the file is temporary and/or
   generated);
-- change your build process to not touch any git tracked files.
+- change your build process to not touch any git-tracked files;
 - if you are running `goreleaser build`, you might want to add either the
-  `--snapshot` or `--skip=validate` flags to it
+  `--snapshot` or `--skip=validate` flag to it.
 
 > [!NOTE]
 > **./dist**
