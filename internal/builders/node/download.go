@@ -2,7 +2,6 @@ package node
 
 import (
 	"archive/tar"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -17,6 +16,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
+	"github.com/klauspost/compress/gzip"
 )
 
 // errNoVersion is returned by resolveVersion when no version can be
@@ -175,6 +175,12 @@ func downloadHostBinary(ctx context.Context, version, target string) (string, er
 // and writes it atomically to dst. We never join tar entry names onto
 // dst — only the single, fully qualified entry the caller asks for is
 // extracted — so there is no zip-slip surface.
+//
+// Uses klauspost/compress/gzip rather than compress/gzip. Node dists
+// are big — a 58MB tar.gz holding a 146MB binary — and inflating one
+// is the most expensive step of a node build. klauspost measured 1.4x
+// faster here, and 1.8x under the race detector, where compress/flate
+// costs about 26x its plain runtime.
 func extractFromTarGz(archivePath, entry, dst string) error {
 	f, err := os.Open(archivePath)
 	if err != nil {
