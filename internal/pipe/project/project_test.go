@@ -13,7 +13,7 @@ import (
 )
 
 func TestCustomProjectName(t *testing.T) {
-	_ = testlib.Mktmp(t)
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Release: config.Release{

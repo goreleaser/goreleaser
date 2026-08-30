@@ -88,7 +88,8 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	config := config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -113,7 +114,8 @@ func TestBuild(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -177,7 +179,8 @@ func TestRunFullPipe(t *testing.T) {
 }
 
 func TestRunFullPipeFail(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	pre := filepath.Join(folder, "pre")
 	post := filepath.Join(folder, "post")
 	config := config.Project{
@@ -207,20 +210,27 @@ func TestRunFullPipeFail(t *testing.T) {
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	cfg := config.Project{
-		Dist: folder,
-		Builds: []config.Build{
-			{
-				Builder: "fake",
-				Binary:  "hooks",
-				Hooks:   config.BuildHookConfig{},
-				Targets: []string{"linux_amd64"},
+	t.Parallel()
+	// config.Project.Builds is a slice, so the copy WrapWithCfg makes still
+	// shares its backing array. Each subtest needs a config of its own before
+	// it can set hooks in parallel.
+	newCfg := func(t *testing.T) config.Project {
+		t.Helper()
+		return config.Project{
+			Dist: t.TempDir(),
+			Builds: []config.Build{
+				{
+					Builder: "fake",
+					Binary:  "hooks",
+					Hooks:   config.BuildHookConfig{},
+					Targets: []string{"linux_amd64"},
+				},
 			},
-		},
+		}
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), cfg, testctx.WithCurrentTag("2.4.5"))
+		t.Parallel()
+		ctx := testctx.WrapWithCfg(t.Context(), newCfg(t), testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: testlib.Echo("post")}}
 
@@ -229,7 +239,8 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		require.ErrorContains(t, err, "pre hook failed")
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), cfg, testctx.WithCurrentTag("2.4.5"))
+		t.Parallel()
+		ctx := testctx.WrapWithCfg(t.Context(), newCfg(t), testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
@@ -238,8 +249,9 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	})
 
 	t.Run("post-hook-skip", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(),
-			cfg,
+			newCfg(t),
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PostBuildHooks))
 
@@ -249,8 +261,9 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	})
 
 	t.Run("pre-hook-skip", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(),
-			cfg,
+			newCfg(t),
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PreBuildHooks))
 
@@ -266,7 +279,8 @@ func TestDefaultNoBuilds(t *testing.T) {
 }
 
 func TestDefaultFail(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	config := config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -410,7 +424,8 @@ func TestDefaultPartialBuilds(t *testing.T) {
 }
 
 func TestSkipBuild(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	config := config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -425,7 +440,8 @@ func TestSkipBuild(t *testing.T) {
 }
 
 func TestSkipBuildTmpl(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	config := config.Project{
 		Dist: folder,
 		Env:  []string{"FOO=bar"},
@@ -615,7 +631,8 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 }
 
 func TestBuildOptionsForTarget(t *testing.T) {
-	tmpDir := testlib.Mktmp(t)
+	t.Parallel()
+	tmpDir := t.TempDir()
 
 	testCases := []struct {
 		name         string
@@ -727,6 +744,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dist:   tmpDir,
 				Builds: []config.Build{tc.build},
@@ -747,7 +765,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 
 func TestRunHookFailWithLogs(t *testing.T) {
 	testlib.SkipIfWindows(t, "subshells don't work in windows")
-	folder := testlib.Mktmp(t)
+	t.Parallel()
+	folder := t.TempDir()
 	config := config.Project{
 		Dist: folder,
 		Builds: []config.Build{

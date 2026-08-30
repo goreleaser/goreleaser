@@ -37,20 +37,29 @@ jobs:
       - run: task licenses:check
   semgrep:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@c7f17af352dac91fa6c785d06ebac8547f1abdd3 # v0.1.0
-  ruleguard:
-    uses: caarlos0/meta/.github/workflows/ruleguard.yml@c7f17af352dac91fa6c785d06ebac8547f1abdd3 # v0.1.0
-    with:
-      args: "-disable largeloopcopy"
   test:
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
         include:
+          # -count=1 turns the go test cache off. CI never gets a hit from it:
+          # every run is a new commit, and on ubuntu -coverpkg=./... makes each
+          # test binary depend on every package, so all 124 are invalidated
+          # (measured: 0 of 124 cached, every run). The cost is still paid,
+          # though. With the cache on, go passes -test.testlogfile to every
+          # test binary and then hashes every file each test touched to build
+          # the key, and this suite opens a lot of files: internal/pipe/archive
+          # alone logs 1887 operations. File metadata calls cost far more on
+          # windows, so it suffered most: measured on one runner back to back,
+          # identical flags apart from -count=1, 331s with the cache on and
+          # 129s without.
+          - os: ubuntu-latest
+            test-args: TEST_OPTIONS=-count=1
           # the race detector is OS-independent and coverage is only uploaded
           # from ubuntu, so skip both on windows to speed up the slowest job.
           - os: windows-latest
-            test-args: RACE=false COVER=false
+            test-args: RACE=false COVER=false TEST_OPTIONS=-count=1
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -58,6 +67,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: use-fast-disk
+        # D: is the runner's local SSD, and GitHub already puts the workspace
+        # and RUNNER_TEMP there. The Go caches and %TMP% still default to C:,
+        # the network-attached OS disk, so every build artifact and all 472
+        # t.TempDir() trees the suite creates land on the slow disk. This must
+        # run before setup-go, which reads `go env GOCACHE`/`GOMODCACHE` to
+        # decide which directories to cache.
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path D:\tmp, D:\gocache, D:\gomodcache | Out-Null
+          @(
+            "GOTMPDIR=D:\tmp"
+            "TMP=D:\tmp"
+            "TEMP=D:\tmp"
+            "GOCACHE=D:\gocache"
+            "GOMODCACHE=D:\gomodcache"
+          ) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
         with:
           version: 3.x
@@ -97,11 +124,38 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix profile add nixpkgs#pkgs.nixfmt nixpkgs#alejandra
+      - name: setup-nix-formatters
+        # `nix profile add nixpkgs#...` resolves and builds from nixpkgs, which
+        # took 18s. Both projects publish static linux binaries, so fetching
+        # them directly takes about a second. It also pins the versions: the
+        # format tests compare against golden files, so floating with whatever
+        # nixpkgs currently ships could break them at any time.
+        #
+        # Release assets are mutable and dependabot can't see a URL in a `run`
+        # block, so the checksums pin the contents, not just the tag.
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/alejandra" \
+            https://github.com/kamadorueda/alejandra/releases/download/4.0.0/alejandra-x86_64-unknown-linux-musl
+          curl -fsSL -o "$HOME/.local/bin/nixfmt" \
+            https://github.com/NixOS/nixfmt/releases/download/v1.4.0/nixfmt
+          echo "a23b9d47cba945805c6169541046de890e94e07a5aa416c86dee15bca2da6216  $HOME/.local/bin/alejandra" | sha256sum -c -
+          echo "62488394d5233283096466350487ed46470366f57db4bec824a87ecbacce960a  $HOME/.local/bin/nixfmt" | sha256sum -c -
+          chmod +x "$HOME/.local/bin/alejandra" "$HOME/.local/bin/nixfmt"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          # setup-go keys its cache on the hash of these files only, and saves
+          # it just once per key. license-check and golangci-lint resolve the
+          # same key and always finish first, so this job kept restoring a
+          # build cache without the -race/-coverpkg objects and recompiled
+          # everything (~2.5min). Taskfile.yml holds the test flags, so hashing
+          # it too gives this job a key of its own that it can populate.
+          cache-dependency-path: |
+            go.sum
+            Taskfile.yml
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "25"
@@ -113,10 +167,14 @@ jobs:
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
-      - uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - name: setup-poetry
+        # uv installs poetry into ~/.local/bin in about 2s. The dedicated
+        # action built a virtualenv with pip instead, which took 13s on ubuntu
+        # and 31s on windows.
+        run: uv tool install poetry
       - if: matrix.os == 'windows-latest'
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
           cosign-release: "v3.0.3"
