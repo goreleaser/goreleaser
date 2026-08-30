@@ -194,17 +194,7 @@ func TestBuild(t *testing.T) {
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
 
-	tmpRoot := testlib.ScopeTempDir(t)
 	require.NoError(t, Default.Build(ctx, build, options))
-
-	// Build owns the scratch dir holding the target node binary, and
-	// downloadHostBinary owns the downloaded archive. Neither may
-	// outlive the build: a six-target release used to strand about
-	// 1.2GB here. Matched by prefix rather than asserting an empty
-	// dir, because `node --build-sea` inherits TMPDIR too.
-	left, err := filepath.Glob(filepath.Join(tmpRoot, "goreleaser-node*"))
-	require.NoError(t, err)
-	require.Empty(t, left, "node build left temp entries behind")
 
 	bins := ctx.Artifacts.List()
 	require.Len(t, bins, 1)

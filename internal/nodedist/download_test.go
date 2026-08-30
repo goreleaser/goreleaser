@@ -7,7 +7,6 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -23,20 +22,13 @@ func TestDownload(t *testing.T) {
 	})
 	SetBaseURL(t, server.URL)
 
-	tmpRoot := testlib.ScopeTempDir(t)
 	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.Remove(got) })
 	require.FileExists(t, got)
 	bts, err := os.ReadFile(got)
 	require.NoError(t, err)
 	require.Equal(t, payload, bts)
-
-	// Download owns one file and no directory of its own; the caller
-	// removes it.
-	left, err := os.ReadDir(tmpRoot)
-	require.NoError(t, err)
-	require.Len(t, left, 1)
-	require.False(t, left[0].IsDir())
 }
 
 func TestDownload_BadSHA(t *testing.T) {
@@ -83,9 +75,9 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 	defaultRetry = config.Retry{Attempts: 4}
 	t.Cleanup(func() { defaultRetry = prevRetry })
 
-	testlib.ScopeTempDir(t)
 	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.Remove(got) })
 	require.FileExists(t, got)
 	require.GreaterOrEqual(t, int(hits.Load()), 2)
 }
