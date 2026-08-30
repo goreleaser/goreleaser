@@ -2,11 +2,10 @@ package nix
 
 import (
 	stdctx "context"
-	"errors"
+	"crypto/sha256"
 	"html/template"
 	"maps"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -39,39 +38,31 @@ func TestSkip(t *testing.T) {
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
-		testlib.CheckPath(t, "nix-hash")
-		testlib.SkipIfWindows(t, "nix doesn't work on windows")
 		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
 }
 
-const fakeNixHashBin = "fake-nix-hash"
-
 func TestHasher(t *testing.T) {
-	t.Run("hash", func(t *testing.T) {
-		t.Run("fake-nix-hash", func(t *testing.T) {
-			_, err := nixHasher{fakeNixHashBin}.Hash(t.Context(), "any")
-			require.ErrorIs(t, err, exec.ErrNotFound)
-		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
-			require.NoError(t, err)
-			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
-		})
+	// produced by `nix-hash --type sha256 --flat --base32 testdata/file.bin`.
+	// It pins the encoding: nix's base32 is a fixed format, so this value can
+	// only change if our implementation breaks.
+	const reference = "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl"
+
+	t.Run("reference vector", func(t *testing.T) {
+		sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
+		require.NoError(t, err)
+		require.Equal(t, reference, sha)
 	})
-	t.Run("available", func(t *testing.T) {
-		t.Run("no-nix-hash", func(t *testing.T) {
-			require.False(t, nixHasher{fakeNixHashBin}.Available())
-		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			require.True(t, realHasher.Available())
-		})
+
+	t.Run("all zeroes", func(t *testing.T) {
+		require.Equal(t, zeroHash, nixBase32(make([]byte, sha256.Size)))
+	})
+
+	t.Run("missing file", func(t *testing.T) {
+		_, err := realHasher.Hash(t.Context(), "./testdata/does-not-exist.bin")
+		require.Error(t, err)
 	})
 }
 
@@ -620,18 +611,6 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
-func TestRunSkipNoNix(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Nix: []config.Nix{
-			{},
-		},
-	})
-	p := Pipe{}
-	p.hasher = unavailableHasher{}
-	require.NoError(t, p.Default(ctx))
-	testlib.AssertSkipped(t, p.Run(ctx))
-}
-
 func TestRunPipeSomeSkipped(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(
@@ -699,7 +678,7 @@ func TestErrNoArchivesFound(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"nix-hash"}, Pipe{}.Dependencies(nil))
+	require.Empty(t, Pipe{}.Dependencies(nil))
 }
 
 func TestBinInstallFormats(t *testing.T) {
@@ -771,26 +750,17 @@ func linuxDep(s string) config.NixDependency {
 	}
 }
 
-type unavailableHasher struct{}
-
-func (m unavailableHasher) Hash(stdctx.Context, string) (string, error) {
-	return "", errors.New("unavailable hasher")
-}
-func (m unavailableHasher) Available() bool { return false }
-
 type fakeHasher map[string]string
 
 func (m fakeHasher) Hash(_ stdctx.Context, path string) (string, error) {
 	return m[filepath.Base(path)], nil
 }
-func (m fakeHasher) Available() bool { return true }
 
 const zeroHash = "0000000000000000000000000000000000000000000000000000"
 
 type alwaysZeroHasher struct{}
 
 func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool                             { return true }
 
 func TestDynamicallyLinked(t *testing.T) {
 	folder := t.TempDir()

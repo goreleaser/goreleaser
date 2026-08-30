@@ -134,8 +134,13 @@ nix:
 
 ### `nix-hash`
 
-The `nix-hash` binary must be available in the `$PATH` for the
-publishing to work.
+{{< g_version "v2.19-unreleased" >}}
+
+GoReleaser now hashes the artifacts itself, so `nix-hash` no longer needs to be
+in the `$PATH`. Nothing in this pipe requires Nix to be installed any more.
+
+On earlier versions, the `nix-hash` binary had to be available in the `$PATH`,
+and the pipe was skipped when it was missing.
 
 [iss4034]: https://github.com/goreleaser/goreleaser/issues/4034
 
