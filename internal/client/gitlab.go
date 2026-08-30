@@ -131,17 +131,30 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 	}, nil
 }
 
+// versionRetry bounds the GitLab version probe. The probe is best effort: on
+// failure goreleaser only assumes a GitLab older than v17. It must not spend
+// the retry budget of the whole release, which defaults to 10 attempts with a
+// 5m max delay, and would leave goreleaser looking wedged for ~25 minutes.
+var versionRetry = config.Retry{
+	Attempts: 3,
+	Delay:    500 * time.Millisecond,
+	MaxDelay: 2 * time.Second,
+}
+
 func isV17(ctx *context.Context, client *gitlab.Client) bool {
 	v := os.Getenv("CI_SERVER_VERSION")
 	if v == "" {
-		gitlabVersion, _, err := gitlabDo(ctx, func() (*gitlab.Version, *gitlab.Response, error) {
-			return client.Version.GetVersion(nil)
-		})
-		if err != nil {
+		var version *gitlab.Version
+		if err := retryx.Do(ctx, versionRetry, func() error {
+			var resp *gitlab.Response
+			var err error
+			version, resp, err = client.Version.GetVersion(nil)
+			return gitlabError(err, resp)
+		}, retryx.IsRetriable); err != nil {
 			log.WithError(err).Warn("could not get gitlab version")
 			return false
 		}
-		v = gitlabVersion.Version
+		v = version.Version
 	}
 	vv, err := semver.NewVersion(v)
 	if err != nil {
@@ -728,7 +741,7 @@ func (c *gitlabClient) replaceReleaseLink(
 
 	link, err := c.getReleaseLinkByName(projectID, releaseID, name)
 	if err != nil {
-		return err
+		return errors.Join(createErr, err)
 	}
 	if link == nil {
 		// the creation failed for some other reason.
@@ -740,7 +753,7 @@ func (c *gitlabClient) replaceReleaseLink(
 		releaseID,
 		link.ID,
 	); err != nil {
-		return gitlabError(err, resp)
+		return errors.Join(createErr, gitlabError(err, resp))
 	}
 
 	log.WithField("id", link.ID).
