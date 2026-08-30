@@ -1,6 +1,8 @@
 package sign
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"os"
 	"path/filepath"
 	"strings"
@@ -80,6 +82,11 @@ func TestDockerSignArtifacts(t *testing.T) {
 	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${signature}"}
 	password := "password"
 
+	// cosign only issues a certificate when it signs keylessly, so it cannot
+	// write one here. This copies a certificate instead, which keeps the case
+	// about recording certificates, and keeps it free of a shell redirect.
+	certCmd, certArgs := copyFile("certificate.pem", "${certificate}")
+
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
 	img1Digest := "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
 	img2 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-arm64v8"
@@ -113,13 +120,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 			Signs: []config.Sign{
 				{
 					Artifacts:   "all",
-					Stdin:       &password,
-					Cmd:         cmd,
+					Cmd:         certCmd,
+					Args:        certArgs,
 					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
-					// cosign only issues a certificate when it signs
-					// keylessly, so `--output-certificate` would write nothing
-					// here: redirect its output to the certificate instead.
-					Args: []string{"-c", "cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${certificate}"},
 				},
 			},
 		},
@@ -274,6 +277,15 @@ func TestDockerSignArtifacts(t *testing.T) {
 		).List() {
 			sigs = append(sigs, sig.Name)
 			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+			bts, err := os.ReadFile(sig.Path)
+			require.NoErrorf(tb, err, "%q was recorded but not written", sig.Name)
+			require.NotEmptyf(tb, bts, "%q is empty", sig.Name)
+			if sig.Type == artifact.Certificate {
+				block, _ := pem.Decode(bts)
+				require.NotNilf(tb, block, "%q is not a PEM file", sig.Name)
+				_, err := x509.ParseCertificate(block.Bytes)
+				require.NoErrorf(tb, err, "%q is not a certificate", sig.Name)
+			}
 		}
 		require.Equal(tb, cfg.Expected, sigs)
 	}

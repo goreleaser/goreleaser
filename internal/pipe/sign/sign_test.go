@@ -1011,3 +1011,11 @@ func shell(script string) (string, []string) {
 	}
 	return "sh", []string{"-c", script}
 }
+
+// copyFile returns the cmd and args to copy src to dst, handling windows.
+func copyFile(src, dst string) (string, []string) {
+	if testlib.IsWindows() {
+		return "cmd.exe", []string{"/c", "copy " + src + " " + dst}
+	}
+	return "cp", []string{src, dst}
+}
