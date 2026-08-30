@@ -1,6 +1,8 @@
 package sign
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,9 +78,27 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
+	// the cases below are about which artifacts get signed and how the
+	// signature is named, not about cosign. Appending
+	// `&& cosign sign ... > ${signature}` overwrote the echo with cosign's
+	// stdout, which is empty: the new non-empty assertion catches it. The
+	// `no signature file` case still runs cosign for real.
+	//
+	// cmd.exe on windows, because ${signature} is a native path and sh eats
+	// its backslashes: CI showed the redirect writing distfoo.sig next to
+	// dist, not dist\foo.sig.
 	cmd := "sh"
-	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${signature}"}
+	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
+	if testlib.IsWindows() {
+		cmd = "cmd.exe"
+		args = []string{"/c", "echo ${artifact}@${digest} > ${signature}"}
+	}
 	password := "password"
+
+	// cosign only issues a certificate when it signs keylessly, so it cannot
+	// write one here. This copies a certificate instead, which keeps the case
+	// about recording certificates, and keeps it free of a shell redirect.
+	certCmd, certArgs := copyFile("certificate.pem", "${certificate}")
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
 	img1Digest := "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
@@ -113,10 +133,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 			Signs: []config.Sign{
 				{
 					Artifacts:   "all",
-					Stdin:       &password,
-					Cmd:         "cosign",
+					Cmd:         certCmd,
+					Args:        certArgs,
 					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
-					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}@${digest}", "--yes"},
 				},
 			},
 		},
@@ -261,7 +280,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 		}
 
 		require.NoError(tb, DockerPipe{}.Default(ctx))
-		require.NoError(tb, DockerPipe{}.Publish(ctx))
+		if err := (DockerPipe{}).Publish(ctx); err != nil {
+			// the signer runs in a shell, so say where its files landed:
+			// "the signer did not write X" is otherwise indistinguishable
+			// from the shell having written X somewhere else.
+			tb.Fatalf("publish failed: %v\ncwd %s: %v\ndist: %v", err, tmp, ls(tb, "."), ls(tb, "dist"))
+		}
 		var sigs []string
 		for _, sig := range ctx.Artifacts.Filter(
 			artifact.Or(
@@ -271,6 +295,15 @@ func TestDockerSignArtifacts(t *testing.T) {
 		).List() {
 			sigs = append(sigs, sig.Name)
 			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+			bts, err := os.ReadFile(sig.Path)
+			require.NoErrorf(tb, err, "%q was recorded but not written, dist has %v", sig.Name, ls(tb, "dist"))
+			require.NotEmptyf(tb, bts, "%q is empty", sig.Name)
+			if sig.Type == artifact.Certificate {
+				block, _ := pem.Decode(bts)
+				require.NotNilf(tb, block, "%q is not a PEM file", sig.Name)
+				_, err := x509.ParseCertificate(block.Bytes)
+				require.NoErrorf(tb, err, "%q is not a certificate", sig.Name)
+			}
 		}
 		require.Equal(tb, cfg.Expected, sigs)
 	}
