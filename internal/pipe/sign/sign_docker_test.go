@@ -83,8 +83,16 @@ func TestDockerSignArtifacts(t *testing.T) {
 	// `&& cosign sign ... > ${signature}` overwrote the echo with cosign's
 	// stdout, which is empty: the new non-empty assertion catches it. The
 	// `no signature file` case still runs cosign for real.
+	//
+	// cmd.exe on windows, because ${signature} is a native path and sh eats
+	// its backslashes: CI showed the redirect writing distfoo.sig next to
+	// dist, not dist\foo.sig.
 	cmd := "sh"
 	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
+	if testlib.IsWindows() {
+		cmd = "cmd.exe"
+		args = []string{"/c", "echo ${artifact}@${digest} > ${signature}"}
+	}
 	password := "password"
 
 	// cosign only issues a certificate when it signs keylessly, so it cannot
