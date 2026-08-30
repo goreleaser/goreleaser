@@ -1171,6 +1171,11 @@ func TestGitLabRateLimitRetryAfter(t *testing.T) {
 	for name, tt := range map[string]struct {
 		header http.Header
 		want   time.Duration
+		// resetAt, when set, expects the time remaining until it, measured
+		// when the subtest runs. A constant goes stale here: the header
+		// carries an absolute instant, and t.Parallel() defers the subtest
+		// by however long the scheduler takes.
+		resetAt time.Time
 	}{
 		"no headers": {
 			header: http.Header{},
@@ -1179,7 +1184,7 @@ func TestGitLabRateLimitRetryAfter(t *testing.T) {
 			header: http.Header{
 				"Ratelimit-Reset": {strconv.FormatInt(reset.Unix(), 10)},
 			},
-			want: 42 * time.Second,
+			resetAt: reset,
 		},
 		"reset in the past falls back to retry-after": {
 			header: http.Header{
@@ -1206,9 +1211,13 @@ func TestGitLabRateLimitRetryAfter(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+			want := tt.want
+			if !tt.resetAt.IsZero() {
+				want = time.Until(tt.resetAt)
+			}
 			got := rateLimitRetryAfter(tt.header)
-			// the reset branch is computed against time.Now, so allow a second.
-			require.InDelta(t, tt.want, got, float64(time.Second))
+			// Unix() truncated the header to whole seconds.
+			require.InDelta(t, want, got, float64(time.Second))
 		})
 	}
 }

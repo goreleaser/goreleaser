@@ -9,9 +9,8 @@ import (
 )
 
 // SetBaseURL overrides the nodejs.org/dist base URL for the duration
-// of t and restores the previous value on cleanup. Intended for tests
-// — including tests living in other packages — that need to point the
-// downloader at a stub server.
+// of t and restores the previous value on cleanup, so tests can point
+// the downloader at a stub server.
 func SetBaseURL(t *testing.T, url string) {
 	t.Helper()
 	prev := distBaseURL
