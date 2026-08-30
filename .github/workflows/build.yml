@@ -58,6 +58,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: use-fast-disk
+        # D: is the runner's local SSD, and GitHub already puts the workspace
+        # and RUNNER_TEMP there. The Go caches and %TMP% still default to C:,
+        # the network-attached OS disk, so every build artifact and all 472
+        # t.TempDir() trees the suite creates land on the slow disk. This must
+        # run before setup-go, which reads `go env GOCACHE`/`GOMODCACHE` to
+        # decide which directories to cache.
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path D:\tmp, D:\gocache, D:\gomodcache | Out-Null
+          @(
+            "GOTMPDIR=D:\tmp"
+            "TMP=D:\tmp"
+            "TEMP=D:\tmp"
+            "GOCACHE=D:\gocache"
+            "GOMODCACHE=D:\gomodcache"
+          ) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
         with:
           version: 3.x
