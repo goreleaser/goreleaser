@@ -105,8 +105,8 @@ workflow depends. Make sure to install them before running GoReleaser.
 
 GoReleaser will translate Deno's Os/Arch pair into a GOOS/GOARCH pair, so
 templates should work the same as before.
-The original target name is available in templates as `.Target`, and so is the
-the ABI and Vendor as `.Abi` and `.Vendor`, respectively.
+The original target name is available in templates as `.Target`, and so are
+the ABI and vendor as `.Abi` and `.Vendor`, respectively.
 
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with

@@ -3,12 +3,11 @@ title: "Announce"
 weight: 60
 ---
 
-GoReleaser can also announce new releases on social networks, chat rooms and via
-email!
+GoReleaser can announce new releases on social networks, in chat rooms, and by
+email.
 
-It runs at the very end of the pipeline and can be skipped with the
-`--skip=announce` flag of the `release`
-command, or via the skip property:
+It runs at the end of the pipeline. You can skip it with the `--skip=announce`
+flag of the `release` command, or with the `skip` property:
 
 ```yaml {filename=".goreleaser.yaml"}
 announce:

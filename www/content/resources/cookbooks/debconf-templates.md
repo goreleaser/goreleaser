@@ -3,9 +3,10 @@ title: "Use debconf and templates"
 weight: 70
 ---
 
-Deb installation format has a support for user input during installation using [debconf](https://manpages.debian.org/testing/debconf-doc/debconf-devel.7.en.html).
+The deb package format supports user input during installation through
+[debconf](https://manpages.debian.org/testing/debconf-doc/debconf-devel.7.en.html).
 
-To enable it inside `goreleaser` you need:
+To enable it in GoReleaser, you need:
 
 `templates` file, what to ask (all templates go into single file):
 

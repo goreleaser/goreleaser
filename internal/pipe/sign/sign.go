@@ -3,8 +3,10 @@ package sign
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"maps"
 	"os"
 	"os/exec"
@@ -289,6 +291,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	if cfg.Signature != "" {
+		checkWritten(log, env["signature"])
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Signature,
 			Name: name,
@@ -300,6 +303,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	if cert != "" {
+		checkWritten(log, env["certificate"])
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Certificate,
 			Name: cert,
@@ -311,6 +315,17 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	return result, nil
+}
+
+// TODO(v3): fail instead of warning, and do not record the artifact.
+//
+// checkWritten warns when the signer did not write the file it was configured
+// to write. The artifact is recorded anyway, pointing to a file that does not
+// exist, which only fails much later, while uploading it.
+func checkWritten(logger *log.Entry, path string) {
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		logger.Warnf("the signer did not write %s: this will be an error in v3", path)
+	}
 }
 
 func expand(s string, env map[string]string) string {

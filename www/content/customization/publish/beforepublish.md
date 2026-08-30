@@ -7,7 +7,7 @@ weight: 10
 
 {{< g_featpro >}}
 
-You can use the `before_publish` hooks to run command against artifacts before
+You can use the `before_publish` hooks to run commands against artifacts before
 the publishing step kicks in.
 
 This should allow you to run it through a scanner, for example, or do pretty
