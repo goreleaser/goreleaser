@@ -8,8 +8,8 @@ For it to work, you'll need to
 
 You should get a token, and export it as `TELEGRAM_TOKEN`.
 
-You will also need to create a channel, and either its numerical ID or its
-`@channelname`.
+You will also need to create a channel and note either its numerical ID or
+its `@channelname`.
 
 You'll need to add your bot as a channel admin, and give it "Post Messages"
 permissions (it's inside the "Manage Messages" permission menu).

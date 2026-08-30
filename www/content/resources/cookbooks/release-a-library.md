@@ -3,11 +3,12 @@ title: "Release a library"
 weight: 100
 ---
 
-Maybe you don't want to actually release binaries, but just generate a changelog and whatnot for your Go libraries? GoReleaser has you covered!
+You might want to generate a changelog and release notes for a Go library
+without publishing any binaries. GoReleaser has you covered!
 
-All you need is to add `skip: true` to the build config:
+Add `skip: true` to the build configuration:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 builds:
 - skip: true
 ```

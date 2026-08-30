@@ -14,7 +14,7 @@ Reasons you might want to do that include:
 - You want to speed up the build by running several builds in parallel in
   different machines
 
-In any case, its pretty easy to do that now:
+In any case, it's straightforward to do:
 
 ```yaml {filename=".goreleaser.yaml"}
 builds:
@@ -62,7 +62,7 @@ itself.
 There is no difference in how the binaries are handled.
 
 > [!NOTE]
-> A cool tip here, specially when using CGO, is that you can have one
+> A cool tip here, especially when using CGO, is that you can have one
 > `.goreleaser.yaml` file just for the builds, build each in its own machine
 > with `goreleaser build --single-target` and
 > have a second `.goreleaser.yaml` file that imports those binaries

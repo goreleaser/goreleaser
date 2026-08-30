@@ -24,7 +24,7 @@ artifactories:
 
 Prerequisites:
 
-- A running Artifactory instances
+- A running Artifactory instance
 - A user + password / client x509 certificate / API key with grants to upload
   an artifact
 
@@ -78,9 +78,9 @@ environment variable is not used at all.
 
 The password or API key will be stored in an environment variable.
 The configured name of your Artifactory instance will be used.
-With this way we support auth for multiple instances.
+This way we support authentication for multiple instances.
 This also means that the `name` per configured instance needs to be unique
-per goreleaser configuration.
+per GoReleaser configuration.
 
 The name of the environment variable will be `ARTIFACTORY_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
@@ -116,7 +116,7 @@ setting the artifactory section with PEM encoded certificates on a YAML literal
 block like this:
 
 ```yaml
-puts:
+artifactories:
   - name: "some artifactory server with a private TLS certificate"
     #...(other settings)...
     trusted_certificates: |

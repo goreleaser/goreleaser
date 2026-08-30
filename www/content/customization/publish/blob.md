@@ -147,7 +147,7 @@ GoReleaser's blob pipe authentication varies depending upon the blob provider as
 
 ### S3 Provider
 
-S3 provider support AWS
+S3 provider supports AWS
 [default credential provider](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)
 chain in the following order:
 

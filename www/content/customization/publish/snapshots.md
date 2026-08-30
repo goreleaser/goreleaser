@@ -28,8 +28,9 @@ snapshot:
 ## How it works
 
 When you run GoReleaser with `--snapshot`, it will set the `Version` template
-variable to the evaluation of `snapshot.name_template`. This means that if you
-use `{{ .Version }}` on your name templates, you'll get the snapshot version.
+variable to the evaluation of `snapshot.version_template`. This means that if
+you use `{{ .Version }}` on your name templates, you'll get the snapshot
+version.
 
 You can also check if it's a snapshot build inside a template with:
 

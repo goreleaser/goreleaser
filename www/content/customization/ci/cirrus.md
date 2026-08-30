@@ -21,4 +21,4 @@ task:
 ```
 
 **Note:** you'll need to create an [encrypted variable](https://cirrus-ci.org/guide/writing-tasks/#encrypted-variables)
-to store `GITHUB_TOKEN` for GoReleaser to access GitHub API.
+to store `GITHUB_TOKEN` so GoReleaser can access the GitHub API.

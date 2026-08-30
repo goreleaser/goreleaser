@@ -221,7 +221,7 @@ changelog:
         path: ./README.md
 ```
 
-The default prompt will ask it to write a short intro with outlining the most
+The default prompt will ask it to write a short intro outlining the most
 exciting features, merge dependency bumps of the same dependency together, and
 to not use emojis.
 

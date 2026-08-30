@@ -22,8 +22,8 @@ For each NPM configuration, GoReleaser will:
    configuration;
 1. When the user `npm i -g` or `npx` your package, a `postinstall` script will
    download the archive, and extract/copy the binaries into the `./bin` folder;
-1. Publish the package to a NPM registry (`npmjs.com` by default, customize with
-   `npm config`).
+1. Publish the package to an NPM registry (`npmjs.com` by default, customize
+   with `npm config`).
 
 ## Options
 
@@ -179,8 +179,8 @@ Basically, to increase the distribution of your app.
 Many people have `npm` and `npx` installed, and are used to
 `npm i -g <package>`.
 
-Its technically a hack, but works in most cases.
+It's technically a hack, but works in most cases.
 
-Its worth noting its still in an alpha state.
+It's worth noting it's still in an alpha state.
 Feel free to provide feedback if you find issues or know ways in which it could
 be improved.

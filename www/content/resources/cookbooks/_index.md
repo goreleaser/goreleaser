@@ -3,7 +3,7 @@ title: "Cookbooks"
 weight: 60
 ---
 
-The idea here is to add examples of how to do specific things with GoReleaser.
+This section collects examples of how to do specific things with GoReleaser.
 
 Feel free to contribute any recipes you find interesting.
 

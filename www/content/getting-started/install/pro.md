@@ -67,9 +67,8 @@ yay -S goreleaser-pro-bin
 
 ## NUR
 
-First, you'll need to add our [NUR][nur] to your nix configuration.
-You can follow the guides
-[here](https://github.com/nix-community/NUR#installation).
+First, you'll need to add our [NUR][nur] to your Nix configuration.
+Follow the [NUR installation guide](https://github.com/nix-community/NUR#installation).
 
 Once you do that, you can install the packages.
 
@@ -88,7 +87,7 @@ Once you do that, you can install the packages.
 Registries:
 
 - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-- [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser-pro/pkgs/container/goreleaser-pro)
+- [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser-pro)
 
 **Example usage:**
 
@@ -106,14 +105,13 @@ docker run --rm --privileged \
 ```
 
 > [!WARNING]
-> The provided docker image does not support the Snapcraft feature.
+> The provided Docker image does not support the Snapcraft feature.
 
 The `DOCKER_REGISTRY` environment variable can be left empty when you are
-releasing to the public docker registry.
+releasing to the public Docker registry.
 
-If you need more things, you are encouraged to keep your own image. You can
-always use GoReleaser's [own Dockerfile][dockerfile] as an example though
-and iterate from that.
+If you need more than that, keep your own image.
+You can use the [GoReleaser Dockerfile][dockerfile] as a starting point.
 
 > [!NOTE]
 > There are also `:nightly` tags available with the latest nightly builds.
@@ -135,9 +133,9 @@ apk add --allow-untrusted goreleaser*.apk
 
 ## Bash Script
 
-This script does not install anything, it just downloads, verifies and runs
-GoReleaser.
-Its purpose is to be used within scripts and CIs.
+This script does not install anything.
+It downloads, verifies, and runs GoReleaser, so you can use it in scripts and
+CI pipelines.
 
 ```bash
 curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION__ bash -s -- check
@@ -162,35 +160,37 @@ desired location:
 
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.sigstore.json` files from the
+1. Download the files you want, plus the `checksums.txt` and
+   `checksums.txt.sigstore.json` files, from the
    [releases](https://github.com/goreleaser/goreleaser-pro/releases) page:
 
-```bash
-wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
-wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sigstore.json'
-```
+   ```bash
+   wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
+   wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sigstore.json'
+   ```
 
 1. Verify the signature:
 
-```bash
-cosign verify-blob \
-  --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
-  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-  --bundle checksums.txt.sigstore.json \
-  ./checksums.txt
-```
+   ```bash
+   cosign verify-blob \
+     --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
+     --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+     --bundle checksums.txt.sigstore.json \
+     ./checksums.txt
+   ```
 
-1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
+1. If the signature is valid, verify that the SHA256 sums match the downloaded
+   binary:
 
-```bash
-sha256sum --ignore-missing -c checksums.txt
-```
+   ```bash
+   sha256sum --ignore-missing -c checksums.txt
+   ```
 
 #### Attestations
 
-GitHub does not yet allow cross-repository attestations (e.g. building a
-private repo and publishing the attestations in a public one), so this isn't
-available yet, unfortunately.
+GitHub does not yet allow cross-repository attestations (for example, building
+a private repository and publishing the attestations in a public one), so this
+isn't available.
 
 ### Docker images
 
@@ -226,8 +226,8 @@ steps in [Verifying the artifacts](#verifying-the-artifacts).
 
 ## Nightly builds
 
-Nightly build are pre-releases of the current code into the main branch.
-Use it for testing out new features only.
+Nightly builds are pre-releases of the current code in the main branch.
+Use them for testing out new features only.
 
 Download the pre-compiled binaries from the
 [nightly release](https://github.com/goreleaser/goreleaser-pro/releases/nightly)

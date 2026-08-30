@@ -24,7 +24,7 @@ automatically retried. Permanent failures (4xx, file-not-found, etc.) are not.
 
 The configuration is as follows:
 
-```yaml {filename=".goreleaser.yml"}
+```yaml {filename=".goreleaser.yaml"}
 retry:
   # Set max retry count.
   # Setting to 1 disables retries (single attempt).
@@ -32,7 +32,7 @@ retry:
   # Default: 10
   attempts: 15
 
-  # Set delay between retry
+  # Set delay between retries.
   #
   # Default: 10s
   delay: 10s

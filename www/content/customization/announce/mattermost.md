@@ -3,8 +3,8 @@ title: "Mattermost"
 weight: 60
 ---
 
-For it to work, you'll need to [create a new Incoming Webhook](https://docs.mattermost.com/developer/webhooks-incoming.html) in your own Mattermost deployment, and set some
-environment variables on your pipeline:
+For it to work, you'll need to [create a new Incoming Webhook](https://docs.mattermost.com/developer/webhooks-incoming.html) in your own Mattermost deployment, and set the following
+environment variable on your pipeline:
 
 - `MATTERMOST_WEBHOOK`
 

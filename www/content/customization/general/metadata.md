@@ -39,7 +39,7 @@ metadata:
   homepage: "https://example.com/"
 
   # Your app's description.
-  # Sometimes also referred as "short description".
+  # Sometimes also referred to as "short description".
   #
   # {{< g_inline_pro >}}
   # {{< g_inline_version "v2.1" >}}
@@ -55,7 +55,7 @@ metadata:
   # {{< g_inline_version "v2.1" >}}
   # Templates: allowed.
   full_description:
-    # Loads from an URL.
+    # Loads from a URL.
     from_url:
       url: https://foo.bar/README.md
       headers:
