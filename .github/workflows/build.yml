@@ -153,10 +153,14 @@ jobs:
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
-      - uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - name: setup-poetry
+        # uv installs poetry into ~/.local/bin in about 2s. The dedicated
+        # action built a virtualenv with pip instead, which took 13s on ubuntu
+        # and 31s on windows.
+        run: uv tool install poetry
       - if: matrix.os == 'windows-latest'
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
           cosign-release: "v3.0.3"
