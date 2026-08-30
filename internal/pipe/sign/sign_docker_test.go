@@ -76,13 +76,20 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
-	cmd := "sh"
 	// the cases below are about which artifacts get signed and what the
 	// signature is named, not about cosign. They used to append
 	// `&& cosign sign --key=... ${artifact}@${digest} --yes > ${signature}`,
 	// whose output overwrote the echo and which nothing asserted, at about
 	// 0.65s per artifact. The two cases that run cosign for real still do.
+	//
+	// cmd.exe on windows, because ${signature} is a native path and sh eats
+	// its backslashes: the redirect then writes distfoo.sig, not dist\foo.sig.
+	cmd := "sh"
 	args := []string{"-c", "echo ${artifact}@${digest} > ${signature}"}
+	if testlib.IsWindows() {
+		cmd = "cmd.exe"
+		args = []string{"/c", "echo ${artifact}@${digest} > ${signature}"}
+	}
 	password := "password"
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
