@@ -15,8 +15,8 @@ import (
 // Download fetches https://nodejs.org/dist/<version>/<archiveName>
 // into a fresh temp file, verifies its SHA-256 against the embedded
 // release index, and returns the local file path. Each call hits the
-// network — there is no on-disk cache. The temp file lives under
-// os.TempDir() and is reaped by the OS on its usual schedule.
+// network — there is no on-disk cache. The file belongs to the
+// caller, who must remove it.
 //
 // The caller owns extraction (for tar.gz archives) and any further
 // mutation (e.g. stripping a code signature) before use.
@@ -26,11 +26,7 @@ func Download(ctx context.Context, version, archiveName string) (string, error) 
 		return "", err
 	}
 
-	dir, err := os.MkdirTemp("", "goreleaser-nodedist-*")
-	if err != nil {
-		return "", err
-	}
-	tmp, err := os.CreateTemp(dir, "download-*")
+	tmp, err := os.CreateTemp("", "goreleaser-nodedist-*")
 	if err != nil {
 		return "", err
 	}

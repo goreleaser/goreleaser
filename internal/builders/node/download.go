@@ -2,7 +2,6 @@ package node
 
 import (
 	"archive/tar"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -17,6 +16,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
 	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
+	"github.com/klauspost/compress/gzip"
 )
 
 // errNoVersion is returned by resolveVersion when no version can be
@@ -25,14 +25,16 @@ var errNoVersion = errors.New("node: could not resolve a Node.js version; add en
 
 const minNodeSEAVersion = "25.5.0"
 
-// ensureNode resolves the node version, downloads it, and returns its path.
-func ensureNode(ctx context.Context, dir, target string) (string, error) {
+// ensureNode resolves the node version required by the project in
+// dir, downloads the host binary for target into destDir, and returns
+// its path. destDir belongs to the caller, who must remove it.
+func ensureNode(ctx context.Context, dir, target, destDir string) (string, error) {
 	version, err := resolveVersion(dir)
 	if err != nil {
 		return "", fmt.Errorf("node: resolve node version: %w", err)
 	}
 
-	return downloadHostBinary(ctx, version, target)
+	return downloadHostBinary(ctx, version, target, destDir)
 }
 
 // resolveVersion picks a Node.js version from `engines.node` in the
@@ -129,8 +131,9 @@ func checkHostNodeVersion(ctx context.Context, tool string, env []string) error 
 // downloadHostBinary fetches the per-target Node.js host binary for
 // (version, target) and returns its absolute path. tar.gz archives
 // are extracted; bare windows .exe archives are used as-is. The
-// returned path lives under a fresh temp directory.
-func downloadHostBinary(ctx context.Context, version, target string) (string, error) {
+// binary is written into destDir, which belongs to the caller. The
+// downloaded archive is always removed before returning.
+func downloadHostBinary(ctx context.Context, version, target, destDir string) (string, error) {
 	log.WithField("version", version).
 		WithField("target", target).
 		Info("downloading")
@@ -147,13 +150,9 @@ func downloadHostBinary(ctx context.Context, version, target string) (string, er
 	if err != nil {
 		return "", err
 	}
+	defer func() { _ = os.Remove(archive) }()
 
-	dir, err := os.MkdirTemp("", "goreleaser-node-*")
-	if err != nil {
-		return "", err
-	}
-	bin := filepath.Join(dir, binName)
-
+	bin := filepath.Join(destDir, binName)
 	if isWin {
 		if err := os.Rename(archive, bin); err != nil {
 			return "", err
@@ -163,7 +162,6 @@ func downloadHostBinary(ctx context.Context, version, target string) (string, er
 		if err := extractFromTarGz(archive, entry, bin); err != nil {
 			return "", err
 		}
-		_ = os.Remove(archive)
 	}
 	if err := os.Chmod(bin, 0o755); err != nil {
 		return "", err
@@ -175,6 +173,12 @@ func downloadHostBinary(ctx context.Context, version, target string) (string, er
 // and writes it atomically to dst. We never join tar entry names onto
 // dst — only the single, fully qualified entry the caller asks for is
 // extracted — so there is no zip-slip surface.
+//
+// Uses klauspost/compress/gzip rather than compress/gzip. Node dists
+// are big — a 58MB tar.gz holding a 146MB binary — and inflating one
+// is the most expensive step of a node build. klauspost measured 1.4x
+// faster here, and 1.8x under the race detector, where compress/flate
+// costs about 26x its plain runtime.
 func extractFromTarGz(archivePath, entry, dst string) error {
 	f, err := os.Open(archivePath)
 	if err != nil {

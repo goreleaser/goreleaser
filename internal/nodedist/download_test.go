@@ -24,6 +24,7 @@ func TestDownload(t *testing.T) {
 
 	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.Remove(got) })
 	require.FileExists(t, got)
 	bts, err := os.ReadFile(got)
 	require.NoError(t, err)
@@ -76,6 +77,7 @@ func TestDownload_RetriesOn5xx(t *testing.T) {
 
 	got, err := Download(t.Context(), version, archName)
 	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.Remove(got) })
 	require.FileExists(t, got)
 	require.GreaterOrEqual(t, int(hits.Load()), 2)
 }
