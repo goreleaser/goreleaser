@@ -22,7 +22,7 @@ Check [this article][1] for an example, and the [documentation here][2].
 Another option is to use a Docker image with the required cross-compilers.
 [This project](https://github.com/goreleaser/goreleaser-cross) provides the
 [Docker images](https://hub.docker.com/repository/docker/goreleaser/goreleaser-cross)
-with a bunch of ready-to-use cross-compilers as well as how-to make a `sysroot`.
+with a bunch of ready-to-use cross-compilers as well as how to make a `sysroot`.
 All that wrapped into [this example](https://github.com/goreleaser/goreleaser-cross-example).
 
 ## Using Zig

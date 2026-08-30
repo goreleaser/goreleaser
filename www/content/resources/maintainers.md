@@ -9,7 +9,7 @@ GoReleaser is maintained by:
 {{< card link="https://github.com/caarlos0" title="Carlos Alexandro Becker" image="https://avatars.githubusercontent.com/u/245435?s=200&v=4" subtitle="Creator and BDFL of GoReleaser." >}}
 {{< card link="https://github.com/carinebecker" title="Carine Meyer Becker" image="https://avatars.githubusercontent.com/u/22084223?s=200&v=4" subtitle="Designed all the art used in GoReleaser's brand and website." >}}
 {{< card link="https://github.com/crazy-max" title="crazy-max" image="https://avatars.githubusercontent.com/u/1951866?s=200&v=4" subtitle="Created and maintains the GoReleaser GitHub Action." >}}
-{{< card link="https://github.com/dirien" title="Engin Diri" image="https://avatars.githubusercontent.com/u/38325136?s=200&v=4" subtitle="Created and maintains the Azure Devops Extension." >}}
+{{< card link="https://github.com/dirien" title="Engin Diri" image="https://avatars.githubusercontent.com/u/38325136?s=200&v=4" subtitle="Created and maintains the Azure DevOps Extension." >}}
 {{< card link="https://github.com/troian" title="Artur Troian" image="https://avatars.githubusercontent.com/u/2477474?s=200&v=4" subtitle="Created and maintains GoReleaser Cross." >}}
 {{< card link="https://github.com/erikgeiser" title="Erik Geiser" image="https://avatars.githubusercontent.com/u/14264874?s=200&v=4" subtitle="Contributed to nFPM from 2020 to 2023." >}}
 {{< card link="https://github.com/mavogel" title="Manuel Vogel" image="https://avatars.githubusercontent.com/u/8409778?s=200&v=4" subtitle="Worked on GitLab support and more from 2019 to 2020." >}}

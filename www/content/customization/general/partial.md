@@ -46,7 +46,7 @@ Docker manifests are not created yet, though.
   things like before hooks, so be aware that any `go run` commands ran by
   GoReleaser there might fail.
 - The third example uses the informed `GGOOS`, which is used only to filter
-  which targets should be build, and does not affect anything else (as the
+  which targets should be built, and does not affect anything else (as the
   second option does).
 
 Those commands will create the needed artifacts for each platform in

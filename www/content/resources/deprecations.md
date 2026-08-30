@@ -6,7 +6,7 @@ weight: 30
 This page is used to list deprecation notices across GoReleaser.
 
 Deprecated options are only removed on major versions of GoReleaser.
-Deprecated versions on features deemed experimental (you see a warning when
+Options deprecated on features deemed experimental (you see a warning when
 using them) might be removed in feature releases.
 
 Nevertheless, it's a good thing to keep your configuration up-to-date to prevent
@@ -744,7 +744,7 @@ We recommend you change it to `spdx`.
 
 > since v2.2
 
-Property renamed so its easier to reason about.
+Property renamed so it's easier to reason about.
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -769,7 +769,7 @@ nightly:
 
 > since v2.2
 
-Property renamed so its easier to reason about.
+Property renamed so it's easier to reason about.
 
 {{< tabs >}}
 {{< tab "Before" >}}

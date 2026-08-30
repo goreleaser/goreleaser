@@ -6,8 +6,8 @@ weight: 10
 
 {{< g_version "v2.2" >}}
 
-This can be used to archive the binaries with their signatures, instead of
-signing the whole archive.
+Use this to sign the binaries and archive them alongside their signatures,
+instead of signing the whole archive.
 
 The default is configured to create a detached signature for the checksum files
 with [GnuPG](https://www.gnupg.org/), and your default key.
@@ -60,7 +60,7 @@ binary_signs:
 
     # IDs of the artifacts to sign.
     #
-    # If `artifacts` is checksum or source, this fields has no effect.
+    # If `artifacts` is checksum or source, this field has no effect.
     ids:
       - foo
       - bar
@@ -146,7 +146,7 @@ binary_signs:
 Your users can then verify the signature with:
 
 ```sh
-cosign verify-blob -key cosign.pub -signature binary.sig binary
+cosign verify-blob --key cosign.pub --signature binary.sig binary
 ```
 
 [cosign]: https://github.com/sigstore/cosign
