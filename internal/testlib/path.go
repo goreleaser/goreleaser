@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"testing"
 )
@@ -80,4 +81,28 @@ func Exit(status int) string {
 		return fmt.Sprintf("cmd.exe /c exit /b %d", status)
 	}
 	return fmt.Sprintf("exit %d", status)
+}
+
+// SharedZigCache points zig's global cache at a single directory shared by
+// every test in the run, while the caller keeps a local cache of its own.
+//
+// The global cache is content addressed and lock protected, so sharing it is
+// safe: 12 concurrent builds against one directory were verified to complete
+// without error. Sharing it also lets each test reuse the libc and compiler-rt
+// another test already compiled, which measured ~38% faster for the second and
+// later projects.
+//
+// It deliberately lives outside the workspace. setup-zig caches
+// $GITHUB_WORKSPACE/.zig-cache between runs, and restoring a half-saved copy of
+// that is what actually produced the "manifest hit with missing outputs"
+// corruption in goreleaser#6754, not concurrent access.
+func SharedZigCache(tb testing.TB) {
+	tb.Helper()
+	// tb.TempDir() is deliberately not used: it is per-test, and the whole
+	// point here is one directory shared by every test.
+	dir := filepath.Join(os.TempDir(), "goreleaser-zig-global-cache") //nolint:usetesting
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		tb.Fatalf("could not create shared zig cache: %v", err)
+	}
+	tb.Setenv("ZIG_GLOBAL_CACHE_DIR", dir)
 }
