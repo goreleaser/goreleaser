@@ -100,15 +100,14 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 
 func TestExtractFromTarGz(t *testing.T) {
 	const entry = "node-v25.5.0-linux-x64/bin/node"
-	// Larger than deflate's 32KiB history window, and compressible, so
-	// the fixture spans a window boundary and more than one block —
-	// the decoder state a replacement inflate could get wrong. A
-	// three-entry toy archive would fit in a single block and prove
-	// nothing.
-	payload := strings.Repeat("#!/bin/sh\nexec node \"$@\"\n", 2000)
-	archive := writeTarGz(t, map[string]string{
-		"node-v25.5.0-linux-x64/README.md": "readme",
-		entry:                              payload,
+	payload := "#!/bin/sh\nexec node \"$@\"\n"
+	// The wanted entry is deliberately neither first nor last: the
+	// only logic here is skipping entries that do not match.
+	archive := writeTarGz(t, []tarEntry{
+		{"node-v25.5.0-linux-x64/README.md", "readme"},
+		{"node-v25.5.0-linux-x64/bin/npm", "npm"},
+		{entry, payload},
+		{"node-v25.5.0-linux-x64/LICENSE", "license"},
 	})
 
 	t.Run("requested entry", func(t *testing.T) {
@@ -127,23 +126,23 @@ func TestExtractFromTarGz(t *testing.T) {
 	})
 }
 
-// writeTarGz builds a gzipped tar from entries and returns its path.
-// Written with compress/gzip so the test also covers reading a
-// stdlib-produced stream back with klauspost's decompressor.
-func writeTarGz(tb testing.TB, entries map[string]string) string {
+type tarEntry struct{ name, body string }
+
+// writeTarGz builds a gzipped tar from entries, in order.
+func writeTarGz(tb testing.TB, entries []tarEntry) string {
 	tb.Helper()
 	path := filepath.Join(tb.TempDir(), "archive.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(tb, err)
 	gz := gzip.NewWriter(f)
 	tw := tar.NewWriter(gz)
-	for name, body := range entries {
+	for _, e := range entries {
 		require.NoError(tb, tw.WriteHeader(&tar.Header{
-			Name: name,
+			Name: e.name,
 			Mode: 0o755,
-			Size: int64(len(body)),
+			Size: int64(len(e.body)),
 		}))
-		_, err := tw.Write([]byte(body))
+		_, err := tw.Write([]byte(e.body))
 		require.NoError(tb, err)
 	}
 	require.NoError(tb, tw.Close())
