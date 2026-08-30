@@ -114,9 +114,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 				{
 					Artifacts:   "all",
 					Stdin:       &password,
-					Cmd:         "cosign",
+					Cmd:         cmd,
 					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
-					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}@${digest}", "--yes"},
+					// cosign only issues a certificate when it signs
+					// keylessly, so `--output-certificate` would write nothing
+					// here: redirect its output to the certificate instead.
+					Args: []string{"-c", "cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${certificate}"},
 				},
 			},
 		},

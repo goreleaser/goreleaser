@@ -34,6 +34,9 @@ const (
 	passwordUser     = "password"
 	passwordUserTmpl = "{{ .Env.GPG_PASSWORD }}"
 	fakeGPGKeyID     = "23E7505E"
+	// gpg cannot write a certificate, so the cases that ask for one use a
+	// wrapper that calls gpg and writes the certificate itself.
+	gpgAndCertificate = "testdata/gpg-and-certificate.sh"
 )
 
 func TestMain(m *testing.M) {
@@ -534,6 +537,7 @@ func TestSignArtifacts(t *testing.T) {
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
+						Cmd:         gpgAndCertificate,
 						Certificate: "${artifact}.pem",
 						Artifacts:   "checksum",
 					},
@@ -549,6 +553,7 @@ func TestSignArtifacts(t *testing.T) {
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
+						Cmd:         gpgAndCertificate,
 						Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
 						Certificate: `{{ trimsuffix (trimsuffix .Env.artifact ".tar.gz") ".deb" }}_${HONK}.pem`,
 						Artifacts:   "all",
@@ -788,6 +793,11 @@ func testSign(
 	)
 
 	wantFiles := append(artifacts, signaturePaths...)
+	for _, cert := range certificates {
+		rel, err := filepath.Rel(tmpdir, cert.Path)
+		require.NoError(tb, err)
+		wantFiles = append(wantFiles, rel)
+	}
 	require.ElementsMatch(tb, wantFiles, gotFiles)
 
 	// verify the signatures
@@ -869,14 +879,67 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
 }
 
+func TestSignerWroteNothing(t *testing.T) {
+	sign := func(tb testing.TB, dist string, cfg config.Sign) error {
+		tb.Helper()
+		require.NoError(tb, os.WriteFile(filepath.Join(dist, "checksums.txt"), []byte("foo"), 0o644))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:  dist,
+			Signs: []config.Sign{cfg},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "checksums.txt",
+			Path: filepath.Join(dist, "checksums.txt"),
+			Type: artifact.Checksum,
+		})
+		require.NoError(tb, Pipe{}.Default(ctx))
+		return Pipe{}.Run(ctx)
+	}
+
+	t.Run("signature", func(t *testing.T) {
+		dist := t.TempDir()
+		cmd, args := shell("echo ${signature}")
+		err := sign(t, dist, config.Sign{
+			Artifacts: "checksum",
+			Cmd:       cmd,
+			Args:      args,
+		})
+		require.EqualError(t, err, "the signer did not write "+filepath.Join(dist, "checksums.txt.sig"))
+	})
+
+	t.Run("certificate", func(t *testing.T) {
+		dist := t.TempDir()
+		cmd, args := shell("echo signed > ${signature}; echo ${certificate}")
+		err := sign(t, dist, config.Sign{
+			Artifacts:   "checksum",
+			Cmd:         cmd,
+			Args:        args,
+			Certificate: "${artifact}.pem",
+		})
+		require.EqualError(t, err, "the signer did not write "+filepath.Join(dist, "checksums.txt.pem"))
+	})
+
+	t.Run("signs in place", func(t *testing.T) {
+		dist := t.TempDir()
+		cmd, args := shell("echo signed >> ${artifact}")
+		require.NoError(t, sign(t, dist, config.Sign{
+			Artifacts: "checksum",
+			Cmd:       cmd,
+			Args:      args,
+		}))
+	})
+}
+
 func TestSignAllExcludesSignaturesAndCertificates(t *testing.T) {
 	tmpdir := t.TempDir()
 
+	cmd, args := shell("echo signed > ${signature}")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: tmpdir,
 		Signs: []config.Sign{
 			{
-				Cmd:       "true",
+				Cmd:       cmd,
+				Args:      args,
 				Artifacts: "all",
 				Signature: "${artifact}.newsig",
 			},
@@ -938,4 +1001,13 @@ func setGpg(tb testing.TB, ctx *context.Context, p string) {
 	tb.Helper()
 	_, err := git.Run(ctx, "config", "--local", "--add", "gpg.program", p)
 	require.NoError(tb, err)
+}
+
+// shell returns the cmd and args to run the given script line, handling
+// windows.
+func shell(script string) (string, []string) {
+	if testlib.IsWindows() {
+		return "cmd.exe", []string{"/c", script}
+	}
+	return "sh", []string{"-c", script}
 }

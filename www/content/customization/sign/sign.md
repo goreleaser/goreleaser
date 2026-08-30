@@ -168,8 +168,13 @@ Please refer to [Docker Images Signing](/customization/sign/docker_sign/).
 
 ## Limitations
 
-You can sign with any command that either outputs a file or modify the file
+You can sign with any command that either writes a file or modifies the file
 being signed.
+
+If you point the command at `${signature}` — or at `${certificate}`, if you set
+one — that file must exist once the command finishes. GoReleaser checks it, and
+fails with `the signer did not write <path>` otherwise, as an artifact that
+points to nothing would only fail much later, while uploading it.
 
 If you want to sign with something that writes to `STDOUT` instead of a file,
 you can wrap the command inside a `sh -c` execution, for instance:
