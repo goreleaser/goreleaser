@@ -113,14 +113,16 @@ func (g *gitClient) CreateFiles(
 		{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
 		{"config", "--local", "commit.gpgSign", strconv.FormatBool(commitAuthor.Signing.Enabled)},
 	}
-	if commitAuthor.Signing.Key != "" {
-		gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
-	}
-	if commitAuthor.Signing.Program != "" {
-		gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
-	}
-	if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
-		gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
+	if commitAuthor.Signing.Enabled {
+		if commitAuthor.Signing.Key != "" {
+			gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
+		}
+		if commitAuthor.Signing.Program != "" {
+			gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
+		}
+		if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
+			gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
+		}
 	}
 	if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
 		return fmt.Errorf("git: failed to setup local repository: %w", err)

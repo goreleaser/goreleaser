@@ -3,6 +3,7 @@ package client
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -448,6 +449,7 @@ func TestGitClientReconfiguresReusedCheckout(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: t.TempDir()})
 		repo := Repo{GitURL: url, PrivateKey: sshKey, Name: "reused-signing"}
 		cli := NewGitUploadClient(repo.Branch)
+		cwd := filepath.Join(ctx.Config.Dist, "git", repo.Name+"-")
 
 		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
 			Name: "First", Email: "first@example.com",
@@ -462,6 +464,22 @@ func TestGitClientReconfiguresReusedCheckout(t *testing.T) {
 			},
 		}, repo, []byte("second"), "file.txt", "second")
 		require.ErrorContains(t, err, "gpg")
+
+		out, err := exec.CommandContext(t.Context(), "git", "-C", cwd, "config", "--local", "--get", "commit.gpgSign").CombinedOutput()
+		require.NoError(t, err, string(out))
+		require.Equal(t, "true", strings.TrimSpace(string(out)))
+
+		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
+			Name: "Third", Email: "third@example.com",
+		}, repo, []byte("third"), "file.txt", "third"))
+
+		out, err = exec.CommandContext(t.Context(), "git", "-C", cwd, "config", "--local", "--get", "user.signingKey").CombinedOutput()
+		require.Error(t, err)
+		require.Empty(t, strings.TrimSpace(string(out)))
+
+		out, err = exec.CommandContext(t.Context(), "git", "-C", cwd, "config", "--local", "--get", "commit.gpgSign").CombinedOutput()
+		require.NoError(t, err, string(out))
+		require.Equal(t, "false", strings.TrimSpace(string(out)))
 	})
 }
 
