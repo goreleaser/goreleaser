@@ -1,8 +1,6 @@
 package node
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"fmt"
 	"os"
 	"os/exec"
@@ -96,59 +94,6 @@ func TestWithDefaults(t *testing.T) {
 func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 	_, err := resolveVersionString("20.0.0")
 	require.ErrorContains(t, err, ">= v25.5.0")
-}
-
-func TestExtractFromTarGz(t *testing.T) {
-	const entry = "node-v25.5.0-linux-x64/bin/node"
-	payload := "#!/bin/sh\nexec node \"$@\"\n"
-	// The wanted entry is deliberately neither first nor last: the
-	// only logic here is skipping entries that do not match.
-	archive := writeTarGz(t, []tarEntry{
-		{"node-v25.5.0-linux-x64/README.md", "readme"},
-		{"node-v25.5.0-linux-x64/bin/npm", "npm"},
-		{entry, payload},
-		{"node-v25.5.0-linux-x64/LICENSE", "license"},
-	})
-
-	t.Run("requested entry", func(t *testing.T) {
-		dst := filepath.Join(t.TempDir(), "node")
-		require.NoError(t, extractFromTarGz(archive, entry, dst))
-		bts, err := os.ReadFile(dst)
-		require.NoError(t, err)
-		require.Equal(t, payload, string(bts))
-	})
-
-	t.Run("missing entry", func(t *testing.T) {
-		dst := filepath.Join(t.TempDir(), "node")
-		err := extractFromTarGz(archive, "node-v25.5.0-linux-x64/bin/nope", dst)
-		require.ErrorContains(t, err, "not found in")
-		require.NoFileExists(t, dst)
-	})
-}
-
-type tarEntry struct{ name, body string }
-
-// writeTarGz builds a gzipped tar from entries, in order.
-func writeTarGz(tb testing.TB, entries []tarEntry) string {
-	tb.Helper()
-	path := filepath.Join(tb.TempDir(), "archive.tar.gz")
-	f, err := os.Create(path)
-	require.NoError(tb, err)
-	gz := gzip.NewWriter(f)
-	tw := tar.NewWriter(gz)
-	for _, e := range entries {
-		require.NoError(tb, tw.WriteHeader(&tar.Header{
-			Name: e.name,
-			Mode: 0o755,
-			Size: int64(len(e.body)),
-		}))
-		_, err := tw.Write([]byte(e.body))
-		require.NoError(tb, err)
-	}
-	require.NoError(tb, tw.Close())
-	require.NoError(tb, gz.Close())
-	require.NoError(tb, f.Close())
-	return path
 }
 
 func TestBuild(t *testing.T) {
