@@ -585,7 +585,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			{
 				ID:         "default",
 				Build:      "foo",
-				Repository: "fakerepo",
+				Repository: "fakerepo.invalid",
 			},
 		},
 	})
@@ -603,7 +603,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			{
 				ID:         "default",
 				Build:      "foo",
-				Repository: "fakerepo",
+				Repository: "fakerepo.invalid",
 			},
 		},
 	})
@@ -665,7 +665,7 @@ func TestPublishPipeError(t *testing.T) {
 					ID:         "default",
 					Build:      "foo",
 					WorkingDir: "./testdata/app/",
-					Repository: "fakerepo:8080/",
+					Repository: "fakerepo.invalid:8080/",
 					Tags:       []string{"latest", "{{.Tag}}"},
 				},
 			},
@@ -779,7 +779,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `Get "https://fakerepo:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, `Get "https://fakerepo.invalid:8080/v2/": dial tcp:`)
 	})
 }
 
