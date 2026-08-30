@@ -102,6 +102,15 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          # setup-go keys its cache on the hash of these files only, and saves
+          # it just once per key. license-check and golangci-lint resolve the
+          # same key and always finish first, so this job kept restoring a
+          # build cache without the -race/-coverpkg objects and recompiled
+          # everything (~2.5min). Taskfile.yml holds the test flags, so hashing
+          # it too gives this job a key of its own that it can populate.
+          cache-dependency-path: |
+            go.sum
+            Taskfile.yml
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "25"
