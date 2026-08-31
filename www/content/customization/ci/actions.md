@@ -3,11 +3,11 @@ title: "GitHub Actions"
 weight: 10
 ---
 
-GoReleaser can also be used within our official [GoReleaser
+GoReleaser can be used within the official [GoReleaser
 Action][goreleaser-action] through [GitHub Actions][actions].
 
-You can create a workflow for pushing your releases by putting YAML
-configuration to `.github/workflows/release.yml`.
+Create a workflow to push your releases by adding a YAML configuration
+file at `.github/workflows/release.yml`.
 
 ## Usage
 
@@ -66,14 +66,14 @@ jobs:
 >
 > GoReleaser Action will not install nor setup any other software needed to
 > release. It's the user's responsibility to install and configure Go, Docker,
-> Syft, Cosign and any other tools the release might need. It's also the
-> user's responsibility to log in into tools that need it, such as docker.
+> Syft, Cosign, and any other tools the release might need. It's also the
+> user's responsibility to sign in to tools that need it, such as Docker.
 >
 > #### Fetch all history
 >
 > Notice the `fetch-depth: 0` option in the `Checkout` workflow step.
-> This is required for GoReleaser to work properly, as it will need the full
-> history to work properly.
+> This is required for GoReleaser to work properly, as it needs the full
+> commit history.
 
 > [!NOTE]
 > For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
@@ -136,7 +136,7 @@ signs:
 
 ### Inputs
 
-Following inputs can be used as `step.with` keys
+The following inputs can be used as `step.with` keys:
 
 | Name           | Type   | Default      | Description                                                      |
 | -------------- | ------ | ------------ | ---------------------------------------------------------------- |
@@ -152,7 +152,7 @@ Following inputs can be used as `step.with` keys
 
 ### Outputs
 
-Following outputs are available
+The following outputs are available:
 
 | Name        | Type | Description            |
 | ----------- | ---- | ---------------------- |
@@ -161,7 +161,7 @@ Following outputs are available
 
 ### Environment Variables
 
-Following environment variables can be used as `step.env` keys
+The following environment variables can be used as `step.env` keys:
 
 | Name             | Description                                                                                                                                         |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -103,18 +103,19 @@ additional features:
 
 ## Using GoReleaser Pro
 
-GoReleaser Pro is a different binary, see the [install options](/getting-started/install).
-Once you have it, you can use the serial key with either `--key` or by setting
-`GORELEASER_KEY`.
+Once you [buy a subscription](https://gum.co/goreleaser), you'll get a license
+key.
 
-See [this page](/post-checkout/) for more information.
+GoReleaser Pro is a separate binary, so install it first — see the
+[install options](/getting-started/install).
+Then pass your license key with the `--key` flag or the `GORELEASER_KEY`
+environment variable.
 
-Once you [buy it](https://gum.co/goreleaser), you'll get a license key. You can
-then pass it to the `release` command either via the
-`--key` flag or the `GORELEASER_KEY` environment variable.
+If you use the GitHub Action, set the `distribution` option to `goreleaser-pro`.
+Check the [GitHub Actions documentation](/customization/ci/actions/) for more
+details.
 
-If you use the GitHub action, you will want to set the `distribution` option to
-`goreleaser-pro`. Check the [documentation](/customization/ci/actions/) for more details.
+The [getting started notes](/post-checkout/) walk through the whole setup.
 
 ### Offline licenses
 
@@ -191,7 +192,7 @@ with your suggestions and ideas.
 
 We can also provide enterprise support contracts, with proper SLAs and help
 designing and updating your release pipelines.
-If this sound interesting to you, feel free to
+If this sounds interesting to you, feel free to
 [contact us](mailto:carlos@becker.software?subject=GoReleaser%20Enterprise%20Support).
 
 ## EULA

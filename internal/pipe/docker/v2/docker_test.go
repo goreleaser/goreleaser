@@ -374,7 +374,9 @@ func TestDisable(t *testing.T) {
 }
 
 func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {
-	t.Setenv("DOCKER_HOST", "unix:///nonexistent.sock")
+	// loopback refuses the connection at once. A missing unix socket makes the
+	// docker CLI on windows think about it for 5.46s.
+	t.Setenv("DOCKER_HOST", "tcp://127.0.0.1:1")
 	require.False(t, isDockerDaemonAvailable(t.Context()))
 }
 
