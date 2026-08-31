@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -90,41 +91,9 @@ func (g *gitClient) CreateFiles(
 			return err
 		}
 
-		gitCmds := [][]string{
-			{"config", "--local", "user.name", commitAuthor.Name},
-			{"config", "--local", "user.email", commitAuthor.Email},
-			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
-		}
-
-		// append git flags for signing to overall comand if configured
-		if commitAuthor.Signing.Enabled {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "true"})
-
-			if commitAuthor.Signing.Key != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
-			}
-
-			if commitAuthor.Signing.Program != "" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
-			}
-
-			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
-				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
-			}
-		} else {
-			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "false"})
-		}
-
-		if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
-			return fmt.Errorf("git: failed to setup local repository: %w", err)
-		}
 		if g.branch != "" {
-			if err := runGitCmds(ctx, cwd, env, [][]string{
-				{"checkout", g.branch},
-			}); err != nil {
-				if err := runGitCmds(ctx, cwd, env, [][]string{
-					{"checkout", "-b", g.branch},
-				}); err != nil {
+			if err := runGitCmd(ctx, cwd, env, "checkout", g.branch); err != nil {
+				if err := runGitCmd(ctx, cwd, env, "checkout", "-b", g.branch); err != nil {
 					return fmt.Errorf("git: could not checkout branch %s: %w", g.branch, err)
 				}
 			}
@@ -147,10 +116,14 @@ func (g *gitClient) CreateFiles(
 			Info("pushing")
 	}
 
-	if err := runGitCmds(ctx, cwd, env, [][]string{
-		{"add", "-A", "."},
-		{"commit", "-m", message},
-	}); err != nil {
+	if err := runGitCmd(ctx, cwd, env, "add", "-A", "."); err != nil {
+		return fmt.Errorf("git: failed to add files %q (%q): %w", repo.Name, url, err)
+	}
+	if err := runGitCmdWith(
+		ctx, cwd, env,
+		commitConfigFlags(commitAuthor),
+		"commit", "-m", message,
+	); err != nil {
 		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
 	}
 	if err := pushRepo(ctx, cwd, env); err != nil {
@@ -235,7 +208,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			log.WithField("url", redact.String(url, ctx.Env.Strings())).
 				WithField("dir", dir).
 				Info("cloning")
-			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
+			return runGitCmd(ctx, parent, env, "clone", url, name)
 		},
 		retryx.IsNetworkError,
 	); err != nil {
@@ -249,20 +222,50 @@ func pushRepo(ctx *context.Context, cwd string, env []string) error {
 		ctx,
 		ctx.Config.Retry,
 		func() error {
-			return runGitCmds(ctx, cwd, env, [][]string{{"push", "origin", "HEAD"}})
+			return runGitCmd(ctx, cwd, env, "push", "origin", "HEAD")
 		},
 		retryx.IsNetworkError,
 	)
 }
 
-func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
-	for _, cmd := range cmds {
-		args := append([]string{"-C", cwd}, cmd...)
-		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
-			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
-		}
+func runGitCmd(ctx *context.Context, cwd string, env []string, cmd ...string) error {
+	return runGitCmdWith(ctx, cwd, env, nil, cmd...)
+}
+
+// runGitCmdWith runs a single git command in cwd. Globals are flags that git
+// expects before the subcommand, e.g. -c key=value. They stay out of the error
+// message.
+func runGitCmdWith(ctx *context.Context, cwd string, env []string, globals []string, cmd ...string) error {
+	args := append([]string{"-C", cwd}, globals...)
+	args = append(args, cmd...)
+	if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
+		return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
 	}
 	return nil
+}
+
+// commitConfigFlags returns the git flags that apply the author and its
+// signing options to a single commit. Passing them per command keeps them out
+// of the checkout config, which several callers share.
+func commitConfigFlags(author config.CommitAuthor) []string {
+	flags := []string{
+		"-c", "user.name=" + author.Name,
+		"-c", "user.email=" + author.Email,
+		"-c", "commit.gpgSign=" + strconv.FormatBool(author.Signing.Enabled),
+	}
+	if !author.Signing.Enabled {
+		return flags
+	}
+	if author.Signing.Key != "" {
+		flags = append(flags, "-c", "user.signingKey="+author.Signing.Key)
+	}
+	if author.Signing.Program != "" {
+		flags = append(flags, "-c", "gpg.program="+author.Signing.Program)
+	}
+	if author.Signing.Format != "" {
+		flags = append(flags, "-c", "gpg.format="+author.Signing.Format)
+	}
+	return flags
 }
 
 func nameFromURL(url string) string {
