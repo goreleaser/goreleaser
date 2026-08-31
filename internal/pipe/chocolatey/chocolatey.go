@@ -12,6 +12,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -22,8 +23,9 @@ import (
 var (
 	errNoWindowsArchive = errors.New("chocolatey requires at least one windows archive")
 	// a chocolateyinstall.ps1 may only have one url/checksum pair per
-	// architecture.
-	errMultipleArchives = errors.New("found multiple archives for the same platform, please consider filtering by id")
+	// architecture. This is a per-entry skip so a chocolatey entry with
+	// duplicate archives does not stop the ones after it, same as winget.
+	errMultipleArchives = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
 )
 
 // nuget package extension.
@@ -77,13 +79,20 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
+	// even if one of them is skipped, we still go through all of them, and
+	// return the skips all at once in the end.
+	skips := pipe.SkipMemento{}
 	for _, choco := range ctx.Config.Chocolateys {
-		if err := doRun(ctx, cli, choco); err != nil {
+		err := doRun(ctx, cli, choco)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
 			return err
 		}
 	}
-
-	return nil
+	return skips.Evaluate()
 }
 
 // Publish packages.
