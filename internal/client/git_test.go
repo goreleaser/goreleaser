@@ -443,7 +443,7 @@ func TestCommitConfigFlags(t *testing.T) {
 		{
 			name: "disabled ignores the other options",
 			signing: config.CommitSigning{
-				Key:     "ABC123DEF456",
+				Key:     "test-signing-key",
 				Program: "/usr/bin/gpg",
 				Format:  "ssh",
 			},
@@ -458,13 +458,13 @@ func TestCommitConfigFlags(t *testing.T) {
 			name: "enabled with all options",
 			signing: config.CommitSigning{
 				Enabled: true,
-				Key:     "ABC123DEF456",
+				Key:     "test-signing-key",
 				Program: "/usr/bin/gpg",
 				Format:  "ssh",
 			},
 			expected: base(
 				"-c", "commit.gpgSign=true",
-				"-c", "user.signingKey=ABC123DEF456",
+				"-c", "user.signingKey=test-signing-key",
 				"-c", "gpg.program=/usr/bin/gpg",
 				"-c", "gpg.format=ssh",
 			),
@@ -544,7 +544,7 @@ func TestGitClientReconfiguresReusedCheckout(t *testing.T) {
 			Email: "second@example.com",
 			Signing: config.CommitSigning{
 				Enabled: true,
-				Key:     "ABC123DEF456",
+				Key:     "test-signing-key",
 				Program: program,
 			},
 		}, repo, []byte("second"), "file.txt", "second")
