@@ -14,11 +14,15 @@ import (
 
 // ExtractRepoFromConfig gets the repo name from the Git config.
 func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) {
-	if !IsRepo(ctx) {
-		return result, errors.New("current folder is not a git repository")
-	}
 	out, err := Clean(Run(ctx, "ls-remote", "--get-url"))
 	if err != nil {
+		// git says "No remote configured to list refs from" for both a
+		// repository without a remote and a directory that is not a
+		// repository at all, so it takes a second command to tell the user
+		// which one it is. Only the failing path pays for it.
+		if !IsRepo(ctx) {
+			return result, errors.New("current folder is not a git repository")
+		}
 		return result, errors.New("no remote configured to list refs from")
 	}
 	// This is a relative remote URL and requires some additional processing
