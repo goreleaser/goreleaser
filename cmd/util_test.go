@@ -17,7 +17,12 @@ func (e *exitMemento) Exit(i int) {
 	e.code = i
 }
 
-func setup(tb testing.TB) string {
+// mktmp makes an empty directory the working directory of the test.
+//
+// Use it instead of [setup] when the test does not run a pipeline: setup also
+// creates a buildable Go module and a git repository with four commits and two
+// tags, which costs nine git processes.
+func mktmp(tb testing.TB) string {
 	tb.Helper()
 
 	_ = os.Unsetenv("GITHUB_TOKEN")
@@ -26,6 +31,13 @@ func setup(tb testing.TB) string {
 
 	folder := tb.TempDir()
 	tb.Chdir(folder)
+	return folder
+}
+
+func setup(tb testing.TB) {
+	tb.Helper()
+
+	mktmp(tb)
 
 	createGoReleaserYaml(tb)
 	createMainGo(tb)
@@ -39,8 +51,6 @@ func setup(tb testing.TB) string {
 	testlib.GitCommit(tb, "assd")
 	testlib.GitTag(tb, "v0.0.2")
 	testlib.GitRemoteAdd(tb, "git@github.com:goreleaser/fake.git")
-
-	return folder
 }
 
 func createFile(tb testing.TB, filename, contents string) {

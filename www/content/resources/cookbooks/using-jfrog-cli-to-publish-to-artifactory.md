@@ -13,7 +13,7 @@ The benefit of this method is that it uses the jfrog cli configuration instead
 of environment variables for configuration.
 
 This assumes you have the [jfrog cli](https://jfrog.com/getcli/) downloaded and
-in your path, and
+on your `PATH`, and
 [configured](https://www.jfrog.com/confluence/display/CLI/JFrog+CLI#JFrogCLI-JFrogPlatformConfiguration)
 with an API key.
 
@@ -26,7 +26,8 @@ publishers:
 ```
 
 Example of a [publishers](/customization/publish/publishers/) section pushing files
-to an Artifactory instance using jfrog cli with api key in environment
+to an Artifactory instance using jfrog cli, with the API key in an environment
+variable:
 
 ```yaml {filename=".goreleaser.yaml"}
 publishers:

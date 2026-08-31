@@ -229,6 +229,9 @@ func TestRunPipe(t *testing.T) {
 				if arch.Goos == "windows" {
 					expectBin += ".exe"
 				}
+				if dets.Strip {
+					expectBin = filepath.Base(expectBin)
+				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
 				require.Equal(t, []string{expectBin}, artifact.MustExtra[[]string](*arch, artifact.ExtraBinaries))
 				require.Equal(t, []string{

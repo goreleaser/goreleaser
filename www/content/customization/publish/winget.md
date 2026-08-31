@@ -4,8 +4,8 @@ weight: 100
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
-a _winget manifest_ and commit to a git repository, and PR it to `winget-pkgs`
-if instructed to.
+a _winget manifest_ and commit to a git repository, and open a pull request to
+`winget-pkgs` if instructed to.
 
 The `winget` section specifies how the **manifests** should be created:
 

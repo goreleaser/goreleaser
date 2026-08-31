@@ -88,7 +88,7 @@ builds:
 
 ## Building both wheel and sdist
 
-You need to declare 2 builds, one for each mode:
+You need to declare two builds, one for each mode:
 
 ```yaml {filename=".goreleaser.yaml"}
 builds:
@@ -100,7 +100,7 @@ builds:
     buildmode: sdist
 ```
 
-## Publishing to PyPi
+## Publishing to PyPI
 
 You can use [global after hooks](/customization/builds/hooks/) to do it:
 

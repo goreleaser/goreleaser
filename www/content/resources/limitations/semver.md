@@ -5,7 +5,7 @@ weight: 20
 
 GoReleaser enforces semantic versioning and will error on non-compliant tags.
 
-Your tag **should** be a valid [semantic version](http://semver.org/).
+Your tag **should** be a valid [semantic version](https://semver.org/).
 If it is not, GoReleaser will error.
 
 The `v` prefix is not mandatory. You can check the

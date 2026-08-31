@@ -10,7 +10,7 @@ underlying binary, install it, or do other operations.
 
 This is particularly useful for distributing software that needs to be easily
 installable without requiring users to manually extract archives.
-Typically this supports Linux, MacOS and any other platform that Makeself runs
+Typically this supports Linux, macOS, and any other platform that Makeself runs
 on.
 
 > [!NOTE]
@@ -172,7 +172,7 @@ Please refer to the [Makeself documentation][Makeself] for more information.
 > commands, making the script simpler and more reliable.
 
 > [!WARNING]
-> Makeself packages are platform-specific (typically Linux and macos) and
+> Makeself packages are platform-specific (typically Linux and macOS) and
 > create executable files.
 > Make sure your target users can execute them on their systems.
 

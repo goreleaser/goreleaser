@@ -106,14 +106,16 @@ Run the init command to create an example `.goreleaser.yaml` file:
 goreleaser init
 ```
 
-Now, let's run a "local-only" release to see if it works using the release command:
+Now, let's run a "local-only" release to see if it works, using the release
+command:
 
 ```sh
 goreleaser release --snapshot --clean
 ```
 
-At this point, you can [customize](/customization/index/) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
-It is best practice to check `.goreleaser.yaml` into the source control.
+At this point, you can [customize](/customization/index/) the generated
+`.goreleaser.yaml` or leave it as-is — it's up to you.
+Either way, check `.goreleaser.yaml` into source control.
 
 You can verify your `.goreleaser.yaml` is valid by running the check command:
 
@@ -121,7 +123,8 @@ You can verify your `.goreleaser.yaml` is valid by running the check command:
 goreleaser check
 ```
 
-You can also use GoReleaser to build the binary only for a given target, which is useful for local development:
+You can also use GoReleaser to build the binary for a single target only, which
+is useful for local development:
 
 {{< tabs >}}
 {{< tab name="Go" icon="go" >}}
@@ -192,12 +195,18 @@ TARGET="py3-none-any" \
 {{< /tab >}}
 {{< /tabs >}}
 
-To release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variable, which should contain a valid GitHub token with the `repo` scope.
-It will be used to deploy releases to your GitHub repository.
-You can create a new GitHub token [here](https://github.com/settings/tokens/new?scopes=repo,write:packages).
+To release to GitHub, export a `GITHUB_TOKEN` environment variable containing a
+GitHub token that can create releases in your repository.
+A classic personal access token needs the `repo` scope; a fine-grained token
+needs `contents: write` permission on the repository.
+You can [create a new classic token](https://github.com/settings/tokens/new?scopes=repo)
+with the right scope pre-selected.
 
 > [!NOTE]
-> The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
+> Add the `write:packages` scope as well if you also push Docker images to the
+> GitHub Container Registry.
+> See the [GitHub Actions documentation](/customization/ci/actions/#token-permissions)
+> for the full list of permissions each feature needs.
 
 ```sh
 export GITHUB_TOKEN="YOUR_GH_TOKEN"
@@ -231,14 +240,17 @@ goreleaser release
 
 That's all it takes!
 
-GoReleaser will build the binaries for your app for the default targets for the
-build mechanism being used.
+GoReleaser will build the binaries for your app for the default targets of the
+builder being used.
 You can customize that by changing the `builds` section.
-Check the [documentation](/customization/builds/) for more information.
+Check the [builds documentation](/customization/builds/) for more information.
 
-After building the binaries, GoReleaser will create an archive for each target into a separate file.
-You can customize several things by changing the `archives` section, including releasing only the binaries and not creating archives at all.
-Check the [documentation](/customization/package/archives/) for more information.
+After building the binaries, GoReleaser will create a separate archive for each
+target.
+You can customize several things by changing the `archives` section, including
+releasing only the binaries and not creating archives at all.
+Check the [archives documentation](/customization/package/archives/) for more
+information.
 
 Finally, it will create a release on GitHub with all the artifacts.
 
@@ -246,7 +258,7 @@ Check your GitHub project's releases page!
 
 ## Live examples
 
-We have a ton of example repositories!
+We maintain many example repositories.
 You can use them to learn more and see how GoReleaser works.
 
 <br>
@@ -267,7 +279,7 @@ goreleaser healthcheck
 
 ### Build-only Mode
 
-Build command will build the project:
+The build command builds the project without packaging or publishing it:
 
 ```sh
 goreleaser build
@@ -286,8 +298,10 @@ goreleaser release --skip=publish
 
 ### More options
 
-You can check the command line usage help here or with:
+Every command documents its own flags.
+Run the help for any of them:
 
 ```sh
 goreleaser --help
+goreleaser release --help
 ```

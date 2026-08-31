@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,14 +13,26 @@ import (
 	"sync/atomic"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
+
+// serveGitLabVersion answers the version probe of newGitLab. Without it the
+// probe reads an empty body, which decodes to io.EOF, and is retried.
+func serveGitLabVersion(w http.ResponseWriter, r *http.Request) bool {
+	if !strings.HasSuffix(r.URL.Path, "/version") {
+		return false
+	}
+	fmt.Fprint(w, `{"version":"17.1.2"}`)
+	return true
+}
 
 func TestGitLabReleaseURLTemplate(t *testing.T) {
 	repo := config.Repo{
@@ -194,30 +207,20 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 
 	for _, version := range []string{"16.3.4", "17.1.2"} {
-		var first atomic.Bool
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
 
 			if strings.Contains(r.URL.Path, "version") {
 				fmt.Fprintf(w, `{"version":%q}`, version)
-				w.WriteHeader(http.StatusOK)
 				return
 			}
 
 			if !strings.Contains(r.URL.Path, "assets/links") {
 				_, _ = io.Copy(io.Discard, r.Body)
-				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, "{}")
 				return
 			}
 
-			if first.CompareAndSwap(false, true) {
-				http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
-				return
-			}
-
-			defer w.WriteHeader(http.StatusOK)
-			defer fmt.Fprint(w, "{}")
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -241,11 +244,12 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 					return
 				}
 			}
+
+			fmt.Fprint(w, "{}")
 		}))
 		t.Cleanup(srv.Close)
 
 		for _, tt := range tests {
-			first.Store(false)
 			t.Run(tt.name+"_"+version, func(t *testing.T) {
 				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
@@ -257,14 +261,12 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 							Owner: "test",
 							Name:  "test",
 						},
-						ReplaceExistingArtifacts: true,
 					},
 					GitLabURLs: config.GitLabURLs{
 						API:                srv.URL,
 						Download:           tt.downloadURL,
 						UsePackageRegistry: tt.usePackageRegistry,
 					},
-					Retry: config.Retry{Attempts: 2},
 				}, testctx.WithVersion("1.0.0"))
 
 				tmpFile, err := os.CreateTemp(t.TempDir(), "")
@@ -283,6 +285,49 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestGitLabUploadRetriesAreOurs(t *testing.T) {
+	t.Parallel()
+
+	var creates atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		_, _ = io.Copy(io.Discard, r.Body)
+
+		switch {
+		case strings.Contains(r.URL.Path, "version"):
+			fmt.Fprint(w, `{"version":"17.1.2"}`)
+		case !strings.Contains(r.URL.Path, "assets/links"):
+			fmt.Fprint(w, "{}")
+		default:
+			creates.Add(1)
+			http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Release: config.Release{
+			GitLab: config.Repo{Owner: "test", Name: "test"},
+		},
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Retry:      config.Retry{Attempts: 2},
+	}, testctx.WithVersion("1.0.0"))
+
+	tmpFile, err := os.CreateTemp(t.TempDir(), "")
+	require.NoError(t, err)
+	_ = tmpFile.Close()
+
+	client, err := newGitLab(ctx, ctx.Token)
+	require.NoError(t, err)
+
+	require.Error(t, client.Upload(ctx, "1234", &artifact.Artifact{
+		Name: "test",
+		Path: tmpFile.Name(),
+	}))
+	// the SDK must not retry on its own: 2 attempts configured, 2 requests.
+	require.EqualValues(t, 2, creates.Load())
 }
 
 func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
@@ -529,8 +574,8 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 }
 
 func TestGitLabGetDefaultBranchEnv(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/version") {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
 			return
 		}
 		t.Error("shouldn't have made any calls to the API")
@@ -560,6 +605,9 @@ func TestGitLabGetDefaultBranchErr(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+		if serveGitLabVersion(w, r) {
+			return
+		}
 
 		// Assume the request to create a branch was good
 		w.WriteHeader(http.StatusNotImplemented)
@@ -587,6 +635,9 @@ func TestGitLabGetDefaultBranchErr(t *testing.T) {
 func TestGitLabChangelog(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
+			return
+		}
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
 			serveTestFile(t, w, "testdata/gitlab/compare.json")
 			return
@@ -629,6 +680,9 @@ func TestGitLabChangelog(t *testing.T) {
 func TestGitLabCreateFile(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
+			return
+		}
 		// Handle the test where we know the branch and it exists
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/branches/somebranch") {
 			w.WriteHeader(http.StatusOK)
@@ -757,6 +811,9 @@ func TestGitLabCreateFile(t *testing.T) {
 func TestGitLabCloseMilestone(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
+			return
+		}
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			serveTestFile(t, w, "testdata/gitlab/milestones.json")
 			return
@@ -1066,15 +1123,144 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 func TestGitLabVersionEnv(t *testing.T) {
 	t.Run("18", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "18.0.0")
-		require.True(t, isV17(nil))
+		require.True(t, isV17(testctx.Wrap(t.Context()), nil))
 	})
 	t.Run("17", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "17.0.0")
-		require.True(t, isV17(nil))
+		require.True(t, isV17(testctx.Wrap(t.Context()), nil))
 	})
 	t.Run("16", func(t *testing.T) {
 		t.Setenv("CI_SERVER_VERSION", "16.0.0")
-		require.False(t, isV17(nil))
+		require.False(t, isV17(testctx.Wrap(t.Context()), nil))
+	})
+}
+
+func TestGitLabVersionProbeIsBounded(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "")
+
+	var probes atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		probes.Add(1)
+		http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(srv.Close)
+
+	// the release retry budget is deliberately huge: if the probe used it,
+	// goreleaser would look wedged for ~25 minutes.
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Retry: config.Retry{
+			Attempts: 10,
+			Delay:    10 * time.Second,
+			MaxDelay: 5 * time.Minute,
+		},
+	})
+
+	start := time.Now()
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	require.False(t, client.isV17OrLater)
+	require.EqualValues(t, versionRetry.Attempts, probes.Load())
+	require.Less(t, time.Since(start), 10*time.Second)
+}
+
+func TestGitLabRateLimitRetryAfter(t *testing.T) {
+	t.Parallel()
+	reset := time.Now().Add(42 * time.Second)
+	for name, tt := range map[string]struct {
+		header http.Header
+		want   time.Duration
+		// resetAt, when set, expects the time remaining until it, measured
+		// when the subtest runs. A constant goes stale here: the header
+		// carries an absolute instant, and t.Parallel() defers the subtest
+		// by however long the scheduler takes.
+		resetAt time.Time
+	}{
+		"no headers": {
+			header: http.Header{},
+		},
+		"reset in the future": {
+			header: http.Header{
+				"Ratelimit-Reset": {strconv.FormatInt(reset.Unix(), 10)},
+			},
+			resetAt: reset,
+		},
+		"reset in the past falls back to retry-after": {
+			header: http.Header{
+				"Ratelimit-Reset": {strconv.FormatInt(reset.Add(-time.Hour).Unix(), 10)},
+				"Retry-After":     {"30"},
+			},
+			want: 30 * time.Second,
+		},
+		"retry-after only": {
+			header: http.Header{"Retry-After": {"7"}},
+			want:   7 * time.Second,
+		},
+		// GitLab always answers with delta-seconds. An HTTP-date is valid per
+		// RFC 9110, but unsupported: the retry layer then backs off on its own.
+		"retry-after as an http date": {
+			header: http.Header{"Retry-After": {"Wed, 21 Oct 2015 07:28:00 GMT"}},
+		},
+		"garbage": {
+			header: http.Header{
+				"Ratelimit-Reset": {"nope"},
+				"Retry-After":     {"-1"},
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			want := tt.want
+			if !tt.resetAt.IsZero() {
+				want = time.Until(tt.resetAt)
+			}
+			got := rateLimitRetryAfter(tt.header)
+			// Unix() truncated the header to whole seconds.
+			require.InDelta(t, want, got, float64(time.Second))
+		})
+	}
+}
+
+func TestGitLabErrorRateLimit(t *testing.T) {
+	t.Parallel()
+	newResp := func(status int, header http.Header) *gitlab.Response {
+		return &gitlab.Response{Response: &http.Response{
+			StatusCode: status,
+			Header:     header,
+		}}
+	}
+	rateLimited := http.Header{"Retry-After": {"30"}}
+
+	t.Run("nil error", func(t *testing.T) {
+		t.Parallel()
+		require.NoError(t, gitlabError(nil, newResp(500, nil)))
+	})
+
+	t.Run("429 carries the retry-after", func(t *testing.T) {
+		t.Parallel()
+		err := gitlabError(errors.New("slow down"), newResp(http.StatusTooManyRequests, rateLimited))
+		he, ok := errors.AsType[retryx.HTTPError](err)
+		require.True(t, ok)
+		require.Equal(t, 30*time.Second, he.RetryAfter)
+		require.True(t, retryx.IsRetriable(err))
+	})
+
+	t.Run("other statuses ignore the headers", func(t *testing.T) {
+		t.Parallel()
+		err := gitlabError(errors.New("bad request"), newResp(http.StatusBadRequest, rateLimited))
+		he, ok := errors.AsType[retryx.HTTPError](err)
+		require.True(t, ok)
+		require.Zero(t, he.RetryAfter)
+		require.False(t, retryx.IsRetriable(err))
+	})
+
+	t.Run("nil response", func(t *testing.T) {
+		t.Parallel()
+		err := gitlabError(errors.New("boom"), nil)
+		he, ok := errors.AsType[retryx.HTTPError](err)
+		require.True(t, ok)
+		require.Zero(t, he.Status)
 	})
 }
 
@@ -1525,48 +1711,97 @@ func TestGitLabPublishRelease(t *testing.T) {
 
 func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		if strings.HasPrefix(r.URL.Path, "/api/v4/version") {
-			fmt.Fprint(w, `{"version":"18.0.0"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost {
-			fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, `{"id":1,"name":"test.tar.gz","direct_asset_url":"http://example.com/test.tar.gz"}`)
-			return
-		}
-		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodDelete {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{}`)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "{}")
-	}))
-	t.Cleanup(srv.Close)
-
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitLabURLs: config.GitLabURLs{
-			API:      srv.URL,
-			Download: srv.URL,
+	for name, tt := range map[string]struct {
+		links       string
+		linksStatus int
+		replace     bool
+		wantDeletes int64
+		wantErrs    []string
+	}{
+		"replaces it": {
+			links:       `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:     true,
+			wantDeletes: 1,
 		},
-		Release: config.Release{
-			GitLab: config.Repo{
-				Owner: "someone",
-				Name:  "something",
-			},
-			ReplaceExistingArtifacts: true,
+		"replace disabled": {
+			links:    `[{"id":2,"name":"test.tar.gz"}]`,
+			wantErrs: []string{"has already been taken"},
 		},
-	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
-	client, err := newGitLab(ctx, "test-token")
-	require.NoError(t, err)
+		"no link with that name": {
+			links:    `[{"id":1,"name":"other"}]`,
+			replace:  true,
+			wantErrs: []string{"has already been taken"},
+		},
+		"listing the links fails": {
+			links:       `{"message":"404 Project Not Found"}`,
+			linksStatus: http.StatusNotFound,
+			replace:     true,
+			// the create error must survive: it names the real problem.
+			wantErrs: []string{"has already been taken", "404"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			var deletes atomic.Int64
+			var created atomic.Bool
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				_, _ = io.Copy(io.Discard, r.Body)
+				switch {
+				case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+					fmt.Fprint(w, `{"version":"18.0.0"}`)
+				case strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost:
+					fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
+				case !strings.Contains(r.URL.Path, "assets/links"):
+					fmt.Fprint(w, "{}")
+				case r.Method == http.MethodGet:
+					if tt.linksStatus != 0 {
+						http.Error(w, tt.links, tt.linksStatus)
+						return
+					}
+					fmt.Fprint(w, tt.links)
+				case r.Method == http.MethodDelete:
+					deletes.Add(1)
+					fmt.Fprint(w, `{"id":2,"name":"test.tar.gz"}`)
+				case !created.Swap(true):
+					// the link already exists, so the first create fails.
+					http.Error(
+						w,
+						`{"message":{"name":["has already been taken"]}}`,
+						http.StatusBadRequest,
+					)
+				default:
+					fmt.Fprint(w, `{"id":3,"name":"test.tar.gz"}`)
+				}
+			}))
+			t.Cleanup(srv.Close)
 
-	a := &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"}
-	err = client.Upload(ctx, "v1.0.0", a)
-	require.Error(t, err)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				GitLabURLs: config.GitLabURLs{
+					API:      srv.URL,
+					Download: srv.URL,
+				},
+				Release: config.Release{
+					GitLab: config.Repo{
+						Owner: "someone",
+						Name:  "something",
+					},
+					ReplaceExistingArtifacts: tt.replace,
+				},
+				Retry: config.Retry{Attempts: 2},
+			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			client, err := newGitLab(ctx, "test-token")
+			require.NoError(t, err)
+
+			a := &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"}
+			err = client.Upload(ctx, "v1.0.0", a)
+			if tt.wantErrs == nil {
+				require.NoError(t, err)
+			}
+			for _, want := range tt.wantErrs {
+				require.ErrorContains(t, err, want)
+			}
+			require.Equal(t, tt.wantDeletes, deletes.Load())
+		})
+	}
 }

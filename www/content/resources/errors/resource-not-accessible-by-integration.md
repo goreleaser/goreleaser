@@ -22,12 +22,12 @@ Integrations that may cause this:
 
 ## Fixing it
 
-You have basically two options:
+You have two options:
 
 ### 1. Use a Personal Access Token (PAT) for the entire process
 
 You can create a PAT and use it for the entire GoReleaser action run.
-You'll need to add it as secret and pass it to the action, for instance:
+You'll need to add it as a secret and pass it to the action, for instance:
 
 ```yaml {filename=".github/workflows/release.yaml"}
 # ...
@@ -41,7 +41,7 @@ You'll need to add it as secret and pass it to the action, for instance:
 
 You can also create a PAT for each integration.
 
-Let's see, for example, how it would look like for Homebrew Taps.
+Let's see, for example, how it would look for Homebrew Taps.
 
 We would need to change the workflow file:
 

@@ -159,18 +159,29 @@ func TestRemoteURLContainsWithUsernameAndTokenWithInvalidURL(t *testing.T) {
 }
 
 func TestShallowClone(t *testing.T) {
+	// build the upstream in its own directory, then shallow clone it. The
+	// pipe only looks for .git/shallow, so a local clone proves the same
+	// thing as cloning goreleaser from github, without the network.
+	upstream := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "second")
+	testlib.GitTag(t, "v0.0.2")
+
 	folder := testlib.Mktmp(t)
-	require.NoError(
-		t,
-		exec.CommandContext(
-			t.Context(),
-			"git", "clone",
-			"--depth", "1",
-			"--branch", "v0.160.0",
-			"https://github.com/goreleaser/goreleaser",
-			folder,
-		).Run(),
-	)
+	out, err := exec.CommandContext(
+		t.Context(),
+		"git", "clone",
+		"--depth", "1",
+		"--branch", "v0.0.2",
+		// --depth is ignored for a plain local path, which clones everything.
+		"file://"+filepath.ToSlash(upstream),
+		folder,
+	).CombinedOutput()
+	require.NoError(t, err, string(out))
+	require.FileExists(t, filepath.Join(folder, ".git", "shallow"))
+
 	t.Run("all checks up", func(t *testing.T) {
 		// its just a warning now
 		require.NoError(t, Pipe{}.Run(testctx.Wrap(t.Context())))

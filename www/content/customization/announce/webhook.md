@@ -7,7 +7,7 @@ WebHooks are a way to receive notifications.
 With this GoReleaser functionality, you can send events to any server
 exposing a WebHook.
 
-If your endpoints are not secure, you can use following environment variables to configure them:
+If your endpoints are not secure, you can use the following environment variables to configure them:
 
 - `BASIC_AUTH_HEADER_VALUE` like `Basic <base64(username:password)>`
 - `BEARER_TOKEN_HEADER_VALUE` like `Bearer <token>`
@@ -22,12 +22,12 @@ announce:
     # Templates: allowed. {{< g_inline_version "v2.6" >}}
     enabled: true
 
-    # Check the certificate of the webhook.
+    # Skip TLS certificate verification.
     skip_tls_verify: true
 
     # Message template to use while publishing.
     #
-    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'.
+    # Default: '{ "message": "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"}'.
     # Templates: allowed.
     message_template: '{ "title": "Awesome project {{.Tag}} is out!"}'
 
