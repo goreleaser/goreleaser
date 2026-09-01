@@ -168,12 +168,16 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 }
 
 func TestGitLabURLsDownloadTemplate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name               string
 		usePackageRegistry bool
 		downloadURL        string
-		wantURL            string
-		wantErr            bool
+		// wantURL is the release link URL the client must send to GitLab. For
+		// the package registry it is relative to the API server.
+		wantURL   string
+		wantErrIs string
 	}{
 		{
 			name:    "empty_download_url",
@@ -187,12 +191,12 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 		{
 			name:        "download_url_template_invalid_value",
 			downloadURL: "{{ .Eenv.GORELEASER_NOT_EXISTS }}",
-			wantErr:     true,
+			wantErrIs:   `map has no entry for key "Eenv"`,
 		},
 		{
 			name:        "download_url_template_invalid",
 			downloadURL: "{{.dddddddddd",
-			wantErr:     true,
+			wantErrIs:   `unclosed action`,
 		},
 		{
 			name:        "download_url_string",
@@ -207,50 +211,54 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 
 	for _, version := range []string{"16.3.4", "17.1.2"} {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer r.Body.Close()
-
-			if strings.Contains(r.URL.Path, "version") {
-				fmt.Fprintf(w, `{"version":%q}`, version)
-				return
-			}
-
-			if !strings.Contains(r.URL.Path, "assets/links") {
-				_, _ = io.Copy(io.Discard, r.Body)
-				fmt.Fprint(w, "{}")
-				return
-			}
-
-			b, err := io.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			reqBody := map[string]string{}
-			if err := json.Unmarshal(b, &reqBody); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			if version[:2] == "17" {
-				if reqBody["direct_asset_path"] == "" {
-					http.Error(w, "expected direct_asset_path", http.StatusBadRequest)
-					return
-				}
-			} else {
-				if reqBody["filepath"] == "" {
-					http.Error(w, "expected filepath", http.StatusBadRequest)
-					return
-				}
-			}
-
-			fmt.Fprint(w, "{}")
-		}))
-		t.Cleanup(srv.Close)
-
 		for _, tt := range tests {
 			t.Run(tt.name+"_"+version, func(t *testing.T) {
+				t.Parallel()
+
+				// the release link URL, as GitLab received it.
+				var gotURL atomic.Pointer[string]
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					defer r.Body.Close()
+
+					if strings.Contains(r.URL.Path, "version") {
+						fmt.Fprintf(w, `{"version":%q}`, version)
+						return
+					}
+
+					if !strings.Contains(r.URL.Path, "assets/links") {
+						_, _ = io.Copy(io.Discard, r.Body)
+						fmt.Fprint(w, "{}")
+						return
+					}
+
+					b, err := io.ReadAll(r.Body)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+
+					reqBody := map[string]string{}
+					if err := json.Unmarshal(b, &reqBody); err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+
+					// GitLab renamed filepath to direct_asset_path in v17.
+					pathField := "filepath"
+					if strings.HasPrefix(version, "17.") {
+						pathField = "direct_asset_path"
+					}
+					if reqBody[pathField] == "" {
+						http.Error(w, "expected "+pathField+" in "+string(b), http.StatusBadRequest)
+						return
+					}
+
+					url := reqBody["url"]
+					gotURL.Store(&url)
+					fmt.Fprint(w, "{}")
+				}))
+				t.Cleanup(srv.Close)
+
 				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
 					Env: []string{
@@ -277,11 +285,20 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				require.NoError(t, err)
 
 				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: tmpFile.Name()})
-				if tt.wantErr {
-					require.Error(t, err)
+				if tt.wantErrIs != "" {
+					require.ErrorContains(t, err, tt.wantErrIs)
+					require.Nil(t, gotURL.Load(), "must not create the release link on a template error")
 					return
 				}
 				require.NoError(t, err)
+
+				want := tt.wantURL
+				if tt.usePackageRegistry {
+					want = srv.URL + want
+				}
+				got := gotURL.Load()
+				require.NotNil(t, got, "no release link was created")
+				require.Equal(t, want, *got)
 			})
 		}
 	}
