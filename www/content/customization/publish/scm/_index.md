@@ -56,13 +56,14 @@ release:
 
   # Whether to remove an artifact that already exists.
   #
-  # Available only for GitHub.
   # This might be a bit expensive (rate-limiting speaking), so it is only done
-  # when the upload of an artifact fails with a 422 (which means it already
-  # exists in the release).
+  # when the upload of an artifact fails because it already exists in the
+  # release: a 422 on GitHub, and a 400 on GitLab.
   # We then grab the list of artifacts from the release, and delete the file
   # that matches the one we're trying to upload.
   # GoReleaser will then retry its upload.
+  #
+  # Available for GitHub and GitLab.
   replace_existing_artifacts: true
 
   # Useful if you want to delay the creation of the tag in the remote.

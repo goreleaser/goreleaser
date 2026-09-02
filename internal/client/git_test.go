@@ -2,6 +2,8 @@ package client
 
 import (
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -418,6 +420,154 @@ func TestGitClientWithSigning(t *testing.T) {
 			return
 		}
 		require.ErrorContains(t, err, "public key")
+	})
+}
+
+func TestCommitConfigFlags(t *testing.T) {
+	t.Parallel()
+	base := func(extra ...string) []string {
+		return append([]string{
+			"-c", "user.name=Foo",
+			"-c", "user.email=foo@bar.com",
+		}, extra...)
+	}
+	for _, tt := range []struct {
+		name     string
+		signing  config.CommitSigning
+		expected []string
+	}{
+		{
+			name:     "disabled",
+			expected: base("-c", "commit.gpgSign=false"),
+		},
+		{
+			name: "disabled ignores the other options",
+			signing: config.CommitSigning{
+				Key:     "test-signing-key",
+				Program: "/usr/bin/gpg",
+				Format:  "ssh",
+			},
+			expected: base("-c", "commit.gpgSign=false"),
+		},
+		{
+			name:     "enabled with no options",
+			signing:  config.CommitSigning{Enabled: true},
+			expected: base("-c", "commit.gpgSign=true"),
+		},
+		{
+			name: "enabled with all options",
+			signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "test-signing-key",
+				Program: "/usr/bin/gpg",
+				Format:  "ssh",
+			},
+			expected: base(
+				"-c", "commit.gpgSign=true",
+				"-c", "user.signingKey=test-signing-key",
+				"-c", "gpg.program=/usr/bin/gpg",
+				"-c", "gpg.format=ssh",
+			),
+		},
+		{
+			name:    "enabled with the default format",
+			signing: config.CommitSigning{Enabled: true, Format: "openpgp"},
+			expected: base(
+				"-c", "commit.gpgSign=true",
+				"-c", "gpg.format=openpgp",
+			),
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			require.Equal(t, tt.expected, commitConfigFlags(config.CommitAuthor{
+				Name:    "Foo",
+				Email:   "foo@bar.com",
+				Signing: tt.signing,
+			}))
+		})
+	}
+}
+
+// gitInBare runs git against a bare repository. It uses --git-dir because
+// -C is rejected when safe.bareRepository is set to explicit.
+func gitInBare(tb testing.TB, bare string, args ...string) string {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"git",
+		append([]string{"--git-dir=" + bare}, args...)...,
+	).CombinedOutput()
+	require.NoError(tb, err, string(out))
+	return strings.TrimSpace(string(out))
+}
+
+func TestGitClientReconfiguresReusedCheckout(t *testing.T) {
+	sshKey := testlib.MakeNewSSHKey(t, "")
+
+	t.Run("commit author", func(t *testing.T) {
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: t.TempDir()})
+		repo := Repo{GitURL: url, PrivateKey: sshKey, Name: "reused-author"}
+		cli := NewGitUploadClient(repo.Branch)
+
+		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
+			Name: "First", Email: "first@example.com",
+		}, repo, []byte("first"), "file.txt", "first"))
+		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
+			Name: "Second", Email: "second@example.com",
+		}, repo, []byte("second"), "file.txt", "second"))
+
+		require.Equal(
+			t,
+			"Second <second@example.com>",
+			gitInBare(t, url, "log", "master", "-1", "--format=%an <%ae>"),
+		)
+	})
+
+	t.Run("signing does not leak to the next caller", func(t *testing.T) {
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Dist: t.TempDir()})
+		repo := Repo{GitURL: url, PrivateKey: sshKey, Name: "reused-signing"}
+		cli := NewGitUploadClient(repo.Branch)
+		// A program that cannot exist, so that the result does not depend on a
+		// gpg installation or on the keyring of whoever runs the tests.
+		const programName = "not-gpg"
+		program := filepath.Join(t.TempDir(), programName)
+
+		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
+			Name: "First", Email: "first@example.com",
+		}, repo, []byte("first"), "file.txt", "first"))
+
+		err := cli.CreateFile(ctx, config.CommitAuthor{
+			Name:  "Second",
+			Email: "second@example.com",
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "test-signing-key",
+				Program: program,
+			},
+		}, repo, []byte("second"), "file.txt", "second")
+		// git names the program it could not run, which shows that gpg.program
+		// reached it. Only the base name is matched, because git rewrites path
+		// separators on Windows.
+		require.ErrorContains(t, err, programName)
+
+		require.NoError(t, cli.CreateFile(ctx, config.CommitAuthor{
+			Name: "Third", Email: "third@example.com",
+		}, repo, []byte("third"), "file.txt", "third"))
+
+		require.Equal(
+			t,
+			"Third <third@example.com>",
+			gitInBare(t, url, "log", "master", "-1", "--format=%an <%ae>"),
+		)
+		require.NotContains(
+			t,
+			gitInBare(t, url, "cat-file", "commit", "master"),
+			"gpgsig",
+			"the third commit must not be signed",
+		)
 	})
 }
 

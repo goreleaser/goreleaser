@@ -5,7 +5,7 @@ weight: 10
 
 ## Unsupported configuration version
 
-This can show as an error or as an warning:
+This can show as an error or as a warning:
 
 ```
 only version: 2 configuration files are supported, yours is version: 0, please update your configuration
@@ -14,7 +14,7 @@ only version: 2 configuration files are supported, yours is version: 0, please u
 It has to do with the v2 update.
 
 If you get it as a warning, your configuration file is valid in v2, but would
-benefit with the version header.
+benefit from the version header.
 You can remove the warning by adding this line to your configuration:
 
 ```yaml {filename=".goreleaser.yml"}

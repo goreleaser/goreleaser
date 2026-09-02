@@ -22,13 +22,14 @@ protected branches and tags.
 > to `true` as well, otherwise it might not work.
 
 > [!WARNING]
-> If you are using a [protected variable](https://docs.gitlab.com/ee/customization/ci/variables/#protected-cicd-variables)
-> to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
-> Gitlab only may access protected variables if the job is run for protected refs
-> ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
-> [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
+> If you are using a [protected variable](https://docs.gitlab.com/ci/variables/#protect-a-cicd-variable)
+> to store any of the values needed by GoReleaser, ensure that you are
+> protecting the tags as well: in GitLab, CI jobs can only access protected
+> variables when the job runs for a protected ref
+> ([branches](https://docs.gitlab.com/user/project/protected_branches/),
+> [tags](https://docs.gitlab.com/user/project/protected_tags/)).
 
-See [Quick Start](https://goreleaser.com/quick-start/) for more information on
+See the [Quick Start](/getting-started/quick-start/) for more information on
 GoReleaser's environment variables.
 
 Add a `.gitlab-ci.yml` file to the root of the project:
@@ -53,7 +54,7 @@ release:
 ```
 
 Notice that `entrypoint` is intentionally blank. See the
-[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/customization/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image)
+[GitLab documentation on entrypoints](https://docs.gitlab.com/ci/docker/using_docker_images/#override-the-entrypoint-of-an-image)
 for more information.
 
 When tags are pushed to the repository,
@@ -114,10 +115,10 @@ and `DOCKER_PASSWORD` if you aren't using the GitLab image registry. If you are
 using the GitLab image registry, you don't need to set these.
 
 Add a variable `GITLAB_TOKEN` if you are using [GitLab
-releases](https://docs.gitlab.com/ce/user/project/releases/). The value should
+releases](https://docs.gitlab.com/user/project/releases/). The value should
 be an API token with `api` scope for a user that has access to the project.
 
-Alternatively, you can provide the gitlab token in a file. GoReleaser will check
+Alternatively, you can provide the GitLab token in a file. GoReleaser will check
 `~/.config/goreleaser/gitlab_token` by default, but you can change that in the
 `.goreleaser.yaml` file:
 

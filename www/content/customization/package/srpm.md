@@ -99,7 +99,7 @@ srpm:
 
   # Signature configuration.
   #
-  # If the key is password-protected, you'll need to set the `%SRPM_PASSPHRASE`
+  # If the key is password-protected, you'll need to set the `SRPM_PASSPHRASE`
   # environment variable when calling GoReleaser.
   signature:
     # Templates: allowed.

@@ -10,28 +10,28 @@ A few notes on how to get started:
 
 - [x] GoReleaser Pro is distributed as a different binary than the free version.
       Make sure you have it installed by checking `goreleaser -v`.
-- [x] if you use GitHub Actions, make sure to set the `distribution` option to
+- [x] If you use GitHub Actions, set the `distribution` option to
       `goreleaser-pro`. Don't forget to add the `GORELEASER_KEY` environment
       variable as well.[^actions]
-- [x] if you installed GoReleaser via a package manager, you'll need to install
-      a different package. Usually it's the same name as the OSS, but with a
-      `-pro` suffix, e.g. `goreleaser-pro` instead of `goreleaser`.[^install]
-- [x] Once you install the Pro version, you can set the `GORELEASER_KEY`
-      environment variable according to your shell of choice, and use it the
-      same way you use the OSS version — with all the extra features!
+- [x] If you installed GoReleaser with a package manager, you'll need to install
+      a different package. It's usually the same name as the OSS one with a
+      `-pro` suffix, for example `goreleaser-pro` instead of `goreleaser`.[^install]
+- [x] Once you install the Pro version, set the `GORELEASER_KEY` environment
+      variable in your shell of choice, and use it the same way you use the OSS
+      version — with all the extra features!
 - [x] If you use the YAML Language Server in your editor, check out the Pro
-      JSONSchema, so you can have some instant feedback on options.[^schema]
-- [x] If you have any questions or feedback, feel free to contact in the email
-      you received or on any of the public chats we have.[^links]
+      JSON Schema, so you get instant feedback on options.[^schema]
+- [x] If you have any questions or feedback, reply to the email you received or
+      reach us on any of our public channels.[^links]
 
-I hope GoReleaser Pro helps improving your release workflow even more!
+I hope GoReleaser Pro helps improve your release workflow even more!
 
 Thank you!
 
-[^actions]: See all the GitHub Actions options [here](/customization/ci/actions/).
+[^actions]: See all the [GitHub Actions options](/customization/ci/actions/).
 
-[^install]: Check out all the installation methods [here](/getting-started/install/).
+[^install]: Check out all the [installation methods](/getting-started/install/).
 
-[^schema]: More about our JSONSchemas [here](/customization/index/).
+[^schema]: Read more about [our JSON Schemas](/customization/index/).
 
-[^links]: All our contact, forums, and media links are available [here](/resources/links/).
+[^links]: Find all our [contact, forum, and media links](/resources/links/).

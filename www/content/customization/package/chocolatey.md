@@ -4,9 +4,9 @@ weight: 120
 ---
 
 GoReleaser can also generate `nupkg` packages.
-[Chocolatey](http://chocolatey.org/) are packages based on `nupkg` format, that
-will let you publish your project directly to the Chocolatey Repository. From
-there it will be able to install locally or in Windows distributions.
+[Chocolatey](http://chocolatey.org/) packages use the `nupkg` format and let you
+publish your project directly to the Chocolatey Repository, from where users can
+install it locally or across Windows distributions.
 
 You can read more about it in the [chocolatey docs](https://docs.chocolatey.org/).
 
@@ -82,7 +82,7 @@ chocolateys:
     # App's license information url.
     license_url: https://github.com/foo/bar/blob/main/LICENSE
 
-    # Your apps's require license acceptance:
+    # Your app's require license acceptance:
     # Specify whether the client must prompt the consumer to accept the package
     # license before installing.
     require_license_acceptance: false

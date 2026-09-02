@@ -130,7 +130,7 @@ archives:
         strip_parent: true
 
         # File info.
-        # Not all fields are supported by all formats available formats.
+        # Not all fields are supported by all available formats.
         #
         # Default: copied from the source file.
         info:
@@ -160,7 +160,7 @@ archives:
         dst: LICENSE.md
 
         # File info.
-        # Not all fields are supported by all formats available formats.
+        # Not all fields are supported by all available formats.
         #
         # Default: copied from the source file.
         info:
@@ -271,7 +271,7 @@ archives:
       - none*
 ```
 
-This would add all files matching the glob `none*`, provide that you don't
+This would add all files matching the glob `none*`. Provided that you don't
 have any files matching that glob, only the binary will be added to the
 archive. Any glob that doesn't match any file should work.
 
@@ -279,8 +279,8 @@ For more information, check [#602](https://github.com/goreleaser/goreleaser/issu
 
 ## A note about Gzip/XZ
 
-Gzip and xz are a compression-only format, therefore, it couldn't have more than
-one file inside.
+Gzip and xz are compression-only formats, so they can't hold more than one file
+inside.
 
 Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:

@@ -262,7 +262,7 @@ homebrew_casks:
 
 Casks are supposed to be signed, even if they are coming from a tap.
 
-GoReleaser can [sign and notarize both binaries and apps](/customization/sign/notarize/), but,
+GoReleaser can [sign and notarize both binaries and apps](/customization/sign/notarize/), but
 Apple charges a yearly fee for that.
 
 If you don't want to do it, you still have the option to tell macOS to remove
@@ -283,7 +283,7 @@ homebrew_casks:
 > [!CAUTION]
 > **What happens if I don't follow the steps above?**
 >
-> **Not following this might lead to your app/binary to not run.**
+> **Not following this might lead to your app or binary not running.**
 >
 > In these cases, users will see the infamous "_App Name is damaged and
 > cannot be opened_" alert.
@@ -291,7 +291,7 @@ homebrew_casks:
 > If you don't want to do any of the steps above, you may want to instruct
 > your users to run the appropriate `xattr` command manually.
 >
-> You may do so in using the `caveats` property, for example.
+> You may do so by using the `caveats` property, for example.
 
 > [!WARNING]
 > **xattr bypasses macOS security - use with caution**
@@ -312,7 +312,7 @@ homebrew_casks:
 {{< g_featpro >}}
 
 GoReleaser can also create a versioned Cask.
-For instance, you might want to make keep previous minor versions available to
+For instance, you might want to keep previous minor versions available to
 your users, so they easily downgrade and/or keep using an older version.
 
 To do that, use `alternative_names`:

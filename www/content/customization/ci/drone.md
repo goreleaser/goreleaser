@@ -3,9 +3,9 @@ title: "Drone"
 weight: 70
 ---
 
-By default, drone does not fetch tags. `plugins/git` is used with default
-values, in most cases we'll need overwrite the `clone` step enabling tags, so
-`goreleaser` work correctly.
+By default, Drone does not fetch tags. `plugins/git` runs with default
+values, so in most cases you need to override the `clone` step to enable tags
+for `goreleaser` to work correctly.
 
 In this example we're creating a new release every time a new tag is pushed.
 Note that you'll need to enable `tags` in repo settings and add `github_token`
@@ -38,7 +38,7 @@ steps:
       event: tag
 ```
 
-In case you need to build docker image, use [Docker-In-Docker](https://docs.drone.io/pipeline/docker/examples/services/docker_dind/) (DIND)
+In case you need to build a Docker image, use [Docker-in-Docker](https://docs.drone.io/pipeline/docker/examples/services/docker_dind/) (DinD)
 
 ```yaml
 ---
@@ -85,9 +85,10 @@ volumes:
     temp: {}
 ```
 
-Note: to use DIND you have to set repo as 'trusted'. To mark repository as trusted:
+Note: to use DinD you have to set the repository as 'trusted'. To mark a
+repository as trusted:
 
-1. contact your Drone's admin
+1. contact your Drone administrator
 2. or set your [user as administrator](https://docs.drone.io/server/user/admin/) and then enable 'trusted' switch in repository settings UI
 
 #### 0.8

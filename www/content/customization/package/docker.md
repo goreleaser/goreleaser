@@ -219,8 +219,8 @@ dockers:
 ```
 
 > [!WARNING]
-> Note that you will have to manually login into the Docker registries you
-> want to push to — GoReleaser does not login by itself.
+> Note that you will have to manually log in to the Docker registries you
+> want to push to — GoReleaser does not log in by itself.
 
 {{< g_templates >}}
 

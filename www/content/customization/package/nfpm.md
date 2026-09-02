@@ -806,7 +806,7 @@ Termux is the same format as `deb`, the differences are:
 
 - it uses a different file structure (`/data/data/com.termux/files/`)
 - `bindir` is automatically adjusted, but other files might require extra
-  configuration (see bellow)
+  configuration (see below)
 - it uses slightly different architecture names than Debian
 - it will only package binaries built for Android
 

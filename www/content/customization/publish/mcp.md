@@ -158,12 +158,12 @@ mcp:
 GoReleaser will generate a `server.json` conforming to the
 [MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json).
 
-Then, it'll login using the provided authentication details.
+Then, it'll sign in using the provided authentication details.
 
-Finally, it'll publish the server.json to the registry.
+Finally, it'll publish the `server.json` to the registry.
 
-Follow
-[this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
+Follow the
+[MCP registry publishing quickstart](https://modelcontextprotocol.io/registry/quickstart)
 for more details.
 
 > [!NOTE]
@@ -202,6 +202,6 @@ npms:
 
 If you don't set these fields, publishing the MCP will fail.
 
-Read
-[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
+Read the
+[MCP registry publishing quickstart](https://modelcontextprotocol.io/registry/quickstart)
 for more information.

@@ -3,8 +3,9 @@ title: "Azure Pipelines"
 weight: 20
 ---
 
-GoReleaser can also be used within our official [GoReleaser Extensions for Azure
-DevOps][goreleaser-extension] through [Visual Studio marketplace][marketplace].
+GoReleaser can be used within the official [GoReleaser Extensions for
+Azure DevOps][goreleaser-extension] through the [Visual Studio
+Marketplace][marketplace].
 
 ### Task definition
 
@@ -19,7 +20,7 @@ DevOps][goreleaser-extension] through [Visual Studio marketplace][marketplace].
 
 ### Task inputs
 
-Following inputs can be used:
+The following inputs can be used:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
 
@@ -38,20 +39,22 @@ Following inputs can be used:
 
 ### Task environment variables
 
-```yaml
+Define the variable in the pipeline:
 
----
+```yaml
 variables:
   - name: GORELEASER_KEY
     value: xxx
----
-or short:
----
+```
+
+Or, in short form:
+
+```yaml
 variables:
   GORELEASER_KEY: xxx
 ```
 
-Following environment variables can be used, as environment variable.
+The following environment variables can be used:
 
 | Name             | Description                                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -109,7 +112,7 @@ jobs:
           workdir: "$(Build.SourcesDirectory)"
 ```
 
-In this example a `Test` job is used to run `go test ./...` to first make sure that there're no failing tests. Only if
+In this example a `Test` job is used to run `go test ./...` to first make sure that there are no failing tests. Only if
 that job succeeds and the pipeline was triggered from a tag (because of the defined `condition`) GoReleaser will be run.
 
 [goreleaser-extension]: https://marketplace.visualstudio.com/items?itemName=GoReleaser.goreleaser

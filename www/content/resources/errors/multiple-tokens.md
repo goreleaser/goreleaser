@@ -3,7 +3,8 @@ title: "Multiple tokens found, but only one is allowed"
 weight: 30
 ---
 
-GoReleaser infers if you are using GitHub, GitLab or Gitea by which tokens are provided.
+GoReleaser infers whether you are using GitHub, GitLab, or Gitea by which tokens
+are provided.
 If you have multiple tokens set, you'll get this error.
 
 Here's an example:

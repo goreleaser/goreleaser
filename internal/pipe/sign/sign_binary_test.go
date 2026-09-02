@@ -111,7 +111,9 @@ func TestBinarySign(t *testing.T) {
 	testlib.SkipIfWindows(t, "tries to use /usr/bin/gpg-agent")
 	doTest := func(tb testing.TB, sign config.BinarySign) []*artifact.Artifact {
 		tb.Helper()
-		tmpdir := tb.TempDir()
+		// chdir: the templated-signature case below uses a signature name
+		// that is relative to the working directory.
+		tmpdir := testlib.Mktmp(tb)
 
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			BinarySigns: []config.BinarySign{sign},
@@ -165,7 +167,7 @@ func TestBinarySign(t *testing.T) {
 			Cmd:       "/bin/sh",
 			Args: []string{
 				"-c",
-				`echo "siging signature=$signature artifact=$artifact"`,
+				`echo "siging signature=$signature artifact=$artifact" > "$signature"`,
 				"shell",
 			},
 		})
