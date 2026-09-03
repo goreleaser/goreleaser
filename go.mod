@@ -28,7 +28,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-containerregistry v0.22.0
-	github.com/google/go-github/v89 v89.0.0
+	github.com/google/go-github/v91 v91.0.0
 	github.com/google/ko v0.19.1
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
