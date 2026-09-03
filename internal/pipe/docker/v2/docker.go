@@ -542,7 +542,10 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 	artifacts := ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.And(filters...),
-			artifact.ByType(artifact.PyWheel),
+			artifact.And(
+				artifact.ByType(artifact.PyWheel),
+				artifact.ByIDs(d.IDs...),
+			),
 		),
 	)
 
