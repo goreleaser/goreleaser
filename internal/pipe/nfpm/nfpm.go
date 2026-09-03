@@ -207,11 +207,17 @@ func isSupportedArchlinuxArch(goarch, goarm string) bool {
 	}
 }
 
+// Termux knows four architectures: aarch64, arm, i686 and x86_64. Every 32-bit
+// ARM variant is just "arm" there.
+// Order matters: strings.Replacer takes the first listed match at a position,
+// so "arm64" has to stay ahead of the "armN" entries.
 var termuxArchReplacer = strings.NewReplacer(
 	"386", "i686",
 	"amd64", "x86_64",
 	"arm64", "aarch64",
+	"arm5", "arm",
 	"arm6", "arm",
+	"arm7", "arm",
 )
 
 // debArchVariant returns the Debian architecture variant for the given
