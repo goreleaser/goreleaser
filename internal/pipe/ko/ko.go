@@ -177,7 +177,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 type buildOptions struct {
 	importPath          string
-	main                string
 	flags               []string
 	env                 []string
 	imageRepos          []string
@@ -205,7 +204,6 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 			o.importPath: {
 				Ldflags: o.ldflags,
 				Flags:   o.flags,
-				Main:    o.main,
 				Env:     o.env,
 			},
 		}),

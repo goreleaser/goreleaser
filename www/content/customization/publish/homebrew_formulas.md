@@ -185,7 +185,7 @@ brews:
     # Custom post_install script for brew.
     # Could be used to do any additional work after the "install" script
     post_install: |
-    	etc.install "app-config.conf"
+      etc.install "app-config.conf"
       # ...
 
 {{% g_include file="includes/repository.md" %}}

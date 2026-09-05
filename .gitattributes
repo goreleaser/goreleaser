@@ -7,10 +7,10 @@
 *.ico binary
 *.icns binary
 
-www/docs/static/schema.json linguist-generated=true
-www/docs/static/schema-pro.json linguist-generated=true
-www/docs/static/releases.json linguist-generated=true
-www/docs/static/releases-pro.json linguist-generated=true
+www/static/schema.json linguist-generated=true
+www/static/schema-pro.json linguist-generated=true
+www/static/releases.json linguist-generated=true
+www/static/releases-pro.json linguist-generated=true
 
 internal/builders/zig/all_targets.txt linguist-generated=true
 internal/builders/zig/error_targets.txt linguist-generated=true

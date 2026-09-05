@@ -9,7 +9,8 @@ import (
 	"testing"
 )
 
-// CheckPath skips the test if the binary is not in the PATH, or if CI is true.
+// CheckPath skips the test if the binary is not in PATH, unless CI=true.
+// In CI, the test runs without checking this prerequisite.
 func CheckPath(tb testing.TB, cmd string) {
 	tb.Helper()
 	if !InPath(cmd) {

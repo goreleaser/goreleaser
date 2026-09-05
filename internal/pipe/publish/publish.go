@@ -38,7 +38,7 @@ import (
 type Publisher interface {
 	fmt.Stringer
 
-	// Default sets the configuration defaults
+	// Publish publishes the configured artifacts.
 	Publish(ctx *context.Context) error
 }
 

@@ -201,7 +201,7 @@ builds:
 
 release:
   disable: true
----
+
 blobs:
   - provider: gs
     bucket: goreleaser-quickbites

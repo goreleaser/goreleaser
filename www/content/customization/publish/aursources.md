@@ -16,8 +16,15 @@ a `PKGBUILD` to an _Arch User Repository_ based on sources.
 > [!NOTE]
 > `aur_sources` requires a [source archive][sourcearchive] to be configured.
 > Make sure to enable `source.enabled: true` in your configuration.
+> The example uses the default archive layout, with source files at the root.
+> If you set `source.prefix_template`, adjust the working directory in each
+> function to match that prefix.
 
 This page describes the available options.
+
+Unlike binary AUR packages, AUR Sources uses source archives. The `ids` and
+`goamd64` fields do not affect its output. Use `arches` to declare the package's
+supported architectures.
 
 ```yaml {filename=".goreleaser.yaml"}
 aur_sources:
@@ -29,12 +36,6 @@ aur_sources:
     #
     # Default: ProjectName.
     name: package
-
-    # Artifact IDs to filter for.
-    # Empty means all IDs (no filter).
-    ids:
-      - foo
-      - bar
 
     # Your app's homepage.
     #
@@ -119,8 +120,9 @@ aur_sources:
 
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
+    # Paths are relative to the package root, without a leading slash.
     backup:
-      - /etc/foo.conf
+      - etc/foo.conf
 
     # The release number of the package (the `pkgrel` field in the PKGBUILD).
     #
@@ -129,23 +131,19 @@ aur_sources:
 
     # Custom prepare instructions.
     prepare: |-
-      cd "${pkgname}_${pkgver}"
       go mod download
 
     # Custom build instructions.
     build: |-
-      cd "${pkgname}_${pkgver}"
       export CGO_CPPFLAGS="${CPPFLAGS}"
       export CGO_CFLAGS="${CFLAGS}"
       export CGO_CXXFLAGS="${CXXFLAGS}"
       export CGO_LDFLAGS="${LDFLAGS}"
       export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
-      go build -ldflags="-w -s -buildid='' -linkmode=external -X main.version=${pkgver}" .
-      chmod +x ./goreleaser
+      go build -o myapp -ldflags="-w -s -buildid='' -linkmode=external -X main.version=${pkgver}" .
 
     # Custom package instructions.
     package: |-
-      cd "${pkgname}_${pkgver}"
       install -Dsm755 ./myapp "${pkgdir}/usr/bin/myapp"
 
     # This will be added into the package as 'name.install'.
@@ -160,11 +158,6 @@ aur_sources:
     # Default: 'Update to {{ .Tag }}'.
     # Templates: allowed.
     commit_msg_template: "pkgbuild updates"
-
-    # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
-    #
-    # Default: 'v1'.
-    goamd64: v2
 
     # The value to be passed to `GIT_SSH_COMMAND`.
     # This is mainly used to specify the SSH private key used to pull/push to

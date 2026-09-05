@@ -73,8 +73,15 @@ automatically, without any extra manual steps:
 
 ```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
-  - generate_completions_from_executable: true
+  - name: myapp
+    generate_completions_from_executable:
+      executable: myapp
+      args: [completion]
+      shell_parameter_format: cobra
 ```
+
+This example assumes `myapp completion <shell>` generates completions.
+Set `executable` and `args` to match your program's completion command.
 
 See the [documentation](https://goreleaser.com/customization/homebrew_casks/)
 for more details.

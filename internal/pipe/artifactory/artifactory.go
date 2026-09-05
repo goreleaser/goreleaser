@@ -53,12 +53,9 @@ type Error struct {
 	Message string `json:"message"` // Message describing the error.
 }
 
-// checkResponse checks the API response for errors, and returns them if
-// present. A response is considered an error if it has a status code outside
-// the 200 range.
-// API error responses are expected to have either no response
-// body, or a JSON response body that maps to ErrorResponse. Any other
-// response body will be silently ignored.
+// checkResponse treats status codes outside the 200 range as errors.
+// It decodes the response body into an errorResponse. An empty body or invalid
+// JSON returns a decoding error.
 func checkResponse(r *h.Response) error {
 	defer r.Body.Close()
 	if c := r.StatusCode; 200 <= c && c <= 299 {

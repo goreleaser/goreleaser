@@ -41,6 +41,8 @@ blobs:
     # KMS key to use to encrypt the files before uploading.
     # This is a Go CDK secrets keeper URL, e.g. `awskms://`, `gcpkms://`, or
     # `azurekeyvault://`.
+    # Encrypts the whole file directly; provider size limits apply.
+    # AWS KMS symmetric keys support files up to 4,096 bytes.
     kms_key: "awskms://alias/my-key"
 
     # Bucket name.
@@ -70,8 +72,11 @@ blobs:
 
     # Whether to disable this particular upload configuration.
     #
+    # Export BLOB_UPLOAD_ONLY before using this example.
+    # Only the value 'foo' enables this upload configuration.
+    #
     # Templates: allowed.
-    disable: '{{ ne .BLOB_UPLOAD_ONLY "foo" }}'
+    disable: '{{ ne .Env.BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
     #
@@ -140,6 +145,20 @@ blobs:
 ```
 
 {{< g_templates >}}
+
+## Client-side encryption limits
+
+`kms_key` sends each complete file to the configured KMS provider for encryption
+before uploading it. It does not use envelope encryption.
+
+For `awskms://` with a symmetric encryption key, the
+[AWS KMS Encrypt limit](https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html)
+is 4,096 bytes per file. Larger files fail during encryption and are not uploaded.
+Other key types and providers have their own limits.
+
+For larger artifacts, use your storage provider's server-side encryption, or
+encrypt the artifacts separately before uploading them. Leave `kms_key` unset
+when you use either approach.
 
 ## Authentication
 

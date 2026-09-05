@@ -101,8 +101,9 @@ aurs:
 
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
+    # Paths are relative to the package root, without a leading slash.
     backup:
-      - /etc/foo.conf
+      - etc/foo.conf
 
     # The release number of the package (the `pkgrel` field in the PKGBUILD).
     #

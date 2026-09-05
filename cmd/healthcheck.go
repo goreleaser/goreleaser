@@ -6,7 +6,6 @@ import (
 	"io"
 	"os/exec"
 	"strings"
-	"sync"
 
 	"charm.land/lipgloss/v2"
 	"github.com/caarlos0/log"
@@ -55,7 +54,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 			defer log.ResetPadding()
 
 			var errs []error
-			checked := &sync.Map{}
+			checked := map[string]bool{}
 			for _, hc := range healthcheck.DependencyCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
 					for _, tool := range hc.Dependencies(ctx) {
@@ -106,10 +105,11 @@ func check(name string, err error) error {
 
 // checkPath reports whether tool is usable. checked dedupes tools listed by
 // more than one pipe within a single healthcheck run.
-func checkPath(ctx stdctx.Context, checked *sync.Map, tool string) error {
-	if _, ok := checked.LoadOrStore(tool, true); ok {
+func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
+	if checked[tool] {
 		return nil
 	}
+	checked[tool] = true
 	args := strings.Fields(tool)
 	if _, err := exec.LookPath(args[0]); err != nil {
 		st := log.Styles[log.ErrorLevel]

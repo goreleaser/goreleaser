@@ -11,7 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe is a global hook pipe.
+// Pipe parses the current Git tag as a semantic version.
 type Pipe struct{}
 
 // String is the name of this pipe.
@@ -19,7 +19,7 @@ func (Pipe) String() string {
 	return "parsing tag"
 }
 
-// Run executes the hooks.
+// Run parses the tag and populates the semantic-version fields.
 func (Pipe) Run(ctx *context.Context) error {
 	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 	if err != nil {

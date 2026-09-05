@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -33,7 +32,7 @@ func TestHealthcheckQuier(t *testing.T) {
 }
 
 func TestCheckPath(t *testing.T) {
-	checked := &sync.Map{}
+	checked := map[string]bool{}
 	require.NoError(t, checkPath(t.Context(), checked, "go"))
 	require.NoError(t, checkPath(t.Context(), checked, "git version"))
 	// `go` rather than `docker`: this case is about a tool that is on PATH but
@@ -45,11 +44,11 @@ func TestCheckPath(t *testing.T) {
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {
-	checked := &sync.Map{}
+	checked := map[string]bool{}
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
 	// second call is deduped by the cache, so it reports no error even though
 	// the tool is still missing.
 	require.NoError(t, checkPath(t.Context(), checked, "some invalid command"))
 	// a cache of its own sees the failure again.
-	require.Error(t, checkPath(t.Context(), &sync.Map{}, "some invalid command"))
+	require.Error(t, checkPath(t.Context(), map[string]bool{}, "some invalid command"))
 }
