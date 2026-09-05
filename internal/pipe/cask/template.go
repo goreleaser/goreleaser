@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
@@ -97,6 +98,39 @@ func zapString(u config.HomebrewCaskUninstall) string {
 
 func uninstallString(u config.HomebrewCaskUninstall) string {
 	return makeUninstallLikeBlock("uninstall", u)
+}
+
+// caskTokens expose Homebrew's own install steps tokens as template fields.
+// Homebrew uses the same delimiters as GoReleaser, so without these the user
+// would need to quote every token, e.g. `{{ "{{staged_path}}" }}`.
+var caskTokens = tmpl.Fields{
+	"StagedPath": "{{staged_path}}",
+	"AppDir":     "{{appdir}}",
+}
+
+// flightString renders a Cask flight block. The `steps` body uses the
+// declarative install steps DSL and is written into the `_steps` stanza; the
+// deprecated `legacy` body is raw Ruby and keeps the old stanza. When both are
+// set, the steps body wins.
+func flightString(stanza, steps, legacy string) string {
+	if steps != "" {
+		return flightBlock(stanza+"_steps", steps)
+	}
+	return flightBlock(stanza, legacy)
+}
+
+func flightBlock(stanza, body string) string {
+	lines := split(body)
+	if len(lines) == 0 {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString(stanza + " do\n")
+	for _, line := range lines {
+		sb.WriteString("    " + line + "\n")
+	}
+	sb.WriteString("  end")
+	return sb.String()
 }
 
 func makeUninstallLikeBlock(stanza string, u config.HomebrewCaskUninstall) string {

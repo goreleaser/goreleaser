@@ -1965,6 +1965,12 @@
 			},
 			"HomebrewCaskHook": {
 				"properties": {
+					"install_steps": {
+						"type": "string"
+					},
+					"uninstall_steps": {
+						"type": "string"
+					},
 					"install": {
 						"type": "string"
 					},
@@ -1990,9 +1996,6 @@
 			"HomebrewCaskURL": {
 				"properties": {
 					"template": {
-						"type": "string"
-					},
-					"verified": {
 						"type": "string"
 					},
 					"using": {
@@ -2021,6 +2024,9 @@
 							"type": "string"
 						},
 						"type": "object"
+					},
+					"verified": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

@@ -504,6 +504,38 @@ func TestFullPipe(t *testing.T) {
 				}
 			},
 		},
+		"hooks_steps": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
+					Pre: config.HomebrewCaskHook{
+						InstallSteps:   `mkdir_p "{{ .StagedPath }}/etc"`,
+						UninstallSteps: `remove "{{ .AppDir }}/{{ .ProjectName }}.app"`,
+					},
+					Post: config.HomebrewCaskHook{
+						InstallSteps: "on_macos do\n" +
+							`  run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/{{ .ProjectName }}"]` +
+							"\nend",
+						UninstallSteps: `remove "~/.config/{{ .ProjectName }}", recursive: true`,
+					},
+				}
+			},
+		},
+		"hooks_steps_win_over_deprecated": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
+					Post: config.HomebrewCaskHook{
+						Install:      `system_command "/usr/bin/true"`,
+						InstallSteps: `run "/usr/bin/true"`,
+					},
+				}
+			},
+		},
 		"generate_completions": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
@@ -1226,6 +1258,16 @@ func TestDefaultDeprecated(t *testing.T) {
 				URL: config.HomebrewCaskURL{
 					Verified: "github.com/foo/bar",
 				},
+				Hooks: config.HomebrewCaskHooks{
+					Pre: config.HomebrewCaskHook{
+						Install:   `system_command "/usr/bin/true"`,
+						Uninstall: `system_command "/usr/bin/true"`,
+					},
+					Post: config.HomebrewCaskHook{
+						Install:   `system_command "/usr/bin/true"`,
+						Uninstall: `system_command "/usr/bin/true"`,
+					},
+				},
 			},
 		},
 	}, testctx.GitHubTokenType)
@@ -1235,6 +1277,10 @@ func TestDefaultDeprecated(t *testing.T) {
 	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
 	require.Equal(t, []string{"man"}, ctx.Config.Casks[0].Manpages)
 	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.url.verified")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.pre.install")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.pre.uninstall")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.post.install")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.post.uninstall")
 }
 
 func TestGHFolder(t *testing.T) {

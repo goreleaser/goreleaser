@@ -200,18 +200,26 @@ homebrew_casks:
 
     # Hooks for the cask lifecycle.
     #
+    # The body of each option uses Homebrew's declarative install steps DSL.
+    # It is not arbitrary Ruby.
+    # See https://docs.brew.sh/Cask-Cookbook for the allowed steps.
+    #
+    # Use `{{ .StagedPath }}` and `{{ .AppDir }}` for Homebrew's own
+    # `staged_path` and `appdir` tokens.
+    #
     # Templates: allowed. {{< g_inline_version "v2.13" >}}
     hooks:
       pre:
-        install: |
-          system_command "/usr/bin/defaults", args: ["write", "com.example.app", "key", "value"]
-        uninstall: |
-          system_command "/usr/bin/defaults", args: ["delete", "com.example.app"]
+        # {{< g_inline_version "v2.19-unreleased" >}}
+        install_steps: |
+          run "/usr/bin/defaults", args: ["write", "com.example.app", "key", "value"]
+        uninstall_steps: |
+          run "/usr/bin/defaults", args: ["delete", "com.example.app"]
       post:
-        install: |
-          system_command "/usr/bin/open", args: ["#{appdir}/MyApp.app"]
-        uninstall: |
-          system_command "/usr/bin/rm", args: ["-rf", "~/.myapp"]
+        install_steps: |
+          run "/usr/bin/open", args: ["{{ .AppDir }}/MyApp.app"]
+        uninstall_steps: |
+          remove "~/.myapp", recursive: true
 
     # Relative path to a Service that should be moved into the
     # ~/Library/Services folder on installation.
@@ -270,9 +278,9 @@ homebrew_casks:
     hooks:
       post:
         # replace foo with the actual binary name
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/foo"]
           end
 ```
 

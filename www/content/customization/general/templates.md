@@ -147,6 +147,19 @@ In the nFPM name template field, you can use those extra fields:
 | `.ConventionalExtension` | conventional package extension as provided by nFPM              |
 | `.Format`                | package format                                                  |
 
+## Homebrew Cask extra fields
+
+In the [Homebrew Cask](/customization/publish/homebrew_casks/) fields, you can
+use these extra fields {{< g_inline_version "v2.19-unreleased" >}}:
+
+| Key           | Description                                                        |
+| ------------- | ------------------------------------------------------------------ |
+| `.StagedPath` | Homebrew's `staged_path` token: where the cask contents are staged |
+| `.AppDir`     | Homebrew's `appdir` token: where `.app` bundles are installed      |
+
+Homebrew uses the same delimiters as GoReleaser, so these fields let you write
+its tokens without quoting them.
+
 ## Release body extra fields
 
 In the `release.body` field, you can use these extra fields:
