@@ -176,5 +176,5 @@ You can also [sponsor the project](/sponsors), or get a
 
 [install]: /getting-started/install/
 [oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v2.6.0
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.6.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.6.0-pro
 [pro]: /pro/
