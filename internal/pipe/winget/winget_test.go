@@ -576,7 +576,7 @@ func TestRunPipe(t *testing.T) {
 			name:           "bad-copyright-url-tmpl",
 			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
-				Name:             "{{ .Nope }}",
+				Name:             "foo",
 				Publisher:        "Beckersoft",
 				License:          "MIT",
 				CopyrightURL:     "{{ .Nope }}",
