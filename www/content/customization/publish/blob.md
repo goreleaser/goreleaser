@@ -70,8 +70,11 @@ blobs:
 
     # Whether to disable this particular upload configuration.
     #
+    # Export BLOB_UPLOAD_ONLY before using this example.
+    # Only the value 'foo' enables this upload configuration.
+    #
     # Templates: allowed.
-    disable: '{{ ne .BLOB_UPLOAD_ONLY "foo" }}'
+    disable: '{{ ne .Env.BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
     #
