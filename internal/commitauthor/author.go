@@ -13,8 +13,7 @@ const (
 )
 
 // Get templates the commit author and returns a new [config.CommitAuthor].
-func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
-	author := og
+func Get(ctx *context.Context, author config.CommitAuthor) (config.CommitAuthor, error) {
 	if err := tmpl.New(ctx).ApplyAll(
 		&author.Name,
 		&author.Email,
