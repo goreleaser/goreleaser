@@ -14,16 +14,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func isolateEnv(t *testing.T) {
-	t.Helper()
+func isolateEnv(tb testing.TB) {
+	tb.Helper()
 	for _, key := range []string{"GITHUB_TOKEN", "GITEA_TOKEN", "GITLAB_TOKEN", "GORELEASER_FORCE_TOKEN"} {
-		t.Setenv(key, "")
+		tb.Setenv(key, "")
 	}
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home)
+	home := tb.TempDir()
+	tb.Setenv("HOME", home)
+	tb.Setenv("USERPROFILE", home)
 	homedir.Reset()
-	t.Cleanup(homedir.Reset)
+	tb.Cleanup(homedir.Reset)
 }
 
 func TestDescription(t *testing.T) {
