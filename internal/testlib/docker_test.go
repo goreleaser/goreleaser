@@ -2,6 +2,7 @@ package testlib
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -16,14 +17,16 @@ import (
 
 func TestKillContainer(t *testing.T) {
 	for _, tc := range []struct {
-		name     string
-		neighbor string
-		exists   bool
-		want     []string
+		name        string
+		neighbor    string
+		exists      bool
+		deleteError bool
+		want        []string
 	}{
 		{name: "alt_registry", neighbor: "alt_registry-v2", exists: true, want: []string{"owned"}},
 		{name: "registry.test", neighbor: "registryXtest", exists: true, want: []string{"owned"}},
 		{name: "registry", neighbor: "registry-v2"},
+		{name: "delete-error", neighbor: "delete-error-v2", exists: true, deleteError: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			containers := []docker.Container{{ID: "neighbor", Name: "/" + tc.neighbor}}
@@ -61,6 +64,10 @@ func TestKillContainer(t *testing.T) {
 						return
 					}
 					if r.Method == http.MethodDelete && strings.HasSuffix(r.URL.Path, "/containers/"+container.ID) {
+						if tc.deleteError {
+							http.Error(w, "could not remove fixture", http.StatusInternalServerError)
+							return
+						}
 						deleted <- container.ID
 						w.WriteHeader(http.StatusNoContent)
 						return
@@ -73,7 +80,16 @@ func TestKillContainer(t *testing.T) {
 			pool, err := dockertest.NewPool(srv.URL)
 			require.NoError(t, err)
 
-			require.NoError(t, killContainer(pool, tc.name))
+			var fatalMessages []string
+			killContainer(fatalFunc(func(args ...any) {
+				fatalMessages = append(fatalMessages, fmt.Sprint(args...))
+			}), pool, tc.name)
+			if tc.deleteError {
+				require.Len(t, fatalMessages, 1)
+				require.Contains(t, fatalMessages[0], "could not remove fixture")
+			} else {
+				require.Empty(t, fatalMessages)
+			}
 			srv.Close()
 			close(deleted)
 			var removed []string
@@ -83,4 +99,10 @@ func TestKillContainer(t *testing.T) {
 			require.Equal(t, tc.want, removed)
 		})
 	}
+}
+
+type fatalFunc func(...any)
+
+func (f fatalFunc) Fatal(args ...any) {
+	f(args...)
 }
