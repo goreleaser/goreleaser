@@ -11,13 +11,14 @@ import (
 	"github.com/caarlos0/log"
 )
 
-// IsRepo reports whether the current folder is inside a git work tree.
-func IsRepo(ctx context.Context) (bool, error) {
+// IsRepo returns true if current folder is a git repository.
+func IsRepo(ctx context.Context) bool {
 	out, err := Run(ctx, "rev-parse", "--is-inside-work-tree")
 	if err != nil {
-		return false, err
+		log.WithError(err).Warn("git repository check failed")
+		return false
 	}
-	return strings.TrimSpace(out) == "true", nil
+	return strings.TrimSpace(out) == "true"
 }
 
 func RunWithEnv(ctx context.Context, env []string, args ...string) (string, error) {

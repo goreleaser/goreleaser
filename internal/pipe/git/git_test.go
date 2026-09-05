@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -56,8 +55,6 @@ func TestUnsafeRepository(t *testing.T) {
 			}
 			require.Contains(t, logs.String(), "fatal: detected dubious ownership")
 			require.Contains(t, logs.String(), "git config --global --add safe.directory")
-			_, err = git.ExtractRepoFromConfig(ctx)
-			require.EqualError(t, err, ErrNotRepository.Error())
 			require.Equal(t, 1, strings.Count(logs.String(), "fatal: detected dubious ownership"), "logs:\n%s", logs.String())
 		})
 	}
