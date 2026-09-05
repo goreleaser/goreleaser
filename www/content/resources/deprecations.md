@@ -625,7 +625,7 @@ used everywhere else.
 
 ```yaml
 nfpms:
-  builds: [a, b]
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
@@ -633,7 +633,7 @@ nfpms:
 
 ```yaml
 nfpms:
-  ids: [a, b]
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
