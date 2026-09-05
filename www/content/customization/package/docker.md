@@ -23,7 +23,7 @@ name of your image to your `.goreleaser.yaml` file:
 ```yaml {filename=".goreleaser.yaml"}
 dockers:
   - image_templates:
-      - user/repo
+      - "user/repo:{{ .Tag }}"
 ```
 
 {{< g_templates >}}
@@ -36,7 +36,8 @@ ENTRYPOINT ["/mybin"]
 COPY mybin /
 ```
 
-This configuration will build and push a Docker image named `user/repo:tagname`.
+For the Git tag `v1.2.3`, this configuration builds and pushes
+`user/repo:v1.2.3`.
 
 ### The Docker build context
 
