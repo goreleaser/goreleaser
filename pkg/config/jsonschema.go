@@ -2,6 +2,20 @@ package config
 
 import "github.com/invopop/jsonschema"
 
+func (a SlackBlock) JSONSchema() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		Type:                 "object",
+		AdditionalProperties: jsonschema.TrueSchema,
+	}
+}
+
+func (a SlackAttachment) JSONSchema() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		Type:                 "object",
+		AdditionalProperties: jsonschema.TrueSchema,
+	}
+}
+
 func (bh Hook) JSONSchema() *jsonschema.Schema {
 	type hookAlias Hook
 	reflector := jsonschema.Reflector{
