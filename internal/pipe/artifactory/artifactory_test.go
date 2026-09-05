@@ -1,7 +1,9 @@
 package artifactory
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -339,6 +341,18 @@ func TestRunPipe_MisconfiguredArtifactoryDoesNotStopOthers(t *testing.T) {
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
+	transport := &http.Transport{
+		DialContext: func(context.Context, string, string) (net.Conn, error) {
+			return nil, syscall.ECONNREFUSED
+		},
+	}
+	previous := http.DefaultClient
+	http.DefaultClient = &http.Client{Transport: transport}
+	t.Cleanup(func() {
+		http.DefaultClient = previous
+		transport.CloseIdleConnections()
+	})
+
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
@@ -351,7 +365,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 			{
 				Name:     "production",
 				Mode:     "archive",
-				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
+				Target:   "http://upload.invalid/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
 				Username: "deployuser",
 			},
 		},
@@ -366,10 +380,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	err = Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	if !testlib.IsWindows() {
-		require.ErrorIs(t, err, syscall.ECONNREFUSED)
-	}
+	require.ErrorIs(t, err, syscall.ECONNREFUSED)
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
