@@ -120,7 +120,8 @@ publishers:
     # Publish checksums.
     checksum: true
 
-    # Upload metadata.json and artifacts.json.
+    # Publish registered metadata artifacts, currently metadata.json.
+    # This does not select the artifacts.json index.
     meta: true
 
     # Publish signatures.
