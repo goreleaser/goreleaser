@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -23,6 +25,36 @@ func TestNotAGitFolder(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := testctx.Wrap(t.Context())
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
+}
+
+func TestUnsafeRepository(t *testing.T) {
+	for _, mode := range []string{"release", "snapshot"} {
+		t.Run(mode, func(t *testing.T) {
+			testlib.Mktmp(t)
+			testlib.GitInit(t)
+			t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
+			t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+			// Exercise Git's ownership check without changing filesystem ownership.
+			t.Setenv("GIT_TEST_ASSUME_DIFFERENT_OWNER", "1")
+
+			var logs bytes.Buffer
+			previousLog := log.Log
+			log.Log = log.New(&logs)
+			t.Cleanup(func() { log.Log = previousLog })
+
+			ctx := testctx.Wrap(t.Context())
+			ctx.Snapshot = mode == "snapshot"
+			err := Pipe{}.Run(ctx)
+			if ctx.Snapshot {
+				testlib.AssertSkipped(t, err)
+				require.Equal(t, fakeInfo, ctx.Git)
+			} else {
+				require.ErrorIs(t, err, ErrNotRepository)
+			}
+			require.Contains(t, logs.String(), "fatal: detected dubious ownership")
+			require.Contains(t, logs.String(), "git config --global --add safe.directory")
+		})
+	}
 }
 
 func TestSingleCommit(t *testing.T) {
