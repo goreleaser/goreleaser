@@ -105,7 +105,7 @@ builds:
 
 {{< g_featpro >}}
 
-With the GoReleaser Pro executable, you can publish with
+You can publish with
 [global after hooks](/customization/general/hooks/).
 With GoReleaser OSS, use a separate publishing step in your CI workflow.
 

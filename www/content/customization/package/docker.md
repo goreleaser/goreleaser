@@ -144,7 +144,6 @@ dockers:
     #
     # `dockerfile` is ignored when this is set.
     #
-    # This feature is only available in GoReleaser Pro.
     # {{< g_inline_pro >}}
     # Templates: allowed.
     templated_dockerfile: "{{.Env.DOCKERFILE }}"
@@ -210,7 +209,6 @@ dockers:
     # and its results will be added to the build context the same way as the
     # extra_files field above.
     #
-    # This feature is only available in GoReleaser Pro.
     # {{< g_inline_pro >}}
     # Templates: allowed.
     templated_files:

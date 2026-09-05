@@ -192,7 +192,7 @@ dockers_v2:
           # Working directory for the command.
           dir: "{{ .ContextDir }}"
           # Only run this hook if the template evaluates to `true`.
-          # Requires the GoReleaser Pro executable.
+          #
           # {{< g_inline_pro >}}
           # {{< g_inline_version "v2.17" >}}
           if: '{{ eq .Runtime.Goarch "amd64" }}'

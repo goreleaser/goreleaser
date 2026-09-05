@@ -166,7 +166,6 @@ publishers:
 
     # This allows you to use the output of your custom publisher in templates
     # later, for instance, in the release notes.
-    # Requires the GoReleaser Pro executable.
     #
     # The example below can be used with '{{ index .Outputs "check-foo.deb" }}'
     # (assuming artifact name is 'foo.deb').
