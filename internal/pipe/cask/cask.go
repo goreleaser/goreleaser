@@ -83,6 +83,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice(ctx, "homebrew_casks.manpage")
 			brew.Manpages = append(brew.Manpages, brew.Manpage)
 		}
+		if brew.URL.Verified != "" {
+			deprecate.Notice(ctx, "homebrew_casks.url.verified")
+		}
 		for _, conflict := range brew.Conflicts {
 			if conflict.Formula != "" {
 				deprecate.Notice(ctx, "homebrew_casks.conflicts.formula")
@@ -430,7 +433,6 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		}
 
 		url := downloadURL{
-			Verified:  cfg.URL.Verified,
 			Using:     cfg.URL.Using,
 			Cookies:   cfg.URL.Cookies,
 			Referer:   cfg.URL.Referer,

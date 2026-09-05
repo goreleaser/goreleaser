@@ -255,13 +255,15 @@ type HomebrewCaskURL struct {
 	Template string `yaml:"template,omitempty" json:"template,omitempty"`
 
 	// additional url parameters (https://docs.brew.sh/Cask-Cookbook#additional-url-parameters):
-	Verified  string            `yaml:"verified,omitempty" json:"verified,omitempty"`
 	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
 	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
 	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
 	Headers   []string          `yaml:"headers,omitempty" json:"headers,omitempty"` // Homebrew Cask DSL actually requires `header` key, but we use `headers` for consistency with Homebrew Formula config.
 	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
 	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
+
+	// Deprecated: by Homebrew.
+	Verified string `yaml:"verified,omitempty" json:"verified,omitempty" jsonschema:"deprecated=true"`
 }
 
 type HomebrewCaskUninstall struct {

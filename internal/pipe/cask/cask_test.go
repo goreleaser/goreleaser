@@ -482,7 +482,6 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://dummyhost-url-parameters.com/"
 				ctx.Config.Casks[0].URL.Using = ":post"
-				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
 				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
 			},
@@ -1223,6 +1222,9 @@ func TestDefaultDeprecated(t *testing.T) {
 			{
 				Binary:  "bin",
 				Manpage: "man",
+				URL: config.HomebrewCaskURL{
+					Verified: "github.com/foo/bar",
+				},
 			},
 		},
 	}, testctx.GitHubTokenType)

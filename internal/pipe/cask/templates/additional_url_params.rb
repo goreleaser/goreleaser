@@ -1,7 +1,4 @@
 {{- define "additional_url_params" }}
-{{- if .Verified }},
-      verified: "{{ .Verified }}"
-{{- end }}
 {{- if .Using }},
       using: {{ .Using }}
 {{- end }}

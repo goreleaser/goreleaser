@@ -33,7 +33,6 @@ type releasePackage struct {
 
 type downloadURL struct {
 	Download  string
-	Verified  string
 	Using     string
 	Cookies   map[string]string
 	Referer   string

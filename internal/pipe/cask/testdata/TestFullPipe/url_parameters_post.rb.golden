@@ -6,7 +6,6 @@ cask "url_parameters_post" do
     on_arm do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin.txz",
-        verified: "https://dummyhost/download/",
         using: :post,
         header: [
           "Accept: application/octet-stream",
@@ -18,7 +17,6 @@ cask "url_parameters_post" do
     on_intel do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin.tgz",
-        verified: "https://dummyhost/download/",
         using: :post,
         header: [
           "Accept: application/octet-stream",
@@ -32,7 +30,6 @@ cask "url_parameters_post" do
     on_intel do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       url "https://dummyhost/download/v#{version}/bin.tar.zst",
-        verified: "https://dummyhost/download/",
         using: :post,
         header: [
           "Accept: application/octet-stream",
