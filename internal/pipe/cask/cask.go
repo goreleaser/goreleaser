@@ -86,19 +86,17 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.URL.Verified != "" {
 			deprecate.Notice(ctx, "homebrew_casks.url.verified")
 		}
-		for _, hook := range []struct {
-			name string
-			cfg  config.HomebrewCaskHook
-		}{
-			{"pre", brew.Hooks.Pre},
-			{"post", brew.Hooks.Post},
-		} {
-			if hook.cfg.Install != "" {
-				deprecate.Notice(ctx, "homebrew_casks.hooks."+hook.name+".install")
-			}
-			if hook.cfg.Uninstall != "" {
-				deprecate.Notice(ctx, "homebrew_casks.hooks."+hook.name+".uninstall")
-			}
+		if brew.Hooks.Pre.Install != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.pre.install")
+		}
+		if brew.Hooks.Pre.Uninstall != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.pre.uninstall")
+		}
+		if brew.Hooks.Post.Install != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.post.install")
+		}
+		if brew.Hooks.Post.Uninstall != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.post.uninstall")
 		}
 		for _, conflict := range brew.Conflicts {
 			if conflict.Formula != "" {

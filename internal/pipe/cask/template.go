@@ -109,17 +109,15 @@ var caskTokens = tmpl.Fields{
 }
 
 // flightString renders a Cask flight block. The `steps` body uses the
-// declarative install steps DSL and is written into the `_steps` stanza; the
+// declarative install steps DSL and goes into the `_steps` stanza; the
 // deprecated `legacy` body is raw Ruby and keeps the old stanza. When both are
 // set, the steps body wins.
 func flightString(stanza, steps, legacy string) string {
+	body := legacy
 	if steps != "" {
-		return flightBlock(stanza+"_steps", steps)
+		stanza += "_steps"
+		body = steps
 	}
-	return flightBlock(stanza, legacy)
-}
-
-func flightBlock(stanza, body string) string {
 	lines := split(body)
 	if len(lines) == 0 {
 		return ""
