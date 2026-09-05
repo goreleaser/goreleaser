@@ -72,7 +72,7 @@ var fakeInfo = context.GitInfo{
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	if isRepo, err := git.IsRepo(ctx); !isRepo {
 		if err != nil {
-			log.WithError(err).Warn("could not check if the current directory is a git repository")
+			log.WithError(err).Warn("git repository check failed")
 		}
 		if ctx.Snapshot {
 			log.Warn("accepting to run without a git repository because this is a snapshot")

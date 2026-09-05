@@ -20,10 +20,7 @@ func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) 
 		// repository without a remote and a directory that is not a
 		// repository at all, so it takes a second command to tell the user
 		// which one it is. Only the failing path pays for it.
-		if isRepo, err := IsRepo(ctx); !isRepo {
-			if err != nil {
-				log.WithError(err).Warn("could not check if the current directory is a git repository")
-			}
+		if isRepo, _ := IsRepo(ctx); !isRepo {
 			return result, errors.New("current folder is not a git repository")
 		}
 		return result, errors.New("no remote configured to list refs from")

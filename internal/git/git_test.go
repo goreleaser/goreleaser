@@ -44,6 +44,8 @@ func TestGitWarning(t *testing.T) {
 func TestRepo(t *testing.T) {
 	t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Setenv("GIT_CONFIG_COUNT", "0")
+	t.Setenv("GIT_CONFIG_PARAMETERS", "")
 
 	t.Run("work tree", func(t *testing.T) {
 		testlib.Mktmp(t)
