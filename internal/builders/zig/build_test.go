@@ -3,7 +3,6 @@ package zig
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -108,10 +107,22 @@ func TestBuild(t *testing.T) {
 	testlib.SharedZigCache(t)
 	folder = filepath.Join(folder, "proj")
 	require.NoError(t, os.MkdirAll(folder, 0o755))
-	cmd := exec.CommandContext(t.Context(), "zig", "init")
-	cmd.Dir = folder
-	_, err := cmd.CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "build.zig"), []byte(`
+const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const exe = b.addExecutable(.{
+        .name = "proj",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("main.zig"),
+            .target = b.standardTargetOptions(.{}),
+            .optimize = b.standardOptimizeOption(.{}),
+        }),
+    });
+    b.installArtifact(exe);
+}
+`), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "main.zig"), []byte("pub fn main() void {}\n"), 0o644))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

@@ -91,21 +91,88 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("migrate from github to mcp", func(t *testing.T) {
+		legacy := config.MCPDetails{
+			Name:        "test-server",
+			Title:       "Test Title",
+			Description: "Test description",
+			Homepage:    "https://example.com",
+			Packages: []config.MCPPackage{{
+				RegistryType: "npm",
+				Identifier:   "@test/server",
+				Transport:    config.MCPTransport{Type: "stdio"},
+			}},
+			Transports: []config.MCPTransport{{Type: "streamable-http"}},
+			Disable:    "auto",
+			Repository: config.MCPRepository{
+				URL:       "https://github.com/test/repo",
+				Source:    "github",
+				ID:        "test/repo",
+				Subfolder: "server",
+			},
+			Auth: config.MCPAuth{
+				Type:  "github-oidc",
+				Token: "test-token",
+			},
+		}
+		for name, details := range map[string]config.MCPDetails{
+			"empty": {},
+			"partial": {
+				Title: "Top-level title",
+				Auth:  config.MCPAuth{Type: "none"},
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					MCP: config.MCP{
+						GitHub:     legacy,
+						MCPDetails: details,
+					},
+				})
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.Equal(t, legacy, ctx.Config.MCP.MCPDetails)
+				require.Equal(t, legacy, ctx.Config.MCP.GitHub)
+				require.Same(t, &legacy.Packages[0], &ctx.Config.MCP.Packages[0])
+				require.Same(t, &legacy.Transports[0], &ctx.Config.MCP.Transports[0])
+				require.True(t, ctx.Deprecated)
+			})
+		}
+	})
+
+	t.Run("keep explicit top-level mcp", func(t *testing.T) {
+		details := config.MCPDetails{
+			Name:  "top-level-server",
+			Title: "Top-level title",
+			Auth:  config.MCPAuth{Type: "none"},
+		}
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
 				GitHub: config.MCPDetails{
-					Name:  "test-server",
-					Title: "Test Title",
-					Auth: config.MCPAuth{
-						Type: "github-oidc",
-					},
+					Name: "legacy-server",
+					Auth: config.MCPAuth{Type: "github-oidc"},
+				},
+				MCPDetails: details,
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, details, ctx.Config.MCP.MCPDetails)
+		require.False(t, ctx.Deprecated)
+	})
+
+	t.Run("migrate without auth", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				GitHub: config.MCPDetails{
+					Name: "test-server",
 				},
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "test-server", ctx.Config.MCP.Name)
-		require.Equal(t, "Test Title", ctx.Config.MCP.Title)
-		require.Equal(t, "github-oidc", ctx.Config.MCP.Auth.Type)
+		require.Equal(t, config.MCPDetails{
+			Name: "test-server",
+			Auth: config.MCPAuth{Type: "none"},
+		}, ctx.Config.MCP.MCPDetails)
+		require.Empty(t, ctx.Config.MCP.GitHub.Auth.Type)
+		require.True(t, ctx.Deprecated)
 	})
 }
 

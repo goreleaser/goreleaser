@@ -35,7 +35,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 }
 
 func TestReleaseInvalidConfig(t *testing.T) {
-	setup(t)
+	mktmp(t)
 	createFile(t, "goreleaser.yml", "foo: bar\nversion: 2")
 	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})

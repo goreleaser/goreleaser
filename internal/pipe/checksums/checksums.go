@@ -20,10 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const (
-	artifactChecksumExtra = "Checksum"
-)
-
 var (
 	errNoArtifacts = errors.New("there are no artifacts to checksum")
 	lock           sync.Mutex
@@ -217,11 +213,6 @@ func checksums(algorithm string, a *artifact.Artifact) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	if a.Extra == nil {
-		a.Extra = make(artifact.Extras)
-	}
-	a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", algorithm, sha)
 
 	return fmt.Sprintf("%v  %v\n", sha, a.Name), nil
 }

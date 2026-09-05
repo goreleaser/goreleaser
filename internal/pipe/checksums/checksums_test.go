@@ -472,7 +472,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				if len(tt.ids) > 0 {
 					return nil
 				}
-				checkSum := artifact.MustExtra[string](*a, artifactChecksumExtra)
+				checkSum := artifact.MustExtra[string](*a, artifact.ExtraChecksum)
 				require.NotEmptyf(t, checkSum, "failed: %v", a.Path)
 				return nil
 			})

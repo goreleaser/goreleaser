@@ -219,10 +219,6 @@ func groupSort(i, j changelogGroup) int {
 	return cmp.Compare(i.order, j.order)
 }
 
-func prefixItem(s string) string {
-	return li + s
-}
-
 func loadFromFile(file string) (string, error) {
 	bts, err := os.ReadFile(file)
 	if err != nil {
@@ -267,7 +263,7 @@ func formatEntry(ctx *context.Context, entry Item) (string, error) {
 		"AuthorName":     entry.AuthorName,
 		"AuthorEmail":    entry.AuthorEmail,
 	}).Apply(ctx.Config.Changelog.Format)
-	return prefixItem(line), err
+	return li + line, err
 }
 
 func cleanupAuthors(authors []Author) []Author {

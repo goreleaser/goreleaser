@@ -108,8 +108,7 @@ func New(ctx *context.Context) *Template {
 		treeState = "dirty"
 	}
 
-	fields := map[string]any{}
-	maps.Copy(fields, map[string]any{
+	fields := Fields{
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,
@@ -145,7 +144,7 @@ func New(ctx *context.Context) *Template {
 		tagContents:     ctx.Git.TagContents,
 		tagBody:         ctx.Git.TagBody,
 		runtimeK:        ctx.Runtime,
-	})
+	}
 
 	return &Template{
 		fields: fields,
