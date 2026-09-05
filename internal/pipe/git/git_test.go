@@ -64,9 +64,9 @@ func TestSingleCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	// an author date far in the past, while the committer date stays now, so
-	// the CommitDate assertion below fails if getCommit reads %at.
+	// Distinct dates make the assertion fail if getCommit reads %at, not %ct.
 	t.Setenv("GIT_AUTHOR_DATE", "2000-01-01T00:00:00Z")
+	t.Setenv("GIT_COMMITTER_DATE", "2001-01-01T00:00:00Z")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
 	ctx := testctx.Wrap(t.Context())
@@ -89,7 +89,7 @@ func TestSingleCommit(t *testing.T) {
 		"short commit %q is not a prefix of full commit %q",
 		ctx.Git.ShortCommit, ctx.Git.FullCommit,
 	)
-	require.WithinDuration(t, time.Now(), ctx.Git.CommitDate, time.Minute)
+	require.Equal(t, time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC), ctx.Git.CommitDate)
 }
 
 func TestAnnotatedTags(t *testing.T) {

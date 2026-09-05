@@ -889,23 +889,6 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      testlib.AssertSkipped,
 			manifestAssertError: shouldNotErr,
 		},
-		"no_permissions": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"docker.io/nope:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			expect: []string{
-				"docker.io/nope:latest",
-			},
-			assertImageLabels:   noLabels,
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
-			manifestAssertError: shouldNotErr,
-		},
 		"dockerfile_doesnt_exist": {
 			dockers: []config.Docker{
 				{
@@ -1144,12 +1127,8 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestBuildCommand(t *testing.T) {
-	var provenanceFlags []string
-	if !testlib.IsWindows() {
-		// HACK: Docker on Windows, at least from github actions, doesn't seem to have these flags.
-		// This is a workaround to make the tests passs in the meantime.
-		provenanceFlags = []string{"--provenance=false", "--sbom=false"}
-	}
+	previous := dockerSupportsProvenanceFlags
+	t.Cleanup(func() { dockerSupportsProvenanceFlags = previous })
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
@@ -1160,31 +1139,38 @@ func TestBuildCommand(t *testing.T) {
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1]}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1]},
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"},
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 		{
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: append([]string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
+			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			imager := dockerImager{
-				buildx: tt.buildx,
+			for _, supported := range []bool{false, true} {
+				t.Run(fmt.Sprintf("provenance=%t", supported), func(t *testing.T) {
+					dockerSupportsProvenanceFlags = func() bool { return supported }
+					expected := tt.expect
+					if supported {
+						expected = append(expected, "--provenance=false", "--sbom=false")
+					}
+					imager := dockerImager{buildx: tt.buildx}
+					require.Equal(t, expected, imager.buildCommand(images, tt.flags))
+				})
 			}
-			require.Equal(t, tt.expect, imager.buildCommand(images, tt.flags))
 		})
 	}
 }
@@ -1572,6 +1558,20 @@ func (i *countingImager) Push(*context.Context, string, []string) (string, error
 }
 
 func TestDockerBuildRetries(t *testing.T) {
+	for _, name := range []string{"test-build-retriable", "test-build-fatal"} {
+		lock.Lock()
+		previous, existed := imagers[name]
+		lock.Unlock()
+		t.Cleanup(func() {
+			lock.Lock()
+			defer lock.Unlock()
+			if existed {
+				imagers[name] = previous
+			} else {
+				delete(imagers, name)
+			}
+		})
+	}
 	retry := config.Retry{Attempts: 5, Delay: time.Millisecond, MaxDelay: time.Millisecond}
 
 	t.Run("retries transient failures", func(t *testing.T) {

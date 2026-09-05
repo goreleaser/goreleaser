@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"text/template"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -971,35 +973,39 @@ func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
 
 func TestGitHubCheckRateLimit(t *testing.T) {
 	t.Parallel()
-	now := time.Now().UTC()
-	reset := now.Add(1392 * time.Millisecond)
-	var called atomic.Bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		if r.URL.Path == "/api/v3/rate_limit" {
-			called.Store(true)
-			w.WriteHeader(http.StatusOK)
-			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
-			fmt.Fprintf(w, `{"resources":{"core":{"remaining":98,"reset":%s}}}`, string(resetstr))
-			return
+	synctest.Test(t, func(t *testing.T) {
+		cancellable, cancel := stdctx.WithCancel(t.Context())
+		defer cancel()
+		ctx := testctx.Wrap(cancellable)
+		transport := httpmock.NewMockTransport()
+		transport.RegisterResponder(http.MethodGet, "https://api.github.com/rate_limit",
+			httpmock.NewStringResponder(http.StatusOK, fmt.Sprintf(
+				`{"resources":{"core":{"remaining":98,"reset":%d}}}`,
+				time.Now().Add(time.Hour).Unix(),
+			)))
+		api, err := github.NewClient(github.WithHTTPClient(&http.Client{Transport: transport}))
+		require.NoError(t, err)
+		client := &githubClient{client: api}
+
+		done := make(chan struct{})
+		go func() {
+			client.checkRateLimit(ctx)
+			close(done)
+		}()
+
+		synctest.Wait()
+		require.Equal(t, 1, transport.GetTotalCallCount(), "should have checked rate limit")
+		select {
+		case <-done:
+			t.Fatal("rate limit check returned before cancellation")
+		default:
 		}
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
-	}))
-	t.Cleanup(srv.Close)
-
-	short, cancel := stdctx.WithTimeout(t.Context(), 250*time.Millisecond)
-	t.Cleanup(cancel)
-	ctx := testctx.WrapWithCfg(short, config.Project{
-		GitHubURLs: config.GitHubURLs{
-			API: srv.URL,
-		},
+		now := time.Now()
+		cancel()
+		<-done
+		require.ErrorIs(t, ctx.Err(), stdctx.Canceled)
+		require.Equal(t, now, time.Now(), "cancellation should not wait for the rate limit reset")
 	})
-	client, err := newGitHub(ctx, "test-token")
-	require.NoError(t, err)
-
-	client.checkRateLimit(ctx)
-
-	require.True(t, called.Load(), "should have checked rate limit")
 }
 
 func TestGitHubCreateRelease(t *testing.T) {
@@ -2279,9 +2285,14 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 
 func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
 	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+		http.Error(w, "unexpected request", http.StatusBadRequest)
+	})
 	ctx := testctx.WrapWithCfg(
 		t.Context(),
 		config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
 			Release: config.Release{
 				NameTemplate:    "v1.0.0",
 				TargetCommitish: "{{ .NoKeyLikeThat }}",

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"regexp"
 	"sync"
 	"testing"
 
@@ -52,8 +53,12 @@ func MustDockerPool(f Fataler) *dockertest.Pool {
 // MustKillContainer kills the given container by name if it exists in the
 // current dockertest.Pool.
 func MustKillContainer(f Fataler, name string) {
-	pool := MustDockerPool(f)
-	if trash, ok := pool.ContainerByName(name); ok {
+	killContainer(f, MustDockerPool(f), name)
+}
+
+func killContainer(f Fataler, pool *dockertest.Pool, name string) {
+	// Docker's name filter accepts regexes and otherwise matches partial names.
+	if trash, ok := pool.ContainerByName("^/" + regexp.QuoteMeta(name) + "$"); ok {
 		if err := pool.Purge(trash); err != nil {
 			f.Fatal(err)
 		}

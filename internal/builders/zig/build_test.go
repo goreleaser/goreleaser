@@ -3,12 +3,12 @@ package zig
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -101,17 +101,14 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
 
-	folder := testlib.Mktmp(t)
+	folder := t.TempDir()
+	require.NoError(t, gio.Copy("testdata", filepath.Join(folder, "proj")))
+	t.Chdir(folder)
 	// the local cache stays per-test so build outputs cannot collide; the
 	// global cache is shared, see testlib.SharedZigCache.
 	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
 	testlib.SharedZigCache(t)
 	folder = filepath.Join(folder, "proj")
-	require.NoError(t, os.MkdirAll(folder, 0o755))
-	cmd := exec.CommandContext(t.Context(), "zig", "init")
-	cmd.Dir = folder
-	_, err := cmd.CombinedOutput()
-	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

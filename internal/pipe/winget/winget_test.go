@@ -1,7 +1,6 @@
 package winget
 
 import (
-	"html/template"
 	"maps"
 	"os"
 	"path/filepath"
@@ -16,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -45,12 +45,25 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	assertError := func(t *testing.T, err, expected error) {
+		t.Helper()
+		switch expected := expected.(type) {
+		case *tmpl.Error:
+			testlib.RequireTemplateError(t, err)
+		case errNoArchivesFound:
+			var actual errNoArchivesFound
+			require.ErrorAs(t, err, &actual)
+			require.Equal(t, expected, actual)
+		default:
+			require.ErrorIs(t, err, expected)
+		}
+	}
 	for _, tt := range []struct {
-		name                 string
-		expectRunErrorIs     error
-		expectPublishErrorIs error
-		expectPath           string
-		winget               config.Winget
+		name               string
+		expectRunError     error
+		expectPublishError error
+		expectPath         string
+		winget             config.Winget
 	}{
 		{
 			name:       "minimal",
@@ -68,8 +81,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "mixed-formats",
-			expectRunErrorIs: errMixedFormats,
+			name:           "mixed-formats",
+			expectRunError: errMixedFormats,
 			winget: config.Winget{
 				Name:             "mixed",
 				Publisher:        "Foo",
@@ -210,7 +223,7 @@ func TestRunPipe(t *testing.T) {
 		},
 		{
 			name: "no-archives",
-			expectRunErrorIs: errNoArchivesFound{
+			expectRunError: errNoArchivesFound{
 				goamd64: "v2",
 				ids:     []string{"nopenopenope"},
 			},
@@ -228,14 +241,14 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "too-many-archives",
-			expectRunErrorIs: errMultipleArchives,
+			name:           "too-many-archives",
+			expectRunError: errMultipleArchives,
 			winget: config.Winget{
 				Name:             "min",
 				Publisher:        "Foo",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
-				IDs:              []string{},
+				IDs:              []string{"foo", "zaz"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -257,8 +270,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-repo-name",
-			expectRunErrorIs: errNoRepoName,
+			name:           "no-repo-name",
+			expectRunError: errNoRepoName,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -270,8 +283,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-license",
-			expectRunErrorIs: errNoLicense,
+			name:           "no-license",
+			expectRunError: errNoLicense,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -283,8 +296,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-short-description",
-			expectRunErrorIs: errNoShortDescription,
+			name:           "no-short-description",
+			expectRunError: errNoShortDescription,
 			winget: config.Winget{
 				Name:      "doesnotmatter",
 				Publisher: "Beckersoft",
@@ -296,8 +309,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "invalid-package-identifier",
-			expectRunErrorIs: errInvalidPackageIdentifier,
+			name:           "invalid-package-identifier",
+			expectRunError: pipe.Skip("winget.package_identifier is invalid: foobar"),
 			winget: config.Winget{
 				Name:              "min",
 				PackageIdentifier: "foobar",
@@ -311,8 +324,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-publisher",
-			expectRunErrorIs: errNoPublisher,
+			name:           "no-publisher",
+			expectRunError: errNoPublisher,
 			winget: config.Winget{
 				Name:             "min",
 				License:          "MIT",
@@ -324,8 +337,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-name-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-name-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "{{ .Nope }}",
 				Publisher:        "Beckersoft",
@@ -338,8 +351,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-releasenotes-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-releasenotes-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				ReleaseNotes:     "{{ .Nope }}",
 				Publisher:        "Beckersoft",
@@ -352,8 +365,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "{{ .Nope }}",
@@ -366,8 +379,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -381,8 +394,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-author-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-author-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -396,8 +409,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-homepage-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-homepage-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -411,8 +424,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-description-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-description-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -426,8 +439,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-short-description-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-short-description-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -440,8 +453,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-repo-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-repo-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -454,8 +467,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-skip-upload-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-skip-upload-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -469,8 +482,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-release-notes-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-release-notes-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -484,8 +497,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-release-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-release-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -499,8 +512,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-path-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-path-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -514,8 +527,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "bad-commit-msg-tmpl",
-			expectPublishErrorIs: &template.Error{},
+			name:               "bad-commit-msg-tmpl",
+			expectPublishError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:                  "foo",
 				Publisher:             "Beckersoft",
@@ -530,8 +543,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-support-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-support-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:                "foo",
 				Publisher:           "Beckersoft",
@@ -545,8 +558,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-copyright-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-copyright-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -560,8 +573,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-copyright-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-copyright-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "{{ .Nope }}",
 				Publisher:        "Beckersoft",
@@ -575,8 +588,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-license-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-license-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -589,8 +602,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-license-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-license-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -604,8 +617,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-default-locale-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-default-locale-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -619,8 +632,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "skip-upload",
-			expectPublishErrorIs: errSkipUpload,
+			name:               "skip-upload",
+			expectPublishError: errSkipUpload,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -635,8 +648,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "skip-upload-auto",
-			expectPublishErrorIs: errSkipUploadAuto,
+			name:               "skip-upload-auto",
+			expectPublishError: errSkipUploadAuto,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -675,8 +688,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-dependency-template",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-dependency-template",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -812,8 +825,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-field-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-field-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-field-locale",
 				Publisher:        "Beckersoft",
@@ -830,8 +843,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-release-notes-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-release-notes-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-release-notes-locale",
 				Publisher:        "Beckersoft",
@@ -848,8 +861,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-empty",
-			expectRunErrorIs: errAdditionalLocaleEmpty,
+			name:           "additional-locale-empty",
+			expectRunError: errAdditionalLocaleEmpty,
 			winget: config.Winget{
 				Name:             "empty-locale",
 				Publisher:        "Foo",
@@ -866,8 +879,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-duplicate",
-			expectRunErrorIs: errAdditionalLocaleDuplicate,
+			name:           "additional-locale-duplicate",
+			expectRunError: errAdditionalLocaleDuplicate,
 			winget: config.Winget{
 				Name:             "dup-locale",
 				Publisher:        "Foo",
@@ -885,8 +898,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-is-default",
-			expectRunErrorIs: errAdditionalLocaleIsDefault,
+			name:           "additional-locale-is-default",
+			expectRunError: errAdditionalLocaleIsDefault,
 			winget: config.Winget{
 				Name:             "default-clash",
 				Publisher:        "Foo",
@@ -904,8 +917,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-tmpl-locale",
 				Publisher:        "Beckersoft",
@@ -974,14 +987,17 @@ func TestRunPipe(t *testing.T) {
 
 			goarch = "386"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
+			binaryPath := filepath.Join(folder, "bar.exe")
+			require.NoError(t, os.WriteFile(binaryPath, []byte("binary"), 0o644))
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "bar.exe",
-				Path:   "doesnt-matter",
+				Path:   binaryPath,
 				Goos:   goos,
 				Goarch: goarch,
 				Type:   artifact.UploadableBinary,
 				Extra: map[string]any{
-					artifact.ExtraID: "bar",
+					artifact.ExtraID:     "bar",
+					artifact.ExtraBinary: "bar",
 				},
 			})
 			createFakeArtifact("bar", goos, goarch, "v1", "", nil)
@@ -1005,10 +1021,9 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, pipe.Default(ctx))
 
 			// run
-			if tt.expectRunErrorIs != nil {
+			if tt.expectRunError != nil {
 				err := pipe.runAll(ctx, client)
-				require.Error(t, err)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				assertError(t, err, tt.expectRunError)
 				return
 			}
 
@@ -1030,10 +1045,9 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			// publish
-			if tt.expectPublishErrorIs != nil {
+			if tt.expectPublishError != nil {
 				err := pipe.publishAll(ctx, client)
-				require.Error(t, err)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				assertError(t, err, tt.expectPublishError)
 				return
 			}
 			require.NoError(t, pipe.publishAll(ctx, client))

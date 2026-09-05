@@ -1,9 +1,10 @@
 package artifact
 
 import (
-	"crypto/rand"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,14 @@ func FuzzChecksum(f *testing.F) {
 }
 
 func FuzzChecksumLargeData(f *testing.F) {
-	f.Add("sha256", 10000)
+	const maxSize = 1 << 20
+	f.Add("sha256", -1)
+	f.Add("sha256", 0)
+	f.Add("sha256", maxSize)
+	f.Add("sha256", maxSize+1)
+	for _, algorithm := range slices.Sorted(maps.Keys(validAlgorithms)) {
+		f.Add(algorithm, 10000)
+	}
 	f.Add("md5", 50000)
 	f.Add("sha1", 100000)
 
@@ -49,9 +57,13 @@ func FuzzChecksumLargeData(f *testing.F) {
 		if !validAlgorithms[algorithm] {
 			t.Skip()
 		}
+		if size < 0 || size > maxSize {
+			t.Skip("size outside the bounded checksum fixture")
+		}
 		data := make([]byte, size)
-		_, err := rand.Read(data)
-		require.NoError(t, err)
+		for i := range data {
+			data[i] = byte(i)
+		}
 
 		filePath := filepath.Join(t.TempDir(), "largefuzzfile")
 		require.NoError(t, os.WriteFile(filePath, data, 0o644))
@@ -59,8 +71,7 @@ func FuzzChecksumLargeData(f *testing.F) {
 			Path: filePath,
 		}
 
-		// Calculate checksum
-		_, err = artifact.Checksum(algorithm)
+		_, err := artifact.Checksum(algorithm)
 		require.NoError(t, err)
 	})
 }
