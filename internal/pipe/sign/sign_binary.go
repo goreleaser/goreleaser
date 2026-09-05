@@ -15,7 +15,7 @@ import (
 
 const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 
-// BinaryPipe that signs binary images and manifests.
+// BinaryPipe signs binaries before archiving.
 type BinaryPipe struct{}
 
 func (BinaryPipe) String() string { return "signing binaries" }
@@ -63,7 +63,7 @@ func (BinaryPipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run signs and pushes the binary images signatures.
+// Run signs the selected binaries and registers their signature artifacts.
 func (BinaryPipe) Run(ctx *context.Context) error {
 	// skip-aware so that a config with `artifacts: none` doesn't mask the
 	// errors of the other configs.
