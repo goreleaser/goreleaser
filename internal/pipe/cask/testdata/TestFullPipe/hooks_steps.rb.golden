@@ -46,6 +46,7 @@ cask "hooks_steps" do
 
   preflight_steps do
     mkdir_p "{{staged_path}}/etc"
+    write_file "{{staged_path}}/v", "{{version}}"
   end
 
   postflight_steps do

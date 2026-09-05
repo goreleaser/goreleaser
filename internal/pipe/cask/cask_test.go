@@ -239,6 +239,40 @@ func TestSplit(t *testing.T) {
 	require.Equal(t, []string{}, parts)
 }
 
+func TestFlightString(t *testing.T) {
+	t.Run("steps", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight_steps do\n    run \"/usr/bin/true\"\n  end",
+			flightString("preflight", `run "/usr/bin/true"`, ""),
+		)
+	})
+	t.Run("legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight do\n    system_command \"/usr/bin/true\"\n  end",
+			flightString("preflight", "", `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("steps win over legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight_steps do\n    run \"/usr/bin/true\"\n  end",
+			flightString("preflight", `run "/usr/bin/true"`, `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("blank steps keep legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight do\n    system_command \"/usr/bin/true\"\n  end",
+			flightString("preflight", "  \n ", `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("empty", func(t *testing.T) {
+		require.Empty(t, flightString("preflight", "", ""))
+	})
+}
+
 func TestCompileManpagesBrokenGlob(t *testing.T) {
 	brew := config.HomebrewCask{
 		Manpages: []string{"[invalid"},
@@ -511,7 +545,8 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
 				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
 					Pre: config.HomebrewCaskHook{
-						InstallSteps:   `mkdir_p "{{ .StagedPath }}/etc"`,
+						InstallSteps: "mkdir_p \"{{ .StagedPath }}/etc\"\n" +
+							`write_file "{{ .StagedPath }}/v", "{{ "{{version}}" }}"`,
 						UninstallSteps: `remove "{{ .AppDir }}/{{ .ProjectName }}.app"`,
 					},
 					Post: config.HomebrewCaskHook{

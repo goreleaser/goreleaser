@@ -200,17 +200,22 @@ homebrew_casks:
 
     # Hooks for the cask lifecycle.
     #
-    # The body of each option uses Homebrew's declarative install steps DSL.
-    # It is not arbitrary Ruby.
+    # The body of each `_steps` option uses Homebrew's declarative install
+    # steps DSL. It is not arbitrary Ruby.
     # See https://docs.brew.sh/Cask-Cookbook for the allowed steps.
     #
     # Use `{{ .StagedPath }}` and `{{ .AppDir }}` for Homebrew's own
     # `staged_path` and `appdir` tokens.
     #
+    # The `install` and `uninstall` options are deprecated. If you set both
+    # `install` and `install_steps`, `install_steps` wins, and `install` is
+    # ignored. The same applies to `uninstall` and `uninstall_steps`.
+    #
+    # All four `_steps` options are {{< g_inline_version "v2.19-unreleased" >}}.
+    #
     # Templates: allowed. {{< g_inline_version "v2.13" >}}
     hooks:
       pre:
-        # {{< g_inline_version "v2.19-unreleased" >}}
         install_steps: |
           run "/usr/bin/defaults", args: ["write", "com.example.app", "key", "value"]
         uninstall_steps: |

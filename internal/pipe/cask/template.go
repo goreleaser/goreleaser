@@ -114,7 +114,7 @@ var caskTokens = tmpl.Fields{
 // set, the steps body wins.
 func flightString(stanza, steps, legacy string) string {
 	body := legacy
-	if steps != "" {
+	if strings.TrimSpace(steps) != "" {
 		stanza += "_steps"
 		body = steps
 	}
