@@ -1104,8 +1104,8 @@ Replace `bucket` with `repository`.
 ```yaml
 scoops:
   - bucket:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1114,8 +1114,8 @@ scoops:
 ```yaml
 scoops:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1133,8 +1133,8 @@ Replace `index` with `repository`.
 ```yaml
 krews:
   - index:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1143,8 +1143,8 @@ krews:
 ```yaml
 krews:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1162,8 +1162,8 @@ Replace `tap` with `repository`.
 ```yaml
 brews:
   - tap:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1172,8 +1172,8 @@ brews:
 ```yaml
 brews:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
