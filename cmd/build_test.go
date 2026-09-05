@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
@@ -64,7 +65,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("regular", func(t *testing.T) {
 		require.Equal(
 			t,
-			pipeline.BuildCmdPipeline,
+			slices.Clone(pipeline.BuildCmdPipeline),
 			setupPipeline(testctx.Wrap(t.Context()), buildOpts{}),
 		)
 	})
@@ -72,7 +73,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target", func(t *testing.T) {
 		require.Equal(
 			t,
-			pipeline.BuildCmdPipeline,
+			slices.Clone(pipeline.BuildCmdPipeline),
 			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 			}),
@@ -82,7 +83,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target and id", func(t *testing.T) {
 		require.Equal(
 			t,
-			pipeline.BuildCmdPipeline,
+			slices.Clone(pipeline.BuildCmdPipeline),
 			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
@@ -93,7 +94,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target and id, given output", func(t *testing.T) {
 		require.Equal(
 			t,
-			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
+			append(slices.Clone(pipeline.BuildCmdPipeline), withOutputPipe{"."}),
 			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
@@ -105,7 +106,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target and single build on config", func(t *testing.T) {
 		require.Equal(
 			t,
-			pipeline.BuildCmdPipeline,
+			slices.Clone(pipeline.BuildCmdPipeline),
 			setupPipeline(
 				testctx.WrapWithCfg(t.Context(), config.Project{
 					Builds: []config.Build{{}},
@@ -121,7 +122,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target, id and output", func(t *testing.T) {
 		require.Equal(
 			t,
-			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
+			append(slices.Clone(pipeline.BuildCmdPipeline), withOutputPipe{"foobar"}),
 			setupPipeline(
 				testctx.Wrap(t.Context()),
 				buildOpts{
@@ -136,7 +137,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target, single build on config and output", func(t *testing.T) {
 		require.Equal(
 			t,
-			append(pipeline.BuildCmdPipeline, withOutputPipe{"zaz"}),
+			append(slices.Clone(pipeline.BuildCmdPipeline), withOutputPipe{"zaz"}),
 			setupPipeline(
 				testctx.WrapWithCfg(t.Context(), config.Project{
 					Builds: []config.Build{{}},
