@@ -45,7 +45,7 @@ func TestBuildSingleTarget(t *testing.T) {
 }
 
 func TestBuildInvalidConfig(t *testing.T) {
-	setup(t)
+	mktmp(t)
 	createFile(t, "goreleaser.yml", "version: 2\nfoo: bar")
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
