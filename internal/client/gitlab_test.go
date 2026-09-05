@@ -1518,24 +1518,6 @@ func TestGitLabOpenPullRequestCreateError(t *testing.T) {
 	require.Contains(t, err.Error(), "could not create pull request")
 }
 
-func TestGitLabCreateReleaseHeaderTemplateError(t *testing.T) {
-	t.Setenv("CI_SERVER_VERSION", "18.0.0")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{Header: "{{ .NoKeyLikeThat }}"}})
-	client, err := newGitLab(ctx, "test-token")
-	require.NoError(t, err)
-	_, err = client.CreateRelease(ctx, "body")
-	require.Error(t, err)
-}
-
-func TestGitLabCreateReleaseFooterTemplateError(t *testing.T) {
-	t.Setenv("CI_SERVER_VERSION", "18.0.0")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{Footer: "{{ .NoKeyLikeThat }}"}})
-	client, err := newGitLab(ctx, "test-token")
-	require.NoError(t, err)
-	_, err = client.CreateRelease(ctx, "body")
-	require.Error(t, err)
-}
-
 func TestGitLabReleaseURLTemplateNameError(t *testing.T) {
 	t.Setenv("CI_SERVER_VERSION", "18.0.0")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{GitLab: config.Repo{Name: "{{ .NoKeyLikeThat }}"}}})

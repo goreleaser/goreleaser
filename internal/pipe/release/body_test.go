@@ -125,23 +125,39 @@ Get GoReleaser Pro at https://goreleaser.com/pro
 }
 
 func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Release: config.Release{
-			Header: "## {{ .Nop }\n",
-		},
-	})
-
-	_, err := describeBody(ctx)
-	testlib.RequireTemplateError(t, err)
+	for _, header := range []string{"## {{ .Nop }\n", "{{ .NoKeyLikeThat }}"} {
+		t.Run(header, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Release: config.Release{Header: header},
+			})
+			_, err := describeBody(ctx)
+			testlib.RequireTemplateError(t, err)
+		})
+	}
 }
 
 func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
+	for _, footer := range []string{"{{ .Nops }", "{{ .NoKeyLikeThat }}"} {
+		t.Run(footer, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Release: config.Release{Footer: footer},
+			})
+			_, err := describeBody(ctx)
+			testlib.RequireTemplateError(t, err)
+		})
+	}
+}
+
+func TestDescribeBodyWithTemplatedHeaderAndFooter(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
-			Footer: "{{ .Nops }",
+			Header: "Header {{ .Tag }}",
+			Footer: "Footer {{ .Tag }}",
 		},
-	})
+	}, testctx.WithCurrentTag("v1.2.3"))
+	ctx.ReleaseNotes = "body"
 
-	_, err := describeBody(ctx)
-	testlib.RequireTemplateError(t, err)
+	out, err := describeBody(ctx)
+	require.NoError(t, err)
+	require.Equal(t, "Header v1.2.3\nbody\nFooter v1.2.3\n", out.String())
 }
