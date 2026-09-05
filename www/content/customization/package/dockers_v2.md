@@ -44,13 +44,9 @@ dockers_v2:
     # {{< g_inline_version "v2.17" >}}
     templated_dockerfile: "Dockerfile.tmpl"
 
-    # IDs to filter the binaries/packages.
-    #
-    # Make sure to only include the IDs of binaries you want to `COPY` in your
-    # Dockerfile.
-    #
-    # If you include IDs that don't exist or are not available for the current
-    # architecture being built, the build of the image will be skipped.
+    # IDs filter the binaries and packages copied into the build context.
+    # A missing match does not skip the image build.
+    # The Dockerfile must work with the selected files for each platform.
     ids:
       - mybuild
       - mynfpm
