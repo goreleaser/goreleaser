@@ -73,3 +73,36 @@ func TestFuzzFailurePropagation(t *testing.T) {
 		})
 	}
 }
+
+func TestFuzzTaskDispatch(t *testing.T) {
+	testlib.CheckPath(t, "task")
+	for _, tc := range []struct {
+		task     string
+		packages []string
+	}{
+		{task: "fuzz", packages: []string{"tmpl", "artifact"}},
+		{task: "fuzz:tmpl", packages: []string{"tmpl"}},
+		{task: "fuzz:artifact", packages: []string{"artifact"}},
+	} {
+		t.Run(tc.task, func(t *testing.T) {
+			calls := fakeFuzzGo(t, 0)
+			dry := exec.CommandContext(t.Context(), "task", "--dry", tc.task)
+			dry.Dir = ".."
+			out, err := dry.CombinedOutput()
+			require.NoError(t, err, "%s", out)
+			for _, pkg := range tc.packages {
+				require.Contains(t, string(out), "scripts/fuzz.sh ./internal/"+pkg+" 30s")
+			}
+
+			cmd := exec.CommandContext(t.Context(), "task", tc.task)
+			cmd.Dir = ".."
+			out, err = cmd.CombinedOutput()
+			require.NoError(t, err, "%s", out)
+			recorded, err := os.ReadFile(calls)
+			require.NoError(t, err, "%s", out)
+			for _, pkg := range tc.packages {
+				require.Contains(t, string(recorded), "test ./internal/"+pkg+"/...\n")
+			}
+		})
+	}
+}
