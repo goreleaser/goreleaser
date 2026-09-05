@@ -452,7 +452,7 @@ example:
 ```yaml {filename=".goreleaser.yaml"}
 builds:
   - ldflags:
-   - -s -w -X "main.goversion={{.Env.GOVERSION}}"
+      - -s -w -X "main.goversion={{.Env.GOVERSION}}"
 ```
 
 Then you can run:
