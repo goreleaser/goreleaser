@@ -117,10 +117,6 @@ homebrew_casks:
       # Templates: allowed.
       template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
-      # Used when the domains of `url` and `homepage` differ.
-      # Templates: allowed.
-      verified: "github.com/owner/repo/"
-
       # Download strategy or format specification
       # See official Cask Cookbook for allowed values.
       # Templates: allowed.
@@ -418,7 +414,6 @@ homebrew_casks:
       # Replace <owner>/<repo> with your private GitHub repository.
       template: "https://github.com/<owner>/<repo>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
       using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      verified: github.com/<owner>/<repo>/
 ```
 
 Users still need `HOMEBREW_GITHUB_API_TOKEN` exported in their

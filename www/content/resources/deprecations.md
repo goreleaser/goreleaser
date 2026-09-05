@@ -49,6 +49,34 @@ foo: bar
 
 -->
 
+### homebrew_casks.url.verified
+
+> since v2.18.1
+
+[Homebrew deprecated it](https://github.com/Homebrew/brew/pull/23280), and now
+uses the default URL verification behavior.
+GoReleaser does not write it into the Cask anymore.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - url:
+      verified: github.com/myorg/myrepo
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - {}
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
 ### dockers_v2.retry
 
 > since v2.15.3
@@ -497,10 +525,6 @@ homebrew_casks:
   - name: foo
     # Optional: either set it to Casks, or remove it:
     directory: Casks
-
-    # Optional: helps pass `homebrew audit` if homepage is different from download domain:
-    url:
-      verified: github.com/myorg/myrepo
 
     # Optional: if your app/binary isn't signed and notarized, you'll need this:
     hooks:

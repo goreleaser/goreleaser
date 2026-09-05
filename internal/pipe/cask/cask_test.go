@@ -1223,6 +1223,9 @@ func TestDefaultDeprecated(t *testing.T) {
 			{
 				Binary:  "bin",
 				Manpage: "man",
+				URL: config.HomebrewCaskURL{
+					Verified: "github.com/foo/bar",
+				},
 			},
 		},
 	}, testctx.GitHubTokenType)
@@ -1231,6 +1234,7 @@ func TestDefaultDeprecated(t *testing.T) {
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
 	require.Equal(t, []string{"man"}, ctx.Config.Casks[0].Manpages)
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.url.verified")
 }
 
 func TestGHFolder(t *testing.T) {
