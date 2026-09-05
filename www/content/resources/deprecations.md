@@ -587,7 +587,7 @@ archives:
 {{< /tab >}}
 {{< /tabs >}}
 
-### snaps.builds
+### snapcrafts.builds {#snapsbuilds}
 
 > since v2.8
 
@@ -598,16 +598,16 @@ used everywhere else.
 {{< tab "Before" >}}
 
 ```yaml
-snaps:
-  builds: [a, b]
+snapcrafts:
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
-snaps:
-  ids: [a, b]
+snapcrafts:
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
