@@ -17,7 +17,7 @@ jobs:
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: notify goreleaser-cross with new release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: benc-uk/workflow-dispatch@31e2b3319479a63f0ab15bf800eff9e913504e26 # v1.3.2
+        uses: benc-uk/workflow-dispatch@d004979be141727c7a17c28f603e2facc40d0855 # v1.3.3
         with:
           token: ${{ secrets.GH_PAT }}
           repo: goreleaser/goreleaser-cross
@@ -74,7 +74,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -100,7 +100,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: setup-snapcraft
         run: sudo snap install snapcraft --classic
@@ -121,7 +121,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.sha }}
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-      - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+      - uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
