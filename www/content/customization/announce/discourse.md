@@ -36,11 +36,11 @@ announce:
     # Templates: allowed.
     enabled: true
 
-    # The fully qualified domain name (FQDN) of the Discourse forum.
+    # The absolute HTTP(S) base URL of the Discourse forum.
     # Do not include a trailing slash.
     #
     # Required.
-    server: my.forum.com
+    server: https://my.forum.com
 
     # Title to use for the Discourse topic.
     #
