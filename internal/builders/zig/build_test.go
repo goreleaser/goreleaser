@@ -102,7 +102,7 @@ func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
 
 	folder := t.TempDir()
-	require.NoError(t, gio.Copy("testdata", filepath.Join(folder, "proj")))
+	require.NoError(t, gio.Copy("testdata/proj", filepath.Join(folder, "proj")))
 	t.Chdir(folder)
 	// the local cache stays per-test so build outputs cannot collide; the
 	// global cache is shared, see testlib.SharedZigCache.
