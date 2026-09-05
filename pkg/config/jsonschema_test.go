@@ -60,3 +60,27 @@ announce:
 		})
 	}
 }
+
+func TestSignJSONSchema(t *testing.T) {
+	t.Parallel()
+
+	data, err := json.Marshal(jsonschema.Reflect(&Project{}))
+	require.NoError(t, err)
+	schema, err := validator.CompileString("schema.json", string(data))
+	require.NoError(t, err)
+
+	for _, field := range []string{"signs", "docker_signs"} {
+		for _, selector := range []string{"none", "checksum", "invalid"} {
+			t.Run(field+"/"+selector, func(t *testing.T) {
+				err := schema.Validate(map[string]any{
+					field: []any{map[string]any{"artifacts": selector}},
+				})
+				if selector == "invalid" {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+		}
+	}
+}

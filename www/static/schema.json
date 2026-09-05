@@ -4722,7 +4722,8 @@
 							"package",
 							"archive",
 							"binary",
-							"sbom"
+							"sbom",
+							"none"
 						]
 					},
 					"ids": {
