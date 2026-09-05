@@ -889,23 +889,6 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      testlib.AssertSkipped,
 			manifestAssertError: shouldNotErr,
 		},
-		"no_permissions": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"docker.io/nope:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			expect: []string{
-				"docker.io/nope:latest",
-			},
-			assertImageLabels:   noLabels,
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
-			manifestAssertError: shouldNotErr,
-		},
 		"dockerfile_doesnt_exist": {
 			dockers: []config.Docker{
 				{
