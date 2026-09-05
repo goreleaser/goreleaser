@@ -154,7 +154,7 @@ mcp:
 ## How it works
 
 GoReleaser will generate a `server.json` conforming to the
-[MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json).
+[MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json).
 
 Then, it'll sign in using the provided authentication details.
 
