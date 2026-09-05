@@ -762,6 +762,7 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitLab, func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
@@ -774,6 +775,7 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitLab+" no previous", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
