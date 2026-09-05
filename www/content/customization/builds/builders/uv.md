@@ -84,7 +84,8 @@ builds:
 ```
 
 > [!WARNING]
-> At this time only the target `py3-none-any` is supported.
+> At this time only the GoReleaser target `none-any` is supported.
+> `py3-none-any` is a wheel filename tag, not a GoReleaser target.
 
 ## Building both wheel and sdist
 

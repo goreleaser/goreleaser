@@ -183,7 +183,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 {{< tab name="UV" icon="uv" >}}
 
 ```sh
-TARGET="py3-none-any" \
+TARGET="none-any" \
   goreleaser build --single-target --clean
 ```
 
@@ -191,7 +191,7 @@ TARGET="py3-none-any" \
 {{< tab name="Poetry" icon="poetry" >}}
 
 ```sh
-TARGET="py3-none-any" \
+TARGET="none-any" \
   goreleaser build --single-target --clean
 ```
 
