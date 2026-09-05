@@ -16,6 +16,9 @@ a `PKGBUILD` to an _Arch User Repository_ based on sources.
 > [!NOTE]
 > `aur_sources` requires a [source archive][sourcearchive] to be configured.
 > Make sure to enable `source.enabled: true` in your configuration.
+> The example uses the default archive layout, with source files at the root.
+> If you set `source.prefix_template`, adjust the working directory in each
+> function to match that prefix.
 
 This page describes the available options.
 
@@ -129,12 +132,10 @@ aur_sources:
 
     # Custom prepare instructions.
     prepare: |-
-      cd "${pkgname}_${pkgver}"
       go mod download
 
     # Custom build instructions.
     build: |-
-      cd "${pkgname}_${pkgver}"
       export CGO_CPPFLAGS="${CPPFLAGS}"
       export CGO_CFLAGS="${CFLAGS}"
       export CGO_CXXFLAGS="${CXXFLAGS}"
@@ -144,7 +145,6 @@ aur_sources:
 
     # Custom package instructions.
     package: |-
-      cd "${pkgname}_${pkgver}"
       install -Dsm755 ./myapp "${pkgdir}/usr/bin/myapp"
 
     # This will be added into the package as 'name.install'.
