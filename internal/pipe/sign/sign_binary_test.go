@@ -18,16 +18,33 @@ func TestBinarySignDescription(t *testing.T) {
 }
 
 func TestBinarySignDefault(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		BinarySigns: []config.BinarySign{{}},
-	})
+	t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
+	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Setenv("GIT_CONFIG_COUNT", "0")
+	t.Setenv("GIT_CONFIG_PARAMETERS", "")
+	for _, tc := range []struct {
+		name     string
+		program  string
+		expected string
+	}{
+		{name: "default", expected: "gpg"},
+		{name: "configured", program: "not-really-gpg", expected: "not-really-gpg"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			testlib.Mktmp(t)
+			testlib.GitInit(t)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				BinarySigns: []config.BinarySign{{}},
+			})
+			setGpg(t, ctx, tc.program)
 
-	err := BinaryPipe{}.Default(ctx)
-	require.NoError(t, err)
-	require.Equal(t, "gpg", ctx.Config.BinarySigns[0].Cmd)
-	require.Equal(t, defaultSignatureName, ctx.Config.BinarySigns[0].Signature)
-	require.Equal(t, []string{"--output", "$signature", "--detach-sig", "$artifact"}, ctx.Config.BinarySigns[0].Args)
-	require.Equal(t, "binary", ctx.Config.BinarySigns[0].Artifacts)
+			require.NoError(t, BinaryPipe{}.Default(ctx))
+			require.Equal(t, tc.expected, ctx.Config.BinarySigns[0].Cmd)
+			require.Equal(t, defaultSignatureName, ctx.Config.BinarySigns[0].Signature)
+			require.Equal(t, []string{"--output", "$signature", "--detach-sig", "$artifact"}, ctx.Config.BinarySigns[0].Args)
+			require.Equal(t, "binary", ctx.Config.BinarySigns[0].Artifacts)
+		})
+	}
 }
 
 func TestBinarySignDisabled(t *testing.T) {
