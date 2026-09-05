@@ -102,7 +102,7 @@ by the `node` builder:
   directly with a known set of arguments.
 
 The following template variables are available in the per-target build
-context: `.Os`, `.Arch`, `.Goos`, `.Goarch`, `.Target`, `.Name`,
+context: `.Os`, `.Arch`, `.Target`, `.Name`,
 `.Path`, `.Ext`, `.Env.*`.
 Use them in `main`, `env`, and the `hooks` recipes.
 
