@@ -38,6 +38,8 @@ announce:
 		{name: "advanced attachments", config: goodAttachmentsSlackConf()},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			project, err := LoadReader(tc.config)
 			require.NoError(t, err)
 			data, err := json.Marshal(map[string]any{
@@ -52,6 +54,8 @@ announce:
 
 	for _, field := range []string{"blocks", "attachments"} {
 		t.Run("invalid "+field, func(t *testing.T) {
+			t.Parallel()
+
 			require.Error(t, schema.Validate(map[string]any{
 				"announce": map[string]any{
 					"slack": map[string]any{field: []any{"not an object"}},
@@ -72,6 +76,8 @@ func TestSignJSONSchema(t *testing.T) {
 	for _, field := range []string{"signs", "docker_signs"} {
 		for _, selector := range []string{"none", "checksum", "invalid"} {
 			t.Run(field+"/"+selector, func(t *testing.T) {
+				t.Parallel()
+
 				err := schema.Validate(map[string]any{
 					field: []any{map[string]any{"artifacts": selector}},
 				})
