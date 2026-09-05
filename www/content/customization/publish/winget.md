@@ -55,7 +55,8 @@ winget:
 
     # Package identifier.
     #
-    # Default: the project name.
+    # Default: publisher with spaces removed, followed by a dot and the
+    # configured package name (e.g. 'FooInc.myproject').
     # Templates: allowed.
     package_identifier: myproject.myproject
 

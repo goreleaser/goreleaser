@@ -19,9 +19,10 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Item is a type alias of [client.Changelog].
 type (
-	Item   = changelog.Item
+	// Item is a type alias of [changelog.Item].
+	Item = changelog.Item
+	// Author is a type alias of [changelog.Author].
 	Author = changelog.Author
 )
 
@@ -37,7 +38,7 @@ const (
 	useGitHubNative = "github-native"
 )
 
-// Pipe for checksums.
+// Pipe generates the release changelog.
 type Pipe struct{}
 
 func (Pipe) String() string { return "generating changelog" }
@@ -165,7 +166,7 @@ func formatChangelog(ctx *context.Context, entries []Item) (string, error) {
 			order: group.Order,
 		}
 		if group.Regexp == "" {
-			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
+			// An empty regexp consumes all remaining entries.
 			lines, err := formatEntries(ctx, entries)
 			if err != nil {
 				return "", err

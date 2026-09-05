@@ -4722,7 +4722,8 @@
 							"package",
 							"archive",
 							"binary",
-							"sbom"
+							"sbom",
+							"none"
 						]
 					},
 					"ids": {
@@ -4804,24 +4805,12 @@
 				"type": "object"
 			},
 			"SlackAttachment": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
+				"additionalProperties": true,
+				"type": "object"
 			},
 			"SlackBlock": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
+				"additionalProperties": true,
+				"type": "object"
 			},
 			"Snapcraft": {
 				"properties": {

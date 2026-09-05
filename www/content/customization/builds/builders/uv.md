@@ -84,7 +84,8 @@ builds:
 ```
 
 > [!WARNING]
-> At this time only the target `py3-none-any` is supported.
+> At this time only the GoReleaser target `none-any` is supported.
+> `py3-none-any` is a wheel filename tag, not a GoReleaser target.
 
 ## Building both wheel and sdist
 
@@ -102,7 +103,11 @@ builds:
 
 ## Publishing to PyPI
 
-You can use [global after hooks](/customization/builds/hooks/) to do it:
+{{< g_featpro >}}
+
+You can publish with
+[global after hooks](/customization/general/hooks/).
+With GoReleaser OSS, use a separate publishing step in your CI workflow.
 
 ```yaml {filename=".goreleaser.yaml"}
 # global after hooks

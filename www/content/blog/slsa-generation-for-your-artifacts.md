@@ -215,7 +215,7 @@ As you can see, generating SLSA provenance for your artifacts with GoReleaser an
           IMAGE: ${{ needs.goreleaser.outputs.image }}
           DIGEST: ${{ needs.goreleaser.outputs.digest }}
         run: |
-          slsa-verifier verify-image "$IMAGE@DIGEST" \
+          slsa-verifier verify-image "${IMAGE}@${DIGEST}" \
              --source-uri "github.com/$GITHUB_REPOSITORY" \
              --source-tag "$GITHUB_REF_NAME"
 ```

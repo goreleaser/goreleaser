@@ -19,7 +19,7 @@ docker_digest:
   #
   # Default: 'digests.txt'
   # Templates: allowed.
-  name_template: "{{ProjectName}}_digest.txt"
+  name_template: "{{ .ProjectName }}_digest.txt"
 
   # Set this to true if you don't want to create the digest file.
   #

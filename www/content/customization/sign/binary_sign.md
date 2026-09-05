@@ -6,11 +6,13 @@ weight: 10
 
 {{< g_version "v2.2" >}}
 
-Use this to sign the binaries and archive them alongside their signatures,
-instead of signing the whole archive.
+Use this to sign binaries before archiving, instead of signing the whole archive.
+Signatures are separate release assets and are not automatically included in
+archives. To include them, add the signature files to
+[`archives.files`](/customization/package/archives/).
 
-The default is configured to create a detached signature for the checksum files
-with [GnuPG](https://www.gnupg.org/), and your default key.
+The default creates a detached signature for each binary with
+[GnuPG](https://www.gnupg.org/) and your default key.
 
 To enable binary signing just add this to your configuration:
 
@@ -58,9 +60,9 @@ binary_signs:
     # Default: 'binary'.
     artifacts: binary
 
-    # IDs of the artifacts to sign.
+    # Build IDs of the binaries to sign.
     #
-    # If `artifacts` is checksum or source, this field has no effect.
+    # Empty means all build IDs.
     ids:
       - foo
       - bar

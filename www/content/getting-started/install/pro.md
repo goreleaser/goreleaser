@@ -135,7 +135,7 @@ apk add --allow-untrusted goreleaser*.apk
 
 This script does not install anything.
 It downloads, verifies, and runs GoReleaser, so you can use it in scripts and
-CI pipelines.
+CI pipelines.[^coreutils]
 
 ```bash
 curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION__ bash -s -- check
@@ -239,6 +239,8 @@ which is always the latest nightly build available.
 
 You may also use the [Bash Script method](#bash-script) by setting the `VERSION`
 environment variable to `nightly`.
+
+[^coreutils]: Requires GNU Coreutils with the unprefixed `sha256sum` command on `PATH`.
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [cosign]: https://github.com/sigstore/cosign

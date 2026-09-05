@@ -107,7 +107,11 @@ builds:
 
 ## Publishing with Cargo
 
-You can use [global after hooks](/customization/builds/hooks/) to do it:
+{{< g_featpro >}}
+
+You can publish with
+[global after hooks](/customization/general/hooks/).
+With GoReleaser OSS, use a separate publishing step in your CI workflow.
 
 ```yaml {filename=".goreleaser.yaml"}
 # global after hooks

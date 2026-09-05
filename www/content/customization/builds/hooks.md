@@ -38,9 +38,8 @@ builds:
     hooks:
       pre:
         - cmd: first-script.sh
-          dir:
-            "{{ dir .Dist}}"
-            # Always print command output, otherwise only visible in debug mode.
+          dir: .
+          # Always print command output, otherwise only visible in debug mode.
           output: true
           env:
             - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
