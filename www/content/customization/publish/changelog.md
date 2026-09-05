@@ -35,7 +35,7 @@ changelog:
   #
   # Default:
   #    if 'git': '{{ .SHA }} {{ .Message }}'
-  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})'.
+  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
   #
   # Extra template fields:
   # - `SHA`: the commit SHA1
