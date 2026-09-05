@@ -10,24 +10,20 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMain(m *testing.M) {
-	restores := map[string]string{}
-	for _, key := range []string{"GITHUB_TOKEN", "GITEA_TOKEN", "GITLAB_TOKEN"} {
-		prevValue, ok := os.LookupEnv(key)
-		if ok {
-			_ = os.Unsetenv(key)
-			restores[key] = prevValue
-		}
+func isolateEnv(t *testing.T) {
+	t.Helper()
+	for _, key := range []string{"GITHUB_TOKEN", "GITEA_TOKEN", "GITLAB_TOKEN", "GORELEASER_FORCE_TOKEN"} {
+		t.Setenv(key, "")
 	}
-
-	m.Run()
-
-	for k, v := range restores {
-		_ = os.Setenv(k, v)
-	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	homedir.Reset()
+	t.Cleanup(homedir.Reset)
 }
 
 func TestDescription(t *testing.T) {
@@ -35,6 +31,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSetDefaultTokenFiles(t *testing.T) {
+	isolateEnv(t)
 	t.Run("empty config", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		setDefaultTokenFiles(ctx)
@@ -89,6 +86,7 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 }
 
 func TestForceToken(t *testing.T) {
+	isolateEnv(t)
 	t.Run("github", func(t *testing.T) {
 		t.Setenv("GITHUB_TOKEN", "fake")
 		t.Setenv("GORELEASER_FORCE_TOKEN", "github")
@@ -113,6 +111,7 @@ func TestForceToken(t *testing.T) {
 }
 
 func TestValidGithubEnv(t *testing.T) {
+	isolateEnv(t)
 	t.Setenv("GITHUB_TOKEN", "asdf")
 	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -121,6 +120,7 @@ func TestValidGithubEnv(t *testing.T) {
 }
 
 func TestValidGitlabEnv(t *testing.T) {
+	isolateEnv(t)
 	t.Setenv("GITLAB_TOKEN", "qwertz")
 	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -129,6 +129,7 @@ func TestValidGitlabEnv(t *testing.T) {
 }
 
 func TestValidGiteaEnv(t *testing.T) {
+	isolateEnv(t)
 	t.Setenv("GITEA_TOKEN", "token")
 	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -137,12 +138,14 @@ func TestValidGiteaEnv(t *testing.T) {
 }
 
 func TestInvalidEnv(t *testing.T) {
+	isolateEnv(t)
 	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), ErrMissingToken.Error())
 }
 
 func TestMultipleEnvTokens(t *testing.T) {
+	isolateEnv(t)
 	t.Setenv("GITHUB_TOKEN", "asdf")
 	t.Setenv("GITLAB_TOKEN", "qwertz")
 	t.Setenv("GITEA_TOKEN", "token")
@@ -152,6 +155,7 @@ func TestMultipleEnvTokens(t *testing.T) {
 }
 
 func TestMultipleEnvTokensForce(t *testing.T) {
+	isolateEnv(t)
 	t.Setenv("GITHUB_TOKEN", "asdf")
 	t.Setenv("GITLAB_TOKEN", "qwertz")
 	t.Setenv("GITEA_TOKEN", "token")
@@ -161,21 +165,25 @@ func TestMultipleEnvTokensForce(t *testing.T) {
 }
 
 func TestEmptyGithubFileEnv(t *testing.T) {
+	isolateEnv(t)
 	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestEmptyGitlabFileEnv(t *testing.T) {
+	isolateEnv(t)
 	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestEmptyGiteaFileEnv(t *testing.T) {
+	isolateEnv(t)
 	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestEmptyGithubEnvFile(t *testing.T) {
+	isolateEnv(t)
 	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
@@ -191,6 +199,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 }
 
 func TestEmptyGitlabEnvFile(t *testing.T) {
+	isolateEnv(t)
 	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
@@ -206,6 +215,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 }
 
 func TestEmptyGiteaEnvFile(t *testing.T) {
+	isolateEnv(t)
 	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
@@ -221,11 +231,13 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {
+	isolateEnv(t)
 	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Publish))
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
+	isolateEnv(t)
 	t.Run("true", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{},
@@ -271,6 +283,7 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 }
 
 func TestLoadEnv(t *testing.T) {
+	isolateEnv(t)
 	const env = "SUPER_SECRET_ENV_NOPE"
 
 	t.Run("env exists", func(t *testing.T) {
