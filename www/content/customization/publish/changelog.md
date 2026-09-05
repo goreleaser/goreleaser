@@ -102,8 +102,8 @@ changelog:
   # Providing no regex means all commits will be grouped under the default group.
   #
   # Matches are performed against the first line of the commit message only,
-  # prefixed with the commit SHA1, usually in the form of
-  # `<abbrev-commit>[:] <title-commit>`.
+  # without a SHA prefix. The format and abbrev settings do not affect matching.
+  # For example, '^feat:' matches a subject such as 'feat: add an option'.
   # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
   #
   # Disabled when using 'github-native'.
