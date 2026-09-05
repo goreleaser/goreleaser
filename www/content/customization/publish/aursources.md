@@ -140,8 +140,7 @@ aur_sources:
       export CGO_CXXFLAGS="${CXXFLAGS}"
       export CGO_LDFLAGS="${LDFLAGS}"
       export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
-      go build -ldflags="-w -s -buildid='' -linkmode=external -X main.version=${pkgver}" .
-      chmod +x ./goreleaser
+      go build -o myapp -ldflags="-w -s -buildid='' -linkmode=external -X main.version=${pkgver}" .
 
     # Custom package instructions.
     package: |-
