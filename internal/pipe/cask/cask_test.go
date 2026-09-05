@@ -482,6 +482,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://dummyhost-url-parameters.com/"
 				ctx.Config.Casks[0].URL.Using = ":post"
+				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
 				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
 			},
@@ -1233,6 +1234,7 @@ func TestDefaultDeprecated(t *testing.T) {
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
 	require.Equal(t, []string{"man"}, ctx.Config.Casks[0].Manpages)
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.url.verified")
 }
 
 func TestGHFolder(t *testing.T) {
