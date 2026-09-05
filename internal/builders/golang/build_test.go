@@ -1379,8 +1379,7 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestBuildModTimestamp(t *testing.T) {
-	// round to seconds since this will be a unix timestamp
-	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	modTime := time.Date(2023, time.January, 2, 3, 4, 5, 0, time.UTC)
 
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
@@ -1389,15 +1388,8 @@ func TestBuildModTimestamp(t *testing.T) {
 		config.Project{
 			Env: []string{"GO_FLAGS=-v"},
 			Builds: []config.Build{{
-				ID:     "foo",
-				Binary: "bin/foo-{{ .Version }}",
-				Targets: []string{
-					"linux_amd64",
-					"darwin_amd64",
-					"linux_arm_6",
-					"linux_mips_softfloat",
-					"linux_mips64le_softfloat",
-				},
+				ID:           "foo",
+				Binary:       "bin/foo-{{ .Version }}",
 				Env:          []string{"GO111MODULE=off"},
 				Asmflags:     []string{".=", "all="},
 				Gcflags:      []string{"all="},
@@ -1411,27 +1403,19 @@ func TestBuildModTimestamp(t *testing.T) {
 		testctx.WithVersion("5.6.7"))
 
 	build := ctx.Config.Builds[0]
-	for _, target := range build.Targets {
-		bin, terr := tmpl.New(ctx).Apply(build.Binary)
-		require.NoError(t, terr)
+	bin, err := tmpl.New(ctx).Apply(build.Binary)
+	require.NoError(t, err)
+	require.NoError(t, Default.Build(ctx, build, api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Name:   bin,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, bin),
+	}))
 
-		err := Default.Build(ctx, build, api.Options{
-			Target: mustParse(t, runtimeTarget),
-			Name:   bin,
-			Path:   filepath.Join(folder, "dist", target, bin),
-		})
-		require.NoError(t, err)
-	}
-
-	for _, bin := range ctx.Artifacts.List() {
-		if bin.Type != artifact.Binary {
-			continue
-		}
-
-		fi, err := os.Stat(bin.Path)
-		require.NoError(t, err)
-		require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
-	}
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	fi, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.Equal(t, modTime, fi.ModTime().UTC())
 }
 
 func TestBuildGoBuildLine(t *testing.T) {
