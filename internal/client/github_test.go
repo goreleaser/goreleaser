@@ -2279,9 +2279,14 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 
 func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
 	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+		http.Error(w, "unexpected request", http.StatusBadRequest)
+	})
 	ctx := testctx.WrapWithCfg(
 		t.Context(),
 		config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
 			Release: config.Release{
 				NameTemplate:    "v1.0.0",
 				TargetCommitish: "{{ .NoKeyLikeThat }}",
