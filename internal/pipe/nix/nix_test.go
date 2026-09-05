@@ -1,12 +1,10 @@
 package nix
 
 import (
-	stdctx "context"
-	"errors"
+	"crypto/sha256"
 	"html/template"
 	"maps"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -39,39 +37,35 @@ func TestSkip(t *testing.T) {
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
-		testlib.CheckPath(t, "nix-hash")
-		testlib.SkipIfWindows(t, "nix doesn't work on windows")
 		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
 }
 
-const fakeNixHashBin = "fake-nix-hash"
-
 func TestHasher(t *testing.T) {
-	t.Run("hash", func(t *testing.T) {
-		t.Run("fake-nix-hash", func(t *testing.T) {
-			_, err := nixHasher{fakeNixHashBin}.Hash(t.Context(), "any")
-			require.ErrorIs(t, err, exec.ErrNotFound)
-		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
-			require.NoError(t, err)
-			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
-		})
+	t.Run("reference vector", func(t *testing.T) {
+		// produced by `nix-hash --type sha256 --flat --base32 testdata/file.bin`.
+		sha, err := realHasher.Hash("./testdata/file.bin")
+		require.NoError(t, err)
+		require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 	})
-	t.Run("available", func(t *testing.T) {
-		t.Run("no-nix-hash", func(t *testing.T) {
-			require.False(t, nixHasher{fakeNixHashBin}.Available())
-		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			require.True(t, realHasher.Available())
-		})
+
+	t.Run("all zeroes", func(t *testing.T) {
+		require.Equal(t, zeroHash, nixBase32(make([]byte, sha256.Size)))
+	})
+
+	// the vectors above only emit 27 of the 32 characters; with this one, a
+	// typo anywhere in the alphabet fails the test.
+	t.Run("full alphabet", func(t *testing.T) {
+		// printf goreleaser > f && nix-hash --type sha256 --flat --base32 f
+		sum := sha256.Sum256([]byte("goreleaser"))
+		require.Equal(t, "19a48kbsv6pr8x1bnbbs61f80wilnc2dcgahb70xbmb73pr0s7sk", nixBase32(sum[:]))
+	})
+
+	t.Run("missing file", func(t *testing.T) {
+		_, err := realHasher.Hash("./testdata/does-not-exist.bin")
+		require.Error(t, err)
 	})
 }
 
@@ -620,18 +614,6 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
-func TestRunSkipNoNix(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Nix: []config.Nix{
-			{},
-		},
-	})
-	p := Pipe{}
-	p.hasher = unavailableHasher{}
-	require.NoError(t, p.Default(ctx))
-	testlib.AssertSkipped(t, p.Run(ctx))
-}
-
 func TestRunPipeSomeSkipped(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(
@@ -696,10 +678,6 @@ func TestErrNoArchivesFound(t *testing.T) {
 		goamd64: "v1",
 		ids:     []string{"foo", "bar"},
 	}, "no archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=v1 ids=[foo bar]")
-}
-
-func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"nix-hash"}, Pipe{}.Dependencies(nil))
 }
 
 func TestBinInstallFormats(t *testing.T) {
@@ -771,26 +749,17 @@ func linuxDep(s string) config.NixDependency {
 	}
 }
 
-type unavailableHasher struct{}
-
-func (m unavailableHasher) Hash(stdctx.Context, string) (string, error) {
-	return "", errors.New("unavailable hasher")
-}
-func (m unavailableHasher) Available() bool { return false }
-
 type fakeHasher map[string]string
 
-func (m fakeHasher) Hash(_ stdctx.Context, path string) (string, error) {
+func (m fakeHasher) Hash(path string) (string, error) {
 	return m[filepath.Base(path)], nil
 }
-func (m fakeHasher) Available() bool { return true }
 
 const zeroHash = "0000000000000000000000000000000000000000000000000000"
 
 type alwaysZeroHasher struct{}
 
-func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool                             { return true }
+func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
 
 func TestDynamicallyLinked(t *testing.T) {
 	folder := t.TempDir()

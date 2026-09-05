@@ -5,8 +5,10 @@ import (
 	"bufio"
 	"bytes"
 	"cmp"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"maps"
 	"os"
 	"os/exec"
@@ -15,8 +17,6 @@ import (
 	"slices"
 	"strings"
 	"text/template"
-
-	stdctx "context"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -62,9 +62,8 @@ type Pipe struct {
 	hasher fileHasher
 }
 
-func (Pipe) String() string                           { return "nixpkgs" }
-func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{nixHashBin} }
+func (Pipe) String() string        { return "nixpkgs" }
+func (Pipe) ContinueOnError() bool { return true }
 
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0
@@ -94,9 +93,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
-	if !p.hasher.Available() {
-		return pipe.Skipf("%s is not available", nixHashBin)
-	}
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
@@ -325,7 +321,7 @@ func preparePkg(
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		sha, err := hasher.Hash(ctx, art.Path)
+		sha, err := hasher.Hash(art.Path)
 		if err != nil {
 			return "", err
 		}
@@ -598,34 +594,45 @@ func depNames(deps []config.NixDependency) []string {
 }
 
 type fileHasher interface {
-	Hash(ctx stdctx.Context, name string) (string, error)
-	Available() bool
+	Hash(name string) (string, error)
 }
 
-const nixHashBin = "nix-hash"
+// nixBase32Alphabet is nix's own base32 alphabet: it drops e, o, u and t.
+const nixBase32Alphabet = "0123456789abcdfghijklmnpqrsvwxyz"
 
-var realHasher fileHasher = nixHasher{bin: nixHashBin}
-
-type nixHasher struct{ bin string }
-
-func (p nixHasher) Available() bool {
-	_, err := exec.LookPath(p.bin)
-	return err == nil
-}
-
-func (p nixHasher) Hash(ctx stdctx.Context, name string) (string, error) {
-	// $ nix-hash --type sha256 --flat --base32 <(echo test)
-	out, err := exec.CommandContext(
-		ctx,
-		p.bin,
-		"--type", "sha256",
-		"--flat",
-		"--base32",
-		name,
-	).Output()
-	outStr := strings.TrimSpace(string(out))
-	if err != nil {
-		return "", fmt.Errorf("could not hash file: %s: %w: %s", name, err, outStr)
+// nixBase32 renders a hash the way nix does, reading the bit groups from the
+// end backwards. See printHash32 in nix's libutil/hash.cc.
+func nixBase32(h []byte) string {
+	n := (len(h)*8-1)/5 + 1
+	out := make([]byte, n)
+	for k := range n {
+		b := (n - 1 - k) * 5
+		i, j := b/8, b%8
+		c := h[i] >> j
+		if i+1 < len(h) {
+			c |= h[i+1] << (8 - j)
+		}
+		out[k] = nixBase32Alphabet[c&0x1f]
 	}
-	return outStr, nil
+	return string(out)
+}
+
+var realHasher fileHasher = goHasher{}
+
+// goHasher reproduces `nix-hash --type sha256 --flat --base32`, which is
+// simply the sha256 of the file rendered in nix's base32, so that users do not
+// need nix installed to publish a nix package.
+type goHasher struct{}
+
+func (goHasher) Hash(name string) (string, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return "", fmt.Errorf("could not hash file: %s: %w", name, err)
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", fmt.Errorf("could not hash file: %s: %w", name, err)
+	}
+	return nixBase32(h.Sum(nil)), nil
 }
