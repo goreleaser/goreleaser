@@ -190,6 +190,16 @@ This script does not install anything.
 It downloads, verifies, and runs GoReleaser, so you can use it in scripts and
 CI pipelines.
 
+The script requires GNU Coreutils with `sha256sum` available on `PATH`.
+On macOS with Homebrew, install Coreutils and expose its unprefixed commands:
+
+```bash
+brew install coreutils
+export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
+```
+
+Then run:
+
 ```bash
 curl -sfL https://goreleaser.com/static/run | VERSION=__VERSION__ bash -s -- check
 ```
