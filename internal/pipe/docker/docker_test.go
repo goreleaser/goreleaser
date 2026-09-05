@@ -753,6 +753,41 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_build_args:latest"),
 		},
+		// a wheel of another id must not be counted against docker's ids, nor
+		// copied into the build context.
+		"valid with ids and an unrelated wheel": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_wheel:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					IDs:        []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_wheel:latest",
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "mytool-1.0.0-py3-none-any.whl",
+					Path:   "testdata/Dockerfile",
+					Goos:   "all",
+					Goarch: "all",
+					Type:   artifact.PyWheel,
+					Extra: map[string]any{
+						artifact.ExtraID: "mytool",
+					},
+				})
+			},
+		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
 				{
