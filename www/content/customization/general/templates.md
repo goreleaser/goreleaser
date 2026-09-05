@@ -52,7 +52,6 @@ In fields that support templates, these fields are usually available:
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
 | `.Outputs`         | custom outputs {{< g_inline_version "v2.11" >}}                                                            |
-| `.Dist`            | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17" >}}                      |
 
 The exception is that none of the Git-related fields are available in the
 `env` section.
@@ -70,6 +69,7 @@ The exception is that none of the Git-related fields are available in the
 | `.IsMerging`           | `true` if you are running with `--merge` {{< g_inline_version "v2.8" >}}                 |
 | `.Artifacts`           | [the current artifacts list](#artifacts)                                                 |
 | `.Metadata`            | [project metadata fields](#metadata) {{< g_inline_version "v2.13" >}}                    |
+| `.Dist`                | the absolute path to the configured `dist` directory {{< g_inline_version "v2.17" >}} |
 
 ## Metadata
 
