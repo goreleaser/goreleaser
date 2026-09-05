@@ -573,7 +573,7 @@ used everywhere else.
 
 ```yaml
 archives:
-  builds: [a, b]
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
@@ -581,7 +581,7 @@ archives:
 
 ```yaml
 archives:
-  ids: [a, b]
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
