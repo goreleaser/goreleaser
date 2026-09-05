@@ -125,9 +125,7 @@ mcp:
       transport:
         type: stdio
 
-  # Setting this will prevent GoReleaser from actually trying to publish the
-  # server manifest - instead, the manifest file will be stored in the dist
-  # directory only, leaving the responsibility of publishing it to the user.
+  # Set to true to skip MCP publication. No local manifest is written.
   # If set to auto, the manifest will not be published in case there is an
   # indicator for prerelease in the tag e.g. v1.0.0-rc1
   #
