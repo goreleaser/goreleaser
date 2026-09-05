@@ -86,6 +86,18 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.URL.Verified != "" {
 			deprecate.Notice(ctx, "homebrew_casks.url.verified")
 		}
+		if brew.Hooks.Pre.Install != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.pre.install")
+		}
+		if brew.Hooks.Pre.Uninstall != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.pre.uninstall")
+		}
+		if brew.Hooks.Post.Install != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.post.install")
+		}
+		if brew.Hooks.Post.Uninstall != "" {
+			deprecate.Notice(ctx, "homebrew_casks.hooks.post.uninstall")
+		}
 		for _, conflict := range brew.Conflicts {
 			if conflict.Formula != "" {
 				deprecate.Notice(ctx, "homebrew_casks.conflicts.formula")
@@ -362,6 +374,7 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		},
 		"uninstall":           uninstallString,
 		"zap":                 zapString,
+		"flight":              flightString,
 		"conflicts":           conflictsString,
 		"depends":             dependsString,
 		"generateCompletions": generateCompletionsString,
@@ -374,7 +387,7 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		return "", err
 	}
 
-	content, err := tmpl.New(ctx).Apply(out.String())
+	content, err := tmpl.New(ctx).WithExtraFields(caskTokens).Apply(out.String())
 	if err != nil {
 		return "", err
 	}

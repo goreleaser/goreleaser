@@ -58,20 +58,12 @@ cask "{{ .Name }}" do
   service "{{ . }}"
   {{- end }}
 
-  {{ with .Hooks.Pre.Install -}}
-  preflight do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ with flight "preflight" .Hooks.Pre.InstallSteps .Hooks.Pre.Install -}}
+  {{ . }}
   {{- end }}
 
-  {{ with .Hooks.Post.Install -}}
-  postflight do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ with flight "postflight" .Hooks.Post.InstallSteps .Hooks.Post.Install -}}
+  {{ . }}
   {{- end }}
 
   {{- /*
@@ -84,20 +76,12 @@ cask "{{ .Name }}" do
   {{ . }}
   {{- end }}
 
-  {{ with .Hooks.Pre.Uninstall -}}
-  uninstall_preflight do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ with flight "uninstall_preflight" .Hooks.Pre.UninstallSteps .Hooks.Pre.Uninstall -}}
+  {{ . }}
   {{- end }}
 
-  {{ with .Hooks.Post.Uninstall -}}
-  uninstall_postflight do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ with flight "uninstall_postflight" .Hooks.Post.UninstallSteps .Hooks.Post.Uninstall -}}
+  {{ . }}
   {{- end }}
 
   {{ uninstall .Uninstall }}
