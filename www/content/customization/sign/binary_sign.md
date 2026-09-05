@@ -9,7 +9,7 @@ weight: 10
 Use this to sign binaries before archiving, instead of signing the whole archive.
 Signatures are separate release assets and are not automatically included in
 archives. To include them, add the signature files to
-[`archives.files`](/customization/package/archive/).
+[`archives.files`](/customization/package/archives/).
 
 The default creates a detached signature for each binary with
 [GnuPG](https://www.gnupg.org/) and your default key.
