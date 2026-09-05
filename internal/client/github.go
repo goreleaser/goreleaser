@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v89/github"
+	"github.com/google/go-github/v91/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
@@ -270,16 +270,13 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 		return ErrNoMilestoneFound{Title: title}
 	}
 
-	closedState := "closed"
-	milestone.State = &closedState
-
 	_, _, err = githubDo(ctx, func() (*github.Milestone, *github.Response, error) {
-		return c.client.Issues.EditMilestone(
+		return c.client.Issues.UpdateMilestone(
 			ctx,
 			repo.Owner,
 			repo.Name,
 			*milestone.Number,
-			milestone,
+			github.UpdateMilestoneRequest{State: new("closed")},
 		)
 	})
 
@@ -345,10 +342,10 @@ func (c *githubClient) OpenPullRequest(
 			ctx,
 			base.Owner,
 			base.Name,
-			&github.NewPullRequest{
+			github.CreatePullRequest{
 				Title: &title,
-				Base:  &base.Branch,
-				Head:  new(headString(base, head)),
+				Base:  base.Branch,
+				Head:  headString(base, head),
 				Body:  new(strings.Join([]string{tpl, prFooter}, "\n")),
 				Draft: &draft,
 			},
@@ -393,8 +390,8 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 			ctx,
 			head.Owner,
 			head.Name,
-			&github.RepoMergeUpstreamRequest{
-				Branch: &branch,
+			github.RepoMergeUpstreamRequest{
+				Branch: branch,
 			},
 		)
 	})

@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/google/go-github/v91/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -446,7 +446,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
-			var pr github.NewPullRequest
+			var pr github.CreatePullRequest
 			assert.NoError(t, json.Unmarshal(got, &pr))
 			assert.Equal(t, "main", pr.GetBase())
 			assert.Equal(t, "someoneelse:something:foo", pr.GetHead())
@@ -530,7 +530,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
-			var pr github.NewPullRequest
+			var pr github.CreatePullRequest
 			assert.NoError(t, json.Unmarshal(got, &pr))
 			assert.Equal(t, "main", pr.GetBase())
 			assert.Equal(t, "someone:something:foo", pr.GetHead())

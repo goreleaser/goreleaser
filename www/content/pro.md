@@ -10,6 +10,8 @@ GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
 - [Export OpenTelemetry traces](/customization/telemetry/) of your releases to your own collector (Enterprise plan);
+- Run in air-gapped environments with [offline licenses](#offline-licenses)
+  (Business and Enterprise plans);
 - [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
@@ -26,10 +28,11 @@ additional features:
 - Have [global defaults for homepage, description, etc](/customization/general/metadata/);
 - Run [hooks before publishing](/customization/publish/beforepublish/) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
-- Publish [versioned Homebrew Casks](/customization/publish/homebrew_casks/#versioned-casks);
+- Publish [versioned Homebrew Casks](/customization/publish/homebrew_casks/#versioned-casks)
+  and [Formulas](/customization/publish/homebrew_formulas/#versioned-formulas);
 - Keep [DockerHub image descriptions up to date](/customization/publish/dockerhub/);
 - Create [macOS disk images (`.dmg`)](/customization/package/dmg/);
-- Create [Windows installers (`.msi`) with Wix](/customization/package/msi/);
+- Create [Windows installers (`.msi`)](/customization/package/msi/) with msitools or WiX;
 - Use `goreleaser release --single-target` to build the whole pipeline for a
   single architecture locally;
 - Check boxes in pull request templates;
@@ -38,6 +41,10 @@ additional features:
   packages, Docker images, etc...;
 - Use the [`.Artifacts`](/customization/general/templates/#artifacts) template
   variable to build more powerful customizations;
+- Use extra [template fields](/customization/general/templates/#common-fields-pro)
+  and [functions](/customization/general/templates/#functions-pro);
+- Upload to multiple [Artifactory](/customization/publish/artifactory/) and
+  [HTTP server](/customization/publish/upload/) instances;
 - [Split and merge builds](/customization/general/partial/) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
 - More [changelog options](/customization/publish/changelog/): Filter commits by path

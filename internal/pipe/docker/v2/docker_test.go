@@ -501,11 +501,30 @@ func TestContextArtifacts(t *testing.T) {
 		})
 	}
 
+	for _, id := range []string{"id1", "id2"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   id + "-1.0.0-py3-none-any.whl",
+			Goos:   "all",
+			Goarch: "all",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraID: id,
+			},
+		})
+	}
+
 	arts := contextArtifacts(ctx, config.DockerV2{
 		Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
 		IDs:       []string{"id1"},
 	})
-	require.Len(t, arts, 3)
+	require.Len(t, arts, 4)
+
+	t.Run("no ids", func(t *testing.T) {
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
+		})
+		require.Len(t, arts, 5)
+	})
 }
 
 func TestIsRetriableBuild(t *testing.T) {

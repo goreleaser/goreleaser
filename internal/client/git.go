@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -86,41 +87,13 @@ func (g *gitClient) CreateFiles(
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
 
-		// `git clone -c` writes these into the new repository's config, so the
-		// clone does the work of one `git config --local` per setting. That is
-		// four to seven processes saved on every publish, which matters on
-		// windows, where process creation is expensive.
-		conf := []string{
-			"user.name=" + commitAuthor.Name,
-			"user.email=" + commitAuthor.Email,
-			"init.defaultBranch=" + cmp.Or(g.branch, "master"),
-		}
-		if commitAuthor.Signing.Enabled {
-			conf = append(conf, "commit.gpgSign=true")
-			if commitAuthor.Signing.Key != "" {
-				conf = append(conf, "user.signingKey="+commitAuthor.Signing.Key)
-			}
-			if commitAuthor.Signing.Program != "" {
-				conf = append(conf, "gpg.program="+commitAuthor.Signing.Program)
-			}
-			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
-				conf = append(conf, "gpg.format="+commitAuthor.Signing.Format)
-			}
-		} else {
-			conf = append(conf, "commit.gpgSign=false")
-		}
-
-		if err := cloneRepo(ctx, parent, url, name, env, conf); err != nil {
+		if err := cloneRepo(ctx, parent, url, name, env); err != nil {
 			return err
 		}
 
 		if g.branch != "" {
-			if err := runGitCmds(ctx, cwd, env, [][]string{
-				{"checkout", g.branch},
-			}); err != nil {
-				if err := runGitCmds(ctx, cwd, env, [][]string{
-					{"checkout", "-b", g.branch},
-				}); err != nil {
+			if err := runGitCmd(ctx, cwd, env, "checkout", g.branch); err != nil {
+				if err := runGitCmd(ctx, cwd, env, "checkout", "-b", g.branch); err != nil {
 					return fmt.Errorf("git: could not checkout branch %s: %w", g.branch, err)
 				}
 			}
@@ -143,10 +116,14 @@ func (g *gitClient) CreateFiles(
 			Info("pushing")
 	}
 
-	if err := runGitCmds(ctx, cwd, env, [][]string{
-		{"add", "-A", "."},
-		{"commit", "-m", message},
-	}); err != nil {
+	if err := runGitCmd(ctx, cwd, env, "add", "-A", "."); err != nil {
+		return fmt.Errorf("git: failed to add files %q (%q): %w", repo.Name, url, err)
+	}
+	if err := runGitCmdWith(
+		ctx, cwd, env,
+		commitConfigFlags(commitAuthor),
+		"commit", "-m", message,
+	); err != nil {
 		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
 	}
 	if err := pushRepo(ctx, cwd, env); err != nil {
@@ -217,12 +194,7 @@ func isPasswordError(err error) bool {
 	return errors.As(err, &kerr)
 }
 
-func cloneRepo(ctx *context.Context, parent, url, name string, env, conf []string) error {
-	args := []string{"clone"}
-	for _, c := range conf {
-		args = append(args, "-c", c)
-	}
-	args = append(args, url, name)
+func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
 	if err := retryx.Do(
 		ctx,
 		ctx.Config.Retry,
@@ -236,7 +208,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env, conf []strin
 			log.WithField("url", redact.String(url, ctx.Env.Strings())).
 				WithField("dir", dir).
 				Info("cloning")
-			return runGitCmds(ctx, parent, env, [][]string{args})
+			return runGitCmd(ctx, parent, env, "clone", url, name)
 		},
 		retryx.IsNetworkError,
 	); err != nil {
@@ -250,20 +222,50 @@ func pushRepo(ctx *context.Context, cwd string, env []string) error {
 		ctx,
 		ctx.Config.Retry,
 		func() error {
-			return runGitCmds(ctx, cwd, env, [][]string{{"push", "origin", "HEAD"}})
+			return runGitCmd(ctx, cwd, env, "push", "origin", "HEAD")
 		},
 		retryx.IsNetworkError,
 	)
 }
 
-func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
-	for _, cmd := range cmds {
-		args := append([]string{"-C", cwd}, cmd...)
-		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
-			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
-		}
+func runGitCmd(ctx *context.Context, cwd string, env []string, cmd ...string) error {
+	return runGitCmdWith(ctx, cwd, env, nil, cmd...)
+}
+
+// runGitCmdWith runs a single git command in cwd. Globals are flags that git
+// expects before the subcommand, e.g. -c key=value. They stay out of the error
+// message.
+func runGitCmdWith(ctx *context.Context, cwd string, env []string, globals []string, cmd ...string) error {
+	args := append([]string{"-C", cwd}, globals...)
+	args = append(args, cmd...)
+	if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
+		return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
 	}
 	return nil
+}
+
+// commitConfigFlags returns the git flags that apply the author and its
+// signing options to a single commit. Passing them per command keeps them out
+// of the checkout config, which several callers share.
+func commitConfigFlags(author config.CommitAuthor) []string {
+	flags := []string{
+		"-c", "user.name=" + author.Name,
+		"-c", "user.email=" + author.Email,
+		"-c", "commit.gpgSign=" + strconv.FormatBool(author.Signing.Enabled),
+	}
+	if !author.Signing.Enabled {
+		return flags
+	}
+	if author.Signing.Key != "" {
+		flags = append(flags, "-c", "user.signingKey="+author.Signing.Key)
+	}
+	if author.Signing.Program != "" {
+		flags = append(flags, "-c", "gpg.program="+author.Signing.Program)
+	}
+	if author.Signing.Format != "" {
+		flags = append(flags, "-c", "gpg.format="+author.Signing.Format)
+	}
+	return flags
 }
 
 func nameFromURL(url string) string {

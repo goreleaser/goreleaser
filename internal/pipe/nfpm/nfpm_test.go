@@ -2057,53 +2057,67 @@ func TestTemplateExt(t *testing.T) {
 }
 
 func TestTermuxArch(t *testing.T) {
-	dist := t.TempDir()
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+	// the same binary must keep Termux's expected arch on `termux.deb` while
+	// being normalized to Debian's on a regular `deb`. Termux knows only
+	// aarch64, arm, i686 and x86_64.
+	// See https://github.com/goreleaser/nfpm/issues/1103.
+	for _, tt := range []struct {
+		goarch string
+		goarm  string
+		want   map[string]string
+	}{
+		{goarch: "arm64", want: map[string]string{"deb": "arm64", "termux.deb": "aarch64"}},
+		{goarch: "386", want: map[string]string{"deb": "i386", "termux.deb": "i686"}},
+		{goarch: "amd64", want: map[string]string{"deb": "amd64", "termux.deb": "x86_64"}},
+		{goarch: "arm", goarm: "5", want: map[string]string{"deb": "armel", "termux.deb": "arm"}},
+		{goarch: "arm", goarm: "6", want: map[string]string{"deb": "armhf", "termux.deb": "arm"}},
+		{goarch: "arm", goarm: "7", want: map[string]string{"deb": "armhf", "termux.deb": "arm"}},
+	} {
+		t.Run(tt.goarch+tt.goarm, func(t *testing.T) {
+			dist := t.TempDir()
+			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+			binPath := filepath.Join(dist, "mybin", "mybin")
+			require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
 
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		ProjectName: "mybin",
-		Dist:        dist,
-		NFPMs: []config.NFPM{
-			{
-				ID:          "someid",
-				Maintainer:  "me@me",
-				IDs:         []string{"default"},
-				Formats:     []string{"deb", "termux.deb"},
-				PackageName: "foo",
-			},
-		},
-	})
-	for _, goos := range []string{"linux", "android"} {
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   "mybin",
-			Path:   binPath,
-			Goos:   goos,
-			Goarch: "arm64",
-			Type:   artifact.Binary,
-			Extra:  map[string]any{artifact.ExtraID: "default"},
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "mybin",
+				Dist:        dist,
+				NFPMs: []config.NFPM{
+					{
+						ID:          "someid",
+						Maintainer:  "me@me",
+						IDs:         []string{"default"},
+						Formats:     []string{"deb", "termux.deb"},
+						PackageName: "foo",
+					},
+				},
+			})
+			for _, goos := range []string{"linux", "android"} {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "mybin",
+					Path:   binPath,
+					Goos:   goos,
+					Goarch: tt.goarch,
+					Goarm:  tt.goarm,
+					Type:   artifact.Binary,
+					Extra:  map[string]any{artifact.ExtraID: "default"},
+				})
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+			require.Len(t, packages, 2)
+
+			got := map[string]string{}
+			for _, pkg := range packages {
+				got[pkg.Format()] = debControlField(t, pkg.Path, "Architecture")
+			}
+
+			require.Equal(t, tt.want, got)
 		})
 	}
-
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-
-	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 2)
-
-	got := map[string]string{}
-	for _, pkg := range packages {
-		got[pkg.Format()] = debControlField(t, pkg.Path, "Architecture")
-	}
-
-	// the same arm64 binary must keep Termux's expected `aarch64` arch on
-	// `termux.deb`, while being normalized to Debian's `arm64` on a regular
-	// `deb`. See https://github.com/goreleaser/nfpm/issues/1103.
-	require.Equal(t, map[string]string{
-		"deb":        "arm64",
-		"termux.deb": "aarch64",
-	}, got)
 }
 
 // debControlField reads the given field from the control file of the
