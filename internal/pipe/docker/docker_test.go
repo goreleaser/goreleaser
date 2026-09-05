@@ -1572,6 +1572,20 @@ func (i *countingImager) Push(*context.Context, string, []string) (string, error
 }
 
 func TestDockerBuildRetries(t *testing.T) {
+	for _, name := range []string{"test-build-retriable", "test-build-fatal"} {
+		lock.Lock()
+		previous, existed := imagers[name]
+		lock.Unlock()
+		t.Cleanup(func() {
+			lock.Lock()
+			defer lock.Unlock()
+			if existed {
+				imagers[name] = previous
+			} else {
+				delete(imagers, name)
+			}
+		})
+	}
 	retry := config.Retry{Attempts: 5, Delay: time.Millisecond, MaxDelay: time.Millisecond}
 
 	t.Run("retries transient failures", func(t *testing.T) {
