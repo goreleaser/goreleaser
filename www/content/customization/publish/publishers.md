@@ -166,11 +166,13 @@ publishers:
 
     # This allows you to use the output of your custom publisher in templates
     # later, for instance, in the release notes.
+    # Requires the GoReleaser Pro executable.
     #
-    # The example bellow can be used with '{{ index .Outputs "foo.deb" }}'
+    # The example below can be used with '{{ index .Outputs "check-foo.deb" }}'
     # (assuming artifact name is 'foo.deb').
     #
     # Templates: allowed.
+    # {{< g_inline_pro >}}
     # {{< g_inline_version "v2.11" >}}
     output: "check-{{ .ArtifactName }}"
 ```
