@@ -80,6 +80,7 @@ func TestAnnounceWithQuotes(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
+	t.Setenv("SLACK_WEBHOOK", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Slack: config.Slack{},
