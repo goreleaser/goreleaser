@@ -22,6 +22,10 @@ a `PKGBUILD` to an _Arch User Repository_ based on sources.
 
 This page describes the available options.
 
+Unlike binary AUR packages, AUR Sources uses source archives. The `ids` and
+`goamd64` fields do not affect its output. Use `arches` to declare the package's
+supported architectures.
+
 ```yaml {filename=".goreleaser.yaml"}
 aur_sources:
   - # The package name.
@@ -32,12 +36,6 @@ aur_sources:
     #
     # Default: ProjectName.
     name: package
-
-    # Artifact IDs to filter for.
-    # Empty means all IDs (no filter).
-    ids:
-      - foo
-      - bar
 
     # Your app's homepage.
     #
@@ -160,11 +158,6 @@ aur_sources:
     # Default: 'Update to {{ .Tag }}'.
     # Templates: allowed.
     commit_msg_template: "pkgbuild updates"
-
-    # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
-    #
-    # Default: 'v1'.
-    goamd64: v2
 
     # The value to be passed to `GIT_SSH_COMMAND`.
     # This is mainly used to specify the SSH private key used to pull/push to
