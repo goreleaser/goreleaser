@@ -277,7 +277,7 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error {
 	cmd := exec.CommandContext(ctx, bin, args...)
 	cmd.Dir = dir
-	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+	cmd.Env = append(cmd.Environ(), ctx.Env.Strings()...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)

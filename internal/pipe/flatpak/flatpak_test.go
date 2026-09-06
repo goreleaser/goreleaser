@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -242,6 +243,59 @@ func TestRunPipeQuotesInstallPaths(t *testing.T) {
 	}
 }
 
+func TestRunCmdEnvPrecedence(t *testing.T) {
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			key := "GORELEASER_TEST_FLATPAK_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_FLATPAK_COMMAND_HELPER", "1")
+			t.Setenv("FLATPAK_ENV_HELPER_KEY", key)
+			record := filepath.Join(t.TempDir(), "record")
+			t.Setenv("FLATPAK_ENV_HELPER_RECORD", record)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+			require.NoError(t, runCmd(
+				ctx,
+				t.TempDir(),
+				"failed to run flatpak helper",
+				os.Args[0],
+				"-test.run=TestFlatpakCommandHelper",
+				"--",
+				"env",
+			))
+
+			bts, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, string(bts))
+		})
+	}
+}
+
 func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"flatpak-builder", "flatpak"}, Pipe{}.Dependencies(nil))
 }
@@ -316,6 +370,8 @@ func TestFlatpakCommandHelper(t *testing.T) {
 		os.Exit(0)
 	case "install":
 		runInstallHelper(args[1:])
+	case "env":
+		runFlatpakEnvHelper()
 	default:
 		fmt.Fprintf(os.Stderr, "unknown helper command: %s\n", args[0])
 		os.Exit(2)
@@ -363,6 +419,15 @@ func runFlatpakBuilderHelper(args []string) {
 	os.Exit(0)
 }
 
+func runFlatpakEnvHelper() {
+	value := os.Getenv(os.Getenv("FLATPAK_ENV_HELPER_KEY"))
+	if err := os.WriteFile(os.Getenv("FLATPAK_ENV_HELPER_RECORD"), []byte(value), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
 func runInstallHelper(args []string) {
 	expected := []string{
 		"-Dm755",
@@ -389,4 +454,17 @@ func runInstallHelper(args []string) {
 		os.Exit(2)
 	}
 	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	old, ok := os.LookupEnv(key)
+	require.NoError(t, os.Unsetenv(key))
+	t.Cleanup(func() {
+		if ok {
+			require.NoError(t, os.Setenv(key, old))
+			return
+		}
+		require.NoError(t, os.Unsetenv(key))
+	})
 }
