@@ -290,6 +290,38 @@ func TestExecute(t *testing.T) {
 			},
 			expectErr: fmt.Errorf(`exit status 1`),
 		},
+		{
+			name: "missing command",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
+		{
+			name: "blank command",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+					Cmd:  " \t\n ",
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
+		{
+			name: "command template resolves empty",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+					Cmd:  `{{ printf "" }}`,
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
 	}
 
 	for i, tc := range testCases {
@@ -311,6 +343,14 @@ func TestExecute(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExecuteEmptyCommandWithNoMatchingArtifacts(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Execute(ctx, []config.Publisher{{
+		Name: "empty",
+		IDs:  []string{"missing"},
+	}}))
 }
 
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {

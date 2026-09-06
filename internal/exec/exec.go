@@ -3,6 +3,7 @@ package exec
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -199,6 +200,9 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 	args, err := shellwords.Parse(cmd)
 	if err != nil {
 		return nil, err
+	}
+	if len(args) == 0 {
+		return nil, fmt.Errorf("publisher %q: command is empty", publisher.Name)
 	}
 
 	env := make([]string, len(publisher.Env))
