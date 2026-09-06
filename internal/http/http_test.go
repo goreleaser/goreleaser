@@ -796,6 +796,42 @@ func TestUploadSourceRPM(t *testing.T) {
 	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
 }
 
+func TestUploadSourceRPMWithUnrelatedIDs(t *testing.T) {
+	var requests atomic.Int64
+	requestURIs := make(chan string, 1)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		requestURIs <- r.URL.RequestURI()
+		w.WriteHeader(http.StatusCreated)
+	}))
+	t.Cleanup(srv.Close)
+
+	sourceRPM := filepath.Join(t.TempDir(), "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(sourceRPM, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: sourceRPM,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+
+	// source RPMs carry no ID, so an `ids` filter must not drop them.
+	require.NoError(t, Upload(ctx, []config.Upload{{
+		Name:   "source-rpm",
+		Mode:   ModeArchive,
+		Target: srv.URL + "/uploads/",
+		Exts:   []string{"src.rpm"},
+		IDs:    []string{"other"},
+	}}, "test", func(*http.Response) error { return nil }))
+	require.Equal(t, int64(1), requests.Load())
+	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
+}
+
 func TestUploadArtifactNameTargetURL(t *testing.T) {
 	for name, tt := range map[string]struct {
 		target             string
@@ -828,6 +864,16 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 			artifact: "notes#draft.txt",
 			want:     "/projects/foo%2Fbar/files/notes%23draft.txt?token=abc",
 		},
+		"artifact name with directory": {
+			target:   "/files/",
+			artifact: "sub/dir/notes.txt",
+			want:     "/files/sub/dir/notes.txt",
+		},
+		"artifact name with directory and special chars": {
+			target:   "/files/",
+			artifact: "sub dir/notes#draft.txt",
+			want:     "/files/sub%20dir/notes%23draft.txt",
+		},
 		"custom artifact name": {
 			target:             "/files/notes.txt?token=abc",
 			artifact:           "ignored#draft.txt",
@@ -836,8 +882,10 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			var requests atomic.Int64
 			requestURIs := make(chan string, 1)
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
 				requestURIs <- r.URL.RequestURI()
 				w.WriteHeader(http.StatusCreated)
 			}))
@@ -859,6 +907,7 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 				Target:             srv.URL + tt.target,
 				CustomArtifactName: tt.customArtifactName,
 			}}, "test", func(*http.Response) error { return nil }))
+			require.Equal(t, int64(1), requests.Load(), "the artifact must have been uploaded")
 			require.Equal(t, tt.want, <-requestURIs)
 		})
 	}

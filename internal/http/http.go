@@ -343,22 +343,34 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 func appendArtifactNameToTargetURL(target, name string) string {
 	u, err := url.Parse(target)
 	if err != nil {
+		// target is unparseable, so http.NewRequest will reject it later with
+		// the same error. Keep the old naive behaviour rather than guess.
 		if !strings.HasSuffix(target, "/") {
 			target += "/"
 		}
-		return target + url.PathEscape(name)
+		return target + escapePath(name)
 	}
 
 	path := u.EscapedPath()
 	if !strings.HasSuffix(path, "/") {
 		path += "/"
 	}
-	path += url.PathEscape(name)
+	path += escapePath(name)
 
 	// path is built only from already-escaped parts, so it always unescapes.
 	u.Path, _ = url.PathUnescape(path)
 	u.RawPath = path
 	return u.String()
+}
+
+// escapePath escapes each segment of name, so that an artifact name that
+// contains a directory keeps its directory structure in the target URL.
+func escapePath(name string) string {
+	parts := strings.Split(name, "/")
+	for i, part := range parts {
+		parts[i] = url.PathEscape(part)
+	}
+	return strings.Join(parts, "/")
 }
 
 // uploadAssetToServer uploads the asset file to target.

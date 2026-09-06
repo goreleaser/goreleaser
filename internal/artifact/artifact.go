@@ -713,9 +713,10 @@ func Not(filter Filter) Filter {
 // ByID filter artifacts by an `ID` extra field.
 func ByID(id string) Filter {
 	return func(a *Artifact) bool {
-		// checksum and source archive are always for all artifacts, so return always true.
+		// checksum and source artifacts are always for all artifacts, so return always true.
 		return a.Type == Checksum ||
 			a.Type == UploadableSourceArchive ||
+			a.Type == SourceRPM ||
 			a.Type == UploadableFile ||
 			a.Type == Metadata ||
 			a.ID() == id
