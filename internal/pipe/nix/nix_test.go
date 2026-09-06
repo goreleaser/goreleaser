@@ -804,6 +804,55 @@ func TestPreparePkgEscapesDescription(t *testing.T) {
 	require.Contains(t, content, `description = "Say \"hello\" from C:\\tools and \${system}";`)
 }
 
+func TestPreparePkgInstallPhaseRunsHooks(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+
+	archiveName := "foo_linux_amd64v1.txz"
+	archivePath := filepath.Join(folder, "dist", archiveName)
+	require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+	require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    archiveName,
+		Path:    archivePath,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "txz",
+			artifact.ExtraBinaries:  []string{"foo"},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+
+	content, err := preparePkg(ctx, config.Nix{
+		Name:        "foo",
+		IDs:         []string{"foo"},
+		Goamd64:     "v1",
+		PostInstall: `printf 'post-install ran\n' > "$out/post-install.marker"`,
+	}, client.NewMock(), fakeHasher{archiveName: "sha"})
+	require.NoError(t, err)
+	require.Contains(t, content, `  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp -vr ./foo $out/bin/foo
+    runHook postInstall
+  '';`)
+	require.Contains(t, content, `  postInstall = ''
+    printf 'post-install ran\n' > "$out/post-install.marker"
+  '';`)
+}
+
 func TestErrNoArchivesFound(t *testing.T) {
 	require.EqualError(t, errNoArchivesFound{
 		goamd64: "v1",
