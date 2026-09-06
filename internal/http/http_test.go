@@ -490,14 +490,16 @@ func TestUpload(t *testing.T) {
 		{
 			"failed-request", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
+				certs := cert(s)
+				s.Close()
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
-					Target:       s.URL[0:strings.LastIndex(s.URL, ":")] + "/{{.ProjectName}}/{{.Version}}/",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
 					Username:     "u3",
 					Checksum:     true,
 					Signature:    true,
-					TrustedCerts: cert(s),
+					TrustedCerts: certs,
 				}
 			},
 			checks(),
