@@ -130,6 +130,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	err := tp.ApplyAll(
 		&winget.Publisher,
 		&winget.Name,
+		&winget.PackageIdentifier,
 		&winget.PackageName,
 		&winget.Author,
 		&winget.PublisherURL,

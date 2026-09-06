@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1083,6 +1084,142 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunPipeTemplatesPackageIdentifier(t *testing.T) {
+	for name, packageIdentifier := range map[string]string{
+		"spaced":  "Acme.{{ .ProjectName }}",
+		"compact": "Acme.{{.ProjectName}}",
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "tool",
+					Winget: []config.Winget{{
+						Name:              "tool",
+						Publisher:         "Acme",
+						PackageIdentifier: packageIdentifier,
+						License:           "MIT",
+						ShortDescription:  "tool",
+						IDs:               []string{"tool"},
+						Repository: config.RepoRef{
+							Owner: "foo",
+							Name:  "bar",
+						},
+					}},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+			createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+
+			pipe := Pipe{}
+			require.NoError(t, pipe.Default(ctx))
+			require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+			manifests := ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
+				artifact.WingetLocale,
+			)).List()
+			require.Len(t, manifests, 3)
+			for _, manifest := range manifests {
+				require.Contains(t, manifest.Name, "Acme.tool")
+				require.NotContains(t, manifest.Name, "{{")
+				require.Contains(t, filepath.ToSlash(manifest.Path), "manifests/a/Acme/tool/1.2.1/Acme.tool")
+
+				bts, err := os.ReadFile(manifest.Path)
+				require.NoError(t, err)
+				require.Contains(t, string(bts), "PackageIdentifier: Acme.tool")
+				require.NotContains(t, string(bts), "{{")
+			}
+
+			rec := newRecordingWingetClient()
+			require.NoError(t, pipe.publishAll(ctx, rec))
+			require.Len(t, rec.paths, 3)
+			for _, path := range rec.paths {
+				require.Contains(t, path, "manifests/a/Acme/tool/1.2.1/Acme.tool")
+			}
+		})
+	}
+}
+
+func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "bad id",
+			Winget: []config.Winget{{
+				Name:              "tool",
+				Publisher:         "Acme",
+				PackageIdentifier: "Acme.{{ .ProjectName }}",
+				License:           "MIT",
+				ShortDescription:  "tool",
+				IDs:               []string{"tool"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"))
+	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	err := pipe.runAll(ctx, client.NewMock())
+	require.ErrorContains(t, err, "winget.package_identifier is invalid: Acme.bad id")
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
+	)).List())
+}
+
+type recordingWingetClient struct {
+	*client.Mock
+	repos []client.Repo
+	paths []string
+}
+
+func newRecordingWingetClient() *recordingWingetClient {
+	return &recordingWingetClient{Mock: client.NewMock()}
+}
+
+func (c *recordingWingetClient) CreateFile(ctx *context.Context, author config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
+	c.repos = append(c.repos, repo)
+	c.paths = append(c.paths, path)
+	return c.Mock.CreateFile(ctx, author, repo, content, path, msg)
+}
+
+func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id, goos, goarch, goamd64, bin string) {
+	tb.Helper()
+
+	path := filepath.Join(folder, "dist", id+"_"+goos+"_"+goarch+goamd64+".zip")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    id + "_" + goos + "_" + goarch + goamd64 + ".zip",
+		Path:    path,
+		Goos:    goos,
+		Goarch:  goarch,
+		Goamd64: goamd64,
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        id,
+			artifact.ExtraFormat:    "zip",
+			artifact.ExtraBinaries:  []string{bin},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+	require.NoError(tb, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(tb, err)
+	require.NoError(tb, f.Close())
 }
 
 func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {
