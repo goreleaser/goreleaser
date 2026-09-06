@@ -2,10 +2,13 @@ package shell_test
 
 import (
 	"bytes"
+	"context"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
@@ -58,6 +61,62 @@ func TestRunCommand(t *testing.T) {
 			t, err,
 			`exit status 1`,
 		)
+	})
+
+	t.Run("cancellation with descendant-held output pipe", func(t *testing.T) {
+		testlib.SkipIfWindows(t, "uses a unix shell")
+
+		ready := filepath.Join(t.TempDir(), "ready")
+
+		ctx, cancel := context.WithCancel(t.Context())
+		errCh := make(chan error, 1)
+		go func() {
+			errCh <- shell.Run(
+				testctx.Wrap(ctx),
+				"",
+				// the descendant keeps stdout and stderr open for much longer
+				// than WaitDelay, and stops by itself so the test leaks nothing.
+				[]string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & while :; do sleep 1; done`},
+				append(os.Environ(), "READY="+ready),
+				false,
+			)
+		}()
+
+		require.Eventually(t, func() bool {
+			_, err := os.Stat(ready)
+			return err == nil
+		}, 3*time.Second, 10*time.Millisecond, "descendant did not start")
+		cancel()
+
+		select {
+		case err := <-errCh:
+			require.Error(t, err)
+		case <-time.After(3 * time.Second):
+			t.Fatal("command did not return while descendant held stdout and stderr open")
+		}
+	})
+
+	t.Run("success with descendant-held output pipe", func(t *testing.T) {
+		testlib.SkipIfWindows(t, "uses a unix shell")
+
+		errCh := make(chan error, 1)
+		go func() {
+			errCh <- shell.Run(
+				testctx.Wrap(t.Context()),
+				"",
+				// exits 0 while a background job keeps stdout and stderr open.
+				[]string{"sh", "-c", `sleep 30 & echo done`},
+				os.Environ(),
+				false,
+			)
+		}()
+
+		select {
+		case err := <-errCh:
+			require.NoError(t, err, "a successful command must not fail because a descendant held its pipes")
+		case <-time.After(5 * time.Second):
+			t.Fatal("command did not return while descendant held stdout and stderr open")
+		}
 	})
 
 	t.Run("with env and dir", func(t *testing.T) {

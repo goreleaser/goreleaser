@@ -2,6 +2,7 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -289,6 +291,38 @@ func TestExecute(t *testing.T) {
 			},
 			expectErr: fmt.Errorf(`exit status 1`),
 		},
+		{
+			name: "missing command",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
+		{
+			name: "blank command",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+					Cmd:  " \t\n ",
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
+		{
+			name: "command template resolves empty",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
+					Name: "empty",
+					IDs:  []string{"debpkg"},
+					Cmd:  `{{ printf "" }}`,
+				}}
+			},
+			expectErr: fmt.Errorf(`publisher "empty": command is empty`),
+		},
 	}
 
 	for i, tc := range testCases {
@@ -309,6 +343,88 @@ func TestExecute(t *testing.T) {
 				tc.check(t, outDir)
 			}
 		})
+	}
+}
+
+func TestExecuteEmptyCommandWithNoMatchingArtifacts(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Execute(ctx, []config.Publisher{{
+		Name: "empty",
+		IDs:  []string{"missing"},
+	}}))
+}
+
+func TestExecuteSourceRPM(t *testing.T) {
+	outDir := t.TempDir()
+	file := filepath.Join(t.TempDir(), "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(file, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: file,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+
+	require.NoError(t, Execute(ctx, []config.Publisher{{
+		Name: "source-rpm",
+		Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+	}}))
+	require.Equal(t, []string{"pkg.src.rpm"}, dirFiles(t, outDir))
+}
+
+func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses a unix shell")
+
+	ready := filepath.Join(t.TempDir(), "ready")
+
+	ctx, cancel := context.WithCancel(t.Context())
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- executeCommand(&command{
+			Ctx: testctx.Wrap(ctx),
+			Env: []string{"READY=" + ready},
+			// the descendant keeps stdout and stderr open for much longer
+			// than WaitDelay, and stops by itself so the test leaks nothing.
+			Args: []string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & while :; do sleep 1; done`},
+		}, &artifact.Artifact{Name: "test"})
+	}()
+
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(ready)
+		return err == nil
+	}, 3*time.Second, 10*time.Millisecond, "descendant did not start")
+	cancel()
+
+	select {
+	case err := <-errCh:
+		require.Error(t, err)
+	case <-time.After(3 * time.Second):
+		t.Fatal("command did not return while descendant held stdout and stderr open")
+	}
+}
+
+func TestExecuteCommandSucceedsWithDescendantHeldOutputPipe(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses a unix shell")
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- executeCommand(&command{
+			Ctx: testctx.Wrap(t.Context()),
+			// exits 0 while a background job keeps stdout and stderr open.
+			Args: []string{"sh", "-c", `sleep 30 & echo done`},
+		}, &artifact.Artifact{Name: "test"})
+	}()
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err, "a successful command must not fail because a descendant held its pipes")
+	case <-time.After(5 * time.Second):
+		t.Fatal("command did not return while descendant held stdout and stderr open")
 	}
 }
 

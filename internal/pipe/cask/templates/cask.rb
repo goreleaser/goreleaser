@@ -21,7 +21,8 @@ cask "{{ .Name }}" do
   {{- end }}
 
   name "{{ .Name }}"
-  desc {{ .Description | rubyString }}
+  {{- /* Preserve the rendered description as a literal through the final template pass. */}}
+  desc {{ .Description | rubyString | printf "{{ %q }}" }}
   homepage "{{ .Homepage }}"
 
   livecheck do

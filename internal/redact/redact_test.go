@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -225,7 +226,7 @@ func TestRedactWriter(t *testing.T) {
 		_, err := io.WriteString(w, "key123")
 		require.NoError(t, err)
 		require.Empty(t, buf.String())
-		closeWriter(t, w)
+		require.NoError(t, w.Close())
 		require.Equal(t, "key123", buf.String())
 	})
 
@@ -256,13 +257,59 @@ func TestRedactString(t *testing.T) {
 	})
 }
 
+func TestWriterMatchesStringAcrossChunks(t *testing.T) {
+	t.Parallel()
+	env := []string{
+		"SHORT_TOKEN=aba",
+		"LONG_TOKEN=abacus",
+		"OTHER_TOKEN=bac",
+		"UNICODE_TOKEN=\xc3\xa9_secret",
+	}
+	for _, input := range []string{
+		"ordinary output\n",
+		"abacus aba bac\n",
+		"prefix abacus and a trailing ab",
+		"aba",
+		"abacus",
+		"\xc3\xa9_secret and \xc3\xa9",
+	} {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			for size := 1; size <= len(input); size++ {
+				var out bytes.Buffer
+				w := Writer(&out, env)
+				for i := 0; i < len(input); i += size {
+					_, err := io.WriteString(w, input[i:min(i+size, len(input))])
+					require.NoError(t, err)
+				}
+				require.NoError(t, w.Close())
+				require.Equal(t, String(input, env), out.String(), "chunk size %d", size)
+			}
+		})
+	}
+}
+
 type errWriter struct{ err error }
 
 func (e *errWriter) Write([]byte) (int, error) { return 0, e.err }
 
-func closeWriter(tb testing.TB, w io.Writer) {
-	tb.Helper()
-	closer, ok := w.(io.Closer)
-	require.True(tb, ok)
-	require.NoError(tb, closer.Close())
+func BenchmarkWriter(b *testing.B) {
+	data := []byte(strings.Repeat("building package example.com/project/internal/component\n", 600))
+	for _, count := range []int{0, 1, 16, 64} {
+		b.Run(fmt.Sprintf("secrets=%d", count), func(b *testing.B) {
+			env := make([]string, count)
+			for i := range env {
+				env[i] = fmt.Sprintf("SERVICE_%d_TOKEN=secret-value-%032d", i, i)
+			}
+			w := Writer(io.Discard, env)
+			b.ReportAllocs()
+			b.SetBytes(int64(len(data)))
+			for b.Loop() {
+				if _, err := w.Write(data); err != nil {
+					b.Fatal(err)
+				}
+			}
+			require.NoError(b, w.Close())
+		})
+	}
 }

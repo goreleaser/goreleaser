@@ -107,6 +107,10 @@ func TestPrepareUsesBuildContext(t *testing.T) {
 			buildEnv:      []string{"RUSTUP_TOOLCHAIN={{.Env.TOOLCHAIN}}"},
 			wantToolchain: "1.95.0",
 		},
+		"target environment": {
+			buildEnv:      []string{"RUSTUP_TOOLCHAIN={{ .Target }}|{{ .Os }}|{{ .Arch }}|{{ .Abi }}|{{ .Libc }}"},
+			wantToolchain: "aarch64-unknown-linux-gnu.2.17|linux|arm64|gnu|2.17",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("RUSTUP_TOOLCHAIN", "")
@@ -138,6 +142,53 @@ func TestPrepareUsesBuildContext(t *testing.T) {
 			require.Contains(t, gotLog, "cwd="+wantDir+"\n")
 			require.Contains(t, gotLog, "toolchain="+tt.wantToolchain+"\n")
 			require.Contains(t, gotLog, "args=target add aarch64-unknown-linux-gnu\n")
+		})
+	}
+}
+
+func TestPrepareUsesArtifactContext(t *testing.T) {
+	for _, tc := range []struct {
+		target   string
+		arch     string
+		os       string
+		ext      string
+		noUnique string
+	}{
+		{target: "aarch64-unknown-linux-gnu.2.17", arch: "arm64", os: "linux"},
+		{target: "x86_64-pc-windows-gnu", arch: "amd64", os: "windows", ext: ".exe", noUnique: "true"},
+	} {
+		t.Run(tc.target, func(t *testing.T) {
+			log := filepath.Join(t.TempDir(), "rustup.log")
+			createFakeRustup(t, log)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "app",
+				Dist:        t.TempDir(),
+			})
+			build := config.Build{
+				ID:              "app",
+				Dir:             t.TempDir(),
+				Binary:          "bin/app-{{ .Arch }}",
+				Targets:         []string{tc.target},
+				NoUniqueDistDir: tc.noUnique,
+				Env: []string{
+					"RUSTUP_TOOLCHAIN={{ .Target }}|{{ .Os }}|{{ .Arch }}|{{ .Name }}|{{ .Path }}|{{ .Ext }}|{{ .Binary }}|{{ .ArtifactName }}|{{ .ArtifactPath }}",
+				},
+			}
+
+			require.NoError(t, Default.Prepare(ctx, build))
+			got, err := os.ReadFile(log)
+			require.NoError(t, err)
+			name := "bin/app-" + tc.arch + tc.ext
+			dir := ctx.Config.Dist
+			if tc.noUnique == "" {
+				dir = filepath.Join(dir, "app_"+tc.target)
+			}
+			path := filepath.Join(dir, name)
+			expected := strings.Join([]string{
+				tc.target, tc.os, tc.arch, name, path, tc.ext,
+				"app-" + tc.arch, name, path,
+			}, "|")
+			require.Contains(t, strings.ReplaceAll(string(got), "\r\n", "\n"), "toolchain="+expected+"\n")
 		})
 	}
 }
@@ -236,9 +287,11 @@ func createFakeRustup(tb testing.TB, log string) {
 	if runtime.GOOS == "windows" {
 		name += ".bat"
 		log = filepath.ToSlash(log)
+		// Expand after parsing so environment values cannot become batch operators.
 		script = fmt.Sprintf(`@echo off
-> "%s" echo cwd=%%CD%%
->> "%s" echo toolchain=%%RUSTUP_TOOLCHAIN%%
+setlocal EnableDelayedExpansion
+> "%s" echo cwd=!CD!
+>> "%s" echo toolchain=!RUSTUP_TOOLCHAIN!
 >> "%s" echo args=%%*
 `, log, log, log)
 	}

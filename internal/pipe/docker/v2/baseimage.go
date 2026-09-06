@@ -4,11 +4,14 @@ import (
 	stdctx "context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -33,12 +36,16 @@ type dockerImage struct{ name, digest string }
 // getBaseImage returns the base image of dockerfile and its manifest digest.
 // Returns errNoBaseImage when there's no usable FROM. Returns (base, "", err)
 // on digest resolution failure, so callers can still use the image name.
-func getBaseImage(ctx *context.Context, dockerfile string, buildArgs ...map[string]string) (dockerImage, error) {
+func getBaseImage(ctx *context.Context, dockerfile string, buildArgs map[string]string) (dockerImage, error) {
 	content, err := os.ReadFile(dockerfile)
 	if err != nil {
 		return dockerImage{}, err
 	}
-	base := parseBaseImage(string(content), buildArgs...)
+	overrides, err := baseImageBuildArgs(ctx, string(content), buildArgs)
+	if err != nil {
+		return dockerImage{}, err
+	}
+	base := parseBaseImage(string(content), overrides)
 	if base == "" || strings.EqualFold(base, "scratch") {
 		return dockerImage{}, errNoBaseImage
 	}
@@ -52,6 +59,43 @@ func getBaseImage(ctx *context.Context, dockerfile string, buildArgs ...map[stri
 	return dockerImage{base, digest}, nil
 }
 
+// Other build arguments can depend on the resolved base image and are rendered later.
+func baseImageBuildArgs(ctx *context.Context, content string, args map[string]string) (map[string]string, error) {
+	used := map[string]bool{}
+	for line := range strings.SplitSeq(continuationRe.ReplaceAllString(content, " "), "\n") {
+		if m := fromRe.FindStringSubmatch(strings.TrimSpace(line)); m != nil {
+			os.Expand(m[1], func(name string) string {
+				key, _, _ := strings.Cut(name, ":-")
+				used[key] = true
+				return ""
+			})
+		}
+	}
+	if len(used) == 0 {
+		return nil, nil
+	}
+
+	tpl := tmpl.New(ctx)
+	result := map[string]string{}
+	for _, key := range slices.Sorted(maps.Keys(args)) {
+		k, err := tpl.Apply(key)
+		if err != nil {
+			return nil, err
+		}
+		if !used[k] {
+			continue
+		}
+		v, err := tpl.Apply(args[key])
+		if err != nil {
+			return nil, err
+		}
+		if strings.TrimSpace(v) != "" {
+			result[k] = v
+		}
+	}
+	return result, nil
+}
+
 var (
 	continuationRe = regexp.MustCompile(`\\\s*\n`)
 	argRe          = regexp.MustCompile(`(?i)^ARG\s+([A-Za-z_][A-Za-z0-9_]*)(?:=(.*))?$`)
@@ -63,15 +107,11 @@ var (
 // Doesn't try to be a full Dockerfile parser — only enough to fill the
 // BaseImage/BaseImageDigest template vars. The real `docker build` is the
 // source of truth.
-func parseBaseImage(content string, buildArgs ...map[string]string) string {
+func parseBaseImage(content string, overrides map[string]string) string {
 	content = continuationRe.ReplaceAllString(content, " ")
 
 	args := map[string]string{}
 	aliases := map[string]string{}
-	overrides := map[string]string{}
-	if len(buildArgs) > 0 {
-		overrides = buildArgs[0]
-	}
 	var base string
 
 	for line := range strings.SplitSeq(content, "\n") {

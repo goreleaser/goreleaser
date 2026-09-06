@@ -6,7 +6,8 @@
 require_relative "{{ .CustomRequire }}"
 {{ end -}}
 class {{ .Name }} < Formula
-  desc {{ .Desc | rubyString }}
+  {{- /* Preserve the rendered description as a literal through the final template pass. */}}
+  desc {{ .Desc | rubyString | printf "{{ %q }}" }}
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   {{- if .License }}

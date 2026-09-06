@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -347,41 +347,35 @@ func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
 }
 
 func TestDoUploadDoesNotStartArtifactWorkersWhenExtraFilesFail(t *testing.T) {
-	errExtraFiles := errors.New("extra files failed")
-	uploader := newRecordingUploader()
-	uploader.block = make(chan struct{})
-	defer close(uploader.block)
+	synctest.Test(t, func(t *testing.T) {
+		errExtraFiles := errors.New("extra files failed")
+		uploader := &recordingUploader{block: make(chan struct{})}
+		defer close(uploader.block)
 
-	replaceBlobUploader(t, uploader)
-	previousFindExtraFiles := findExtraFiles
-	findExtraFiles = func(*context.Context, []config.ExtraFile) (map[string]string, error) {
-		for range 1000 {
-			runtime.Gosched()
-			select {
-			case <-uploader.started:
-				return nil, errors.New("artifact upload started before extra files were resolved")
-			default:
-			}
+		replaceBlobUploader(t, uploader)
+		previousFindExtraFiles := findExtraFiles
+		findExtraFiles = func(*context.Context, []config.ExtraFile) (map[string]string, error) {
+			synctest.Wait()
+			return nil, errExtraFiles
 		}
-		return nil, errExtraFiles
-	}
-	t.Cleanup(func() { findExtraFiles = previousFindExtraFiles })
+		t.Cleanup(func() { findExtraFiles = previousFindExtraFiles })
 
-	ctx, conf := blobUploadContext(t, []string{"one.txt", "two.txt"}, nil)
-	conf.ExtraFiles = []config.ExtraFile{{Glob: filepath.Join(t.TempDir(), "missing.txt")}}
+		ctx, conf := blobUploadContext(t, []string{"one.txt", "two.txt"}, nil)
+		conf.ExtraFiles = []config.ExtraFile{{Glob: filepath.Join(t.TempDir(), "missing.txt")}}
 
-	err := doUpload(ctx, conf)
+		err := doUpload(ctx, conf)
 
-	require.ErrorIs(t, err, errExtraFiles)
-	require.Equal(t, int64(1), uploader.opens.Load())
-	require.Equal(t, int64(1), uploader.closes.Load())
-	require.Zero(t, uploader.active.Load())
-	require.False(t, uploader.closedWithActive.Load())
-	require.Empty(t, uploader.uploaded())
+		require.ErrorIs(t, err, errExtraFiles)
+		require.Equal(t, int64(1), uploader.opens.Load())
+		require.Equal(t, int64(1), uploader.closes.Load())
+		require.Zero(t, uploader.active.Load())
+		require.False(t, uploader.closedWithActive.Load())
+		require.Empty(t, uploader.uploaded())
+	})
 }
 
 func TestDoUploadUploadsArtifactsAndExtraFiles(t *testing.T) {
-	uploader := newRecordingUploader()
+	uploader := &recordingUploader{}
 	replaceBlobUploader(t, uploader)
 
 	ctx, conf := blobUploadContext(t, []string{"one.txt", "two.txt"}, []config.ExtraFile{{Glob: "./testdata/file.golden"}})
@@ -431,21 +425,13 @@ func replaceBlobUploader(tb testing.TB, rec *recordingUploader) {
 	tb.Cleanup(func() { newUploader = previous })
 }
 
-func newRecordingUploader() *recordingUploader {
-	return &recordingUploader{
-		started: make(chan struct{}),
-	}
-}
-
 type recordingUploader struct {
 	opens            atomic.Int64
 	closes           atomic.Int64
 	active           atomic.Int64
 	closedWithActive atomic.Bool
 
-	startOnce sync.Once
-	started   chan struct{}
-	block     chan struct{}
+	block chan struct{}
 
 	mu    sync.Mutex
 	files []string
@@ -458,7 +444,6 @@ func (u *recordingUploader) Open(*context.Context, string) error {
 
 func (u *recordingUploader) Upload(_ *context.Context, path string, _ []byte) error {
 	u.active.Add(1)
-	u.startOnce.Do(func() { close(u.started) })
 	if u.block != nil {
 		<-u.block
 	}

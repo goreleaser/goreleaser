@@ -12,6 +12,11 @@
   rename "{{ $wrap }}/{{ . }}", "{{ . }}"
   {{- end }}
   {{- end }}
+  {{- if $.HasMixedPackageTypes }}
+  {{- range .CaskBins }}
+  binary "{{ . }}"
+  {{- end }}
+  {{- end }}
 
   {{- else }}
   {{- if eq $element.Arch "amd64" }}

@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -62,4 +65,19 @@ func TestCheckPathChecksEachToolOnce(t *testing.T) {
 	require.NoError(t, checkPath(t.Context(), checked, "some invalid command"))
 	// a cache of its own sees the failure again.
 	require.Error(t, checkPath(t.Context(), map[string]bool{}, "some invalid command"))
+}
+
+func TestCheckPathLiteralExecutable(t *testing.T) {
+	for _, name := range []string{"signer's-tool", "signer's tool"} {
+		if runtime.GOOS == "windows" {
+			name += ".exe"
+		}
+		path := filepath.Join(t.TempDir(), name)
+		require.NoError(t, os.WriteFile(path, nil, 0o755))
+		for _, tool := range []string{path, fmt.Sprintf("%q", path)} {
+			t.Run(tool, func(t *testing.T) {
+				require.NoError(t, checkPath(t.Context(), map[string]bool{}, tool))
+			})
+		}
+	}
 }

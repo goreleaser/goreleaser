@@ -121,14 +121,17 @@ func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
 		return nil
 	}
 	checked[tool] = true
-	// Parse gives no arguments back when it fails, and also for a line that is
-	// only shell syntax, such as `|`.
-	args, err := shellwords.Parse(tool)
-	if len(args) == 0 {
-		return warn(tool, "is not a valid command", cmp.Or(err, exec.ErrNotFound))
-	}
-	if _, err := exec.LookPath(args[0]); err != nil {
-		return warn(tool, "not present in path", err)
+	args := []string{tool}
+	if _, err := exec.LookPath(tool); err != nil {
+		// Dependencies can be either literal executable paths or commands.
+		// Parse also returns no arguments for bare shell syntax such as `|`.
+		args, err = shellwords.Parse(tool)
+		if len(args) == 0 {
+			return warn(tool, "is not a valid command", cmp.Or(err, exec.ErrNotFound))
+		}
+		if _, err := exec.LookPath(args[0]); err != nil {
+			return warn(tool, "not present in path", err)
+		}
 	}
 	if len(args) > 1 {
 		if err := exec.CommandContext(ctx, args[0], args[1:]...).Run(); err != nil {

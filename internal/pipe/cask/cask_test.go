@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -240,6 +241,24 @@ func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 			}), data)
 			require.NoError(t, err)
 			golden.RequireEqualRb(t, []byte(cask))
+		})
+	}
+}
+
+func TestCaskDescriptionIsTemplatedOnce(t *testing.T) {
+	for _, description := range []string{
+		`Render {{ "{{example}}" }} templates`,
+		`{{ .Env.DESCRIPTION }}`,
+	} {
+		t.Run(description, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Description = description
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: []string{"DESCRIPTION=Render {{example}} templates"},
+			})
+			out, err := doBuildCask(ctx, data)
+			require.NoError(t, err)
+			require.Contains(t, out, "  desc \"Render {{example}} templates\"\n")
 		})
 	}
 }
@@ -1655,6 +1674,59 @@ func TestRunPipeUniversalBinaryWrappedIn(t *testing.T) {
 			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
 		})
 	}
+}
+
+func TestRunPipeUniversalArchiveWithLinuxBinary(t *testing.T) {
+	t.Parallel()
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Casks: []config.HomebrewCask{{
+			Name:     "foo",
+			Binaries: []string{"foo"},
+			Repository: config.RepoRef{
+				Owner: "foo",
+				Name:  "bar",
+			},
+		}},
+	}, testctx.WithCurrentTag("v1.0.0"), testctx.WithVersion("1.0.0"))
+	for _, art := range []*artifact.Artifact{
+		{
+			Name:   "foo_darwin_all.tar.gz",
+			Goos:   "darwin",
+			Goarch: "all",
+			Type:   artifact.UploadableArchive,
+			Extra: artifact.Extras{
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"foo"},
+				artifact.ExtraReplaces: true,
+			},
+		},
+		{
+			Name:   "foo_linux_amd64",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.UploadableBinary,
+			Extra: artifact.Extras{
+				artifact.ExtraFormat: "binary",
+				artifact.ExtraBinary: "foo",
+			},
+		},
+	} {
+		art.Path = filepath.Join(folder, art.Name)
+		require.NoError(t, os.WriteFile(art.Path, []byte("foo"), 0o644))
+		ctx.Artifacts.Add(art)
+	}
+
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+	require.Len(t, casks, 1)
+	content := string(golden.RequireReadFile(t, casks[0].Path))
+	macos, linux, ok := strings.Cut(content, "  on_linux do\n")
+	require.True(t, ok, content)
+	require.Contains(t, macos, "    binary \"foo\"\n")
+	require.Contains(t, linux, "      binary \"foo_linux_amd64\", target: \"foo\"\n")
 }
 
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {

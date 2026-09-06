@@ -750,3 +750,176 @@ func TestManyUploads(t *testing.T) {
 	require.True(t, pipe.IsSkip(err), err)
 	require.True(t, uploaded.Load(), "should have uploaded")
 }
+
+func TestUploadSourceRPM(t *testing.T) {
+	var requests atomic.Int64
+	// roomy on purpose: an unexpected extra upload must fail the request
+	// count, not block the handler and hang the test.
+	requestURIs := make(chan string, 10)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		requestURIs <- r.URL.RequestURI()
+		w.WriteHeader(http.StatusCreated)
+	}))
+	t.Cleanup(srv.Close)
+
+	dir := t.TempDir()
+	sourceRPM := filepath.Join(dir, "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(sourceRPM, []byte("rpm"), 0o644))
+	binaryRPM := filepath.Join(dir, "pkg.x86_64.rpm")
+	require.NoError(t, os.WriteFile(binaryRPM, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: sourceRPM,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.x86_64.rpm",
+		Path: binaryRPM,
+		Type: artifact.LinuxPackage,
+		Extra: map[string]any{
+			artifact.ExtraExt: ".rpm",
+		},
+	})
+
+	require.NoError(t, Upload(ctx, []config.Upload{{
+		Name:   "source-rpm",
+		Mode:   ModeArchive,
+		Target: srv.URL + "/uploads/",
+		Exts:   []string{"src.rpm"},
+	}}, "test", func(*http.Response) error { return nil }))
+	require.Equal(t, int64(1), requests.Load())
+	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
+}
+
+func TestUploadSourceRPMWithUnrelatedIDs(t *testing.T) {
+	var requests atomic.Int64
+	// roomy on purpose: an unexpected extra upload must fail the request
+	// count, not block the handler and hang the test.
+	requestURIs := make(chan string, 10)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		requestURIs <- r.URL.RequestURI()
+		w.WriteHeader(http.StatusCreated)
+	}))
+	t.Cleanup(srv.Close)
+
+	sourceRPM := filepath.Join(t.TempDir(), "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(sourceRPM, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: sourceRPM,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+
+	// source RPMs carry no ID, so an `ids` filter must not drop them.
+	require.NoError(t, Upload(ctx, []config.Upload{{
+		Name:   "source-rpm",
+		Mode:   ModeArchive,
+		Target: srv.URL + "/uploads/",
+		Exts:   []string{"src.rpm"},
+		IDs:    []string{"other"},
+	}}, "test", func(*http.Response) error { return nil }))
+	require.Equal(t, int64(1), requests.Load())
+	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
+}
+
+func TestUploadArtifactNameTargetURL(t *testing.T) {
+	for name, tt := range map[string]struct {
+		target             string
+		artifact           string
+		customArtifactName bool
+		want               string
+	}{
+		"target with query": {
+			target:   "/files?token=abc",
+			artifact: "notes.txt",
+			want:     "/files/notes.txt?token=abc",
+		},
+		"filename with fragment": {
+			target:   "/files/",
+			artifact: "notes#draft.txt",
+			want:     "/files/notes%23draft.txt",
+		},
+		"filename with query": {
+			target:   "/files/",
+			artifact: "notes?draft.txt",
+			want:     "/files/notes%3Fdraft.txt",
+		},
+		"filename with percent": {
+			target:   "/files/",
+			artifact: "notes%.txt",
+			want:     "/files/notes%25.txt",
+		},
+		"escaped path with query": {
+			target:   "/projects/foo%2Fbar/files?token=abc",
+			artifact: "notes#draft.txt",
+			want:     "/projects/foo%2Fbar/files/notes%23draft.txt?token=abc",
+		},
+		"artifact name with directory": {
+			target:   "/files/",
+			artifact: "sub/dir/notes.txt",
+			want:     "/files/sub/dir/notes.txt",
+		},
+		"artifact name with directory and special chars": {
+			target:   "/files/",
+			artifact: "sub dir/notes#draft.txt",
+			want:     "/files/sub%20dir/notes%23draft.txt",
+		},
+		"artifact name with matrix parameters": {
+			target:   "/files/",
+			artifact: "a;b,c.txt",
+			want:     "/files/a;b,c.txt",
+		},
+		"custom artifact name": {
+			target:             "/files/notes.txt?token=abc",
+			artifact:           "ignored#draft.txt",
+			customArtifactName: true,
+			want:               "/files/notes.txt?token=abc",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var requests atomic.Int64
+			// roomy on purpose: an unexpected extra upload must fail the
+			// request count, not block the handler and hang the test.
+			requestURIs := make(chan string, 10)
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				requestURIs <- r.URL.RequestURI()
+				w.WriteHeader(http.StatusCreated)
+			}))
+			t.Cleanup(srv.Close)
+
+			path := filepath.Join(t.TempDir(), "asset")
+			require.NoError(t, os.WriteFile(path, []byte("asset"), 0o644))
+
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: tt.artifact,
+				Path: path,
+				Type: artifact.UploadableArchive,
+			})
+
+			require.NoError(t, Upload(ctx, []config.Upload{{
+				Name:               "target-url",
+				Mode:               ModeArchive,
+				Target:             srv.URL + tt.target,
+				CustomArtifactName: tt.customArtifactName,
+			}}, "test", func(*http.Response) error { return nil }))
+			require.Equal(t, int64(1), requests.Load(), "the artifact must have been uploaded")
+			require.Equal(t, tt.want, <-requestURIs)
+		})
+	}
+}
