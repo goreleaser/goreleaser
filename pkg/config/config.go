@@ -1714,6 +1714,7 @@ type MCPPackage struct {
 
 type MCPTransport struct {
 	Type string `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=stdio,enum=streamable-http,enum=sse"`
+	URL  string `yaml:"url,omitempty" json:"url,omitempty"`
 }
 
 // Iru publishes artifacts as Custom Apps to iru.com (formerly Kandji).

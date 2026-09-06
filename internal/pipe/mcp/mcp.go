@@ -135,6 +135,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
 			&pkg.FileSHA256,
+			&pkg.Transport.URL,
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
 		}
@@ -152,6 +153,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			FileSHA256:   pkg.FileSHA256,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
+				URL:  pkg.Transport.URL,
 			},
 		})
 	}

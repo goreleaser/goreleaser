@@ -113,6 +113,12 @@ mcp:
         # Required.
         type: stdio
 
+        # URL for streamable-http or sse transports.
+        #
+        # Required for streamable-http and sse transports.
+        # Templates: allowed.
+        # url: "https://example.com/myserver/mcp"
+
     # OCI (Docker) registry example
     - registry_type: oci
       identifier: "ghcr.io/user/myserver:{{ .Version }}"
@@ -124,6 +130,13 @@ mcp:
       identifier: "@myorg/myserver"
       transport:
         type: stdio
+
+    # HTTP transport example
+    - registry_type: npm
+      identifier: "@myorg/myserver-http"
+      transport:
+        type: streamable-http
+        url: "https://example.com/myserver/mcp"
 
     # MCPB package example
     - registry_type: mcpb
