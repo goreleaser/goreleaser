@@ -165,7 +165,7 @@ func TestBuildLegacyPoetryProject(t *testing.T) {
 	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
 		{
 			Name:   "testdata-0.1.0-py3-none-any.whl",
-			Path:   filepath.Join("dist", "testdata-all-all", "testdata-0.1.0-py3-none-any.whl"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "testdata-all-all", "testdata-0.1.0-py3-none-any.whl")),
 			Goos:   "all",
 			Goarch: "all",
 			Target: "none-any",
@@ -178,7 +178,7 @@ func TestBuildLegacyPoetryProject(t *testing.T) {
 		},
 		{
 			Name:   "testdata-0.1.0.tar.gz",
-			Path:   filepath.Join("dist", "testdata-all-all", "testdata-0.1.0.tar.gz"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "testdata-all-all", "testdata-0.1.0.tar.gz")),
 			Goos:   "all",
 			Goarch: "all",
 			Target: "none-any",
@@ -328,11 +328,15 @@ set format=
 :parse
 if "%1"=="" goto done
 if "%1"=="--output" (
+	set "output=%~2"
 	shift
-	set output=%1
+	shift
+	goto parse
 ) else if "%1"=="--format" (
+	set "format=%~2"
 	shift
-	set format=%1
+	shift
+	goto parse
 )
 shift
 goto parse
