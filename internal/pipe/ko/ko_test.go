@@ -161,6 +161,39 @@ func TestBuildBuildOptionsEmptyMain(t *testing.T) {
 	require.Equal(t, "testapp", opts.importPath)
 }
 
+func TestSecondaryDestinationsUseKoNamer(t *testing.T) {
+	one := &buildOptions{
+		importPath: "example.com/project/cmd/one",
+		imageRepos: []string{
+			"first.invalid/team",
+			"second.invalid/team",
+		},
+		tags: []string{"latest"},
+	}
+	two := &buildOptions{
+		importPath: "example.com/project/cmd/two",
+		imageRepos: []string{
+			"first.invalid/team",
+			"second.invalid/team",
+		},
+		tags: []string{"latest"},
+	}
+
+	require.Len(t, secondaryDestinations(one), 1)
+	require.Len(t, secondaryDestinations(two), 1)
+	require.NotEqual(t, secondaryDestinations(one), secondaryDestinations(two))
+	require.Regexp(t, `^second\.invalid/team/one-[a-f0-9]{32}:latest$`, secondaryDestinations(one)[0])
+	require.Regexp(t, `^second\.invalid/team/two-[a-f0-9]{32}:latest$`, secondaryDestinations(two)[0])
+
+	one.bare = true
+	two.bare = true
+	require.Equal(t, []string{"second.invalid/team:latest"}, secondaryDestinations(one))
+	require.Equal(t, secondaryDestinations(one), secondaryDestinations(two))
+
+	one.imageRepos = one.imageRepos[:1]
+	require.Empty(t, secondaryDestinations(one))
+}
+
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
