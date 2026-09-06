@@ -244,6 +244,24 @@ func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 	}
 }
 
+func TestCaskDescriptionIsTemplatedOnce(t *testing.T) {
+	for _, description := range []string{
+		`Render {{ "{{example}}" }} templates`,
+		`{{ .Env.DESCRIPTION }}`,
+	} {
+		t.Run(description, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Description = description
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: []string{"DESCRIPTION=Render {{example}} templates"},
+			})
+			out, err := doBuildCask(ctx, data)
+			require.NoError(t, err)
+			require.Contains(t, out, "  desc \"Render {{example}} templates\"\n")
+		})
+	}
+}
+
 func TestCaskSimple(t *testing.T) {
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{}), defaultTemplateData)
 	require.NoError(t, err)

@@ -171,6 +171,24 @@ func TestFormulaDescriptionEscapesRubyString(t *testing.T) {
 	}
 }
 
+func TestFormulaDescriptionIsTemplatedOnce(t *testing.T) {
+	for _, description := range []string{
+		`Render {{ "{{example}}" }} templates`,
+		`{{ .Env.DESCRIPTION }}`,
+	} {
+		t.Run(description, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Desc = description
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: []string{"DESCRIPTION=Render {{example}} templates"},
+			})
+			out, err := doBuildFormula(ctx, data)
+			require.NoError(t, err)
+			require.Contains(t, out, "  desc \"Render {{example}} templates\"\n")
+		})
+	}
+}
+
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
