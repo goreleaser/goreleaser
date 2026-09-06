@@ -925,50 +925,48 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 
 func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
 	t.Parallel()
-	var compareCalls atomic.Int32
-	reset := time.Now().UTC().Add(time.Hour)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		switch r.URL.Path {
-		case "/api/v3/rate_limit":
-			w.WriteHeader(http.StatusOK)
-			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
-			fmt.Fprintf(w, `{"resources":{"core":{"remaining":5000,"reset":%s}}}`, string(resetstr))
-		case "/api/v3/repos/owner/repo/compare/v1...v2":
-			if compareCalls.Add(1) == 1 {
-				// Simulate the argo-cd failure: go-github maps a 403 with this
-				// documentation_url to *AbuseRateLimitError. Retry-After is in
-				// seconds; the SDK then short-circuits any request made before
-				// that window elapses, so MaxDelay below has to exceed it.
-				w.Header().Set("Retry-After", "1")
-				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprint(w, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{"commits":[]}`)
-		default:
-			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
-			http.Error(w, "unexpected", http.StatusTeapot)
-		}
-	}))
-	t.Cleanup(srv.Close)
+	synctest.Test(t, func(t *testing.T) {
+		var compareCalls atomic.Int32
+		transport := httpmock.NewMockTransport()
+		transport.RegisterResponder(http.MethodGet, "https://api.github.com/rate_limit",
+			httpmock.NewStringResponder(http.StatusOK, fmt.Sprintf(
+				`{"resources":{"core":{"remaining":5000,"reset":%d}}}`,
+				time.Now().Add(time.Hour).Unix(),
+			)))
+		transport.RegisterResponder(
+			http.MethodGet,
+			"https://api.github.com/repos/owner/repo/compare/v1...v2",
+			func(_ *http.Request) (*http.Response, error) {
+				if compareCalls.Add(1) == 1 {
+					// The SDK caches this one-second secondary rate-limit window.
+					resp := httpmock.NewStringResponse(http.StatusForbidden, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
+					resp.Header.Set("Retry-After", "1")
+					return resp, nil
+				}
+				return httpmock.NewStringResponse(http.StatusOK, `{"commits":[]}`), nil
+			},
+		)
+		api, err := github.NewClient(
+			github.WithHTTPClient(&http.Client{Transport: transport}),
+			github.WithMaxSecondaryRateLimitRetryAfterDuration(maxSecondaryRateLimitWait),
+		)
+		require.NoError(t, err)
+		client := &githubClient{client: api}
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Retry: config.Retry{
+				Attempts: 3,
+				Delay:    10 * time.Millisecond,
+				MaxDelay: 2 * time.Second,
+			},
+		})
 
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitHubURLs: config.GitHubURLs{API: srv.URL},
-		Retry: config.Retry{
-			Attempts: 3,
-			Delay:    10 * time.Millisecond,
-			MaxDelay: 2 * time.Second, // must exceed the 1s Retry-After window
-		},
+		start := time.Now()
+		items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+		require.NoError(t, err)
+		require.Empty(t, items)
+		require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
+		require.GreaterOrEqual(t, time.Since(start), time.Second)
 	})
-	client, err := newGitHub(ctx, "test-token")
-	require.NoError(t, err)
-
-	items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
-	require.NoError(t, err)
-	require.Empty(t, items)
-	require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
 }
 
 func TestGitHubCheckRateLimit(t *testing.T) {
