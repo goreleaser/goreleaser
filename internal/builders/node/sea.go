@@ -94,10 +94,10 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 }
 
 // rewriteAssetPaths converts relative asset values in cfg["assets"]
-// into absolute paths anchored at buildDir. Node resolves `assets`
-// paths relative to the directory containing sea-config.json, but
-// goreleaser writes the merged config into a per-target scratch
-// directory, so relative user paths would otherwise break.
+// into absolute paths anchored at buildDir. Node resolves relative
+// `assets` paths against the working directory of the node process,
+// but the user writes them relative to their own sea-config.json in
+// the build dir, and goreleaser runs node from its own directory.
 func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 	assets, ok := cfg["assets"].(map[string]any)
 	if !ok {
