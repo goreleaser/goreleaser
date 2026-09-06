@@ -96,6 +96,7 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 		gitlab.WithHTTPClient(&http.Client{
 			Transport: transport,
 		}),
+		gitlab.WithRequestOptions(gitlab.WithContext(ctx)),
 		// the SDK retries 429s and 5xx on its own, with its own budget and
 		// backoff. retryx does that too, honoring the user configuration, so
 		// let it own the retries.

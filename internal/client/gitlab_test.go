@@ -1,6 +1,7 @@
 package client
 
 import (
+	stdctx "context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1304,6 +1305,106 @@ func TestGitLabVersionProbeIsBounded(t *testing.T) {
 	require.False(t, client.isV17OrLater)
 	require.EqualValues(t, versionRetry.Attempts, probes.Load())
 	require.Less(t, time.Since(start), 10*time.Second)
+}
+
+func TestGitLabVersionRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if !strings.HasPrefix(r.URL.Path, "/api/v4/version") {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+			return
+		}
+		select {
+		case entered <- struct{}{}:
+		default:
+		}
+		<-releaseResponse
+		fmt.Fprint(w, `{"version":"18.0.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for GitLab version request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("GitLab version request did not return after cancellation")
+	}
+	close(releaseResponse)
+}
+
+func TestGitLabChangelogRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case strings.Contains(r.URL.Path, "/repository/compare"):
+			select {
+			case entered <- struct{}{}:
+			default:
+			}
+			<-releaseResponse
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := client.Changelog(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for GitLab compare request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("GitLab compare request did not return after cancellation")
+	}
+	close(releaseResponse)
 }
 
 func TestGitLabRateLimitRetryAfter(t *testing.T) {
