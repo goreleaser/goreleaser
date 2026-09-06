@@ -345,9 +345,11 @@ func ensureEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifac
 		return nil
 	}
 	for _, a := range binaries {
-		if _, err := os.Stat(a.Path); err == nil {
+		_, err := os.Stat(a.Path)
+		if err == nil {
 			continue
-		} else if !errors.Is(err, fs.ErrNotExist) {
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
 			return fmt.Errorf("stat %s: %w", a.Name, err)
 		}
 
@@ -365,23 +367,21 @@ func ensureEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifac
 // findBuildOutput looks for the file `go build` wrote in place of the expected
 // path, e.g. `foo` for `foo.wasm`, or `foo.a` for `foo.lib`.
 func findBuildOutput(expected, ext string) (string, error) {
+	name := filepath.Base(expected)
 	prefix := strings.TrimSuffix(expected, ext)
 	matches, err := filepath.Glob(prefix + ".*")
 	if err != nil {
-		return "", fmt.Errorf("find build output for %s: %w", filepath.Base(expected), err)
+		return "", fmt.Errorf("find build output for %s: %w", name, err)
 	}
-	var candidates []string
+	// the header is generated alongside c-archive/c-shared libraries.
+	candidates := slices.DeleteFunc(matches, func(m string) bool {
+		return filepath.Ext(m) == ".h"
+	})
 	if _, err := os.Stat(prefix); err == nil {
 		candidates = append(candidates, prefix)
 	}
-	for _, match := range matches {
-		// the header is generated alongside c-archive/c-shared libraries.
-		if filepath.Ext(match) != ".h" {
-			candidates = append(candidates, match)
-		}
-	}
 	if len(candidates) != 1 {
-		return "", fmt.Errorf("could not find the build output for %s", filepath.Base(expected))
+		return "", fmt.Errorf("could not find the build output for %s", name)
 	}
 	return candidates[0], nil
 }
@@ -470,9 +470,8 @@ func mergeEnv(defaults, overrides []string) []string {
 		if !ok || key == "" {
 			continue
 		}
-		if _, exists := values[key]; exists {
-			keys = slices.DeleteFunc(keys, func(k string) bool { return k == key })
-		}
+		// a redefined key drops its old position.
+		keys = slices.DeleteFunc(keys, func(k string) bool { return k == key })
 		keys = append(keys, key)
 		values[key] = value
 	}
@@ -732,10 +731,10 @@ func checkBuildElipsis(
 		bins = append(bins, name)
 		pkgs = append(pkgs, mains[bin])
 		a := getBinaryArtifact(t, build, name, path, options.Ext)
+		// the set of main packages is target dependent, as build constraints
+		// may exclude some of them, so the ID cannot depend on how many were
+		// found for this target.
 		if build.InternalDefaults.ID {
-			// the set of main packages is target dependent, as build
-			// constraints may exclude some of them, so the ID cannot depend on
-			// how many were found for this target.
 			a.Extra[artifact.ExtraID] = bin
 		}
 		binaries = append(binaries, a)
