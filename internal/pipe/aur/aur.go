@@ -31,7 +31,10 @@ const (
 	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var (
+	ErrNoArchivesFound          = errors.New("no linux archives found")
+	ErrMultipleArchivesSameArch = errors.New("one aur can handle only one archive of each architecture")
+)
 
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
@@ -318,11 +321,17 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		Install:      cfg.Install,
 	}
 
+	arches := map[string]bool{}
 	for _, art := range artifacts {
 		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
+		arch := toPkgBuildArch(art.Goarch + art.Goarm)
+		if arches[arch] {
+			return result, ErrMultipleArchivesSameArch
+		}
+		arches[arch] = true
 
 		if cfg.URLTemplate == "" {
 			url, err := cl.ReleaseURLTemplate(ctx)
@@ -339,7 +348,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		releasePackage := releasePackage{
 			DownloadURL: url,
 			SHA256:      sum,
-			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
+			Arch:        arch,
 			Format:      art.Format(),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)

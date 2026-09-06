@@ -608,6 +608,86 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	require.False(t, client.CreatedFile)
 }
 
+func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
+	type archiveSpec struct {
+		id     string
+		goarch string
+	}
+
+	for name, tt := range map[string]struct {
+		ids     []string
+		archive []archiveSpec
+		wantErr bool
+	}{
+		"explicit ids": {
+			ids: []string{"foo", "bar"},
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "amd64"},
+			},
+			wantErr: true,
+		},
+		"default ids": {
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "amd64"},
+			},
+			wantErr: true,
+		},
+		"unique architectures": {
+			ids: []string{"foo", "bar"},
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "arm64"},
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					AURs:        []config.AUR{{IDs: tt.ids}},
+				},
+				testctx.GitHubTokenType,
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithSemver(1, 2, 1, ""),
+			)
+
+			for _, archive := range tt.archive {
+				path := filepath.Join(folder, archive.id+".tar.gz")
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    archive.id + ".tar.gz",
+					Path:    path,
+					Goos:    "linux",
+					Goarch:  archive.goarch,
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       archive.id,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				})
+				f, err := os.Create(path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			err := runAll(ctx, client.NewMock())
+			if tt.wantErr {
+				require.EqualError(t, err, "one aur can handle only one archive of each architecture")
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestRunPipeWrappedInDirectory(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
