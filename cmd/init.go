@@ -41,13 +41,6 @@ func newInitCmd() *initCmd {
 			if _, err := os.Stat(root.config); err == nil {
 				return errors.New(root.config + " already exists, delete it and run the command again")
 			}
-			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
-			if err != nil {
-				return err
-			}
-			defer conf.Close()
-
-			log.Infof(boldStyle.Render("generating ") + codeStyle.Render(root.config))
 
 			gitignoreLines := []string{"dist/"}
 			var example []byte
@@ -75,6 +68,14 @@ func newInitCmd() *initCmd {
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
+
+			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
+			if err != nil {
+				return err
+			}
+			defer conf.Close()
+
+			log.Infof(boldStyle.Render("generating ") + codeStyle.Render(root.config))
 
 			if _, err := conf.Write(example); err != nil {
 				return err
