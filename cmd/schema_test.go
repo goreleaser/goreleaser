@@ -3,14 +3,11 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"os"
-	"os/exec"
 	"path"
-	"path/filepath"
-	"runtime"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,57 +30,50 @@ func TestGenerateSchema(t *testing.T) {
 }
 
 func TestSchemaCommandErrors(t *testing.T) {
-	binary := buildGoReleaserBinary(t)
 	for _, name := range []string{"jsonschema", "schema"} {
 		t.Run(name, func(t *testing.T) {
-			stdout, stderr, err := runSchemaCommand(t, binary, name, "--not-a-flag")
-			require.Error(t, err)
-			require.Empty(t, stdout)
-			require.Contains(t, stderr, "unknown flag: --not-a-flag")
+			var stderr bytes.Buffer
+			previousLog := log.Log
+			log.Log = log.New(&stderr)
+			log.SetLevel(log.InfoLevel)
+			t.Cleanup(func() {
+				log.Log = previousLog
+			})
 
-			var exitErr *exec.ExitError
-			require.True(t, errors.As(err, &exitErr))
-			require.Equal(t, 1, exitErr.ExitCode())
+			mem := &exitMemento{}
+			cmd := newRootCmd(testversion, mem.Exit)
+			cmd.Execute([]string{name, "--not-a-flag"})
+
+			require.Equal(t, 1, mem.code)
+			require.Contains(t, stderr.String(), "unknown flag: --not-a-flag")
 		})
 	}
 }
 
 func TestSchemaCommandSuccessWritesJSONToStdout(t *testing.T) {
-	binary := buildGoReleaserBinary(t)
 	for _, name := range []string{"jsonschema", "schema"} {
 		t.Run(name, func(t *testing.T) {
-			stdout, _, err := runSchemaCommand(t, binary, name)
+			file, err := os.CreateTemp(t.TempDir(), "schema-stdout")
 			require.NoError(t, err)
 
+			stdout := os.Stdout
+			os.Stdout = file
+			t.Cleanup(func() {
+				os.Stdout = stdout
+			})
+
+			mem := &exitMemento{}
+			cmd := newRootCmd(testversion, mem.Exit)
+			cmd.Execute([]string{name})
+
+			require.NoError(t, file.Close())
+			out, err := os.ReadFile(file.Name())
+			require.NoError(t, err)
+			require.Equal(t, 0, mem.code)
+
 			schema := map[string]any{}
-			require.NoError(t, json.Unmarshal([]byte(stdout), &schema))
+			require.NoError(t, json.Unmarshal(out, &schema))
 			require.Equal(t, "https://json-schema.org/draft/2020-12/schema", schema["$schema"].(string))
 		})
 	}
-}
-
-func buildGoReleaserBinary(tb testing.TB) string {
-	tb.Helper()
-
-	binary := filepath.Join(tb.TempDir(), "goreleaser")
-	if runtime.GOOS == "windows" {
-		binary += ".exe"
-	}
-	cmd := exec.Command("go", "build", "-o", binary, "..")
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	require.NoError(tb, cmd.Run(), stderr.String())
-	return binary
-}
-
-func runSchemaCommand(tb testing.TB, binary string, args ...string) (string, string, error) {
-	tb.Helper()
-
-	cmd := exec.Command(binary, args...)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-	return stdout.String(), stderr.String(), err
 }
