@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,6 +26,12 @@ func TestHealthcheckMissingTool(t *testing.T) {
 	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
 }
 
+func TestHealthcheckInvalidBlankTool(t *testing.T) {
+	cmd := newHealthcheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/blank_tool.yml"})
+	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
+}
+
 func TestHealthcheckQuier(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--quiet"})
@@ -41,6 +48,7 @@ func TestCheckPath(t *testing.T) {
 	// nothing. It is also slow to refuse: 5.26s on the windows job.
 	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
+	require.ErrorIs(t, checkPath(t.Context(), checked, " \t "), exec.ErrNotFound)
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {
