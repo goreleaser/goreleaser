@@ -796,6 +796,86 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
+func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
+	for name, tt := range map[string]struct {
+		caskName string
+		token    string
+	}{
+		"already-normalized": {
+			caskName: "foo-bar",
+			token:    "foo-bar",
+		},
+		"spaced": {
+			caskName: "Foo Bar",
+			token:    "foo-bar",
+		},
+		"uppercase": {
+			caskName: "Foo",
+			token:    "foo",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        tt.caskName,
+							Description: "Foo bar",
+							Homepage:    "https://goreleaser.com",
+							Binaries:    []string{"foo"},
+							Repository: config.RepoRef{
+								Owner: "foo",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"foo",
+							},
+						},
+					},
+				},
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"))
+
+			path := filepath.Join(folder, "bin.tar.gz")
+			require.NoError(t, os.WriteFile(path, []byte("foo"), 0o644))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+
+			cli := client.NewMock()
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, runAll(ctx, cli))
+			require.NoError(t, publishAll(ctx, cli))
+
+			filename := tt.token + ".rb"
+			distFile := filepath.Join(folder, "homebrew", "Casks", filename)
+			distBts, err := os.ReadFile(distFile)
+			require.NoError(t, err)
+			require.Equal(t, string(distBts), cli.Content)
+			require.Equal(t, "Casks/"+filename, cli.Path)
+			require.Contains(t, cli.Content, `cask "`+tt.token+`" do`)
+			require.Contains(t, cli.Content, `binary "foo"`)
+
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			require.Equal(t, filename, casks[0].Name)
+		})
+	}
+}
+
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),

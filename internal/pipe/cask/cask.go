@@ -309,7 +309,7 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 
-	filename := brew.Name + ".rb"
+	filename := caskNameFor(brew.Name) + ".rb"
 	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
