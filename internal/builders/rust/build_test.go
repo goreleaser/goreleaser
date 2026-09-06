@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -86,6 +87,59 @@ func TestCustomGlibc(t *testing.T) {
 	})
 }
 
+func TestPrepareUsesBuildContext(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	target := "aarch64-unknown-linux-gnu.2.17"
+
+	for name, tt := range map[string]struct {
+		projectEnv    []string
+		buildEnv      []string
+		wantToolchain string
+	}{
+		"nested rust-toolchain": {},
+		"project environment": {
+			projectEnv:    []string{"RUSTUP_TOOLCHAIN=1.95.0"},
+			wantToolchain: "1.95.0",
+		},
+		"build environment": {
+			projectEnv:    []string{"TOOLCHAIN=1.95.0"},
+			buildEnv:      []string{"RUSTUP_TOOLCHAIN={{.Env.TOOLCHAIN}}"},
+			wantToolchain: "1.95.0",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv("RUSTUP_TOOLCHAIN", "")
+
+			dir := filepath.Join("nested", name)
+			require.NoError(t, os.MkdirAll(dir, 0o755))
+			require.NoError(t, os.WriteFile("rust-toolchain.toml", []byte("stable\n"), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "rust-toolchain.toml"), []byte("1.95.0\n"), 0o644))
+
+			log := filepath.Join(t.TempDir(), "rustup.log")
+			createFakeRustup(t, log)
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: tt.projectEnv,
+			})
+			err := Default.Prepare(ctx, config.Build{
+				Dir:     dir,
+				Targets: []string{target},
+				Env:     tt.buildEnv,
+			})
+			require.NoError(t, err)
+
+			got, err := os.ReadFile(log)
+			require.NoError(t, err)
+			wantDir := filepath.Join(folder, dir)
+			wantDir, err = filepath.EvalSymlinks(wantDir)
+			require.NoError(t, err)
+			require.Contains(t, string(got), "cwd="+wantDir+"\n")
+			require.Contains(t, string(got), "toolchain="+tt.wantToolchain+"\n")
+			require.Contains(t, string(got), "args=target add aarch64-unknown-linux-gnu\n")
+		})
+	}
+}
+
 func TestBuildWorkspaceErrorShowsAllMembers(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "Cargo.toml"), []byte(`
@@ -113,6 +167,30 @@ members = ["crate-a", "crate-b", "crate-c"]
 	require.Contains(t, err.Error(), "crate-a")
 	require.Contains(t, err.Error(), "crate-b")
 	require.Contains(t, err.Error(), "crate-c")
+}
+
+func createFakeRustup(tb testing.TB, log string) {
+	tb.Helper()
+	dir := tb.TempDir()
+	name := "rustup"
+	script := fmt.Sprintf(`#!/bin/sh
+{
+	printf 'cwd=%%s\n' "$(pwd)"
+	printf 'toolchain=%%s\n' "$RUSTUP_TOOLCHAIN"
+	printf 'args=%%s\n' "$*"
+} > %q
+`, log)
+	if runtime.GOOS == "windows" {
+		name += ".bat"
+		log = filepath.ToSlash(log)
+		script = fmt.Sprintf(`@echo off
+> "%s" echo cwd=%%CD%%
+>> "%s" echo toolchain=%%RUSTUP_TOOLCHAIN%%
+>> "%s" echo args=%%*
+`, log, log, log)
+	}
+	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
 func TestBuild(t *testing.T) {
