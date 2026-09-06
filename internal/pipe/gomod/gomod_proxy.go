@@ -37,7 +37,10 @@ func (CheckGoModPipe) Skip(ctx *context.Context) bool {
 func (CheckGoModPipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Builds {
 		build := &ctx.Config.Builds[i]
-		path := filepath.Join(build.UnproxiedDir, "go.mod")
+		if build.Builder != "" && build.Builder != "go" {
+			continue
+		}
+		path := goModPath(ctx, build)
 		mod, err := os.ReadFile(path)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
@@ -66,6 +69,31 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 	}
 
 	return nil
+}
+
+func goModPath(ctx *context.Context, build *config.Build) string {
+	dir := build.UnproxiedDir
+	if dir == "" {
+		dir = ctx.Config.GoMod.Dir
+	}
+	if dir == "" {
+		dir = build.Dir
+	}
+	if dir == "" {
+		dir = "."
+	}
+
+	for {
+		path := filepath.Join(dir, "go.mod")
+		if _, err := os.Stat(path); err == nil || !errors.Is(err, os.ErrNotExist) {
+			return path
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return path
+		}
+		dir = parent
+	}
 }
 
 func formatReplace(replace *modfile.Replace) string {

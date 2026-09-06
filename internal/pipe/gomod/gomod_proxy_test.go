@@ -148,6 +148,66 @@ replace (
 		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
 	})
+	t.Run("replace in configured module dir", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.Mkdir("src", 0o755))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+				Dir:      "src",
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+					Dir:     "src",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile(filepath.Join("src", "go.mod"), fmt.Appendf(nil, `module %s
+
+replace example.invalid/dependency => example.invalid/fork v1.0.0
+`, ctx.ModulePath), 0o666))
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("clean configured module dir ignores root replacement", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.Mkdir("src", 0o755))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+				Dir:      "src",
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+					Dir:     "src",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", []byte(`module example.invalid/root
+
+replace example.invalid/dependency => example.invalid/fork v1.0.0
+`), 0o666))
+		require.NoError(t, os.WriteFile(filepath.Join("src", "go.mod"), fmt.Appendf(nil, `module %s
+`, ctx.ModulePath), 0o666))
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
 	t.Run("replace block", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
