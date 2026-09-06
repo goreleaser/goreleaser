@@ -79,6 +79,8 @@ func createGoReleaserYaml(tb testing.TB) {
     - linux
   goarch:
     - amd64
+archives:
+- formats: [tar] # Exercise archiving without gzip overhead.
 release:
   github:
     owner: goreleaser
@@ -117,6 +119,8 @@ builds:
     - linux
   goarch:
     - amd64
+archives:
+- formats: [tar] # Exercise archiving without gzip overhead.
 release:
   github:
     owner: goreleaser
