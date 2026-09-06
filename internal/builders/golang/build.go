@@ -275,7 +275,18 @@ var go118FirstClassTargets = []string{
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	mains, allbinaries, err := checkBuild(build, options)
+	t := options.Target.(Target)
+	details, err := withOverrides(ctx, build, t)
+	if err != nil {
+		return err
+	}
+
+	env, testEnvs, err := buildEnv(ctx, details, options, getBinaryArtifact(t, build, options.Name, options.Path, options.Ext))
+	if err != nil {
+		return err
+	}
+
+	mains, allbinaries, err := checkBuild(ctx, build, details, options, env)
 	if err != nil {
 		return err
 	}
@@ -285,7 +296,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
 			if ha := getHeaderArtifactForLibrary(
 				build,
-				options.Target.(Target),
+				t,
 				fullPathWithoutExt,
 			); ha != nil {
 				ctx.Artifacts.Add(ha)
@@ -293,42 +304,16 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		}
 	}
 
-	t := options.Target.(Target)
-	details, err := withOverrides(ctx, build, t)
-	if err != nil {
-		return err
-	}
-
-	env := []string{}
-	// used for unit testing only
-	testEnvs := []string{}
-	env = append(env, ctx.Env.Strings()...)
-
-	tpl := tmpl.New(ctx).
-		WithBuildOptions(options).
-		WithEnvS(env).
-		WithArtifact(allbinaries[0])
-
-	tenv, err := base.TemplateEnv(details.Env, tpl)
-	if err != nil {
-		return err
-	}
-	for _, e := range tenv {
-		if strings.HasPrefix(e, "TEST_") {
-			testEnvs = append(testEnvs, e)
-		}
-	}
-	env = append(env, tenv...)
-	env = append(env, t.env()...)
-	if v := os.Getenv("GOCACHEPROG"); v != "" {
-		env = append(env, "GOCACHEPROG="+v)
-	}
-
 	if len(testEnvs) > 0 {
 		for i := range allbinaries {
 			allbinaries[i].Extra["testEnvs"] = testEnvs
 		}
 	}
+
+	tpl := tmpl.New(ctx).
+		WithBuildOptions(options).
+		WithEnvS(env).
+		WithArtifact(allbinaries[0])
 
 	cmd, err := buildGoBuildLine(ctx, build, details, options, allbinaries[0], mains, env)
 	if err != nil {
@@ -349,6 +334,32 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		ctx.Artifacts.Add(a)
 	}
 	return nil
+}
+
+func buildEnv(ctx *context.Context, details config.BuildDetails, options api.Options, a *artifact.Artifact) ([]string, []string, error) {
+	env := ctx.Env.Strings()
+	tpl := tmpl.New(ctx).
+		WithBuildOptions(options).
+		WithEnvS(env).
+		WithArtifact(a)
+
+	tenv, err := base.TemplateEnv(details.Env, tpl)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var testEnvs []string
+	for _, e := range tenv {
+		if strings.HasPrefix(e, "TEST_") {
+			testEnvs = append(testEnvs, e)
+		}
+	}
+	env = append(env, tenv...)
+	env = append(env, options.Target.(Target).env()...)
+	if v := os.Getenv("GOCACHEPROG"); v != "" {
+		env = append(env, "GOCACHEPROG="+v)
+	}
+	return env, testEnvs, nil
 }
 
 func execGo(ctx *context.Context, command, env []string, dir string) error {
@@ -598,7 +609,13 @@ func getBinaryArtifact(
 	return a
 }
 
-func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {
+func checkBuild(
+	ctx *context.Context,
+	build config.Build,
+	details config.BuildDetails,
+	options api.Options,
+	env []string,
+) (map[string]string, []*artifact.Artifact, error) {
 	main := cmp.Or(build.UnproxiedMain, build.Main, ".")
 	dir := cmp.Or(build.UnproxiedDir, build.Dir)
 
@@ -611,7 +628,7 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 	}
 
 	if strings.HasSuffix(main, "/...") {
-		return checkBuildElipsis(build, options, dir, main)
+		return checkBuildElipsis(ctx, build, details, options, dir, main, env)
 	}
 
 	// old behavior
@@ -630,14 +647,21 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 }
 
 func checkBuildElipsis(
+	ctx *context.Context,
 	build config.Build,
+	details config.BuildDetails,
 	options api.Options,
 	dir, main string,
+	env []string,
 ) (map[string]string, []*artifact.Artifact, error) {
 	logFindingMains(build, main)
 
 	var binaries []*artifact.Artifact
-	mains, err := gomain.All(dir, main)
+	buildFlags, err := buildSelectionFlags(ctx, details, options, getBinaryArtifact(options.Target.(Target), build, options.Name, options.Path, options.Ext), env)
+	if err != nil {
+		return nil, nil, err
+	}
+	mains, err := gomain.All(dir, env, buildFlags, main)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -674,6 +698,29 @@ func checkBuildElipsis(
 
 	logBuild(pkgs, bins, t.String())
 	return mains, binaries, nil
+}
+
+func buildSelectionFlags(
+	ctx *context.Context,
+	details config.BuildDetails,
+	options api.Options,
+	a *artifact.Artifact,
+	env []string,
+) ([]string, error) {
+	tpl := tmpl.New(ctx).WithEnvS(env).WithArtifact(a)
+	flags, err := tpl.Slice(details.Flags, tmpl.NonEmpty())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(details.Tags) > 0 {
+		tags, err := tpl.WithBuildOptions(options).Slice(details.Tags, tmpl.NonEmpty())
+		if err != nil {
+			return nil, err
+		}
+		flags = append(flags, "-tags="+strings.Join(tags, ","))
+	}
+	return flags, nil
 }
 
 func toProxiedImportPath(build config.Build, rel string) string {

@@ -23,7 +23,7 @@ func TestAll(t *testing.T) {
 		require.NoError(t, os.WriteFile(filepath.Join(dir, m), []byte("package main\nfunc main(){}"), 0o644))
 	}
 
-	mains, err := All(dir, "./...")
+	mains, err := All(dir, nil, nil, "./...")
 	require.NoError(t, err)
 	require.Equal(t, map[string]string{
 		"bar": ".",
@@ -34,7 +34,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestAllErrors(t *testing.T) {
-	mains, err := All(t.TempDir(), "./...")
+	mains, err := All(t.TempDir(), nil, nil, "./...")
 	require.ErrorIs(t, err, ErrNoMains)
 	require.Nil(t, mains)
 }

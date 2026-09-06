@@ -1639,7 +1639,7 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
 	}
 
-	mains, binaries, err := checkBuild(config.Build{
+	build := config.Build{
 		ID:            "foo",
 		Main:          "github.com/foo/bar/cmd/...",
 		UnproxiedMain: "./cmd/...",
@@ -1648,7 +1648,8 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 		InternalDefaults: config.BuildInternalDefaults{
 			ID: true,
 		},
-	}, options)
+	}
+	mains, binaries, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
 	require.NoError(t, err)
 	require.Equal(t, map[string]string{
 		"a": "github.com/foo/bar/cmd/a",
@@ -1659,6 +1660,98 @@ func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
 		require.NotContains(t, b.Path, "github.com/foo/bar")
 		require.Equal(t, filepath.Dir(options.Path), filepath.Dir(b.Path))
 	}
+}
+
+func TestCheckBuildElipsisUsesEffectiveBuildContext(t *testing.T) {
+	for name, setup := range map[string]func(*config.Build){
+		"tags": func(b *config.Build) {
+			b.Tags = []string{"feature"}
+		},
+		"flags": func(b *config.Build) {
+			b.Flags = []string{"-tags=feature"}
+		},
+		"goflags": func(b *config.Build) {
+			b.Env = []string{"GOFLAGS=-tags=feature"}
+		},
+		"override": func(b *config.Build) {
+			b.BuildDetailsOverrides = []config.BuildDetailsOverride{
+				{
+					Goos:   runtime.GOOS,
+					Goarch: runtime.GOARCH,
+					Tags:   []string{"feature"},
+				},
+			}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			writeGoMod(t, folder, "github.com/foo/bar")
+			writeTaggedMain(t, filepath.Join(folder, "cmd", "feature"), "feature")
+
+			target := mustParse(t, runtimeTarget)
+			options := api.Options{
+				Target: target,
+				Name:   "foo",
+				Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
+			}
+			build := config.Build{
+				ID:   "foo",
+				Main: "./cmd/...",
+				Dir:  folder,
+				InternalDefaults: config.BuildInternalDefaults{
+					Binary: true,
+					ID:     true,
+				},
+			}
+			setup(&build)
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			details, err := withOverrides(ctx, build, target)
+			require.NoError(t, err)
+			env, _, err := buildEnv(ctx, details, options, getBinaryArtifact(target, build, options.Name, options.Path, options.Ext))
+			require.NoError(t, err)
+
+			mains, binaries, err := checkBuild(ctx, build, details, options, env)
+			require.NoError(t, err)
+			require.Equal(t, map[string]string{"feature": "./cmd/feature"}, mains)
+			require.Len(t, binaries, 1)
+			require.Equal(t, filepath.Join(folder, "dist", runtimeTarget, "feature"), binaries[0].Path)
+		})
+	}
+}
+
+func TestBuildVariadicUsesTargetEnvForDiscovery(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeTaggedMain(t, filepath.Join(folder, "cmd", "target"), "plan9 && amd64")
+
+	target := mustParse(t, "plan9_amd64")
+	build := config.Build{
+		ID:      "foo",
+		Main:    "./cmd/...",
+		Tool:    "go",
+		Command: "build",
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "foo",
+		Path:   filepath.Join(folder, "dist", target.Target, "foo"),
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	require.Equal(t, filepath.Join("dist", target.Target, "target"), bins[0].Path)
+	info, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.NotZero(t, info.Size())
 }
 
 func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
@@ -1673,14 +1766,15 @@ func TestCheckBuildElipsisWithExplicitIDError(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
 	}
 
-	_, _, err := checkBuild(config.Build{
+	build := config.Build{
 		ID:   "myid",
 		Main: "./cmd/...",
 		Dir:  folder,
 		InternalDefaults: config.BuildInternalDefaults{
 			Binary: true,
 		},
-	}, options)
+	}
+	_, _, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
 	require.EqualError(t, err, "'main' contains an ellipsis path (e.g. './...') and resolves to more than one main package, and 'id' is set: either set 'main' to a specific package, or unset 'id'")
 }
 
@@ -1696,7 +1790,7 @@ func TestCheckBuildElipsisWithExplicitBinaryError(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
 	}
 
-	_, _, err := checkBuild(config.Build{
+	build := config.Build{
 		ID:     "default",
 		Main:   "./cmd/...",
 		Dir:    folder,
@@ -1704,7 +1798,8 @@ func TestCheckBuildElipsisWithExplicitBinaryError(t *testing.T) {
 		InternalDefaults: config.BuildInternalDefaults{
 			ID: true,
 		},
-	}, options)
+	}
+	_, _, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
 	require.EqualError(t, err, "'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
 }
 
@@ -1719,7 +1814,7 @@ func TestCheckBuildElipsisSingleMain(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
 	}
 
-	mains, binaries, err := checkBuild(config.Build{
+	build := config.Build{
 		ID:   "foo",
 		Main: "./cmd/...",
 		Dir:  folder,
@@ -1727,7 +1822,8 @@ func TestCheckBuildElipsisSingleMain(t *testing.T) {
 			Binary: true,
 			ID:     true,
 		},
-	}, options)
+	}
+	mains, binaries, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
 	require.NoError(t, err)
 	require.Len(t, mains, 1)
 	require.Len(t, binaries, 1)
@@ -1746,12 +1842,13 @@ func TestCheckBuildElipsisSingleMainWithExplicitBinary(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, "mybin"),
 	}
 
-	mains, binaries, err := checkBuild(config.Build{
+	build := config.Build{
 		ID:     "foo",
 		Main:   "./cmd/...",
 		Dir:    folder,
 		Binary: "mybin",
-	}, options)
+	}
+	mains, binaries, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
 	require.NoError(t, err)
 	require.Len(t, mains, 1)
 	require.Len(t, binaries, 1)
@@ -2256,6 +2353,16 @@ func writeGoodMain(tb testing.TB, folder string) {
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
+		0o644,
+	))
+}
+
+func writeTaggedMain(tb testing.TB, folder, tags string) {
+	tb.Helper()
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte("//go:build "+tags+"\n\npackage main\nfunc main() {println(0)}"),
 		0o644,
 	))
 }

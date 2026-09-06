@@ -78,15 +78,17 @@ const mode = packages.NeedName |
 // All finds all the `func main`'s in the given dir following the given patterns.
 // The result is either a map of binaryName -> ./relative/path or an error.
 // This only works on a go module.
-func All(dir string, patterns ...string) (map[string]string, error) {
+func All(dir string, env, buildFlags []string, patterns ...string) (map[string]string, error) {
 	absDir, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, fmt.Errorf("could not find '%s' absolute path: %w", dir, err)
 	}
 
 	cfg := &packages.Config{
-		Mode: mode,
-		Dir:  absDir,
+		Mode:       mode,
+		Dir:        absDir,
+		Env:        env,
+		BuildFlags: buildFlags,
 	}
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
