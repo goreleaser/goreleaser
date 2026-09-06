@@ -323,6 +323,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := execGo(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
+	if err := ensureWASMEllipsisOutputs(mains, allbinaries, options.Ext); err != nil {
+		return err
+	}
 
 	for _, a := range allbinaries {
 		if err := base.ChTimes(build, tpl.WithArtifact(a), a); err != nil {
@@ -332,6 +335,25 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 			a.Extra[artifact.ExtranDynLink] = true
 		}
 		ctx.Artifacts.Add(a)
+	}
+	return nil
+}
+
+func ensureWASMEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifact, ext string) error {
+	if mains == nil || ext != ".wasm" {
+		return nil
+	}
+	for _, a := range binaries {
+		if _, err := os.Stat(a.Path); err == nil {
+			continue
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("stat wasm artifact: %w", err)
+		}
+
+		actual := strings.TrimSuffix(a.Path, ext)
+		if err := os.Rename(actual, a.Path); err != nil {
+			return fmt.Errorf("rename wasm artifact: %w", err)
+		}
 	}
 	return nil
 }

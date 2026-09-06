@@ -866,6 +866,13 @@ func TestBuildVariadic(t *testing.T) {
 		}))
 	}
 
+	require.NoError(t, ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+		info, err := os.Stat(a.Path)
+		require.NoError(t, err, "artifact %s should exist", a.Path)
+		require.NotZero(t, info.Size(), "artifact %s should not be empty", a.Path)
+		return nil
+	}))
+
 	list := ctx.Artifacts
 	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
 		s, err := filepath.Rel(folder, a.Path)
@@ -968,6 +975,45 @@ func TestBuildVariadic(t *testing.T) {
 
 	got := list.List()
 	testlib.RequireEqualArtifacts(t, expected, got)
+}
+
+func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "foo"))
+
+	target := mustParse(t, "js_wasm")
+	build := config.Build{
+		ID:           "foo",
+		Main:         "./cmd/...",
+		Tool:         "go",
+		Command:      "build",
+		ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "foo.wasm",
+		Path:   filepath.Join(folder, "dist", target.Target, "foo.wasm"),
+		Ext:    ".wasm",
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	require.Equal(t, filepath.Join("dist", target.Target, "foo.wasm"), bins[0].Path)
+	info, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.NotZero(t, info.Size())
+	require.Equal(t, modTime, info.ModTime().UTC())
 }
 
 func TestBuildInvalidEnv(t *testing.T) {
