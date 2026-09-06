@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -1145,7 +1146,13 @@ func TestBuildOutput(t *testing.T) {
 }
 
 func TestExecGoKeepsFailureOutput(t *testing.T) {
-	err := execGo(testctx.Wrap(t.Context()), []string{"go", "build", "-flag-that-dont-exists-to-force-failure"}, nil, t.TempDir())
+	err := base.Exec(
+		testctx.Wrap(t.Context()),
+		[]string{"go", "build", "-flag-that-dont-exists-to-force-failure"},
+		nil,
+		t.TempDir(),
+		base.WithLogFilter(buildOutput),
+	)
 	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 }
 
@@ -1488,6 +1495,8 @@ func TestBuildModTimestamp(t *testing.T) {
 }
 
 func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
 	for mode, ext := range map[string]string{
 		"c-archive": cArchiveExt(),
 		"c-shared":  cSharedExt(),
@@ -1499,13 +1508,14 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 
 			target := mustParse(t, runtimeTarget)
 			build := config.Build{
-				ID:        "cexport",
-				Dir:       folder,
-				Main:      ".",
-				Tool:      "go",
-				Command:   "build",
-				Buildmode: mode,
-				Env:       []string{"CGO_ENABLED=1"},
+				ID:           "cexport",
+				Dir:          folder,
+				Main:         ".",
+				Tool:         "go",
+				Command:      "build",
+				Buildmode:    mode,
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				Env:          []string{"CGO_ENABLED=1"},
 			}
 			options := api.Options{
 				Target: target,
@@ -1530,6 +1540,62 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 			require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
 			require.Equal(t, "cexport.h", headers[0].Extra[artifact.ExtraBinary])
 			require.Equal(t, ".h", headers[0].Extra[artifact.ExtraExt])
+
+			// headers go into the archives, so they need the same mod
+			// timestamp the library gets, otherwise archives stop being
+			// reproducible.
+			info, err := os.Stat(headers[0].Path)
+			require.NoError(t, err)
+			require.Equal(t, modTime, info.ModTime().UTC())
+		})
+	}
+}
+
+func TestBuildEllipsisLibraryArtifactsExist(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
+	for mode, ext := range map[string]string{
+		"c-archive": cArchiveExt(),
+		"c-shared":  cSharedExt(),
+	} {
+		t.Run(mode, func(t *testing.T) {
+			folder := t.TempDir()
+			writeGoMod(t, folder, "github.com/foo/bar")
+			writeCExportMain(t, filepath.Join(folder, "cmd", "cexport"))
+
+			target := mustParse(t, runtimeTarget)
+			build := config.Build{
+				ID:           "cexport",
+				Dir:          folder,
+				Main:         "./cmd/...",
+				Tool:         "go",
+				Command:      "build",
+				Buildmode:    mode,
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				Env:          []string{"CGO_ENABLED=1"},
+				InternalDefaults: config.BuildInternalDefaults{
+					Binary: true,
+					ID:     true,
+				},
+			}
+			options := api.Options{
+				Target: target,
+				Name:   "cexport" + ext,
+				Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
+				Ext:    ext,
+			}
+			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			require.NoError(t, Default.Build(ctx, build, options))
+
+			libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
+			require.Len(t, libraries, 1)
+			require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
+			info, err := os.Stat(libraries[0].Path)
+			require.NoError(t, err)
+			require.NotZero(t, info.Size())
+			require.Equal(t, modTime, info.ModTime().UTC())
 		})
 	}
 }
@@ -1950,8 +2016,9 @@ func TestCheckBuildElipsisSingleMain(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, mains, 1)
 	require.Len(t, binaries, 1)
-	// single main with auto-set ID keeps the default ID
-	require.Equal(t, "foo", binaries[0].Extra[artifact.ExtraID])
+	// an auto-set ID always becomes the binary name, as the number of mains
+	// found is target dependent.
+	require.Equal(t, "a", binaries[0].Extra[artifact.ExtraID])
 }
 
 func TestCheckBuildElipsisSingleMainWithExplicitBinary(t *testing.T) {
@@ -1975,6 +2042,89 @@ func TestCheckBuildElipsisSingleMainWithExplicitBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, mains, 1)
 	require.Len(t, binaries, 1)
+}
+
+func TestCheckBuildElipsisIDsAreTargetIndependent(t *testing.T) {
+	t.Parallel()
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "foo"))
+	writeTaggedMain(t, filepath.Join(folder, "cmd", "bar"), "!windows")
+
+	build := config.Build{
+		ID:   "proj",
+		Main: "./cmd/...",
+		Dir:  folder,
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+
+	ids := map[string]string{}
+	for _, name := range []string{"linux_amd64", "windows_amd64"} {
+		target := mustParse(t, name)
+		ext := ""
+		if target.Goos == "windows" {
+			ext = ".exe"
+		}
+		options := api.Options{
+			Target: target,
+			Path:   filepath.Join(folder, "dist", name, "foo"+ext),
+			Ext:    ext,
+		}
+		_, binaries, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, append(os.Environ(), target.env()...))
+		require.NoError(t, err)
+		for _, a := range binaries {
+			if a.Extra[artifact.ExtraBinary] == "foo" {
+				ids[name] = a.Extra[artifact.ExtraID].(string)
+			}
+		}
+	}
+
+	// bar is excluded on windows, so the number of mains found differs per
+	// target. The ID of foo must not.
+	require.Equal(t, map[string]string{
+		"linux_amd64":   "foo",
+		"windows_amd64": "foo",
+	}, ids)
+}
+
+func TestCheckBuildElipsisDropsListIncompatibleFlags(t *testing.T) {
+	t.Parallel()
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "a"),
+	}
+
+	build := config.Build{
+		ID:      "foo",
+		Main:    "./cmd/...",
+		Dir:     folder,
+		Command: "test",
+		Flags:   []string{"-c", "-o", "somewhere", "-trimpath"},
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+	mains, binaries, err := checkBuild(testctx.Wrap(t.Context()), build, build.BuildDetails, options, nil)
+	require.NoError(t, err)
+	require.Len(t, mains, 1)
+	require.Len(t, binaries, 1)
+}
+
+func TestDropListIncompatibleFlags(t *testing.T) {
+	t.Parallel()
+	require.Equal(
+		t,
+		[]string{"-trimpath", "-tags=foo"},
+		dropListIncompatibleFlags([]string{"-c", "-o", "somewhere", "-trimpath", "-o=elsewhere", "-tags=foo"}),
+	)
 }
 
 func TestOverrides(t *testing.T) {
@@ -2026,6 +2176,24 @@ func TestOverrides(t *testing.T) {
 		)
 		require.NoError(t, err)
 		require.Equal(t, []string{"A=value", "B={{.Env.A}}", "C=override", "D={{.Env.B}}"}, dets.Env)
+	})
+
+	t.Run("redefined env moves to the override position", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{"CC=gcc"},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "darwin",
+						Goarch: "arm64",
+						Env:    []string{"SDK=/opt/sdk", "CC={{.Env.SDK}}/bin/cc"},
+					},
+				},
+			}, mustParse(t, "darwin_arm64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{"SDK=/opt/sdk", "CC={{.Env.SDK}}/bin/cc"}, dets.Env)
 	})
 
 	t.Run("dependent env templates survive overrides", func(t *testing.T) {

@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"maps"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"slices"
@@ -307,24 +306,25 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := execGo(ctx, cmd, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, cmd, env, build.Dir, base.WithLogFilter(buildOutput)); err != nil {
 		return err
 	}
-	if err := ensureWASMEllipsisOutputs(mains, allbinaries, options.Ext); err != nil {
+	if err := ensureEllipsisOutputs(mains, allbinaries, options.Ext); err != nil {
 		return err
-	}
-	for _, a := range allbinaries {
-		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
-			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
-			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
-				ctx.Artifacts.Add(ha)
-			}
-		}
 	}
 
 	for _, a := range allbinaries {
 		if err := base.ChTimes(build, tpl.WithArtifact(a), a); err != nil {
 			return err
+		}
+		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
+			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
+				if err := base.ChTimes(build, tpl.WithArtifact(ha), ha); err != nil {
+					return err
+				}
+				ctx.Artifacts.Add(ha)
+			}
 		}
 		if elf.IsDynamicallyLinked(a.Path) {
 			a.Extra[artifact.ExtranDynLink] = true
@@ -334,23 +334,56 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-func ensureWASMEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifact, ext string) error {
-	if mains == nil || ext != ".wasm" {
+// ensureEllipsisOutputs renames the files `go build` actually wrote to the
+// paths GoReleaser registered.
+//
+// With an ellipsis main, `go build` gets an output directory instead of an
+// output file, and names each output after its package, ignoring the extension
+// GoReleaser derives from the buildmode.
+func ensureEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifact, ext string) error {
+	if mains == nil || ext == "" {
 		return nil
 	}
 	for _, a := range binaries {
 		if _, err := os.Stat(a.Path); err == nil {
 			continue
 		} else if !errors.Is(err, fs.ErrNotExist) {
-			return fmt.Errorf("stat wasm artifact: %w", err)
+			return fmt.Errorf("stat %s: %w", a.Name, err)
 		}
 
-		actual := strings.TrimSuffix(a.Path, ext)
+		actual, err := findBuildOutput(a.Path, ext)
+		if err != nil {
+			return err
+		}
 		if err := os.Rename(actual, a.Path); err != nil {
-			return fmt.Errorf("rename wasm artifact: %w", err)
+			return fmt.Errorf("rename %s: %w", a.Name, err)
 		}
 	}
 	return nil
+}
+
+// findBuildOutput looks for the file `go build` wrote in place of the expected
+// path, e.g. `foo` for `foo.wasm`, or `foo.a` for `foo.lib`.
+func findBuildOutput(expected, ext string) (string, error) {
+	prefix := strings.TrimSuffix(expected, ext)
+	matches, err := filepath.Glob(prefix + ".*")
+	if err != nil {
+		return "", fmt.Errorf("find build output for %s: %w", filepath.Base(expected), err)
+	}
+	var candidates []string
+	if _, err := os.Stat(prefix); err == nil {
+		candidates = append(candidates, prefix)
+	}
+	for _, match := range matches {
+		// the header is generated alongside c-archive/c-shared libraries.
+		if filepath.Ext(match) != ".h" {
+			candidates = append(candidates, match)
+		}
+	}
+	if len(candidates) != 1 {
+		return "", fmt.Errorf("could not find the build output for %s", filepath.Base(expected))
+	}
+	return candidates[0], nil
 }
 
 func buildEnv(ctx *context.Context, details config.BuildDetails, options api.Options, a *artifact.Artifact) ([]string, []string, error) {
@@ -377,22 +410,6 @@ func buildEnv(ctx *context.Context, details config.BuildDetails, options api.Opt
 		env = append(env, "GOCACHEPROG="+v)
 	}
 	return env, testEnvs, nil
-}
-
-func execGo(ctx *context.Context, command, env []string, dir string) error {
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
-	cmd.Env = env
-	cmd.Dir = dir
-	log.WithField("cmd", command[0]).Debug("executing")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%w: %s", err, string(out))
-	}
-	if s := buildOutput(out); s != "" {
-		log.WithField("output", s).Info(strings.Join(command, " "))
-	}
-	return nil
 }
 
 func buildOutput(out []byte) string {
@@ -438,17 +455,25 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 	return build.BuildDetails, nil
 }
 
-func mergeEnv(base, overrides []string) []string {
-	values := make(map[string]string, len(base)+len(overrides))
-	var keys []string
-	for _, env := range append(slices.Clone(base), overrides...) {
+// mergeEnv merges the override entries into the defaults, keeping insertion
+// order so that entries can reference the ones defined before them.
+//
+// The last definition of a key sets both its value and its position, so an
+// override that redefines a key in terms of a variable it also introduces
+// still comes out after it.
+func mergeEnv(defaults, overrides []string) []string {
+	all := append(slices.Clone(defaults), overrides...)
+	values := make(map[string]string, len(all))
+	keys := make([]string, 0, len(all))
+	for _, env := range all {
 		key, value, ok := strings.Cut(env, "=")
 		if !ok || key == "" {
 			continue
 		}
-		if _, exists := values[key]; !exists {
-			keys = append(keys, key)
+		if _, exists := values[key]; exists {
+			keys = slices.DeleteFunc(keys, func(k string) bool { return k == key })
 		}
+		keys = append(keys, key)
 		values[key] = value
 	}
 
@@ -674,7 +699,7 @@ func checkBuildElipsis(
 	logFindingMains(build, main)
 
 	var binaries []*artifact.Artifact
-	buildFlags, err := buildSelectionFlags(ctx, details, options, getBinaryArtifact(options.Target.(Target), build, options.Name, options.Path, options.Ext), env)
+	buildFlags, err := buildSelectionFlags(ctx, details, getBinaryArtifact(options.Target.(Target), build, options.Name, options.Path, options.Ext), env)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -707,7 +732,10 @@ func checkBuildElipsis(
 		bins = append(bins, name)
 		pkgs = append(pkgs, mains[bin])
 		a := getBinaryArtifact(t, build, name, path, options.Ext)
-		if len(mains) > 1 && build.InternalDefaults.ID {
+		if build.InternalDefaults.ID {
+			// the set of main packages is target dependent, as build
+			// constraints may exclude some of them, so the ID cannot depend on
+			// how many were found for this target.
 			a.Extra[artifact.ExtraID] = bin
 		}
 		binaries = append(binaries, a)
@@ -720,7 +748,6 @@ func checkBuildElipsis(
 func buildSelectionFlags(
 	ctx *context.Context,
 	details config.BuildDetails,
-	options api.Options,
 	a *artifact.Artifact,
 	env []string,
 ) ([]string, error) {
@@ -729,15 +756,36 @@ func buildSelectionFlags(
 	if err != nil {
 		return nil, err
 	}
+	flags = dropListIncompatibleFlags(flags)
 
 	if len(details.Tags) > 0 {
-		tags, err := tpl.WithBuildOptions(options).Slice(details.Tags, tmpl.NonEmpty())
+		tags, err := tpl.Slice(details.Tags, tmpl.NonEmpty())
 		if err != nil {
 			return nil, err
 		}
 		flags = append(flags, "-tags="+strings.Join(tags, ","))
 	}
 	return flags, nil
+}
+
+// dropListIncompatibleFlags removes the flags `go list` rejects, as they only
+// make sense when actually building. They cannot change package selection.
+func dropListIncompatibleFlags(flags []string) []string {
+	result := make([]string, 0, len(flags))
+	for i := 0; i < len(flags); i++ {
+		name, _, hasValue := strings.Cut(flags[i], "=")
+		switch name {
+		case "-c":
+			continue
+		case "-o":
+			if !hasValue {
+				i++ // the value is a separate argument.
+			}
+			continue
+		}
+		result = append(result, flags[i])
+	}
+	return result
 }
 
 func toProxiedImportPath(build config.Build, rel string) string {

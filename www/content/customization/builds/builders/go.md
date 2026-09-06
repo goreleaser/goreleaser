@@ -567,4 +567,13 @@ Binary names will be inferred just like `go build` does.
 If you have multiple build configurations that change only the `main` and
 `binary` portions, this might be your friend.
 
+If you don't set an `id`, each resulting binary gets its own artifact ID, which
+is its binary name. Set `id` only if the ellipsis resolves to a single `main`
+package.
+
+!!! warning
+
+    Build constraints are evaluated per target, so an ellipsis path may resolve
+    to a different set of `main` packages on each target.
+
 {{< g_templates >}}

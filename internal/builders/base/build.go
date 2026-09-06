@@ -104,9 +104,29 @@ func TemplateEnv(input []string, tpl *tmpl.Template) ([]string, error) {
 	return output, nil
 }
 
+// ExecOption configures [Exec].
+type ExecOption func(*execOptions)
+
+type execOptions struct {
+	logFilter func([]byte) string
+}
+
+// WithLogFilter sets a filter applied to the command output before it is
+// logged. It does not affect the output reported when the command fails.
+func WithLogFilter(filter func([]byte) string) ExecOption {
+	return func(o *execOptions) { o.logFilter = filter }
+}
+
 // Exec executes the given command with the given env in the given dir,
 // handling output and errors.
-func Exec(ctx context.Context, command []string, env []string, dir string) error {
+func Exec(ctx context.Context, command []string, env []string, dir string, opts ...ExecOption) error {
+	options := execOptions{
+		logFilter: func(out []byte) string { return string(out) },
+	}
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
 	cmd.Env = env
@@ -116,7 +136,7 @@ func Exec(ctx context.Context, command []string, env []string, dir string) error
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
-	if s := string(out); s != "" {
+	if s := options.logFilter(out); s != "" {
 		log.WithField("output", s).Info(strings.Join(command, " "))
 	}
 	return nil
