@@ -1,6 +1,7 @@
 package shell_test
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -62,11 +64,12 @@ func TestRunCommand(t *testing.T) {
 	})
 
 	t.Run("cancellation with descendant-held output pipe", func(t *testing.T) {
-		testlib.SkipIfWindows(t, "uses a unix shell")
+		testlib.SkipIfWindows(t, "uses unix shell and fifo")
 
 		dir := t.TempDir()
 		ready := filepath.Join(dir, "ready")
 		release := filepath.Join(dir, "release")
+		require.NoError(t, mkfifo(ready, 0o600))
 		t.Cleanup(func() {
 			require.NoError(t, os.WriteFile(release, nil, 0o600))
 		})
@@ -77,16 +80,13 @@ func TestRunCommand(t *testing.T) {
 			errCh <- shell.Run(
 				testctx.Wrap(ctx),
 				"",
-				[]string{"sh", "-c", `sh -c ': > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
+				[]string{"sh", "-c", `sh -c 'printf ready > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
 				append(os.Environ(), "READY="+ready, "RELEASE="+release),
 				false,
 			)
 		}()
 
-		require.Eventually(t, func() bool {
-			_, err := os.Stat(ready)
-			return err == nil
-		}, 3*time.Second, 10*time.Millisecond, "descendant did not start")
+		require.Equal(t, "ready", readFIFO(t, ready))
 		cancel()
 
 		select {
@@ -112,4 +112,56 @@ func TestRunCommand(t *testing.T) {
 		require.NoError(t, err)
 		require.FileExists(t, filepath.Join(dir, "bar"))
 	})
+}
+
+func readFIFO(tb testing.TB, name string) string {
+	tb.Helper()
+	result := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		bts, err := os.ReadFile(name)
+		result <- struct {
+			value string
+			err   error
+		}{string(bts), err}
+	}()
+
+	select {
+	case r := <-result:
+		require.NoError(tb, r.err)
+		return r.value
+	case <-time.After(3 * time.Second):
+		tb.Fatal("timed out waiting for subprocess readiness")
+		return ""
+	}
+}
+
+func TestRunRedactsDebugCommand(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() {
+		log.Log = previousLog
+	})
+
+	const secret = "key123key123"
+	err := shell.Run(
+		testctx.Wrap(t.Context()),
+		"",
+		[]string{
+			"sh",
+			"-c",
+			`test "$API_KEY" = "key123key123" && echo "$API_KEY"`,
+		},
+		[]string{"API_KEY=" + secret},
+		true,
+	)
+	require.NoError(t, err)
+	require.NotContains(t, logs.String(), secret)
+	require.Contains(t, logs.String(), "$API_KEY")
 }

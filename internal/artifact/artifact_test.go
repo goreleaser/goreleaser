@@ -329,6 +329,54 @@ func TestGroupByPlatform(t *testing.T) {
 			Gomips: "hardfloat",
 		},
 		{
+			Name:    "foobar",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.0",
+		},
+		{
+			Name:    "foobar",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v9.0",
+		},
+		{
+			Name:   "foobar",
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "sse2",
+		},
+		{
+			Name:   "foobar",
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "softfloat",
+		},
+		{
+			Name:    "foobar",
+			Goos:    "linux",
+			Goarch:  "ppc64",
+			Goppc64: "power8",
+		},
+		{
+			Name:    "foobar",
+			Goos:    "linux",
+			Goarch:  "ppc64",
+			Goppc64: "power9",
+		},
+		{
+			Name:      "foobar",
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva20u64",
+		},
+		{
+			Name:      "foobar",
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva22u64",
+		},
+		{
 			Name: "check",
 			Type: Checksum,
 		},
@@ -344,6 +392,14 @@ func TestGroupByPlatform(t *testing.T) {
 	require.Len(t, groups["linuxarm6"], 1)
 	require.Len(t, groups["linuxmipssoftfloat"], 1)
 	require.Len(t, groups["linuxmipshardfloat"], 1)
+	require.Len(t, groups["linuxarm64v8.0"], 1)
+	require.Len(t, groups["linuxarm64v9.0"], 1)
+	require.Len(t, groups["linux386sse2"], 1)
+	require.Len(t, groups["linux386softfloat"], 1)
+	require.Len(t, groups["linuxppc64power8"], 1)
+	require.Len(t, groups["linuxppc64power9"], 1)
+	require.Len(t, groups["linuxriscv64rva20u64"], 1)
+	require.Len(t, groups["linuxriscv64rva22u64"], 1)
 }
 
 func TestGroupByPlatform_mixingBuilders(t *testing.T) {
@@ -381,16 +437,64 @@ func TestGroupByPlatform_mixingBuilders(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "arm",
 		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "arm64",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.0",
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "386",
+		},
+		{
+			Name:   "bar",
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "sse2",
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "ppc64",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "ppc64",
+			Goppc64: "power8",
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "riscv64",
+		},
+		{
+			Name:      "bar",
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva20u64",
+		},
 	}
 	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 	groups := artifacts.GroupByPlatform()
-	require.Len(t, groups, 3)
+	require.Len(t, groups, 7)
 	require.Len(t, groups["linuxamd64"], 2)
 	require.Len(t, groups["linuxmips"], 2)
 	require.Len(t, groups["linuxarm"], 2)
+	require.Len(t, groups["linuxarm64"], 2)
+	require.Len(t, groups["linux386"], 2)
+	require.Len(t, groups["linuxppc64"], 2)
+	require.Len(t, groups["linuxriscv64"], 2)
 }
 
 func TestGroupByPlatform_abi(t *testing.T) {

@@ -46,9 +46,11 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installShellFiles makeWrapper ];
 
   installPhase = ''
+    runHook preInstall
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenvNoCC.isDarwin [ chromium ] ++ lib.optionals stdenvNoCC.isLinux [ ttyd ] ++ [ fish bash ])}
+    runHook postInstall
   '';
 
   meta = {

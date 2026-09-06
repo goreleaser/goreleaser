@@ -691,6 +691,168 @@ func TestRunPipeSomeSkipped(t *testing.T) {
 	)
 }
 
+func TestPublishFormatsContent(t *testing.T) {
+	testlib.SkipIfWindows(t, "nix.format won't work on Windows")
+
+	for _, formatter := range []string{"alejandra", "nixfmt"} {
+		t.Run(formatter, func(t *testing.T) {
+			bin := t.TempDir()
+			require.NoError(t, os.WriteFile(
+				filepath.Join(bin, formatter),
+				[]byte("#!/bin/sh\nprintf '\\n# formatted by "+formatter+"\\n' >> \"$1\"\n"),
+				0o755,
+			))
+			t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+			)
+
+			archiveName := "foo_linux_amd64v1.txz"
+			archivePath := filepath.Join(folder, "dist", archiveName)
+			require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+			require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    archiveName,
+				Path:    archivePath,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo",
+					artifact.ExtraFormat:    "txz",
+					artifact.ExtraBinaries:  []string{"foo"},
+					artifact.ExtraWrappedIn: "",
+				},
+			})
+
+			nix := config.Nix{
+				Name:                  "foo",
+				Path:                  "pkgs/foo/default.nix",
+				IDs:                   []string{"foo"},
+				Goamd64:               "v1",
+				Formatter:             formatter,
+				CommitAuthor:          config.CommitAuthor{Name: "goreleaserbot", Email: "bot@goreleaser.com"},
+				CommitMessageTemplate: "publish",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}
+			pkg := &artifact.Artifact{
+				Name: "default.nix",
+				Type: artifact.Nixpkg,
+				Extra: map[string]any{
+					nixConfigExtra: nix,
+				},
+			}
+			client := client.NewMock()
+
+			require.NoError(t, doPublish(ctx, fakeHasher{archiveName: "publication-sha"}, client, pkg))
+			require.Contains(t, client.Content, `x86_64-linux = "publication-sha";`)
+			require.Contains(t, client.Content, "# formatted by "+formatter)
+		})
+	}
+}
+
+func TestPreparePkgEscapesDescription(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+
+	archiveName := "foo_linux_amd64v1.txz"
+	archivePath := filepath.Join(folder, "dist", archiveName)
+	require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+	require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    archiveName,
+		Path:    archivePath,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "txz",
+			artifact.ExtraBinaries:  []string{"foo"},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+
+	content, err := preparePkg(ctx, config.Nix{
+		Name:        "foo",
+		IDs:         []string{"foo"},
+		Goamd64:     "v1",
+		Description: `Say "hello" from C:\tools and ${system}`,
+	}, client.NewMock(), fakeHasher{archiveName: "sha"})
+	require.NoError(t, err)
+	require.Contains(t, content, `description = "Say \"hello\" from C:\\tools and \${system}";`)
+}
+
+func TestPreparePkgInstallPhaseRunsHooks(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+
+	archiveName := "foo_linux_amd64v1.txz"
+	archivePath := filepath.Join(folder, "dist", archiveName)
+	require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+	require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    archiveName,
+		Path:    archivePath,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "txz",
+			artifact.ExtraBinaries:  []string{"foo"},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+
+	content, err := preparePkg(ctx, config.Nix{
+		Name:        "foo",
+		IDs:         []string{"foo"},
+		Goamd64:     "v1",
+		PostInstall: `printf 'post-install ran\n' > "$out/post-install.marker"`,
+	}, client.NewMock(), fakeHasher{archiveName: "sha"})
+	require.NoError(t, err)
+	require.Contains(t, content, `  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp -vr ./foo $out/bin/foo
+    runHook postInstall
+  '';`)
+	require.Contains(t, content, `  postInstall = ''
+    printf 'post-install ran\n' > "$out/post-install.marker"
+  '';`)
+}
+
 func TestErrNoArchivesFound(t *testing.T) {
 	require.EqualError(t, errNoArchivesFound{
 		goamd64: "v1",

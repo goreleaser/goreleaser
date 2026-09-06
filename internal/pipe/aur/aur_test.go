@@ -3,6 +3,7 @@ package aur
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -145,7 +146,10 @@ func TestSrcInfoSimple(t *testing.T) {
 	require.Contains(t, pkg, `pkgbase = test-bin`)
 	require.Contains(t, pkg, `pkgname = test-bin`)
 	require.Contains(t, pkg, `url = https://example.com`)
-	require.Contains(t, pkg, `source_x86_64 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
+	require.Contains(t, pkg, `install = test.install`)
+	require.Contains(t, pkg, `backup = /etc/mypkg.conf`)
+	require.Contains(t, pkg, `backup = /var/share/mypkg`)
+	require.Contains(t, pkg, `source_x86_64 = test-bin_0.1.3_x86_64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
 	require.Contains(t, pkg, `sha256sums_x86_64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67`)
 	require.Contains(t, pkg, `pkgver = 0.1.3`)
 }
@@ -604,6 +608,86 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	require.False(t, client.CreatedFile)
 }
 
+func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
+	type archiveSpec struct {
+		id     string
+		goarch string
+	}
+
+	for name, tt := range map[string]struct {
+		ids     []string
+		archive []archiveSpec
+		wantErr bool
+	}{
+		"explicit ids": {
+			ids: []string{"foo", "bar"},
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "amd64"},
+			},
+			wantErr: true,
+		},
+		"default ids": {
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "amd64"},
+			},
+			wantErr: true,
+		},
+		"unique architectures": {
+			ids: []string{"foo", "bar"},
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64"},
+				{id: "bar", goarch: "arm64"},
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					AURs:        []config.AUR{{IDs: tt.ids}},
+				},
+				testctx.GitHubTokenType,
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithSemver(1, 2, 1, ""),
+			)
+
+			for _, archive := range tt.archive {
+				path := filepath.Join(folder, archive.id+".tar.gz")
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    archive.id + ".tar.gz",
+					Path:    path,
+					Goos:    "linux",
+					Goarch:  archive.goarch,
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       archive.id,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				})
+				f, err := os.Create(path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			err := runAll(ctx, client.NewMock())
+			if tt.wantErr {
+				require.EqualError(t, err, "one aur can handle only one archive of each architecture")
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestRunPipeWrappedInDirectory(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
@@ -652,6 +736,57 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
+func TestRunPipeDefaultPackageUsesArchitectureWrapper(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs:        []config.AUR{{}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	for _, archive := range []struct {
+		name      string
+		goarch    string
+		wrappedIn string
+	}{
+		{name: "foo_linux_amd64.tar.gz", goarch: "amd64", wrappedIn: "foo_linux_amd64"},
+		{name: "foo_linux_arm64.tar.gz", goarch: "arm64", wrappedIn: "foo_linux_arm64"},
+	} {
+		path := filepath.Join(folder, archive.name)
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    archive.name,
+			Path:    path,
+			Goos:    "linux",
+			Goarch:  archive.goarch,
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "foo",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: archive.wrappedIn,
+			},
+		})
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	pkgbuild := filepath.Join(folder, "aur", "foo-bin.pkgbuild")
+	runPackage(t, pkgbuild, "x86_64", "foo_linux_amd64", "amd64 payload")
+	runPackage(t, pkgbuild, "aarch64", "foo_linux_arm64", "arm64 payload")
+}
+
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
@@ -697,6 +832,47 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 
 	requireEqualRepoFiles(t, folder, ".", "foo", url)
+}
+
+func TestRunPipeBinaryReleasePackageUsesSourceAlias(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs:        []config.AUR{{}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	pkgbuild := filepath.Join(folder, "aur", "foo-bin.pkgbuild")
+	runPackageWithSource(t, pkgbuild, "x86_64", "foo-bin_1.2.1_x86_64.binary", "binary payload")
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -962,8 +1138,99 @@ func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
 
 	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
 	require.NoError(t, err)
-	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
-	require.Contains(t, string(bts), `url="https://example.com/~o'brien"`)
-	require.Contains(t, string(bts), `license=("Nobody's")`)
-	require.Contains(t, string(bts), `provides=("fo'o" 'bar')`)
+	require.Contains(t, string(bts), `pkgdesc='Let'\''s go'`)
+	require.Contains(t, string(bts), `url='https://example.com/~o'\''brien'`)
+	require.Contains(t, string(bts), `license=('Nobody'\''s')`)
+	require.Contains(t, string(bts), `provides=('fo'\''o' 'bar')`)
+}
+
+func TestRunPipeMetadataQuotingIsLossless(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{{
+				Description: `Let's inspect $HOME and this is a "test"`,
+			}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "foo_linux_amd64")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	desc := sourcePkgDesc(t, filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
+	require.Equal(t, `Let's inspect $HOME and this is a "test"`, desc)
+}
+
+func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
+	tb.Helper()
+	cmd := exec.CommandContext(tb.Context(), "bash", "-c", `source "$1"; printf '%s' "$pkgdesc"`, "bash", pkgbuild)
+	cmd.Env = append(os.Environ(), "HOME=/expanded-home")
+	out, err := cmd.Output()
+	require.NoError(tb, err)
+	return string(out)
+}
+
+func runPackage(tb testing.TB, pkgbuild, carch, sourceDir, payload string) {
+	tb.Helper()
+	runPackageWithSource(tb, pkgbuild, carch, filepath.Join(sourceDir, "foo"), payload)
+}
+
+func runPackageWithSource(tb testing.TB, pkgbuild, carch, sourcePath, payload string) {
+	tb.Helper()
+	workdir := tb.TempDir()
+	source := filepath.Join(workdir, sourcePath)
+	require.NoError(tb, os.MkdirAll(filepath.Dir(source), 0o755))
+	require.NoError(tb, os.WriteFile(source, []byte(payload), 0o644))
+
+	fakebin := tb.TempDir()
+	install := filepath.Join(fakebin, "install")
+	require.NoError(tb, os.WriteFile(install, []byte(`#!/bin/sh
+set -e
+src=
+dst=
+for arg do
+	case "$arg" in
+		-*) ;;
+		*) if [ -z "$src" ]; then src="$arg"; else dst="$arg"; fi ;;
+	esac
+done
+mkdir -p "$(dirname "$dst")"
+cp "$src" "$dst"
+`), 0o755))
+
+	pkgdir := filepath.Join(workdir, "pkg")
+	cmd := exec.CommandContext(tb.Context(), "bash", "-c", `source "$1"; pkgdir="$2"; CARCH="$3"; package`, "bash", pkgbuild, pkgdir, carch)
+	cmd.Dir = workdir
+	cmd.Env = append(os.Environ(), "PATH="+fakebin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	out, err := cmd.CombinedOutput()
+	require.NoError(tb, err, string(out))
+
+	bts, err := os.ReadFile(filepath.Join(pkgdir, "usr/bin/foo"))
+	require.NoError(tb, err)
+	require.Equal(tb, payload, string(bts))
 }

@@ -2,6 +2,7 @@ package redact
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -184,6 +185,50 @@ func TestRedactWriter(t *testing.T) {
 		require.Equal(t, "nothing secret here\n", buf.String())
 	})
 
+	t.Run("redacts secrets split across every write boundary", func(t *testing.T) {
+		t.Parallel()
+		const secret = "key123key123"
+		for i := 1; i < len(secret); i++ {
+			t.Run(fmt.Sprintf("split at %d", i), func(t *testing.T) {
+				t.Parallel()
+				var buf bytes.Buffer
+				w := Writer(&buf, env)
+				n, err := io.WriteString(w, secret[:i])
+				require.NoError(t, err)
+				require.Equal(t, i, n)
+				n, err = io.WriteString(w, secret[i:])
+				require.NoError(t, err)
+				require.Equal(t, len(secret)-i, n)
+				require.Equal(t, "$API_KEY", buf.String())
+			})
+		}
+	})
+
+	t.Run("prefers longer overlapping secrets across writes", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		w := Writer(&buf, []string{
+			"SHORT_TOKEN=redacted-test",
+			"API_KEY=redacted-test-value",
+		})
+		_, err := io.WriteString(w, "redacted-test")
+		require.NoError(t, err)
+		_, err = io.WriteString(w, "-value")
+		require.NoError(t, err)
+		require.Equal(t, "$API_KEY", buf.String())
+	})
+
+	t.Run("flushes incomplete secret prefix on close", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		w := Writer(&buf, env)
+		_, err := io.WriteString(w, "key123")
+		require.NoError(t, err)
+		require.Empty(t, buf.String())
+		closeWriter(t, w)
+		require.Equal(t, "key123", buf.String())
+	})
+
 	t.Run("returns zero bytes on write error", func(t *testing.T) {
 		t.Parallel()
 		w := Writer(&errWriter{err: io.ErrShortWrite}, env)
@@ -214,3 +259,10 @@ func TestRedactString(t *testing.T) {
 type errWriter struct{ err error }
 
 func (e *errWriter) Write([]byte) (int, error) { return 0, e.err }
+
+func closeWriter(tb testing.TB, w io.Writer) {
+	tb.Helper()
+	closer, ok := w.(io.Closer)
+	require.True(tb, ok)
+	require.NoError(tb, closer.Close())
+}

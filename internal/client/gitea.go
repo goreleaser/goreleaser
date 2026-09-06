@@ -53,9 +53,9 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	u.Path = ""
+	u.Path = strings.TrimSuffix(strings.TrimSuffix(u.Path, "/"), "/api/v1")
 	rawurl := u.String()
-	if rawurl == "" {
+	if u.Scheme == "" || u.Host == "" || rawurl == "" {
 		return "", fmt.Errorf("invalid URL: %q", ctx.Config.GiteaURLs.API)
 	}
 	return rawurl, nil
@@ -77,6 +77,7 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	httpClient := &http.Client{Transport: transport}
 	options := []gitea.ClientOption{
 		gitea.SetHTTPClient(httpClient),
+		gitea.SetContext(ctx),
 	}
 	if token != "giteatoken" { // token used in tests
 		options = append(options, gitea.SetToken(token))
@@ -84,11 +85,6 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	client, err := gitea.NewClient(instanceURL, options...)
 	if err != nil {
 		return nil, err
-	}
-	if ctx != nil {
-		if err := gitea.SetContext(ctx)(client); err != nil {
-			return nil, err
-		}
 	}
 	return &giteaClient{client: client}, nil
 }
@@ -257,20 +253,16 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(ctx *context.Context, owner, repoName, tagName string) (*gitea.Release, error) {
-	releases, _, err := giteaDo(ctx, func() ([]*gitea.Release, *gitea.Response, error) {
-		return c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
+	release, resp, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
+		return c.client.GetReleaseByTag(owner, repoName, tagName)
 	})
 	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
 		return nil, err
 	}
-
-	for _, release := range releases {
-		if release.TagName == tagName {
-			return release, nil
-		}
-	}
-
-	return nil, nil
+	return release, nil
 }
 
 func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id int64) (*gitea.Release, error) {

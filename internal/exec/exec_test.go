@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -376,11 +378,12 @@ func TestExecuteSourceRPM(t *testing.T) {
 }
 
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
-	testlib.SkipIfWindows(t, "uses a unix shell")
+	testlib.SkipIfWindows(t, "uses unix shell and fifo")
 
 	dir := t.TempDir()
 	ready := filepath.Join(dir, "ready")
 	release := filepath.Join(dir, "release")
+	require.NoError(t, mkfifo(ready, 0o600))
 	t.Cleanup(func() {
 		require.NoError(t, os.WriteFile(release, nil, 0o600))
 	})
@@ -391,14 +394,11 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 		errCh <- executeCommand(&command{
 			Ctx:  testctx.Wrap(ctx),
 			Env:  []string{"READY=" + ready, "RELEASE=" + release},
-			Args: []string{"sh", "-c", `sh -c ': > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
+			Args: []string{"sh", "-c", `sh -c 'printf ready > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
 		}, &artifact.Artifact{Name: "test"})
 	}()
 
-	require.Eventually(t, func() bool {
-		_, err := os.Stat(ready)
-		return err == nil
-	}, 3*time.Second, 10*time.Millisecond, "descendant did not start")
+	require.Equal(t, "ready", readFIFO(t, ready))
 	cancel()
 
 	select {
@@ -407,6 +407,54 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("command did not return while descendant held stdout and stderr open")
 	}
+}
+
+func readFIFO(tb testing.TB, name string) string {
+	tb.Helper()
+	result := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		bts, err := os.ReadFile(name)
+		result <- struct {
+			value string
+			err   error
+		}{string(bts), err}
+	}()
+
+	select {
+	case r := <-result:
+		require.NoError(tb, r.err)
+		return r.value
+	case <-time.After(3 * time.Second):
+		tb.Fatal("timed out waiting for subprocess readiness")
+		return ""
+	}
+}
+
+func TestExecuteCommandRedactsDebugArgs(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previousLog })
+
+	const secret = "key123key123"
+	err := executeCommand(&command{
+		Ctx: testctx.Wrap(t.Context()),
+		Env: []string{"API_KEY=" + secret},
+		Args: []string{
+			"sh",
+			"-c",
+			`test "$API_KEY" = "key123key123" && echo "$API_KEY"`,
+		},
+	}, &artifact.Artifact{Name: "artifact"})
+	require.NoError(t, err)
+	require.NotContains(t, logs.String(), secret)
+	require.Contains(t, logs.String(), "$API_KEY")
 }
 
 func assertEnv(kvs map[string]string) string {

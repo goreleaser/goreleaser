@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pyproject"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -75,6 +76,50 @@ func TestWithDefaults(t *testing.T) {
 			Main: "something",
 		})
 		require.Error(t, err)
+	})
+}
+
+func TestArtifactNames(t *testing.T) {
+	var proj pyproject.PyProject
+	proj.Project.Name = "My..Pkg"
+	proj.Project.Version = "0.1.0"
+
+	options := api.Options{
+		Path:   filepath.Join("dist", "my-pkg-all-all", "my-pkg"),
+		Target: Target{},
+	}
+	build := config.Build{ID: "my-pkg"}
+
+	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
+		{
+			Name:   "my_pkg-0.1.0-py3-none-any.whl",
+			Path:   filepath.Join("dist", "my-pkg-all-all", "my_pkg-0.1.0-py3-none-any.whl"),
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "uv",
+				artifact.ExtraExt:     ".whl",
+				artifact.ExtraID:      "my-pkg",
+			},
+		},
+		{
+			Name:   "my_pkg-0.1.0.tar.gz",
+			Path:   filepath.Join("dist", "my-pkg-all-all", "my_pkg-0.1.0.tar.gz"),
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PySdist,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "uv",
+				artifact.ExtraExt:     ".tar.gz",
+				artifact.ExtraID:      "my-pkg",
+			},
+		},
+	}, []*artifact.Artifact{
+		wheel(proj, build, options),
+		sdist(proj, build, options),
 	})
 }
 

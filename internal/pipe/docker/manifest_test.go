@@ -3,11 +3,13 @@ package docker
 import (
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,6 +32,93 @@ func TestValidateManifester(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+type recordingManifester struct {
+	createCalls atomic.Int32
+	pushCalls   atomic.Int32
+	images      []string
+}
+
+func (m *recordingManifester) Create(_ *context.Context, _ string, images, _ []string) error {
+	m.createCalls.Add(1)
+	m.images = slices.Clone(images)
+	return nil
+}
+
+func (m *recordingManifester) Push(*context.Context, string, []string) (string, error) {
+	m.pushCalls.Add(1)
+	return "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nil
+}
+
+func registerTestManifester(t *testing.T, name string, impl manifester) {
+	t.Helper()
+
+	lock.Lock()
+	previous, existed := manifesters[name]
+	manifesters[name] = impl
+	lock.Unlock()
+	t.Cleanup(func() {
+		lock.Lock()
+		defer lock.Unlock()
+		if existed {
+			manifesters[name] = previous
+		} else {
+			delete(manifesters, name)
+		}
+	})
+}
+
+func TestManifestPublishSkipsRenderedEmptyImages(t *testing.T) {
+	t.Run("all rendered empty", func(t *testing.T) {
+		const use = "test-rendered-empty"
+		manifester := &recordingManifester{}
+		registerTestManifester(t, use, manifester)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockerManifests: []config.DockerManifest{
+				{
+					Use:            use,
+					NameTemplate:   "example.invalid/app:latest",
+					ImageTemplates: []string{`{{ if .IsSnapshot }}example.invalid/app:snapshot{{ end }}`},
+				},
+			},
+		})
+
+		require.NoError(t, ManifestPipe{}.Default(ctx))
+		err := ManifestPipe{}.Publish(ctx)
+		require.ErrorContains(t, err, "manifest has no images")
+		require.Equal(t, int32(0), manifester.createCalls.Load())
+		require.Equal(t, int32(0), manifester.pushCalls.Load())
+	})
+
+	t.Run("mixed rendered images", func(t *testing.T) {
+		const use = "test-rendered-mixed"
+		manifester := &recordingManifester{}
+		registerTestManifester(t, use, manifester)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockerManifests: []config.DockerManifest{
+				{
+					Use:          use,
+					NameTemplate: "example.invalid/app:latest",
+					ImageTemplates: []string{
+						`{{ if .IsSnapshot }}example.invalid/app:snapshot{{ end }}`,
+						"example.invalid/app:release",
+					},
+				},
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type:  artifact.DockerImage,
+			Name:  "example.invalid/app:release",
+			Extra: map[string]any{artifact.ExtraDigest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+		})
+
+		require.NoError(t, ManifestPipe{}.Default(ctx))
+		require.NoError(t, ManifestPipe{}.Publish(ctx))
+		require.Equal(t, int32(1), manifester.createCalls.Load())
+		require.Equal(t, int32(1), manifester.pushCalls.Load())
+		require.Equal(t, []string{"example.invalid/app:release@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}, manifester.images)
+	})
 }
 
 func Test_manifestImages(t *testing.T) {

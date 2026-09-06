@@ -275,15 +275,26 @@ func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	if err := cmd.Run(); err != nil {
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage(errMsg),
 			gerrors.WithDetails("args", strings.Join(cmd.Args, " ")),
 			gerrors.WithOutput(b.String()),
 		)
+	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
 	}
 	return nil
 }

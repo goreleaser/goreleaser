@@ -10,6 +10,11 @@ func (a SlackBlock) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
 }
 
+// MarshalYAML marshals a slack block as YAML.
+func (a SlackBlock) MarshalYAML() (any, error) {
+	return a.Internal, nil
+}
+
 // UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
 func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
 	var yamlv2 any
@@ -25,6 +30,11 @@ func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
 // MarshalJSON marshals a slack attachment as JSON.
 func (a SlackAttachment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
+}
+
+// MarshalYAML marshals a slack attachment as YAML.
+func (a SlackAttachment) MarshalYAML() (any, error) {
+	return a.Internal, nil
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.

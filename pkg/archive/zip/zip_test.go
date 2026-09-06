@@ -166,4 +166,77 @@ func TestTarInvalidLink(t *testing.T) {
 	}))
 }
 
-// TODO: add copying test
+func TestCopyPreservesMetadataAndRejectsDuplicates(t *testing.T) {
+	tmp := t.TempDir()
+	sourcePath := filepath.Join(tmp, "source.zip")
+	source, err := os.Create(sourcePath)
+	require.NoError(t, err)
+
+	modified := time.Date(2024, 2, 3, 4, 5, 6, 0, time.UTC)
+	extra := []byte{0xfe, 0xca, 0x04, 0x00, 'm', 'e', 't', 'a'}
+	header := &zip.FileHeader{
+		Name:    "foo.txt",
+		Method:  zip.Deflate,
+		Comment: "entry comment",
+		Extra:   extra,
+	}
+	header.SetModTime(modified)
+	header.SetMode(0o755)
+
+	writer := zip.NewWriter(source)
+	entry, err := writer.CreateHeader(header)
+	require.NoError(t, err)
+	_, err = entry.Write([]byte("hello world\n"))
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+	require.NoError(t, source.Close())
+
+	source, err = os.Open(sourcePath)
+	require.NoError(t, err)
+	defer source.Close()
+
+	info, err := source.Stat()
+	require.NoError(t, err)
+	sourceReader, err := zip.NewReader(source, info.Size())
+	require.NoError(t, err)
+	require.Len(t, sourceReader.File, 1)
+	expectedExtra := append([]byte(nil), sourceReader.File[0].Extra...)
+
+	var target bytes.Buffer
+	archive, err := Copy(source, &target)
+	require.NoError(t, err)
+
+	duplicate := filepath.Join(tmp, "duplicate.txt")
+	require.NoError(t, os.WriteFile(duplicate, []byte("duplicate"), 0o644))
+	require.ErrorIs(t, archive.Add(config.File{
+		Source:      duplicate,
+		Destination: "foo.txt",
+	}), fs.ErrExist)
+
+	notice := filepath.Join(tmp, "NOTICE.txt")
+	require.NoError(t, os.WriteFile(notice, []byte("notice"), 0o644))
+	require.NoError(t, archive.Add(config.File{
+		Source:      notice,
+		Destination: "NOTICE.txt",
+	}))
+	require.NoError(t, archive.Close())
+
+	reader, err := zip.NewReader(bytes.NewReader(target.Bytes()), int64(target.Len()))
+	require.NoError(t, err)
+	require.Len(t, reader.File, 2)
+
+	copied := reader.File[0]
+	require.Equal(t, "foo.txt", copied.Name)
+	require.Equal(t, zip.Deflate, copied.Method)
+	require.Equal(t, modified.Unix(), copied.Modified.Unix())
+	require.Equal(t, "entry comment", copied.Comment)
+	require.Equal(t, expectedExtra, copied.Extra)
+	require.Equal(t, fs.FileMode(0o755), copied.FileInfo().Mode())
+
+	rc, err := copied.Open()
+	require.NoError(t, err)
+	content, err := io.ReadAll(rc)
+	require.NoError(t, err)
+	require.NoError(t, rc.Close())
+	require.Equal(t, "hello world\n", string(content))
+}

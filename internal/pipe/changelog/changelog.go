@@ -546,7 +546,7 @@ const (
 	gitLogFormat = shaOpen + "%H" + shaClose +
 		messageOpen + "%s" + messageClose +
 		messageBodyOpen + "%b" + messageBodyClose +
-		authorOpen + "%an" + authorClose +
+		authorOpen + "%aN" + authorClose +
 		emailOpen + "%aE" + emailClose +
 		commitDivider
 )
