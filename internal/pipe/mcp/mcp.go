@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -31,8 +30,8 @@ import (
 )
 
 const (
-	legacyGitHubTokenFilePath   = ".mcpregistry_github_token"   // #nosec:G101
-	legacyRegistryTokenFilePath = ".mcpregistry_registry_token" // #nosec:G101
+	gitHubTokenFilePath   = ".mcpregistry_github_token"   // #nosec:G101
+	registryTokenFilePath = ".mcpregistry_registry_token" // #nosec:G101
 )
 
 // Pipe for MCP.
@@ -104,20 +103,14 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
-	if cleansUpLegacyTokenFiles(mcp.Auth.Type) {
-		tokenFiles, err := snapshotLegacyTokenFiles()
-		if err != nil {
-			return fmt.Errorf("could not snapshot mcp auth token files: %w", err)
-		}
-		defer func() {
-			if err := tokenFiles.restore(); err != nil {
-				log.WithError(err).Warn("failed to cleanup mcp auth token files")
-			}
-		}()
-	}
 	if err := provider.Login(ctx); err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
+	defer func() {
+		// logout...
+		_ = os.Remove(gitHubTokenFilePath)
+		_ = os.Remove(registryTokenFilePath)
+	}()
 	token, err := provider.GetToken(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get token: %w", err)
@@ -238,7 +231,7 @@ func mcpbArtifactName(identifier string) (string, error) {
 		return "", fmt.Errorf("parse mcpb package identifier: %w", err)
 	}
 	name := path.Base(u.Path)
-	if name == "" || name == "." || name == "/" {
+	if name == "." || name == "/" {
 		return "", fmt.Errorf("mcpb package %q does not identify an artifact file", identifier)
 	}
 	name, err = url.PathUnescape(name)
@@ -252,18 +245,14 @@ func mcpbArtifactName(identifier string) (string, error) {
 }
 
 func findMCPBArtifact(ctx *context.Context, name string) (*artifact.Artifact, error) {
-	var matches []*artifact.Artifact
-	mcpbArtifact := func(art *artifact.Artifact) bool {
-		return art.Name == name && strings.EqualFold(path.Ext(art.Name), ".mcpb")
-	}
-	matches = append(matches, ctx.Artifacts.Filter(artifact.And(
+	matches := ctx.Artifacts.Filter(artifact.And(
 		artifact.ByTypes(
 			artifact.UploadableArchive,
 			artifact.UploadableBinary,
 			artifact.UploadableFile,
 		),
-		mcpbArtifact,
-	)).List()...)
+		func(art *artifact.Artifact) bool { return art.Name == name },
+	)).List()
 	switch len(matches) {
 	case 0:
 		return nil, fmt.Errorf("could not find artifact %q", name)
@@ -272,68 +261,6 @@ func findMCPBArtifact(ctx *context.Context, name string) (*artifact.Artifact, er
 	default:
 		return nil, fmt.Errorf("found multiple artifacts named %q", name)
 	}
-}
-
-type legacyTokenFiles []legacyTokenFile
-
-type legacyTokenFile struct {
-	path     string
-	existed  bool
-	isDir    bool
-	contents []byte
-	mode     os.FileMode
-}
-
-func cleansUpLegacyTokenFiles(method string) bool {
-	return method == proto.MethodGitHub || method == proto.MethodGitHubOIDC
-}
-
-func snapshotLegacyTokenFiles() (legacyTokenFiles, error) {
-	files := legacyTokenFiles{
-		{path: legacyGitHubTokenFilePath},
-		{path: legacyRegistryTokenFilePath},
-	}
-	for i := range files {
-		info, err := os.Stat(files[i].path)
-		if err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return nil, fmt.Errorf("stat %q: %w", files[i].path, err)
-		}
-		if info.IsDir() {
-			files[i].existed = true
-			files[i].isDir = true
-			continue
-		}
-		contents, err := os.ReadFile(files[i].path)
-		if err != nil {
-			return nil, fmt.Errorf("read %q: %w", files[i].path, err)
-		}
-		files[i].existed = true
-		files[i].contents = contents
-		files[i].mode = info.Mode().Perm()
-	}
-	return files, nil
-}
-
-func (files legacyTokenFiles) restore() error {
-	var errs []error
-	for _, file := range files {
-		if file.isDir {
-			continue
-		}
-		if file.existed {
-			if err := os.WriteFile(file.path, file.contents, file.mode); err != nil {
-				errs = append(errs, fmt.Errorf("restore %q: %w", file.path, err))
-			}
-			continue
-		}
-		if err := os.Remove(file.path); err != nil && !os.IsNotExist(err) {
-			errs = append(errs, fmt.Errorf("remove %q: %w", file.path, err))
-		}
-	}
-	return errors.Join(errs...)
 }
 
 // cleanSubfolder normalizes the repository subfolder path so it passes the MCP
