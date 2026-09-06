@@ -2,10 +2,13 @@ package slack
 
 import (
 	"bytes"
+	stdctx "context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -77,6 +80,57 @@ func TestAnnounceWithQuotes(t *testing.T) {
 		require.NoError(t, err)
 		assert.Contains(t, string(attachmentsBody), `The current user is bot-mc-botyson\n\nIncluding newlines\n`)
 	})
+}
+
+func TestAnnounceCancelsPendingWebhook(t *testing.T) {
+	releaseResponse := make(chan struct{})
+	requestReceived := make(chan struct{})
+	var receivedOnce sync.Once
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedOnce.Do(func() {
+			close(requestReceived)
+		})
+		select {
+		case <-releaseResponse:
+			w.WriteHeader(http.StatusOK)
+		case <-r.Context().Done():
+		}
+	}))
+	t.Cleanup(func() {
+		close(releaseResponse)
+		srv.Close()
+	})
+	t.Setenv("SLACK_WEBHOOK", srv.URL)
+
+	parent, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(parent, config.Project{
+		Announce: config.Announce{
+			Slack: config.Slack{
+				MessageTemplate: "hello",
+			},
+		},
+	})
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- Pipe{}.Announce(ctx)
+	}()
+
+	select {
+	case <-requestReceived:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for Slack webhook request")
+	}
+
+	cancel()
+
+	select {
+	case err := <-errCh:
+		require.ErrorIs(t, err, stdctx.Canceled)
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for Slack webhook cancellation")
+	}
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
