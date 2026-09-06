@@ -376,12 +376,11 @@ func TestExecuteSourceRPM(t *testing.T) {
 }
 
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
-	testlib.SkipIfWindows(t, "uses unix shell and fifo")
+	testlib.SkipIfWindows(t, "uses a unix shell")
 
 	dir := t.TempDir()
 	ready := filepath.Join(dir, "ready")
 	release := filepath.Join(dir, "release")
-	require.NoError(t, mkfifo(ready, 0o600))
 	t.Cleanup(func() {
 		require.NoError(t, os.WriteFile(release, nil, 0o600))
 	})
@@ -392,11 +391,14 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 		errCh <- executeCommand(&command{
 			Ctx:  testctx.Wrap(ctx),
 			Env:  []string{"READY=" + ready, "RELEASE=" + release},
-			Args: []string{"sh", "-c", `sh -c 'printf ready > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
+			Args: []string{"sh", "-c", `sh -c ': > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
 		}, &artifact.Artifact{Name: "test"})
 	}()
 
-	require.Equal(t, "ready", readFIFO(t, ready))
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(ready)
+		return err == nil
+	}, 3*time.Second, 10*time.Millisecond, "descendant did not start")
 	cancel()
 
 	select {
@@ -404,30 +406,6 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 		require.Error(t, err)
 	case <-time.After(3 * time.Second):
 		t.Fatal("command did not return while descendant held stdout and stderr open")
-	}
-}
-
-func readFIFO(tb testing.TB, name string) string {
-	tb.Helper()
-	result := make(chan struct {
-		value string
-		err   error
-	}, 1)
-	go func() {
-		bts, err := os.ReadFile(name)
-		result <- struct {
-			value string
-			err   error
-		}{string(bts), err}
-	}()
-
-	select {
-	case r := <-result:
-		require.NoError(tb, r.err)
-		return r.value
-	case <-time.After(3 * time.Second):
-		tb.Fatal("timed out waiting for subprocess readiness")
-		return ""
 	}
 }
 
