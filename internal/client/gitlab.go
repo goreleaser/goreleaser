@@ -723,9 +723,13 @@ func (c *gitlabClient) Upload(
 		)
 		if err != nil {
 			if resp != nil && resp.StatusCode == http.StatusBadRequest {
-				return c.replaceReleaseLink(ctx, projectID, releaseID, name, err)
+				releaseLink, err = c.replaceReleaseLink(ctx, projectID, releaseID, name, opt, err)
+				if err != nil {
+					return err
+				}
+			} else {
+				return gitlabError(err, resp)
 			}
-			return gitlabError(err, resp)
 		}
 
 		log.WithField("id", releaseLink.ID).
@@ -743,27 +747,27 @@ func (c *gitlabClient) Upload(
 
 // replaceReleaseLink handles a failed release link creation that is likely
 // caused by a link with the same name already existing: it deletes the existing
-// link, if the user allowed it, and returns a retriable error so the upload
-// happens again.
+// link, if the user allowed it, and recreates it with the already uploaded URL.
 //
 // The failed creation does not return the ID of the existing link, so it has to
 // be found in the release link list first.
 func (c *gitlabClient) replaceReleaseLink(
 	ctx *context.Context,
 	projectID, releaseID, name string,
+	opt *gitlab.CreateReleaseLinkOptions,
 	createErr error,
-) error {
+) (*gitlab.ReleaseLink, error) {
 	if !ctx.Config.Release.ReplaceExistingArtifacts {
-		return retryx.Unrecoverable(createErr)
+		return nil, retryx.Unrecoverable(createErr)
 	}
 
 	link, err := c.getReleaseLinkByName(projectID, releaseID, name)
 	if err != nil {
-		return errors.Join(createErr, err)
+		return nil, errors.Join(createErr, err)
 	}
 	if link == nil {
 		// the creation failed for some other reason.
-		return retryx.Unrecoverable(createErr)
+		return nil, retryx.Unrecoverable(createErr)
 	}
 
 	if _, resp, err := c.client.ReleaseLinks.DeleteReleaseLink(
@@ -771,14 +775,18 @@ func (c *gitlabClient) replaceReleaseLink(
 		releaseID,
 		link.ID,
 	); err != nil {
-		return errors.Join(createErr, gitlabError(err, resp))
+		return nil, errors.Join(createErr, gitlabError(err, resp))
 	}
 
 	log.WithField("id", link.ID).
 		WithField("name", name).
 		Debug("deleted existing release link")
 
-	return retryx.Retriable(createErr)
+	releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(projectID, releaseID, opt)
+	if err != nil {
+		return nil, errors.Join(createErr, gitlabError(err, resp))
+	}
+	return releaseLink, nil
 }
 
 // getReleaseLinkByName returns the release link with the given name, or nil if

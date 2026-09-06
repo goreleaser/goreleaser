@@ -1835,30 +1835,49 @@ func TestGitLabPublishRelease(t *testing.T) {
 func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 	t.Parallel()
 	for name, tt := range map[string]struct {
-		links       string
-		linksStatus int
-		replace     bool
-		wantDeletes int64
-		wantErrs    []string
+		links           string
+		linksStatus     int
+		replace         bool
+		failFirstCreate bool
+		retryAttempts   uint
+		wantCreates     int64
+		wantDeletes     int64
+		wantErrs        []string
 	}{
-		"replaces it": {
-			links:       `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
-			replace:     true,
-			wantDeletes: 1,
+		"replaces it without another retry": {
+			links:         `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:       true,
+			retryAttempts: 1,
+			wantCreates:   2,
+			wantDeletes:   1,
+		},
+		"replaces it after an earlier transient failure": {
+			links:           `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:         true,
+			failFirstCreate: true,
+			retryAttempts:   2,
+			wantCreates:     3,
+			wantDeletes:     1,
 		},
 		"replace disabled": {
-			links:    `[{"id":2,"name":"test.tar.gz"}]`,
-			wantErrs: []string{"has already been taken"},
+			links:         `[{"id":2,"name":"test.tar.gz"}]`,
+			retryAttempts: 2,
+			wantCreates:   1,
+			wantErrs:      []string{"has already been taken"},
 		},
 		"no link with that name": {
-			links:    `[{"id":1,"name":"other"}]`,
-			replace:  true,
-			wantErrs: []string{"has already been taken"},
+			links:         `[{"id":1,"name":"other"}]`,
+			replace:       true,
+			retryAttempts: 2,
+			wantCreates:   1,
+			wantErrs:      []string{"has already been taken"},
 		},
 		"listing the links fails": {
-			links:       `{"message":"404 Project Not Found"}`,
-			linksStatus: http.StatusNotFound,
-			replace:     true,
+			links:         `{"message":"404 Project Not Found"}`,
+			linksStatus:   http.StatusNotFound,
+			replace:       true,
+			retryAttempts: 2,
+			wantCreates:   1,
 			// the create error must survive: it names the real problem.
 			wantErrs: []string{"has already been taken", "404"},
 		},
@@ -1866,7 +1885,8 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			var deletes atomic.Int64
-			var created atomic.Bool
+			var createAttempts atomic.Int64
+			var duplicateReturned atomic.Bool
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				defer r.Body.Close()
 				_, _ = io.Copy(io.Discard, r.Body)
@@ -1886,14 +1906,19 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 				case r.Method == http.MethodDelete:
 					deletes.Add(1)
 					fmt.Fprint(w, `{"id":2,"name":"test.tar.gz"}`)
-				case !created.Swap(true):
+				case tt.failFirstCreate && createAttempts.Load() == 0:
+					createAttempts.Add(1)
+					http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+				case !duplicateReturned.Swap(true):
 					// the link already exists, so the first create fails.
+					createAttempts.Add(1)
 					http.Error(
 						w,
 						`{"message":{"name":["has already been taken"]}}`,
 						http.StatusBadRequest,
 					)
 				default:
+					createAttempts.Add(1)
 					fmt.Fprint(w, `{"id":3,"name":"test.tar.gz"}`)
 				}
 			}))
@@ -1911,7 +1936,7 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 					},
 					ReplaceExistingArtifacts: tt.replace,
 				},
-				Retry: config.Retry{Attempts: 2},
+				Retry: config.Retry{Attempts: tt.retryAttempts},
 			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 			client, err := newGitLab(ctx, "test-token")
 			require.NoError(t, err)
@@ -1924,6 +1949,7 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 			for _, want := range tt.wantErrs {
 				require.ErrorContains(t, err, want)
 			}
+			require.Equal(t, tt.wantCreates, createAttempts.Load())
 			require.Equal(t, tt.wantDeletes, deletes.Load())
 		})
 	}
