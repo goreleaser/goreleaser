@@ -221,7 +221,7 @@ func mcpbFileSHA256(ctx *context.Context, pkg config.MCPPackage) (string, error)
 	if err != nil {
 		return "", err
 	}
-	art, err := findArtifact(ctx, artifactName)
+	art, err := findMCPBArtifact(ctx, artifactName)
 	if err != nil {
 		return "", fmt.Errorf("mcpb package %q: %w", pkg.Identifier, err)
 	}
@@ -245,16 +245,25 @@ func mcpbArtifactName(identifier string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("parse mcpb package identifier: %w", err)
 	}
+	if !strings.EqualFold(path.Ext(name), ".mcpb") {
+		return "", fmt.Errorf("mcpb package %q does not identify an .mcpb artifact file", identifier)
+	}
 	return name, nil
 }
 
-func findArtifact(ctx *context.Context, name string) (*artifact.Artifact, error) {
+func findMCPBArtifact(ctx *context.Context, name string) (*artifact.Artifact, error) {
 	var matches []*artifact.Artifact
-	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(artifact.ReleaseUploadableTypes()...)).List() {
-		if art.Name == name {
-			matches = append(matches, art)
-		}
+	mcpbArtifact := func(art *artifact.Artifact) bool {
+		return art.Name == name && strings.EqualFold(path.Ext(art.Name), ".mcpb")
 	}
+	matches = append(matches, ctx.Artifacts.Filter(artifact.And(
+		artifact.ByTypes(
+			artifact.UploadableArchive,
+			artifact.UploadableBinary,
+			artifact.UploadableFile,
+		),
+		mcpbArtifact,
+	)).List()...)
 	switch len(matches) {
 	case 0:
 		return nil, fmt.Errorf("could not find artifact %q", name)

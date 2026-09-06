@@ -365,6 +365,9 @@ func TestPublishMCPBPackageFileSHA256(t *testing.T) {
 	sum := sha256.Sum256(bts)
 	fileSHA256 := hex.EncodeToString(sum[:])
 
+	checksumPath := filepath.Join(t.TempDir(), "server.mcpb.txt")
+	require.NoError(t, os.WriteFile(checksumPath, []byte("wrong artifact"), 0o644))
+
 	var receivedRequest apiv0.ServerJSON
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -417,6 +420,11 @@ func TestPublishMCPBPackageFileSHA256(t *testing.T) {
 		Name: "server.mcpb",
 		Path: artifactPath,
 		Type: artifact.UploadableFile,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "server.mcpb",
+		Path: checksumPath,
+		Type: artifact.Checksum,
 	})
 
 	pipe := &Pipe{registry: srv.URL}
