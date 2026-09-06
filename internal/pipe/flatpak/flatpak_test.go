@@ -207,6 +207,7 @@ func TestRunPipeQuotesInstallPaths(t *testing.T) {
 		"ordinary": "myapp",
 		"spaces":   "my app",
 		"quotes":   `my "app's"`,
+		"hostile":  "my 'app\" with space \\ $HOME `whoami` $(id)\nnext",
 	} {
 		t.Run(name, func(t *testing.T) {
 			binDir := t.TempDir()
