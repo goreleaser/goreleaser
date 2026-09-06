@@ -11,6 +11,9 @@ import (
 
 	stdctx "context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -168,7 +171,7 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -218,7 +221,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -262,7 +265,7 @@ func TestMinioUploadExtraFilesOnly(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -304,7 +307,7 @@ func TestMinioUploadRootDirectory(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -402,7 +405,7 @@ func TestMinioUploadSkip(t *testing.T) {
 		return ctx
 	}
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, name)
 
 	t.Run("upload only foo", func(t *testing.T) {
 		ctx := buildCtx("foo")
@@ -441,24 +444,17 @@ func prepareEnv() {
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
-func setupBucket(tb testing.TB, pool *dockertest.Pool, name string) {
+func setupBucket(tb testing.TB, name string) {
 	tb.Helper()
 
-	res, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Repository: "minio/mc",
-		Links:      []string{containerName},
-		Env:        []string{fmt.Sprintf("MC_HOST_local=http://%s:%s@%s:9000", minioUser, minioPwd, containerName)},
-		Cmd:        []string{"mb", "local/" + name},
-	}, func(hc *docker.HostConfig) {
-		hc.AutoRemove = true
+	client := s3.New(s3.Options{
+		Region:       "us-east-1",
+		BaseEndpoint: aws.String("http://" + listen),
+		UsePathStyle: true,
+		Credentials:  credentials.NewStaticCredentialsProvider(minioUser, minioPwd, ""),
 	})
+	_, err := client.CreateBucket(tb.Context(), &s3.CreateBucketInput{Bucket: aws.String(name)})
 	require.NoError(tb, err)
-	require.NoError(tb, pool.Retry(func() error {
-		if _, ok := pool.ContainerByName(res.Container.Name); ok {
-			return fmt.Errorf("still running: %s", res.Container.Name)
-		}
-		return nil
-	}))
 }
 
 func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
