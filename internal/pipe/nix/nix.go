@@ -341,7 +341,7 @@ func preparePkg(
 		PostInstall:       postInstall,
 		Archives:          map[string]Archive{},
 		SourceRoots:       map[string]string{},
-		Description:       nix.Description,
+		Description:       nixString(nix.Description),
 		Homepage:          nix.Homepage,
 		License:           nix.License,
 		MainProgram:       nix.MainProgram,
@@ -620,6 +620,14 @@ func split(s string) []string {
 		result = append(result, line)
 	}
 	return result
+}
+
+func nixString(s string) string {
+	return strings.NewReplacer(
+		"\\", "\\\\",
+		"\"", "\\\"",
+		"${", "\\${",
+	).Replace(s)
 }
 
 func depNames(deps []config.NixDependency) []string {
