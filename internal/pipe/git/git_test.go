@@ -329,16 +329,43 @@ func TestValidState(t *testing.T) {
 }
 
 func TestSnapshotNoTags(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "whatever")
-	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
-	require.Empty(t, ctx.Git.PreviousTag)
-	require.NotEmpty(t, ctx.Git.FirstCommit)
+	for _, tt := range []struct {
+		name     string
+		dirty    bool
+		rendered string
+	}{
+		{
+			name:     "clean",
+			rendered: "false/true/clean",
+		},
+		{
+			name:     "dirty",
+			dirty:    true,
+			rendered: "true/false/dirty",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			folder := testlib.Mktmp(t)
+			testlib.GitInit(t)
+			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+			path := filepath.Join(folder, "foo")
+			require.NoError(t, os.WriteFile(path, []byte("initial"), 0o644))
+			testlib.GitAdd(t)
+			testlib.GitCommit(t, "whatever")
+			if tt.dirty {
+				require.NoError(t, os.WriteFile(path, []byte("dirty"), 0o644))
+			}
+			ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
+			testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+			require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+			require.Empty(t, ctx.Git.PreviousTag)
+			require.NotEmpty(t, ctx.Git.FirstCommit)
+			require.Equal(t, tt.dirty, ctx.Git.Dirty)
+			rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+			require.NoError(t, err)
+			require.Equal(t, tt.rendered, rendered)
+		})
+	}
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -376,6 +403,10 @@ func TestSnapshotDirty(t *testing.T) {
 	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.True(t, ctx.Git.Dirty)
+	rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+	require.NoError(t, err)
+	require.Equal(t, "true/false/dirty", rendered)
 }
 
 func TestGitNotInPath(t *testing.T) {

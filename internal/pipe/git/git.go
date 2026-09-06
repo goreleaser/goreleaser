@@ -142,6 +142,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
 			Summary:     summary,
+			Dirty:       CheckDirty(ctx) != nil,
 		}, ErrNoTag
 	}
 
