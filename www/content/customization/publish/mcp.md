@@ -113,12 +113,6 @@ mcp:
         # Required.
         type: stdio
 
-        # URL for streamable-http or sse transports.
-        #
-        # Required for streamable-http and sse transports.
-        # Templates: allowed.
-        # url: "https://example.com/myserver/mcp"
-
     # OCI (Docker) registry example
     - registry_type: oci
       identifier: "ghcr.io/user/myserver:{{ .Version }}"
@@ -136,6 +130,11 @@ mcp:
       identifier: "@myorg/myserver-http"
       transport:
         type: streamable-http
+
+        # URL for streamable-http or sse transports.
+        #
+        # Required for streamable-http and sse transports.
+        # Templates: allowed. {{< g_inline_version "v2.19-unreleased" >}}
         url: "https://example.com/myserver/mcp"
 
   # Set to true to skip MCP publication. No local manifest is written.

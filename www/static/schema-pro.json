@@ -3191,6 +3191,9 @@
 							"streamable-http",
 							"sse"
 						]
+					},
+					"url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
