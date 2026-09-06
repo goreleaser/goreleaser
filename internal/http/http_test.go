@@ -874,6 +874,11 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 			artifact: "sub dir/notes#draft.txt",
 			want:     "/files/sub%20dir/notes%23draft.txt",
 		},
+		"artifact name with matrix parameters": {
+			target:   "/files/",
+			artifact: "a;b,c.txt",
+			want:     "/files/a;b,c.txt",
+		},
 		"custom artifact name": {
 			target:             "/files/notes.txt?token=abc",
 			artifact:           "ignored#draft.txt",

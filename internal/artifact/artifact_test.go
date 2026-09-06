@@ -693,17 +693,22 @@ func TestByIDs(t *testing.T) {
 			Name: "checksum",
 			Type: Checksum,
 		},
+		{
+			// source rpms carry no ID, so they must pass every ids filter.
+			Name: "pkg.src.rpm",
+			Type: SourceRPM,
+		},
 	}
 	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 
-	require.Len(t, artifacts.Filter(ByID("check")).items, 2)
-	require.Len(t, artifacts.Filter(ByID("foo")).items, 3)
-	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 3)
-	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 4)
-	require.Len(t, artifacts.Filter(ByIDs()).items, 5)
+	require.Len(t, artifacts.Filter(ByID("check")).items, 3)
+	require.Len(t, artifacts.Filter(ByID("foo")).items, 4)
+	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 4)
+	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 5)
+	require.Len(t, artifacts.Filter(ByIDs()).items, 6)
 }
 
 func TestByExts(t *testing.T) {

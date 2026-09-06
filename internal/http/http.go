@@ -355,23 +355,14 @@ func appendArtifactNameToTargetURL(target, name string) string {
 	return u.String()
 }
 
-// appendEscapedName appends name to base, escaping each segment on its own so
-// that an artifact name that contains a directory keeps its structure.
-// path.Join is not usable here: it cleans the result, which would change
-// already-escaped segments.
+// appendEscapedName appends name to base. EscapedPath escapes each path
+// segment and keeps "/" as a separator, so an artifact name that contains a
+// directory keeps its structure.
 func appendEscapedName(base, name string) string {
-	var sb strings.Builder
-	sb.WriteString(base)
 	if !strings.HasSuffix(base, "/") {
-		sb.WriteByte('/')
+		base += "/"
 	}
-	for i, part := range strings.Split(name, "/") {
-		if i > 0 {
-			sb.WriteByte('/')
-		}
-		sb.WriteString(url.PathEscape(part))
-	}
-	return sb.String()
+	return base + (&url.URL{Path: name}).EscapedPath()
 }
 
 // uploadAssetToServer uploads the asset file to target.
