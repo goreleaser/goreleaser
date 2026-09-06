@@ -753,7 +753,9 @@ func TestManyUploads(t *testing.T) {
 
 func TestUploadSourceRPM(t *testing.T) {
 	var requests atomic.Int64
-	requestURIs := make(chan string, 2)
+	// roomy on purpose: an unexpected extra upload must fail the request
+	// count, not block the handler and hang the test.
+	requestURIs := make(chan string, 10)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		requestURIs <- r.URL.RequestURI()
@@ -798,7 +800,9 @@ func TestUploadSourceRPM(t *testing.T) {
 
 func TestUploadSourceRPMWithUnrelatedIDs(t *testing.T) {
 	var requests atomic.Int64
-	requestURIs := make(chan string, 1)
+	// roomy on purpose: an unexpected extra upload must fail the request
+	// count, not block the handler and hang the test.
+	requestURIs := make(chan string, 10)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		requestURIs <- r.URL.RequestURI()
@@ -888,7 +892,9 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			var requests atomic.Int64
-			requestURIs := make(chan string, 1)
+			// roomy on purpose: an unexpected extra upload must fail the
+			// request count, not block the handler and hang the test.
+			requestURIs := make(chan string, 10)
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
 				requestURIs <- r.URL.RequestURI()
