@@ -296,9 +296,11 @@ func TestBinarySignUniversalBinaryReplaced(t *testing.T) {
 	testlib.SkipIfWindows(t, "uses /bin/sh")
 
 	newContext := func(tb testing.TB, ids []string) (*context.Context, string) {
+		tb.Helper()
+
 		dist := tb.TempDir()
 		require.NoError(tb, os.WriteFile(filepath.Join(dist, "universal"), []byte("foo"), 0o644))
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ctx := testctx.WrapWithCfg(tb.Context(), config.Project{
 			Dist: dist,
 			BinarySigns: []config.BinarySign{
 				{
