@@ -2,6 +2,7 @@ package docker
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -524,6 +525,90 @@ func TestDisable(t *testing.T) {
 		testlib.RequireTemplateError(t, Snapshot{}.Run(ctx))
 		testlib.RequireTemplateError(t, Publish{}.Publish(ctx))
 	})
+}
+
+func TestDoBuildEnvPrecedence(t *testing.T) {
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			binDir := t.TempDir()
+			writeDockerV2TestCommand(t, binDir)
+			t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			key := "GORELEASER_TEST_DOCKER_V2_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_DOCKER_V2_COMMAND_HELPER", "1")
+			t.Setenv("DOCKER_V2_ENV_HELPER_KEY", key)
+			record := filepath.Join(t.TempDir(), "record")
+			t.Setenv("DOCKER_V2_ENV_HELPER_RECORD", record)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+			digest, err := doBuild(ctx, config.DockerV2{}, t.TempDir(), []string{"build"})
+			require.NoError(t, err)
+			require.Equal(t, "sha256:test", digest)
+
+			bts, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, string(bts))
+		})
+	}
+}
+
+func writeDockerV2TestCommand(t *testing.T, dir string) {
+	t.Helper()
+	script := fmt.Sprintf("#!/bin/sh\nexec %q -test.run=TestDockerV2CommandHelper -- \"$@\"\n", os.Args[0])
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "docker"), []byte(script), 0o755))
+	if testlib.IsWindows() {
+		script := fmt.Sprintf("@echo off\r\n%q -test.run=TestDockerV2CommandHelper -- %%*\r\n", os.Args[0])
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "docker.bat"), []byte(script), 0o755))
+	}
+}
+
+func TestDockerV2CommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_DOCKER_V2_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	if err := os.WriteFile("id.txt", []byte("sha256:test"), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write id: %v\n", err)
+		os.Exit(2)
+	}
+	value := os.Getenv(os.Getenv("DOCKER_V2_ENV_HELPER_KEY"))
+	if err := os.WriteFile(os.Getenv("DOCKER_V2_ENV_HELPER_RECORD"), []byte(value), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
 }
 
 func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {

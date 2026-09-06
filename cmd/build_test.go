@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -35,6 +37,36 @@ func TestBuildAutoSnapshot(t *testing.T) {
 		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
 		require.NoError(t, err)
 		require.Len(t, matches, 1)
+	})
+}
+
+func TestBuildAutoSnapshotWithProConfig(t *testing.T) {
+	t.Run("explicit snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("dirty automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("clean automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.ErrorIs(t, cmd.cmd.Execute(), config.ErrProConfig)
 	})
 }
 
@@ -95,11 +127,16 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			append(slices.Clone(pipeline.BuildCmdPipeline), withOutputPipe{"."}),
-			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
-				singleTarget: true,
-				ids:          []string{"foo"},
-				output:       ".",
-			}),
+			setupPipeline(
+				testctx.WrapWithCfg(t.Context(), config.Project{
+					Builds: []config.Build{{}},
+				}),
+				buildOpts{
+					singleTarget: true,
+					ids:          []string{"foo"},
+					output:       ".",
+				},
+			),
 		)
 	})
 
@@ -124,7 +161,9 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			append(slices.Clone(pipeline.BuildCmdPipeline), withOutputPipe{"foobar"}),
 			setupPipeline(
-				testctx.Wrap(t.Context()),
+				testctx.WrapWithCfg(t.Context(), config.Project{
+					Builds: []config.Build{{}},
+				}),
 				buildOpts{
 					singleTarget: true,
 					ids:          []string{"foo"},
@@ -150,6 +189,46 @@ func TestSetupPipeline(t *testing.T) {
 			),
 		)
 	})
+}
+
+func TestWithOutputPipe(t *testing.T) {
+	t.Run("single binary", func(t *testing.T) {
+		mktmp(t)
+		createFile(t, "a", "A")
+		ctx := testctx.Wrap(t.Context())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a",
+			Path: "a",
+			Type: artifact.Binary,
+		})
+
+		require.NoError(t, (withOutputPipe{"picked"}).Run(ctx))
+		bts, err := os.ReadFile("picked")
+		require.NoError(t, err)
+		require.Equal(t, "A", string(bts))
+	})
+
+	for name, binaries := range map[string][]string{
+		"a first": {"a", "b"},
+		"b first": {"b", "a"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			mktmp(t)
+			createFile(t, "a", "A")
+			createFile(t, "b", "B")
+			ctx := testctx.Wrap(t.Context())
+			for _, binary := range binaries {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name: binary,
+					Path: binary,
+					Type: artifact.Binary,
+				})
+			}
+
+			require.ErrorContains(t, (withOutputPipe{"picked"}).Run(ctx), "--output requires a single build")
+			require.NoFileExists(t, "picked")
+		})
+	}
 }
 
 func TestBuildFlags(t *testing.T) {
@@ -229,6 +308,25 @@ func TestBuildFlags(t *testing.T) {
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"foo", "default"},
 			}))
+		})
+
+		t.Run("match-multiple with output", func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Builds: []config.Build{
+					{
+						ID: "default",
+					},
+					{
+						ID: "foo",
+					},
+				},
+			})
+
+			require.ErrorContains(t, setupBuildContext(ctx, buildOpts{
+				singleTarget: true,
+				ids:          []string{"foo", "default"},
+				output:       "picked",
+			}), "--output requires a single build")
 		})
 
 		t.Run("match-partial", func(t *testing.T) {

@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -415,11 +416,89 @@ func TestRun(t *testing.T) {
 	})
 }
 
+func TestRunDuplicateCPUSlices(t *testing.T) {
+	dist := t.TempDir()
+	src := filepath.Join("testdata", "fake", "main.go")
+
+	buildBinary := func(target, arch, amd64 string) artifact.Artifact {
+		t.Helper()
+
+		path := filepath.Join(dist, "fake_darwin_"+target, "fake")
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-gcflags=all=-N -l", "-o", path, src)
+		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
+		if amd64 != "" {
+			cmd.Env = append(cmd.Env, "GOAMD64="+amd64)
+		}
+		output, err := cmd.CombinedOutput()
+		require.NoError(t, err, string(output))
+
+		return artifact.Artifact{
+			Name:    "fake",
+			Path:    path,
+			Goos:    "darwin",
+			Goarch:  arch,
+			Goamd64: amd64,
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "fake",
+				artifact.ExtraID:     "foo",
+			},
+		}
+	}
+
+	binaries := map[string]artifact.Artifact{
+		"amd64-v1": buildBinary("amd64_v1", "amd64", "v1"),
+		"amd64-v2": buildBinary("amd64_v2", "amd64", "v2"),
+		"arm64":    buildBinary("arm64", "arm64", ""),
+	}
+
+	newContext := func(names ...string) *context.Context {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			UniversalBinaries: []config.UniversalBinary{
+				{
+					ID:           "foo",
+					IDs:          []string{"foo"},
+					NameTemplate: "foo",
+				},
+			},
+		})
+		for _, name := range names {
+			art := binaries[name]
+			ctx.Artifacts.Add(&art)
+		}
+		return ctx
+	}
+
+	t.Run("duplicate cpu slices fail", func(t *testing.T) {
+		ctx := newContext("amd64-v1", "amd64-v2", "arm64")
+
+		err := Pipe{}.Run(ctx)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "duplicate darwin binary slice for cpu 16777223 subtype 3")
+		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List())
+		require.NoFileExists(t, filepath.Join(dist, "foo_darwin_all", "foo"))
+	})
+
+	t.Run("distinct cpu slices pass", func(t *testing.T) {
+		ctx := newContext("amd64-v1", "arm64")
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		unibins := ctx.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
+		require.Len(t, unibins, 1)
+		checkUniversalBinary(t, unibins[0])
+	})
+}
+
 func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	tb.Helper()
 
 	require.True(tb, strings.HasSuffix(unibin.Path, unibin.ID()+"_darwin_all/foo"))
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
+	tb.Cleanup(func() {
+		require.NoError(tb, f.Close())
+	})
 	require.Len(tb, f.Arches, 2)
 }

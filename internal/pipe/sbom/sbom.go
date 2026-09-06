@@ -68,7 +68,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if len(cfg.Documents) == 0 {
 		switch cfg.Artifacts {
 		case "binary":
-			cfg.Documents = []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"}
+			cfg.Documents = []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sbom.json`}
 		case "any":
 			cfg.Documents = []string{}
 		default:

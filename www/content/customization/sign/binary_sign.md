@@ -55,12 +55,15 @@ binary_signs:
     #
     # Valid options are:
     # - none        no signing
-    # - binary:     the binaries
+    # - binary:     the binaries, including universal binaries
     #
     # Default: 'binary'.
     artifacts: binary
 
     # Build IDs of the binaries to sign.
+    #
+    # To sign a macOS universal binary, use the `universal_binaries.id` here,
+    # not the IDs of the builds it was made from.
     #
     # Empty means all build IDs.
     ids:
