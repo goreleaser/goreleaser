@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -121,16 +122,23 @@ func TestAnnotatedTagsWithApostrophes(t *testing.T) {
 }
 
 func TestBranch(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "test-branch-commit")
-	testlib.GitTag(t, "test-branch-tag")
-	testlib.GitCheckoutBranch(t, "test-branch")
-	ctx := testctx.Wrap(t.Context())
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "test-branch", ctx.Git.Branch)
-	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+	for _, branch := range []string{"test-branch", "feature/o'brien"} {
+		t.Run(branch, func(t *testing.T) {
+			testlib.Mktmp(t)
+			testlib.GitInit(t)
+			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+			testlib.GitCommit(t, "test-branch-commit")
+			testlib.GitTag(t, "test-branch-tag")
+			testlib.GitCheckoutBranch(t, branch)
+			ctx := testctx.Wrap(t.Context())
+			require.NoError(t, Pipe{}.Run(ctx))
+			require.Equal(t, branch, ctx.Git.Branch)
+			rendered, err := tmpl.New(ctx).Apply("{{ .Branch }}")
+			require.NoError(t, err)
+			require.Equal(t, branch, rendered)
+			require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+		})
+	}
 }
 
 func TestNoRemote(t *testing.T) {
