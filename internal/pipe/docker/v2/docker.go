@@ -346,7 +346,12 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 		return dockerArgs{}, fmt.Errorf("invalid dockerfile: %w", err)
 	}
 
-	baseImg, err := getBaseImage(ctx, dockerfile)
+	buildArgEntries, err := tplMapEntries(tpl, d.BuildArgs)
+	if err != nil {
+		return dockerArgs{}, fmt.Errorf("invalid build args: %w", err)
+	}
+
+	baseImg, err := getBaseImage(ctx, dockerfile, mapEntriesMap(buildArgEntries))
 	if err != nil && !errors.Is(err, errNoBaseImage) {
 		log.WithField("dockerfile", d.Dockerfile).
 			WithError(err).
@@ -398,10 +403,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 		}
 	}
 
-	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
-	if err != nil {
-		return dockerArgs{}, fmt.Errorf("invalid build args: %w", err)
-	}
+	buildFlags := mapEntriesFlags("--build-arg", buildArgEntries)
 
 	flags, err := tpl.Slice(d.Flags, tmpl.NonEmpty())
 	if err != nil {
@@ -645,7 +647,20 @@ func hasAnnotationScope(annotation string) bool {
 // It'll also sort keys so the resulting slice is always in the same order.
 // Finally, it will also skip entries with either an empty key or value.
 func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string, error) {
-	var result []string
+	entries, err := tplMapEntries(tpl, m)
+	if err != nil {
+		return nil, err
+	}
+	return mapEntriesFlags(flag, entries), nil
+}
+
+type mapEntry struct {
+	key   string
+	value string
+}
+
+func tplMapEntries(tpl *tmpl.Template, m map[string]string) ([]mapEntry, error) {
+	var result []mapEntry
 	keys := slices.Collect(maps.Keys(m))
 	slices.Sort(keys)
 	for _, k := range keys {
@@ -656,9 +671,25 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 		if strings.TrimSpace(k) == "" || strings.TrimSpace(v) == "" {
 			continue
 		}
-		result = append(result, flag, k+"="+v)
+		result = append(result, mapEntry{key: k, value: v})
 	}
 	return result, nil
+}
+
+func mapEntriesFlags(flag string, entries []mapEntry) []string {
+	var result []string
+	for _, entry := range entries {
+		result = append(result, flag, entry.key+"="+entry.value)
+	}
+	return result
+}
+
+func mapEntriesMap(entries []mapEntry) map[string]string {
+	result := make(map[string]string, len(entries))
+	for _, entry := range entries {
+		result[entry.key] = entry.value
+	}
+	return result
 }
 
 // IsRetriableBuild reports whether a failed docker build is worth retrying.
