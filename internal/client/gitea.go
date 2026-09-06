@@ -77,6 +77,7 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	httpClient := &http.Client{Transport: transport}
 	options := []gitea.ClientOption{
 		gitea.SetHTTPClient(httpClient),
+		gitea.SetContext(ctx),
 	}
 	if token != "giteatoken" { // token used in tests
 		options = append(options, gitea.SetToken(token))
@@ -84,11 +85,6 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	client, err := gitea.NewClient(instanceURL, options...)
 	if err != nil {
 		return nil, err
-	}
-	if ctx != nil {
-		if err := gitea.SetContext(ctx)(client); err != nil {
-			return nil, err
-		}
 	}
 	return &giteaClient{client: client}, nil
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	stdctx "context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -863,6 +865,107 @@ func TestGiteaNewGiteaPreservesSubpath(t *testing.T) {
 	})
 	_, err := newGitea(ctx, "giteatoken")
 	require.NoError(t, err)
+}
+
+func TestGiteaVersionRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path != "/api/v1/version" {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+			return
+		}
+		select {
+		case entered <- struct{}{}:
+		default:
+		}
+		<-releaseResponse
+		fmt.Fprint(w, `{"version":"1.22.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := newGitea(ctx, "giteatoken")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for Gitea version request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("Gitea version request did not return after cancellation")
+	}
+	close(releaseResponse)
+}
+
+func TestGiteaChangelogRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.22.0"}`)
+		case r.URL.Path == "/api/v1/repos/someone/something/compare/v1.0.0...v1.1.0":
+			select {
+			case entered <- struct{}{}:
+			default:
+			}
+			<-releaseResponse
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := client.Changelog(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for Gitea compare request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("Gitea compare request did not return after cancellation")
+	}
+	close(releaseResponse)
 }
 
 func TestGiteaCreateFileNewFile(t *testing.T) {
