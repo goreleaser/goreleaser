@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -182,6 +183,9 @@ func main() {
 `), 0o644))
 
 	tool := filepath.Join(dir, "fake-builder")
+	if runtime.GOOS == "windows" {
+		tool += ".exe"
+	}
 	cmd := exec.CommandContext(t.Context(), "go", "build", "-o", tool, source)
 	out, err := cmd.CombinedOutput()
 	require.NoError(t, err, string(out))
