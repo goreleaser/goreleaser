@@ -345,30 +345,26 @@ func appendArtifactNameToTargetURL(target, name string) string {
 	if err != nil {
 		// target is unparseable, so http.NewRequest will reject it later with
 		// the same error. Keep the old naive behaviour rather than guess.
-		if !strings.HasSuffix(target, "/") {
-			target += "/"
-		}
-		return target + escapePath(name)
+		return appendEscapedName(target, name)
 	}
 
-	path := u.EscapedPath()
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-	path += escapePath(name)
-
+	path := appendEscapedName(u.EscapedPath(), name)
 	// path is built only from already-escaped parts, so it always unescapes.
 	u.Path, _ = url.PathUnescape(path)
 	u.RawPath = path
 	return u.String()
 }
 
-// escapePath escapes each segment of name, so that an artifact name that
-// contains a directory keeps its directory structure in the target URL.
+// appendEscapedName appends name to base, escaping each segment on its own so
+// that an artifact name that contains a directory keeps its structure.
 // path.Join is not usable here: it cleans the result, which would change
 // already-escaped segments.
-func escapePath(name string) string {
+func appendEscapedName(base, name string) string {
 	var sb strings.Builder
+	sb.WriteString(base)
+	if !strings.HasSuffix(base, "/") {
+		sb.WriteByte('/')
+	}
 	for i, part := range strings.Split(name, "/") {
 		if i > 0 {
 			sb.WriteByte('/')

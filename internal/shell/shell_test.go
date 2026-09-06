@@ -66,8 +66,7 @@ func TestRunCommand(t *testing.T) {
 	t.Run("cancellation with descendant-held output pipe", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "uses a unix shell")
 
-		dir := t.TempDir()
-		ready := filepath.Join(dir, "ready")
+		ready := filepath.Join(t.TempDir(), "ready")
 
 		ctx, cancel := context.WithCancel(t.Context())
 		errCh := make(chan error, 1)
@@ -100,16 +99,14 @@ func TestRunCommand(t *testing.T) {
 	t.Run("success with descendant-held output pipe", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "uses a unix shell")
 
-		ready := filepath.Join(t.TempDir(), "ready")
-
 		errCh := make(chan error, 1)
 		go func() {
 			errCh <- shell.Run(
 				testctx.Wrap(t.Context()),
 				"",
-				// exits 0 while a descendant keeps stdout and stderr open.
-				[]string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & echo done`},
-				append(os.Environ(), "READY="+ready),
+				// exits 0 while a background job keeps stdout and stderr open.
+				[]string{"sh", "-c", `sleep 30 & echo done`},
+				os.Environ(),
 				false,
 			)
 		}()

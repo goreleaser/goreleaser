@@ -380,8 +380,7 @@ func TestExecuteSourceRPM(t *testing.T) {
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 	testlib.SkipIfWindows(t, "uses a unix shell")
 
-	dir := t.TempDir()
-	ready := filepath.Join(dir, "ready")
+	ready := filepath.Join(t.TempDir(), "ready")
 
 	ctx, cancel := context.WithCancel(t.Context())
 	errCh := make(chan error, 1)
@@ -412,16 +411,12 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 func TestExecuteCommandSucceedsWithDescendantHeldOutputPipe(t *testing.T) {
 	testlib.SkipIfWindows(t, "uses a unix shell")
 
-	dir := t.TempDir()
-	ready := filepath.Join(dir, "ready")
-
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- executeCommand(&command{
 			Ctx: testctx.Wrap(t.Context()),
-			Env: []string{"READY=" + ready},
-			// exits 0 while a descendant keeps stdout and stderr open.
-			Args: []string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & echo done`},
+			// exits 0 while a background job keeps stdout and stderr open.
+			Args: []string{"sh", "-c", `sleep 30 & echo done`},
 		}, &artifact.Artifact{Name: "test"})
 	}()
 
