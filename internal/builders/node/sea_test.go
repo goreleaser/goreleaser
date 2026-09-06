@@ -26,11 +26,15 @@ func TestSignMachO(t *testing.T) {
 	original, err := os.ReadFile(path)
 	require.NoError(t, err)
 
-	// Node leaves a signature command pointing past EOF. Keep that case as
+	offset, command := machoSignatureLocation(t, original)
+	placeholder := bytes.Clone(original[:offset])
+	binary.LittleEndian.PutUint32(placeholder[command+12:command+16], 0)
+
+	// Node leaves a zero-size signature command pointing at EOF. Keep that case as
 	// well as replacing the valid signature produced by the Go linker.
 	for name, contents := range map[string][]byte{
 		"signed":      original,
-		"placeholder": original[:machoSignatureOffset(t, original)],
+		"placeholder": placeholder,
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "macho")
@@ -40,7 +44,8 @@ func TestSignMachO(t *testing.T) {
 
 			signed, err := os.ReadFile(path)
 			require.NoError(t, err)
-			signature := signed[machoSignatureOffset(t, signed):]
+			offset, _ := machoSignatureLocation(t, signed)
+			signature := signed[offset:]
 			require.GreaterOrEqual(t, len(signature), 8)
 			// Embedded Mach-O signatures use a big-endian superblob header.
 			require.Equal(t, uint32(0xfade0cc0), binary.BigEndian.Uint32(signature[:4]))
@@ -51,21 +56,25 @@ func TestSignMachO(t *testing.T) {
 	}
 }
 
-func machoSignatureOffset(tb testing.TB, contents []byte) uint32 {
+func machoSignatureLocation(tb testing.TB, contents []byte) (uint32, int) {
 	tb.Helper()
 	file, err := macho.NewFile(bytes.NewReader(contents))
 	require.NoError(tb, err)
+	require.Equal(tb, macho.Magic64, file.Magic)
+	require.Equal(tb, macho.CpuArm64, file.Cpu)
 	const codeSignatureCommand = 0x1d
+	command := 32 // Size of the 64-bit Mach-O header.
 	for _, load := range file.Loads {
 		raw := load.Raw()
 		if file.ByteOrder.Uint32(raw[:4]) != codeSignatureCommand {
+			command += len(raw)
 			continue
 		}
 		require.Len(tb, raw, 16)
 		offset := file.ByteOrder.Uint32(raw[8:12])
 		require.LessOrEqual(tb, uint64(offset), uint64(len(contents)))
-		return offset
+		return offset, command
 	}
 	tb.Fatal("missing Mach-O code signature command")
-	return 0
+	return 0, 0
 }
