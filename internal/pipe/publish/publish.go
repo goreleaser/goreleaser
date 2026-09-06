@@ -53,8 +53,8 @@ func New() Pipe {
 			docker.Pipe{},
 			docker.ManifestPipe{},
 			dockerv2.Publish{},
-			dockerdigest.Pipe{},
 			ko.Pipe{},
+			dockerdigest.Pipe{},
 			sign.DockerPipe{},
 			snapcraft.Pipe{},
 			// This should be one of the last steps
