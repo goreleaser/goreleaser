@@ -3,6 +3,7 @@ package sign
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -119,7 +121,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Artifacts: "all",
 					Stdin:     &password,
 					Cmd:       "cosign",
-					Args:      []string{"sign", "--key=" + key, "--upload=false", "--tlog-upload=false", "${artifact}@${digest}", "--yes"},
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "--use-signing-config=false", "--tlog-upload=false", "${artifact}@${digest}", "--yes"},
 				},
 			},
 		},
@@ -285,6 +287,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 		require.NoError(tb, DockerPipe{}.Default(ctx))
 		if err := (DockerPipe{}).Publish(ctx); err != nil {
+			if detailed, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+				tb.Logf("signer output: %s", detailed.Output())
+			}
 			// the signer runs in a shell, so say where its files landed:
 			// "the signer did not write X" is otherwise indistinguishable
 			// from the shell having written X somewhere else.
