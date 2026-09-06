@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -44,6 +45,35 @@ func TestCheckGoMod(t *testing.T) {
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
+	t.Run("replace block on snapshot", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, testctx.Snapshot, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", fmt.Appendf(nil, `module %s
+
+replace (
+	example.invalid/dependency => example.invalid/fork v1.0.0
+	example.invalid/other => ../other
+)
+`, ctx.ModulePath), 0o666))
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
 	t.Run("no go mod", func(t *testing.T) {
@@ -116,6 +146,95 @@ func TestCheckGoMod(t *testing.T) {
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("replace in configured module dir", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.Mkdir("src", 0o755))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+				Dir:      "src",
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+					Dir:     "src",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile(filepath.Join("src", "go.mod"), fmt.Appendf(nil, `module %s
+
+replace example.invalid/dependency => example.invalid/fork v1.0.0
+`, ctx.ModulePath), 0o666))
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("clean configured module dir ignores root replacement", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.Mkdir("src", 0o755))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+				Dir:      "src",
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+					Dir:     "src",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", []byte(`module example.invalid/root
+
+replace example.invalid/dependency => example.invalid/fork v1.0.0
+`), 0o666))
+		require.NoError(t, os.WriteFile(filepath.Join("src", "go.mod"), fmt.Appendf(nil, `module %s
+`, ctx.ModulePath), 0o666))
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
+	t.Run("replace block", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", fmt.Appendf(nil, `module %s
+
+replace (
+	example.invalid/dependency => example.invalid/fork v1.0.0
+	example.invalid/other => ../other
+)
+`, ctx.ModulePath), 0o666))
 		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
 	})
 }
@@ -230,6 +349,78 @@ func TestGoModProxy(t *testing.T) {
 		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 	})
+
+	t.Run("mixed builders", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: fakeGoBinary(t),
+			},
+			Builds: []config.Build{
+				{
+					ID:      "go-app",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    "./cmd/fake",
+				},
+				{
+					ID:      "rust-app",
+					Builder: "rust",
+					Dir:     "rust",
+					Main:    ".",
+				},
+			},
+		}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
+
+		fakeGoModAndSum(t, ctx.ModulePath)
+		require.NoError(t, ProxyPipe{}.Run(ctx))
+		require.Equal(t, ctx.ModulePath+"/cmd/fake", ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "go-app"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, "./cmd/fake", ctx.Config.Builds[0].UnproxiedMain)
+		require.Empty(t, ctx.Config.Builds[0].UnproxiedDir)
+		require.Equal(t, "rust", ctx.Config.Builds[1].Dir)
+		require.Equal(t, ".", ctx.Config.Builds[1].Main)
+		require.Empty(t, ctx.Config.Builds[1].UnproxiedDir)
+		require.Empty(t, ctx.Config.Builds[1].UnproxiedMain)
+	})
+
+	t.Run("uses configured env precedence", func(t *testing.T) {
+		t.Setenv("GOPROXY", "off")
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			Env: []string{
+				"GOPROXY=https://root.example",
+				"VERIFY_ROOT=from-root",
+				"VERIFY_OVERRIDE=root",
+			},
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: fakeGoBinaryExpectingEnv(t),
+				Env: []string{
+					"GOPROXY=https://gomod.example",
+					"VERIFY_OVERRIDE=gomod",
+				},
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+				},
+			},
+		}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
+
+		fakeGoModAndSum(t, ctx.ModulePath)
+		require.NoError(t, ProxyPipe{}.Run(ctx))
+	})
 }
 
 func TestProxyDescription(t *testing.T) {
@@ -336,6 +527,51 @@ func fakeGoModAndSum(tb testing.TB, module string) {
 func fakeGoMod(tb testing.TB, module string) {
 	tb.Helper()
 	require.NoError(tb, os.WriteFile("go.mod", fmt.Appendf(nil, "module %s\n", module), 0o666))
+}
+
+func fakeGoBinary(tb testing.TB) string {
+	tb.Helper()
+	bin := filepath.Join(tb.TempDir(), "go.bin")
+	content := []byte("#!/bin/sh\nexit 0")
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\nexit /b 0")
+	}
+	require.NoError(tb, os.WriteFile(bin, content, 0o755))
+	return bin
+}
+
+func fakeGoBinaryExpectingEnv(tb testing.TB) string {
+	tb.Helper()
+	bin := filepath.Join(tb.TempDir(), "go.bin")
+	content := []byte(strings.Join([]string{
+		"#!/bin/sh",
+		`[ "$GOPROXY" = "https://gomod.example" ] || { echo "GOPROXY=$GOPROXY"; exit 1; }`,
+		`[ "$VERIFY_ROOT" = "from-root" ] || { echo "VERIFY_ROOT=$VERIFY_ROOT"; exit 1; }`,
+		`[ "$VERIFY_OVERRIDE" = "gomod" ] || { echo "VERIFY_OVERRIDE=$VERIFY_OVERRIDE"; exit 1; }`,
+		"exit 0",
+	}, "\n"))
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte(strings.Join([]string{
+			"@echo off",
+			`if not "%GOPROXY%"=="https://gomod.example" (`,
+			`  echo GOPROXY=%GOPROXY%`,
+			`  exit /b 1`,
+			`)`,
+			`if not "%VERIFY_ROOT%"=="from-root" (`,
+			`  echo VERIFY_ROOT=%VERIFY_ROOT%`,
+			`  exit /b 1`,
+			`)`,
+			`if not "%VERIFY_OVERRIDE%"=="gomod" (`,
+			`  echo VERIFY_OVERRIDE=%VERIFY_OVERRIDE%`,
+			`  exit /b 1`,
+			`)`,
+			"exit /b 0",
+		}, "\r\n"))
+	}
+	require.NoError(tb, os.WriteFile(bin, content, 0o755))
+	return bin
 }
 
 func withTestModulePath(ctx *context.Context) {

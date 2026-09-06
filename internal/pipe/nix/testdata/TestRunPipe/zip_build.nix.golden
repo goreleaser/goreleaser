@@ -38,8 +38,10 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installShellFiles unzip ];
 
   installPhase = ''
+    runHook preInstall
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
+    runHook postInstall
   '';
 
   meta = {

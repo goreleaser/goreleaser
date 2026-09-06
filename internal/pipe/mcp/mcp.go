@@ -134,6 +134,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	for _, pkg := range mcp.Packages {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
+			&pkg.Transport.URL,
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
 		}
@@ -147,6 +148,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			Version:      version,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
+				URL:  pkg.Transport.URL,
 			},
 		})
 	}

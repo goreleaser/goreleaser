@@ -30,28 +30,47 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	if dir != "" {
 		cmd.Dir = dir
 	}
 
-	log.WithField("cmd", command).
+	log.WithField("cmd", redactArgs(command, cmd.Env)).
 		WithField("dir", dir).
 		Debug("running")
 
 	start := time.Now()
 	defer logext.Duration(start, time.Second*5)
 
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("command failed"),
 			gerrors.WithDetails("cmd", command[0]),
 			gerrors.WithOutput(strings.TrimSpace(b.String())),
 		)
 	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
+	}
 
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }

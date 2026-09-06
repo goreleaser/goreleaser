@@ -6,6 +6,12 @@
   {{- if .Binary }}
   binary "{{ .Name }}", target: "{{ .Binary }}"
   {{- end }}
+  {{- if .WrappedIn }}
+  {{- $wrap := .WrappedIn }}
+  {{- range .Wrapped }}
+  rename "{{ $wrap }}/{{ . }}", "{{ . }}"
+  {{- end }}
+  {{- end }}
 
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
@@ -21,8 +27,13 @@
     {{- end }}
     {{- if .WrappedIn }}
     {{- $wrap := .WrappedIn }}
-    {{- range .Binaries }}
+    {{- range .Wrapped }}
     rename "{{ $wrap }}/{{ . }}", "{{ . }}"
+    {{- end }}
+    {{- end }}
+    {{- if $.HasMixedPackageTypes }}
+    {{- range .CaskBins }}
+    binary "{{ . }}"
     {{- end }}
     {{- end }}
   end

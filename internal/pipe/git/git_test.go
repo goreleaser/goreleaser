@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -121,16 +122,23 @@ func TestAnnotatedTagsWithApostrophes(t *testing.T) {
 }
 
 func TestBranch(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "test-branch-commit")
-	testlib.GitTag(t, "test-branch-tag")
-	testlib.GitCheckoutBranch(t, "test-branch")
-	ctx := testctx.Wrap(t.Context())
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "test-branch", ctx.Git.Branch)
-	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+	for _, branch := range []string{"test-branch", "feature/o'brien"} {
+		t.Run(branch, func(t *testing.T) {
+			testlib.Mktmp(t)
+			testlib.GitInit(t)
+			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+			testlib.GitCommit(t, "test-branch-commit")
+			testlib.GitTag(t, "test-branch-tag")
+			testlib.GitCheckoutBranch(t, branch)
+			ctx := testctx.Wrap(t.Context())
+			require.NoError(t, Pipe{}.Run(ctx))
+			require.Equal(t, branch, ctx.Git.Branch)
+			rendered, err := tmpl.New(ctx).Apply("{{ .Branch }}")
+			require.NoError(t, err)
+			require.Equal(t, branch, rendered)
+			require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+		})
+	}
 }
 
 func TestNoRemote(t *testing.T) {
@@ -321,16 +329,43 @@ func TestValidState(t *testing.T) {
 }
 
 func TestSnapshotNoTags(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "whatever")
-	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
-	require.Empty(t, ctx.Git.PreviousTag)
-	require.NotEmpty(t, ctx.Git.FirstCommit)
+	for _, tt := range []struct {
+		name     string
+		dirty    bool
+		rendered string
+	}{
+		{
+			name:     "clean",
+			rendered: "false/true/clean",
+		},
+		{
+			name:     "dirty",
+			dirty:    true,
+			rendered: "true/false/dirty",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			folder := testlib.Mktmp(t)
+			testlib.GitInit(t)
+			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+			path := filepath.Join(folder, "foo")
+			require.NoError(t, os.WriteFile(path, []byte("initial"), 0o644))
+			testlib.GitAdd(t)
+			testlib.GitCommit(t, "whatever")
+			if tt.dirty {
+				require.NoError(t, os.WriteFile(path, []byte("dirty"), 0o644))
+			}
+			ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
+			testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+			require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+			require.Empty(t, ctx.Git.PreviousTag)
+			require.NotEmpty(t, ctx.Git.FirstCommit)
+			require.Equal(t, tt.dirty, ctx.Git.Dirty)
+			rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+			require.NoError(t, err)
+			require.Equal(t, tt.rendered, rendered)
+		})
+	}
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -368,6 +403,10 @@ func TestSnapshotDirty(t *testing.T) {
 	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.True(t, ctx.Git.Dirty)
+	rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+	require.NoError(t, err)
+	require.Equal(t, "true/false/dirty", rendered)
 }
 
 func TestGitNotInPath(t *testing.T) {

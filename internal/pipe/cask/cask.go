@@ -309,7 +309,7 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 
-	filename := brew.Name + ".rb"
+	filename := caskNameFor(brew.Name) + ".rb"
 	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -365,6 +365,9 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		"conflicts":           conflictsString,
 		"depends":             dependsString,
 		"generateCompletions": generateCompletionsString,
+		"rubyString": func(v string) (string, error) {
+			return rubyString(ctx, v)
+		},
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -404,6 +407,22 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+func rubyString(ctx *context.Context, v string) (string, error) {
+	v, err := tmpl.New(ctx).Apply(v)
+	if err != nil {
+		return "", err
+	}
+	v = strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"\n", `\n`,
+		"\r", `\r`,
+		"\t", `\t`,
+	).Replace(v)
+	v = strings.ReplaceAll(v, "#{", `\#{`)
+	return `"` + v + `"`, nil
 }
 
 func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
@@ -459,7 +478,9 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			pkg.Name = art.Name
 		} else {
 			pkg.Binaries = artifact.ExtraOr(*art, string(artifact.ExtraBinaries), []string{})
+			pkg.CaskBins = cfg.Binaries
 			pkg.WrappedIn = artifact.ExtraOr(*art, string(artifact.ExtraWrappedIn), "")
+			pkg.Wrapped = wrappedArtifactSources(cfg, pkg.Binaries)
 		}
 
 		formatCounts[art.Type]++
@@ -481,10 +502,33 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 
 	result.HasOnlyAmd64MacOsPkg = len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64"
 	result.HasOnlyBinaryPkgs = len(formatCounts) == 1 && formatCounts[artifact.UploadableBinary] > 0
+	result.HasMixedPackageTypes = formatCounts[artifact.UploadableArchive] > 0 && formatCounts[artifact.UploadableBinary] > 0
 
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)
 	return result, nil
+}
+
+func wrappedArtifactSources(cfg config.HomebrewCask, binaries []string) []string {
+	seen := map[string]bool{}
+	result := make([]string, 0, len(binaries))
+	add := func(source string) {
+		if source == "" || seen[source] {
+			return
+		}
+		seen[source] = true
+		result = append(result, source)
+	}
+	for _, binary := range binaries {
+		add(binary)
+	}
+	for _, manpage := range cfg.Manpages {
+		add(manpage)
+	}
+	add(cfg.Completions.Bash)
+	add(cfg.Completions.Fish)
+	add(cfg.Completions.Zsh)
+	return result
 }
 
 // archStanzaRank orders packages so the generated `on_*` blocks come out in

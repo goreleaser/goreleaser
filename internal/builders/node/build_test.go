@@ -1,6 +1,7 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,8 +11,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -148,6 +151,78 @@ func TestBuild(t *testing.T) {
 	fi, err := os.Stat(filepath.FromSlash(bin.Path))
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()))
+
+	// the SEA config lives in a per-target scratch directory: sharing the
+	// output directory made concurrent targets overwrite each other's config.
+	require.NoFileExists(t, filepath.Join(filepath.Dir(options.Path), "sea-config.json"))
+}
+
+// seaTemplate builds the template exactly as Build does, so this test
+// fails if Build ever stops feeding target data into the main template.
+func seaTemplate(tb testing.TB, target string) *tmpl.Template {
+	tb.Helper()
+	parsed, err := Default.Parse(target)
+	require.NoError(tb, err)
+	options := api.Options{
+		Name:   "proj",
+		Path:   filepath.Join("dist", "proj_"+target, "proj"),
+		Target: parsed,
+	}
+	ctx := testctx.WrapWithCfg(tb.Context(), config.Project{ProjectName: "proj"})
+	return tmpl.New(ctx).
+		WithBuildOptions(options).
+		WithArtifact(&artifact.Artifact{
+			Type:   artifact.Binary,
+			Path:   options.Path,
+			Name:   options.Name,
+			Goos:   parsed.(Target).Goos(),
+			Goarch: parsed.(Target).Goarch(),
+			Target: target,
+			Extra: map[string]any{
+				artifact.ExtraBinary:  "proj",
+				artifact.ExtraID:      "default",
+				artifact.ExtraBuilder: "node",
+			},
+		})
+}
+
+func TestCreateSEAConfigRendersMain(t *testing.T) {
+	for name, tc := range map[string]struct {
+		target string
+		main   string
+		want   string
+	}{
+		"literal": {"darwin-arm64", "index.js", "index.js"},
+		"target":  {"darwin-arm64", "build/{{ .Target }}.js", "build/darwin-arm64.js"},
+		"os":      {"darwin-arm64", "build/{{ .Os }}.js", "build/darwin.js"},
+		"arch":    {"darwin-arm64", "build/{{ .Arch }}.js", "build/arm64.js"},
+		// .Os and .Arch carry the Go names, not the nodejs.org ones.
+		"go names": {"win-x64", "build/{{ .Os }}-{{ .Arch }}.js", "build/windows-amd64.js"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			mainPath := filepath.Join(dir, filepath.FromSlash(tc.want))
+			require.NoError(t, os.MkdirAll(filepath.Dir(mainPath), 0o755))
+			require.NoError(t, os.WriteFile(mainPath, []byte("console.log('ok')\n"), 0o644))
+
+			cfgPath := filepath.Join(t.TempDir(), "sea-config.json")
+			require.NoError(t, createSEAConfig(
+				seaTemplate(t, tc.target),
+				config.Build{ID: "default", Dir: dir, Main: tc.main},
+				cfgPath,
+				filepath.Join(dir, "node"),
+				filepath.Join(dir, "proj"),
+			))
+
+			bts, err := os.ReadFile(cfgPath)
+			require.NoError(t, err)
+			var cfg struct {
+				Main string `json:"main"`
+			}
+			require.NoError(t, json.Unmarshal(bts, &cfg))
+			require.Equal(t, mainPath, cfg.Main)
+		})
+	}
 }
 
 func TestBuildRejectsUnsupportedHostNode(t *testing.T) {

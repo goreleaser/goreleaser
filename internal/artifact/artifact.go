@@ -498,25 +498,37 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	// gomips, to keep compatibility with previous versions of goreleaser.
 	simpleResult := map[string][]*Artifact{}
 	specificResult := map[string][]*Artifact{}
+	go386s := map[string]struct{}{}
 	goamd64s := map[string]struct{}{}
+	goarm64s := map[string]struct{}{}
 	gomipses := map[string]struct{}{}
 	goarms := map[string]struct{}{}
+	goppc64s := map[string]struct{}{}
+	goriscv64s := map[string]struct{}{}
 	abis := map[string]struct{}{}
 	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch
 		abi := ExtraOr(*a, "Abi", "")
-		fullplat := plat + abi + a.Goarm + a.Gomips + a.Goamd64
+		fullplat := plat + abi + a.Goarm + a.Gomips + a.Goamd64 + a.Go386 + a.Goarm64 + a.Goppc64 + a.Goriscv64
+		go386s[a.Go386] = struct{}{}
 		goamd64s[a.Goamd64] = struct{}{}
+		goarm64s[a.Goarm64] = struct{}{}
 		gomipses[a.Gomips] = struct{}{}
 		goarms[a.Goarm] = struct{}{}
+		goppc64s[a.Goppc64] = struct{}{}
+		goriscv64s[a.Goriscv64] = struct{}{}
 		abis[abi] = struct{}{}
 		simpleResult[plat] = append(simpleResult[plat], a)
 		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
 
-	if len(nonEmpty(goamd64s)) > 1 ||
+	if len(nonEmpty(go386s)) > 1 ||
+		len(nonEmpty(goamd64s)) > 1 ||
+		len(nonEmpty(goarm64s)) > 1 ||
 		len(nonEmpty(gomipses)) > 1 ||
 		len(nonEmpty(goarms)) > 1 ||
+		len(nonEmpty(goppc64s)) > 1 ||
+		len(nonEmpty(goriscv64s)) > 1 ||
 		len(nonEmpty(abis)) > 1 {
 		return specificResult
 	}

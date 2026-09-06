@@ -1,11 +1,13 @@
 package shell_test
 
 import (
+	"bytes"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -73,4 +75,32 @@ func TestRunCommand(t *testing.T) {
 		require.NoError(t, err)
 		require.FileExists(t, filepath.Join(dir, "bar"))
 	})
+}
+
+func TestRunRedactsDebugCommand(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() {
+		log.Log = previousLog
+	})
+
+	const secret = "key123key123"
+	err := shell.Run(
+		testctx.Wrap(t.Context()),
+		"",
+		[]string{
+			"sh",
+			"-c",
+			`test "$API_KEY" = "key123key123" && echo "$API_KEY"`,
+		},
+		[]string{"API_KEY=" + secret},
+		true,
+	)
+	require.NoError(t, err)
+	require.NotContains(t, logs.String(), secret)
+	require.Contains(t, logs.String(), "$API_KEY")
 }

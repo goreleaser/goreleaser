@@ -34,6 +34,43 @@ import (
 	_ "gocloud.dev/secrets/gcpkms"
 )
 
+const awsKMSMaxPlaintextSize = 4096
+
+var (
+	findExtraFiles = extrafiles.Find
+	newUploader    = newProductionUploader
+)
+
+func newProductionUploader(conf config.Blob, provider string) uploader {
+	up := &productionUploader{
+		cacheControl:       conf.CacheControl,
+		contentDisposition: conf.ContentDisposition,
+	}
+	if provider == "s3" && conf.ACL != "" {
+		up.beforeWrite = func(asFunc func(any) bool) error {
+			req := &transfermanager.UploadObjectInput{}
+			if !asFunc(&req) {
+				return errors.New("could not apply before write")
+			}
+			acl := types.ObjectCannedACL(conf.ACL)
+			switch acl {
+			case types.ObjectCannedACLPrivate,
+				types.ObjectCannedACLPublicRead,
+				types.ObjectCannedACLPublicReadWrite,
+				types.ObjectCannedACLAuthenticatedRead,
+				types.ObjectCannedACLAwsExecRead,
+				types.ObjectCannedACLBucketOwnerRead,
+				types.ObjectCannedACLBucketOwnerFullControl:
+				req.ACL = acl
+				return nil
+			default:
+				return fmt.Errorf("invalid ACL %q", conf.ACL)
+			}
+		}
+	}
+	return up
+}
+
 func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
 	if err != nil {
@@ -106,37 +143,16 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	up := &productionUploader{
-		cacheControl:       conf.CacheControl,
-		contentDisposition: conf.ContentDisposition,
-	}
-	if provider == "s3" && conf.ACL != "" {
-		up.beforeWrite = func(asFunc func(any) bool) error {
-			req := &transfermanager.UploadObjectInput{}
-			if !asFunc(&req) {
-				return errors.New("could not apply before write")
-			}
-			acl := types.ObjectCannedACL(conf.ACL)
-			switch acl {
-			case types.ObjectCannedACLPrivate,
-				types.ObjectCannedACLPublicRead,
-				types.ObjectCannedACLPublicReadWrite,
-				types.ObjectCannedACLAuthenticatedRead,
-				types.ObjectCannedACLAwsExecRead,
-				types.ObjectCannedACLBucketOwnerRead,
-				types.ObjectCannedACLBucketOwnerFullControl:
-				req.ACL = acl
-				return nil
-			default:
-				return fmt.Errorf("invalid ACL %q", conf.ACL)
-			}
-		}
-	}
-
+	up := newUploader(conf, provider)
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
 	defer up.Close()
+
+	files, err := findExtraFiles(ctx, conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
 	artifacts := artifactList(ctx, conf)
@@ -150,10 +166,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
-	if err != nil {
-		return err
-	}
 	for name, fullpath := range files {
 		g.Go(func() error {
 			uploadFile := path.Join(dir, name)
@@ -236,6 +248,9 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 	if conf.KMSKey == "" {
 		return data, nil
 	}
+	if err := validateKMSPlaintextSize(conf.KMSKey, len(data)); err != nil {
+		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
+	}
 	keeper, err := secrets.OpenKeeper(ctx, conf.KMSKey)
 	if err != nil {
 		return data, fmt.Errorf("failed to open kms %s: %w", conf.KMSKey, err)
@@ -246,6 +261,14 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
 	}
 	return data, err
+}
+
+func validateKMSPlaintextSize(kmsKey string, size int) error {
+	u, err := url.Parse(kmsKey)
+	if err != nil || u.Scheme != "awskms" || size <= awsKMSMaxPlaintextSize {
+		return nil
+	}
+	return fmt.Errorf("awskms encryption supports files up to %d bytes, got %d bytes", awsKMSMaxPlaintextSize, size)
 }
 
 // uploader implements upload.

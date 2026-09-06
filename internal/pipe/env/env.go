@@ -77,13 +77,19 @@ func (Pipe) Run(ctx *context.Context) error {
 	switch strings.ToLower(forceToken) {
 	case "github":
 		gitlabToken = ""
+		gitlabTokenErr = nil
 		giteaToken = ""
+		giteaTokenErr = nil
 	case "gitlab":
 		githubToken = ""
+		githubTokenErr = nil
 		giteaToken = ""
+		giteaTokenErr = nil
 	case "gitea":
 		githubToken = ""
+		githubTokenErr = nil
 		gitlabToken = ""
+		gitlabTokenErr = nil
 	default:
 		var tokens []string
 		if githubToken != "" {

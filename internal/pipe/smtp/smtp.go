@@ -82,7 +82,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	// This is only needed when SSL/TLS certificate is not valid on server.
 	// In production this should be set to false.
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: ctx.Config.Announce.SMTP.InsecureSkipVerify}
+	d.TLSConfig = &tls.Config{
+		ServerName:         cfg.Host,
+		InsecureSkipVerify: ctx.Config.Announce.SMTP.InsecureSkipVerify,
+	}
 
 	// Now send E-Mail
 	if err := d.DialAndSend(m); err != nil {

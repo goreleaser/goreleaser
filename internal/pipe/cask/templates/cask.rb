@@ -21,7 +21,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   name "{{ .Name }}"
-  desc "{{ .Description }}"
+  desc {{ .Description | rubyString }}
   homepage "{{ .Homepage }}"
 
   livecheck do
@@ -36,7 +36,7 @@ cask "{{ .Name }}" do
   {{ depends  . }}
   {{- end }}
 
-  {{ with and (not .HasOnlyBinaryPkgs) .Binaries }}
+  {{ with and (not .HasOnlyBinaryPkgs) (not .HasMixedPackageTypes) .Binaries }}
   {{- range . }}
   binary "{{ . }}"
   {{- end }}

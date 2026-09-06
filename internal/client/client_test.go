@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand/v2"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -139,6 +141,29 @@ func TestTruncateReleaseBodyNoTruncation(t *testing.T) {
 	body := "short body"
 	out := truncateReleaseBody(body)
 	require.Equal(t, body, out)
+}
+
+func TestTruncateReleaseBodyPreservesUTF8(t *testing.T) {
+	t.Parallel()
+	body := strings.Repeat("a", maxReleaseBodyLength-len(ellipsis)-1) + "ééé"
+	out := truncateReleaseBody(body)
+	require.LessOrEqual(t, len(out), maxReleaseBodyLength)
+	require.True(t, strings.HasSuffix(out, ellipsis), "truncated body should end with ellipsis")
+	require.True(t, utf8.ValidString(out), "truncated body should be valid UTF-8")
+
+	bts, err := json.Marshal(out)
+	require.NoError(t, err)
+	var roundtrip string
+	require.NoError(t, json.Unmarshal(bts, &roundtrip))
+	require.Equal(t, out, roundtrip)
+}
+
+func TestTruncateReleaseBodyDoesNotTruncateUTF8AtLimit(t *testing.T) {
+	t.Parallel()
+	body := strings.Repeat("a", maxReleaseBodyLength-len("é")) + "é"
+	out := truncateReleaseBody(body)
+	require.Equal(t, body, out)
+	require.True(t, utf8.ValidString(out))
 }
 
 func TestNewIfToken(t *testing.T) {

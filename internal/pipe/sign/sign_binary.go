@@ -79,7 +79,10 @@ func (BinaryPipe) Run(ctx *context.Context) error {
 			default:
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
-			filters := []artifact.Filter{artifact.ByType(artifact.Binary)}
+			filters := []artifact.Filter{artifact.ByTypes(
+				artifact.Binary,
+				artifact.UniversalBinary,
+			)}
 			if len(cfg.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}

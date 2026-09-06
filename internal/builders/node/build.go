@@ -162,7 +162,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	cfgPath := filepath.Join(filepath.Dir(options.Path), "sea-config.json")
+	cfgPath := filepath.Join(targetNodeDir, "sea-config.json")
 	if err := createSEAConfig(tpl, build, cfgPath, targetNode, options.Path); err != nil {
 		return err
 	}

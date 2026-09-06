@@ -36,6 +36,83 @@ func start(tb testing.TB) {
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
 }
 
+func TestRunCommandEnvPrecedence(t *testing.T) {
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			key := "GORELEASER_TEST_DOCKER_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_DOCKER_COMMAND_HELPER", "1")
+			t.Setenv("DOCKER_ENV_HELPER_KEY", key)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+
+			t.Run("without output", func(t *testing.T) {
+				record := filepath.Join(t.TempDir(), "record")
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", record)
+				require.NoError(t, runCommand(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper"))
+
+				bts, err := os.ReadFile(record)
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(bts))
+			})
+
+			t.Run("with output", func(t *testing.T) {
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", "")
+				out, err := runCommandWithOutput(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper")
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(out))
+			})
+		})
+	}
+}
+
+func TestDockerCommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_DOCKER_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	value := os.Getenv(os.Getenv("DOCKER_ENV_HELPER_KEY"))
+	if record := os.Getenv("DOCKER_ENV_HELPER_RECORD"); record != "" {
+		if err := os.WriteFile(record, []byte(value), 0o644); err != nil {
+			fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+			os.Exit(2)
+		}
+	}
+	fmt.Fprint(os.Stdout, value)
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
+}
+
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
 	testlib.CheckDocker(t)
@@ -1175,6 +1252,65 @@ func TestBuildCommand(t *testing.T) {
 	}
 }
 
+func TestDockerImagerPushUsesFlags(t *testing.T) {
+	const digest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	dir := t.TempDir()
+	source := filepath.Join(dir, "main.go")
+	require.NoError(t, os.WriteFile(source, []byte(`package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if err := os.WriteFile(os.Getenv("DOCKER_ARGS_FILE"), []byte(strings.Join(os.Args[1:], "\n")), 0o644); err != nil {
+		panic(err)
+	}
+	fmt.Println("digest: `+digest+`")
+}
+`), 0o644))
+	fakeDocker := filepath.Join(dir, "docker")
+	if os.PathSeparator == '\\' {
+		fakeDocker += ".exe"
+	}
+	out, err := exec.CommandContext(t.Context(), "go", "build", "-o", fakeDocker, source).CombinedOutput()
+	require.NoError(t, err, string(out))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		name  string
+		flags []string
+		want  []string
+	}{
+		{
+			name:  "empty flags",
+			flags: nil,
+			want:  []string{"push", "example.invalid/app:v1"},
+		},
+		{
+			name:  "configured flags",
+			flags: []string{"--disable-content-trust=false"},
+			want:  []string{"push", "--disable-content-trust=false", "example.invalid/app:v1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			argsFile := filepath.Join(t.TempDir(), "args")
+			t.Setenv("DOCKER_ARGS_FILE", argsFile)
+
+			gotDigest, err := dockerImager{}.Push(testctx.Wrap(t.Context()), "example.invalid/app:v1", tt.flags)
+			require.NoError(t, err)
+			require.Equal(t, digest, gotDigest)
+			bts, err := os.ReadFile(argsFile)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, strings.Split(string(bts), "\n"))
+		})
+	}
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
@@ -1555,6 +1691,71 @@ func (i *countingImager) Build(*context.Context, string, []string, []string) err
 
 func (i *countingImager) Push(*context.Context, string, []string) (string, error) {
 	return "", nil
+}
+
+type wheelIDImager struct {
+	calls atomic.Int32
+}
+
+func (i *wheelIDImager) Build(_ *context.Context, root string, _ []string, _ []string) error {
+	i.calls.Add(1)
+	if _, err := os.Stat(filepath.Join(root, "mytool-1.0.0-py3-none-any.whl")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *wheelIDImager) Push(*context.Context, string, []string) (string, error) {
+	return "", nil
+}
+
+func TestRunWithSelectedWheelID(t *testing.T) {
+	const imagerName = "test-wheel-id"
+	lock.Lock()
+	previous, existed := imagers[imagerName]
+	lock.Unlock()
+	t.Cleanup(func() {
+		lock.Lock()
+		defer lock.Unlock()
+		if existed {
+			imagers[imagerName] = previous
+		} else {
+			delete(imagers, imagerName)
+		}
+	})
+
+	dir := t.TempDir()
+	wheel := filepath.Join(dir, "mytool-1.0.0-py3-none-any.whl")
+	require.NoError(t, os.WriteFile(wheel, []byte("wheel"), 0o644))
+	dockerfile := filepath.Join(dir, "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("FROM scratch\nCOPY mytool-1.0.0-py3-none-any.whl /wheel.whl\n"), 0o644))
+
+	im := &wheelIDImager{}
+	registerImager(imagerName, im)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dockers: []config.Docker{
+			{
+				Use:            imagerName,
+				Dockerfile:     dockerfile,
+				ImageTemplates: []string{"example.invalid/mytool:latest"},
+				IDs:            []string{"python"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mytool-1.0.0-py3-none-any.whl",
+		Path:   wheel,
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: map[string]any{
+			artifact.ExtraID: "python",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, int32(1), im.calls.Load())
 }
 
 func TestDockerBuildRetries(t *testing.T) {

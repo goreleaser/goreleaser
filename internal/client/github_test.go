@@ -1317,6 +1317,64 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	require.Equal(t, "1", release)
 }
 
+func TestGitHubCreateReleaseUseExistingDraftCustomTitle(t *testing.T) {
+	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":1,"name":"Release v1.0.0","tag_name":"v1.0.0","draft":true,"body":"Existing draft release"}]`)
+			return
+		}
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/1" && r.Method == http.MethodPatch {
+			got, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			assert.JSONEq(t, `{"name": "Release v1.0.0", "tag_name": "v1.0.0", "body": "Existing draft release", "draft": true, "prerelease": false}`, string(got))
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 1, "name": "Release v1.0.0"}`)
+			return
+		}
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprint(w, `{"message":"release already exists"}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				NameTemplate: "Release {{ .Tag }}",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+				UseExistingDraft: true,
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test update draft release")
+	require.NoError(t, err)
+	require.Equal(t, "1", release)
+}
+
 func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
@@ -1821,19 +1879,33 @@ func TestGitHubCloseMilestoneNotFound(t *testing.T) {
 
 func TestGitHubUploadReplaceExisting(t *testing.T) {
 	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			fmt.Fprint(w, `{"message":"already exists"}`)
+			if uploads.Add(1) == 1 {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				fmt.Fprint(w, `{"message":"already exists"}`)
+				return
+			}
+			assetID.Store(789)
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"id":789,"name":"test-file.txt"}`)
 			return
 		}
 		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `[{"id":456,"name":"test-file.txt"}]`)
+			if id := assetID.Load(); id != 0 {
+				fmt.Fprintf(w, `[{"id":%d,"name":"test-file.txt"}]`, id)
+				return
+			}
+			fmt.Fprint(w, `[]`)
 			return
 		}
 		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			assetID.Store(0)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -1856,17 +1928,87 @@ func TestGitHubUploadReplaceExisting(t *testing.T) {
 	fmt.Fprint(f, "test content")
 	require.NoError(t, f.Close())
 	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
-	require.Error(t, err)
+	require.NoError(t, err)
+	require.EqualValues(t, 2, uploads.Load())
+	require.EqualValues(t, 789, assetID.Load())
+}
+
+func TestGitHubUploadReplaceExistingAfterRetry(t *testing.T) {
+	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			switch uploads.Add(1) {
+			case 1:
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprint(w, `{"message":"try again"}`)
+			case 2:
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				fmt.Fprint(w, `{"message":"already exists"}`)
+			default:
+				assetID.Store(789)
+				w.WriteHeader(http.StatusCreated)
+				fmt.Fprint(w, `{"id":789,"name":"test-file.txt"}`)
+			}
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			if id := assetID.Load(); id != 0 {
+				fmt.Fprintf(w, `[{"id":%d,"name":"test-file.txt"}]`, id)
+				return
+			}
+			fmt.Fprint(w, `[]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			assetID.Store(0)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API:    srv.URL,
+			Upload: srv.URL,
+		},
+		Release: config.Release{
+			GitHub:                   config.Repo{Owner: "owner", Name: "name"},
+			ReplaceExistingArtifacts: true,
+		},
+		Retry: config.Retry{Attempts: 2},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.CreateTemp(t.TempDir(), "upload-test")
+	require.NoError(t, err)
+	fmt.Fprint(f, "test content")
+	require.NoError(t, f.Close())
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
+	require.NoError(t, err)
+	require.EqualValues(t, 3, uploads.Load())
+	require.EqualValues(t, 789, assetID.Load())
 }
 
 func TestGitHubUploadNoReplace(t *testing.T) {
 	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			uploads.Add(1)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprint(w, `{"message":"already exists"}`)
 			return
+		}
+		if r.Method == http.MethodDelete {
+			t.Error("delete should not be called when replacement is disabled")
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
@@ -1888,6 +2030,8 @@ func TestGitHubUploadNoReplace(t *testing.T) {
 	require.NoError(t, f.Close())
 	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
 	require.Error(t, err)
+	require.EqualValues(t, 1, uploads.Load())
+	require.EqualValues(t, 456, assetID.Load())
 }
 
 func TestHeadString(t *testing.T) {

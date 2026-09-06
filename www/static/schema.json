@@ -2598,8 +2598,7 @@
 							"oci",
 							"npm",
 							"pypi",
-							"nuget",
-							"mcpb"
+							"nuget"
 						]
 					},
 					"identifier": {
@@ -2649,6 +2648,9 @@
 							"streamable-http",
 							"sse"
 						]
+					},
+					"url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

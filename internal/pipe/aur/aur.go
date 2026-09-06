@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -31,7 +32,10 @@ const (
 	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var (
+	ErrNoArchivesFound          = errors.New("no linux archives found")
+	ErrMultipleArchivesSameArch = errors.New("one aur can handle only one archive of each architecture")
+)
 
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
@@ -146,20 +150,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 		return err
 	}
 	if strings.TrimSpace(pkg) == "" {
-		art := archives[0]
-		switch art.Type {
-		case artifact.UploadableBinary:
-			name := art.Name
-			bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-			pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+name, "${pkgdir}/usr/bin/"+bin)
-		case artifact.UploadableArchive:
-			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-				path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
-				pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin)
-				break
-			}
-		}
+		pkg = inferPackage(archives)
 		log.Warnf("guessing package to be %q", pkg)
 	}
 	aur.Package = pkg
@@ -209,6 +200,48 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 	return nil
 }
 
+func inferPackage(archives []*artifact.Artifact) string {
+	packages := map[string]string{}
+	for _, art := range archives {
+		packages[toPkgBuildArch(art.Goarch+art.Goarm)] = inferPackageForArtifact(art)
+	}
+
+	arches := slices.Sorted(maps.Keys(packages))
+	first := packages[arches[0]]
+	for _, arch := range arches[1:] {
+		if packages[arch] != first {
+			var out strings.Builder
+			out.WriteString(`case "${CARCH}" in`)
+			for _, arch := range arches {
+				out.WriteString("\n")
+				out.WriteString(arch)
+				out.WriteString(")\n")
+				out.WriteString(packages[arch])
+				out.WriteString("\n;;")
+			}
+			out.WriteString("\nesac")
+			return out.String()
+		}
+	}
+	return first
+}
+
+func inferPackageForArtifact(art *artifact.Artifact) string {
+	switch art.Type {
+	case artifact.UploadableBinary:
+		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
+		source := fmt.Sprintf("${pkgname}_${pkgver}_%s.%s", toPkgBuildArch(art.Goarch+art.Goarm), art.Format())
+		return fmt.Sprintf("install -Dm755 %q %q", "./"+source, "${pkgdir}/usr/bin/"+bin)
+	case artifact.UploadableArchive:
+		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
+			return fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin)
+		}
+	}
+	return ""
+}
+
 func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact, tpl string) (string, error) {
 	data, err := dataFor(ctx, pkg, client, artifacts)
 	if err != nil {
@@ -232,17 +265,7 @@ func fixLines(s string) string {
 }
 
 func quoteField(v string) string {
-	simpleQuote := strings.Contains(v, `'`)
-	doubleQuote := strings.Contains(v, `"`)
-
-	switch {
-	case simpleQuote && doubleQuote:
-		return `"` + strings.ReplaceAll(v, `"`, `'`) + `"`
-	case simpleQuote:
-		return `"` + v + `"`
-	default:
-		return `'` + v + `'`
-	}
+	return "'" + strings.ReplaceAll(v, "'", "'\\''") + "'"
 }
 
 func applyTemplate(ctx *context.Context, tpl string, data templateData) (string, error) {
@@ -328,11 +351,17 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		Install:      cfg.Install,
 	}
 
+	arches := map[string]bool{}
 	for _, art := range artifacts {
 		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
+		arch := toPkgBuildArch(art.Goarch + art.Goarm)
+		if arches[arch] {
+			return result, ErrMultipleArchivesSameArch
+		}
+		arches[arch] = true
 
 		if cfg.URLTemplate == "" {
 			url, err := cl.ReleaseURLTemplate(ctx)
@@ -349,7 +378,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		releasePackage := releasePackage{
 			DownloadURL: url,
 			SHA256:      sum,
-			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
+			Arch:        arch,
 			Format:      art.Format(),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
