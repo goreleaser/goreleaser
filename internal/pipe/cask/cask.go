@@ -511,7 +511,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 
 func wrappedArtifactSources(cfg config.HomebrewCask, binaries []string) []string {
 	seen := map[string]bool{}
-	result := make([]string, 0, len(binaries)+len(cfg.Manpages)+3)
+	result := make([]string, 0, len(binaries))
 	add := func(source string) {
 		if source == "" || seen[source] {
 			return

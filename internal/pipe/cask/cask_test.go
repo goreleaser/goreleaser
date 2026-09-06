@@ -231,6 +231,10 @@ func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 			description: `Say "#{hello}"`,
 			expected:    `desc "Say \"\#{hello}\""`,
 		},
+		"complex": {
+			description: "It's \"quoted\" \\ path #{value}\nnext line",
+			expected:    `desc "It's \"quoted\" \\ path \#{value}\nnext line"`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			data := defaultTemplateData
