@@ -112,20 +112,31 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	log := log.WithField("cmd", c.Args[0]).
 		WithField("artifact", artifact.Name)
 
 	log.Info("publishing")
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("publishing failed"),
 			gerrors.WithDetails("cmd", cmd.Args[0]),
 			gerrors.WithOutput(b.String()),
 		)
+	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
 	}
 
 	log.Debug("command finished successfully")
