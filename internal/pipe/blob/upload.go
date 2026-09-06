@@ -34,6 +34,8 @@ import (
 	_ "gocloud.dev/secrets/gcpkms"
 )
 
+const awsKMSMaxPlaintextSize = 4096
+
 func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
 	if err != nil {
@@ -236,6 +238,9 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 	if conf.KMSKey == "" {
 		return data, nil
 	}
+	if err := validateKMSPlaintextSize(conf.KMSKey, len(data)); err != nil {
+		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
+	}
 	keeper, err := secrets.OpenKeeper(ctx, conf.KMSKey)
 	if err != nil {
 		return data, fmt.Errorf("failed to open kms %s: %w", conf.KMSKey, err)
@@ -246,6 +251,14 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
 	}
 	return data, err
+}
+
+func validateKMSPlaintextSize(kmsKey string, size int) error {
+	u, err := url.Parse(kmsKey)
+	if err != nil || u.Scheme != "awskms" || size <= awsKMSMaxPlaintextSize {
+		return nil
+	}
+	return fmt.Errorf("awskms encryption supports files up to %d bytes, got %d bytes", awsKMSMaxPlaintextSize, size)
 }
 
 // uploader implements upload.

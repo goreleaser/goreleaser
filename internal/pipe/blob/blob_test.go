@@ -1,8 +1,18 @@
 package blob
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
+	"sync/atomic"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -267,4 +277,67 @@ func TestSkip(t *testing.T) {
 
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
+	const awsKMSLimit = 4096
+
+	for name, tt := range map[string]struct {
+		size         int
+		wantData     []byte
+		wantRequests int64
+		wantErr      string
+	}{
+		"accepts 4096 bytes": {
+			size:         awsKMSLimit,
+			wantData:     []byte("ciphertext"),
+			wantRequests: 1,
+		},
+		"rejects 4097 bytes before kms": {
+			size:         awsKMSLimit + 1,
+			wantData:     bytes.Repeat([]byte("a"), awsKMSLimit+1),
+			wantRequests: 0,
+			wantErr:      "failed to encrypt with kms: awskms encryption supports files up to 4096 bytes, got 4097 bytes",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var requests atomic.Int64
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.Header().Set("Content-Type", "application/x-amz-json-1.1")
+
+				var input struct {
+					Plaintext []byte `json:"Plaintext"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				if len(input.Plaintext) > awsKMSLimit {
+					w.WriteHeader(http.StatusBadRequest)
+					_, _ = fmt.Fprint(w, `{"__type":"ValidationException","message":"plaintext too large"}`)
+					return
+				}
+
+				_, _ = fmt.Fprintf(w, `{"CiphertextBlob":%q,"KeyId":"alias/my-key"}`,
+					base64.StdEncoding.EncodeToString([]byte("ciphertext")))
+			}))
+			t.Cleanup(server.Close)
+
+			file := filepath.Join(t.TempDir(), "artifact")
+			require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte("a"), tt.size), 0o644))
+
+			data, err := getData(testctx.Wrap(t.Context()), config.Blob{
+				KMSKey: "awskms://alias/my-key?region=us-east-1&anonymous=true&hostname_immutable=true&endpoint=" + url.QueryEscape(server.URL),
+			}, file)
+
+			require.Equal(t, tt.wantData, data)
+			require.Equal(t, tt.wantRequests, requests.Load())
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.EqualError(t, err, tt.wantErr)
+		})
+	}
 }
