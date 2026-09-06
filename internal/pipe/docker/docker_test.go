@@ -118,6 +118,8 @@ func unsetEnv(t *testing.T, key string) {
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
+	t.Parallel()
+
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 	type errChecker func(*testing.T, error)
