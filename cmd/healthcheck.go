@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cmp"
 	stdctx "context"
 	"errors"
 	"io"
@@ -104,33 +105,34 @@ func check(name string, err error) error {
 	return err
 }
 
+// warn reports tool as unusable because of reason, and gives err back so the
+// caller can propagate it.
+func warn(tool, reason string, err error) error {
+	st := log.Styles[log.ErrorLevel]
+	log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render(reason))
+	return err
+}
+
 // checkPath reports whether tool is usable. checked dedupes tools listed by
 // more than one pipe within a single healthcheck run.
 func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
 	tool = strings.TrimSpace(tool)
-	if len(tool) == 0 {
-		return nil
-	}
-	if checked[tool] {
+	if tool == "" || checked[tool] {
 		return nil
 	}
 	checked[tool] = true
+	// Parse gives no arguments back when it fails, and also for a line that is
+	// only shell syntax, such as `|`.
 	args, err := shellwords.Parse(tool)
-	if err != nil {
-		st := log.Styles[log.ErrorLevel]
-		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("is not a valid command"))
-		return err
+	if len(args) == 0 {
+		return warn(tool, "is not a valid command", cmp.Or(err, exec.ErrNotFound))
 	}
 	if _, err := exec.LookPath(args[0]); err != nil {
-		st := log.Styles[log.ErrorLevel]
-		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))
-		return err
+		return warn(tool, "not present in path", err)
 	}
 	if len(args) > 1 {
 		if err := exec.CommandContext(ctx, args[0], args[1:]...).Run(); err != nil {
-			st := log.Styles[log.ErrorLevel]
-			log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("command failed"))
-			return err
+			return warn(tool, "command failed", err)
 		}
 	}
 	st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
