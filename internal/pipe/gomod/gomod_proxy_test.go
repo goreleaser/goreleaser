@@ -47,6 +47,35 @@ func TestCheckGoMod(t *testing.T) {
 		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
+	t.Run("replace block on snapshot", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, testctx.Snapshot, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", fmt.Appendf(nil, `module %s
+
+replace (
+	example.invalid/dependency => example.invalid/fork v1.0.0
+	example.invalid/other => ../other
+)
+`, ctx.ModulePath), 0o666))
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
 	t.Run("no go mod", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
@@ -117,6 +146,35 @@ func TestCheckGoMod(t *testing.T) {
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("replace block", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, os.WriteFile("go.mod", fmt.Appendf(nil, `module %s
+
+replace (
+	example.invalid/dependency => example.invalid/fork v1.0.0
+	example.invalid/other => ../other
+)
+`, ctx.ModulePath), 0o666))
 		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
 	})
 }

@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -17,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"golang.org/x/mod/modfile"
 )
 
 // ErrReplaceWithProxy happens when the configuration has gomod.proxy enabled,
@@ -33,8 +33,6 @@ func (CheckGoModPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy
 }
 
-var replaceRe = regexp.MustCompile("^replace .* => .*$")
-
 // Run the ReplaceCheckPipe.
 func (CheckGoModPipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Builds {
@@ -47,17 +45,18 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 			}
 			return fmt.Errorf("could not check %q: %w", path, err)
 		}
-		for line := range strings.SplitSeq(string(mod), "\n") {
-			if !replaceRe.MatchString(line) {
-				continue
-			}
+		file, err := modfile.Parse(path, mod, nil)
+		if err != nil {
+			return fmt.Errorf("could not parse %q: %w", path, err)
+		}
+		for _, replace := range file.Replace {
 			log.Warnf(
 				"your %[2]s file has %[1]s directive in it, and go mod proxying is enabled - "+
 					"this does not work, and you need to either disable it or remove the %[1]s directive",
 				logext.Keyword("replace"),
 				logext.Keyword("go.mod"),
 			)
-			log.Warnf("the offending line is %s", logext.Keyword(strings.TrimSpace(line)))
+			log.Warnf("the offending line is %s", logext.Keyword(formatReplace(replace)))
 			if ctx.Snapshot {
 				// only warn on snapshots
 				break
@@ -67,6 +66,18 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 	}
 
 	return nil
+}
+
+func formatReplace(replace *modfile.Replace) string {
+	old := replace.Old.Path
+	if replace.Old.Version != "" {
+		old += " " + replace.Old.Version
+	}
+	new := replace.New.Path
+	if replace.New.Version != "" {
+		new += " " + replace.New.Version
+	}
+	return strings.TrimSpace(fmt.Sprintf("replace %s => %s", old, new))
 }
 
 // ProxyPipe for gomod proxy.
