@@ -230,7 +230,7 @@ func TestRun(t *testing.T) {
 	})
 
 	for arch, path := range paths {
-		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-gcflags=all=-N -l", "-o", path, src)
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
 		_, err := cmd.CombinedOutput()
 		require.NoError(t, err)
@@ -425,7 +425,7 @@ func TestRunDuplicateCPUSlices(t *testing.T) {
 
 		path := filepath.Join(dist, "fake_darwin_"+target, "fake")
 		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
-		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-gcflags=all=-N -l", "-o", path, src)
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
 		if amd64 != "" {
 			cmd.Env = append(cmd.Env, "GOAMD64="+amd64)
