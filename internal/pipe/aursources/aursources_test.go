@@ -121,9 +121,20 @@ func TestSrcInfoSimple(t *testing.T) {
 	require.Contains(t, pkg, `pkgbase = test`)
 	require.Contains(t, pkg, `pkgname = test`)
 	require.Contains(t, pkg, `url = https://example.com`)
-	require.Contains(t, pkg, `source = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
+	require.Contains(t, pkg, `backup = /etc/mypkg.conf`)
+	require.Contains(t, pkg, `backup = /var/share/mypkg`)
+	require.Contains(t, pkg, `source = test_0.1.3.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
 	require.Contains(t, pkg, `sha256sums = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67`)
 	require.Contains(t, pkg, `pkgver = 0.1.3`)
+}
+
+func TestSrcInfoIncludesInstall(t *testing.T) {
+	data := createTemplateData()
+	data.Install = "./testdata/install.sh"
+
+	pkg, err := applyTemplate(testctx.Wrap(t.Context()), srcInfoTemplate, data)
+	require.NoError(t, err)
+	require.Contains(t, pkg, `install = test.install`)
 }
 
 func TestFullPipe(t *testing.T) {

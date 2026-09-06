@@ -96,9 +96,15 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	{{ range .Provides -}}
 	provides = {{ . }}
 	{{ end -}}
+	{{ range .Backup -}}
+	backup = {{ . }}
+	{{ end -}}
+	{{ if .Install -}}
+	install = {{ trimsuffix .Name "-bin" }}.install
+	{{ end -}}
 	{{ range .ReleasePackages -}}
 	arch = {{ .Arch }}
-	source_{{ .Arch }} = {{ .DownloadURL }}
+	source_{{ .Arch }} = {{ $.Name }}_{{ $.Version }}_{{ .Arch }}.{{ .Format }}::{{ .DownloadURL }}
 	sha256sums_{{ .Arch }} = {{ .SHA256 }}
 	{{ end -}}
 {{ printf "\n" -}}
