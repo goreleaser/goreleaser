@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"al.essio.dev/pkg/shellescape"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
@@ -192,7 +193,11 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 			Path:         binaryName,
 			DestFilename: binaryName,
 		})
-		installCmds = append(installCmds, fmt.Sprintf("install -Dm755 %s /app/bin/%s", binaryName, binaryName))
+		installCmds = append(installCmds, fmt.Sprintf(
+			"install -Dm755 %s %s",
+			shellescape.Quote(binaryName),
+			shellescape.Quote("/app/bin/"+binaryName),
+		))
 	}
 
 	manifest.Modules = []ManifestModule{
