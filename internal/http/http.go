@@ -365,12 +365,17 @@ func appendArtifactNameToTargetURL(target, name string) string {
 
 // escapePath escapes each segment of name, so that an artifact name that
 // contains a directory keeps its directory structure in the target URL.
+// path.Join is not usable here: it cleans the result, which would change
+// already-escaped segments.
 func escapePath(name string) string {
-	parts := strings.Split(name, "/")
-	for i, part := range parts {
-		parts[i] = url.PathEscape(part)
+	var sb strings.Builder
+	for i, part := range strings.Split(name, "/") {
+		if i > 0 {
+			sb.WriteByte('/')
+		}
+		sb.WriteString(url.PathEscape(part))
 	}
-	return strings.Join(parts, "/")
+	return sb.String()
 }
 
 // uploadAssetToServer uploads the asset file to target.
