@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -130,12 +131,13 @@ func TestPrepareUsesBuildContext(t *testing.T) {
 
 			got, err := os.ReadFile(log)
 			require.NoError(t, err)
+			gotLog := strings.ReplaceAll(string(got), "\r\n", "\n")
 			wantDir := filepath.Join(folder, dir)
 			wantDir, err = filepath.EvalSymlinks(wantDir)
 			require.NoError(t, err)
-			require.Contains(t, string(got), "cwd="+wantDir+"\n")
-			require.Contains(t, string(got), "toolchain="+tt.wantToolchain+"\n")
-			require.Contains(t, string(got), "args=target add aarch64-unknown-linux-gnu\n")
+			require.Contains(t, gotLog, "cwd="+wantDir+"\n")
+			require.Contains(t, gotLog, "toolchain="+tt.wantToolchain+"\n")
+			require.Contains(t, gotLog, "args=target add aarch64-unknown-linux-gnu\n")
 		})
 	}
 }
