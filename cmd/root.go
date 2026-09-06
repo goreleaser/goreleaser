@@ -37,7 +37,7 @@ func (cmd *rootCmd) Execute(args []string) {
 	}
 
 	if shouldDisableLogs(args) {
-		log.SetLevel(log.FatalLevel)
+		log.SetLevel(log.ErrorLevel)
 	}
 
 	if err := fang.Execute(
