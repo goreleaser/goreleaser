@@ -52,16 +52,27 @@ func runCommand(ctx *context.Context, dir, binary string, args ...string) error 
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	log.
 		WithField("cmd", append([]string{binary}, args[0])).
 		WithField("cwd", dir).
 		WithField("args", args[1:]).
 		Debug("running")
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%w: %s", err, b.String())
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
+		return fmt.Errorf("%w: %s", runErr, b.String())
+	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
 	}
 	return nil
 }
@@ -74,7 +85,8 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
 
 	log.
 		WithField("cmd", append([]string{binary}, args[0])).
@@ -84,7 +96,12 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 	out, err := cmd.Output()
 	if out != nil {
 		// regardless of command success, always print stdout for backward-compatibility with runCommand()
-		_, _ = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env).Write(out)
+		stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+		_, _ = stdout.Write(out)
+		_ = stdout.Close()
+	}
+	if closeErr := stderr.Close(); closeErr != nil && err == nil {
+		return nil, closeErr
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", err, b.String())

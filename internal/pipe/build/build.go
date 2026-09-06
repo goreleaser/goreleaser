@@ -10,6 +10,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/go-shellwords"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
@@ -178,22 +179,23 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 		var env []string
 
 		env = append(env, ctx.Env.Strings()...)
-		for _, rawEnv := range append(buildEnv, hook.Env...) {
-			e, err := tmpl.New(ctx).WithBuildOptions(opts).Apply(rawEnv)
-			if err != nil {
-				return err
-			}
-			env = append(env, e)
+		tpl := tmpl.New(ctx).WithBuildOptions(opts).WithEnvS(env)
+		rawEnv := make([]string, 0, len(buildEnv)+len(hook.Env))
+		rawEnv = append(rawEnv, buildEnv...)
+		rawEnv = append(rawEnv, hook.Env...)
+		hookEnv, err := base.TemplateEnv(rawEnv, tpl)
+		if err != nil {
+			return err
 		}
+		env = append(env, hookEnv...)
+		tpl = tpl.WithEnvS(env)
 
-		dir, err := tmpl.New(ctx).WithBuildOptions(opts).Apply(hook.Dir)
+		dir, err := tpl.Apply(hook.Dir)
 		if err != nil {
 			return err
 		}
 
-		sh, err := tmpl.New(ctx).WithBuildOptions(opts).
-			WithEnvS(env).
-			Apply(hook.Cmd)
+		sh, err := tpl.Apply(hook.Cmd)
 		if err != nil {
 			return err
 		}

@@ -97,15 +97,15 @@ func goModPath(ctx *context.Context, build *config.Build) string {
 }
 
 func formatReplace(replace *modfile.Replace) string {
-	old := replace.Old.Path
+	oldPath := replace.Old.Path
 	if replace.Old.Version != "" {
-		old += " " + replace.Old.Version
+		oldPath += " " + replace.Old.Version
 	}
-	replacement := replace.New.Path
+	newPath := replace.New.Path
 	if replace.New.Version != "" {
-		replacement += " " + replace.New.Version
+		newPath += " " + replace.New.Version
 	}
-	return strings.TrimSpace(fmt.Sprintf("replace %s => %s", old, replacement))
+	return strings.TrimSpace(fmt.Sprintf("replace %s => %s", oldPath, newPath))
 }
 
 // ProxyPipe for gomod proxy.

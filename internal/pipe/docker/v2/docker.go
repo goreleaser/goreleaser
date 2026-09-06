@@ -290,12 +290,17 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 			var b bytes.Buffer
 			w := gio.Safe(&b)
-			cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-			cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-			if err := cmd.Run(); err != nil {
+			stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			cmd.Stderr = stderr
+			cmd.Stdout = stdout
+			runErr := cmd.Run()
+			stderrErr := stderr.Close()
+			stdoutErr := stdout.Close()
+			if runErr != nil {
 				if isFileNotFoundError(b.String()) {
 					return gerrors.Wrap(
-						err,
+						runErr,
 						gerrors.WithMessage("could not build docker image"),
 						gerrors.WithOutput(b.String()),
 						gerrors.WithDetails(
@@ -305,7 +310,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 					)
 				}
 				return gerrors.Wrap(
-					err,
+					runErr,
 					gerrors.WithMessage("could not build docker image"),
 					gerrors.WithOutput(b.String()),
 					gerrors.WithDetails(
@@ -313,6 +318,12 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 						"id", d.ID,
 					),
 				)
+			}
+			if stderrErr != nil {
+				return stderrErr
+			}
+			if stdoutErr != nil {
+				return stdoutErr
 			}
 			return nil
 		},
