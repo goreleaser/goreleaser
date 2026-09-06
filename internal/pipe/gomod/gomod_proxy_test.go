@@ -269,6 +269,40 @@ func TestGoModProxy(t *testing.T) {
 		require.Empty(t, ctx.Config.Builds[1].UnproxiedDir)
 		require.Empty(t, ctx.Config.Builds[1].UnproxiedMain)
 	})
+
+	t.Run("uses configured env precedence", func(t *testing.T) {
+		t.Setenv("GOPROXY", "off")
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			Env: []string{
+				"GOPROXY=https://root.example",
+				"VERIFY_ROOT=from-root",
+				"VERIFY_OVERRIDE=root",
+			},
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: fakeGoBinaryExpectingEnv(t),
+				Env: []string{
+					"GOPROXY=https://gomod.example",
+					"VERIFY_OVERRIDE=gomod",
+				},
+			},
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    ".",
+				},
+			},
+		}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
+
+		fakeGoModAndSum(t, ctx.ModulePath)
+		require.NoError(t, ProxyPipe{}.Run(ctx))
+	})
 }
 
 func TestProxyDescription(t *testing.T) {
@@ -384,6 +418,39 @@ func fakeGoBinary(tb testing.TB) string {
 	if testlib.IsWindows() {
 		bin = strings.Replace(bin, ".bin", ".bat", 1)
 		content = []byte("@echo off\r\nexit /b 0")
+	}
+	require.NoError(tb, os.WriteFile(bin, content, 0o755))
+	return bin
+}
+
+func fakeGoBinaryExpectingEnv(tb testing.TB) string {
+	tb.Helper()
+	bin := filepath.Join(tb.TempDir(), "go.bin")
+	content := []byte(strings.Join([]string{
+		"#!/bin/sh",
+		`[ "$GOPROXY" = "https://gomod.example" ] || { echo "GOPROXY=$GOPROXY"; exit 1; }`,
+		`[ "$VERIFY_ROOT" = "from-root" ] || { echo "VERIFY_ROOT=$VERIFY_ROOT"; exit 1; }`,
+		`[ "$VERIFY_OVERRIDE" = "gomod" ] || { echo "VERIFY_OVERRIDE=$VERIFY_OVERRIDE"; exit 1; }`,
+		"exit 0",
+	}, "\n"))
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte(strings.Join([]string{
+			"@echo off",
+			`if not "%GOPROXY%"=="https://gomod.example" (`,
+			`  echo GOPROXY=%GOPROXY%`,
+			`  exit /b 1`,
+			`)`,
+			`if not "%VERIFY_ROOT%"=="from-root" (`,
+			`  echo VERIFY_ROOT=%VERIFY_ROOT%`,
+			`  exit /b 1`,
+			`)`,
+			`if not "%VERIFY_OVERRIDE%"=="gomod" (`,
+			`  echo VERIFY_OVERRIDE=%VERIFY_OVERRIDE%`,
+			`  exit /b 1`,
+			`)`,
+			"exit /b 0",
+		}, "\r\n"))
 	}
 	require.NoError(tb, os.WriteFile(bin, content, 0o755))
 	return bin
