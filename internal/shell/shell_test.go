@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
@@ -68,7 +67,7 @@ func TestRunCommand(t *testing.T) {
 		dir := t.TempDir()
 		ready := filepath.Join(dir, "ready")
 		release := filepath.Join(dir, "release")
-		require.NoError(t, syscall.Mkfifo(ready, 0o600))
+		require.NoError(t, mkfifo(ready, 0o600))
 		t.Cleanup(func() {
 			require.NoError(t, os.WriteFile(release, nil, 0o600))
 		})
