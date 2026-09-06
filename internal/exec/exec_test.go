@@ -1,13 +1,16 @@
 package exec
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -307,6 +310,62 @@ func TestExecute(t *testing.T) {
 				tc.check(t, outDir)
 			}
 		})
+	}
+}
+
+func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses unix shell and fifo")
+
+	dir := t.TempDir()
+	ready := filepath.Join(dir, "ready")
+	release := filepath.Join(dir, "release")
+	require.NoError(t, syscall.Mkfifo(ready, 0o600))
+	t.Cleanup(func() {
+		require.NoError(t, os.WriteFile(release, nil, 0o600))
+	})
+
+	ctx, cancel := context.WithCancel(t.Context())
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- executeCommand(&command{
+			Ctx:  testctx.Wrap(ctx),
+			Env:  []string{"READY=" + ready, "RELEASE=" + release},
+			Args: []string{"sh", "-c", `sh -c 'printf ready > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
+		}, &artifact.Artifact{Name: "test"})
+	}()
+
+	require.Equal(t, "ready", readFIFO(t, ready))
+	cancel()
+
+	select {
+	case err := <-errCh:
+		require.Error(t, err)
+	case <-time.After(3 * time.Second):
+		t.Fatal("command did not return while descendant held stdout and stderr open")
+	}
+}
+
+func readFIFO(tb testing.TB, name string) string {
+	tb.Helper()
+	result := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		bts, err := os.ReadFile(name)
+		result <- struct {
+			value string
+			err   error
+		}{string(bts), err}
+	}()
+
+	select {
+	case r := <-result:
+		require.NoError(tb, r.err)
+		return r.value
+	case <-time.After(3 * time.Second):
+		tb.Fatal("timed out waiting for subprocess readiness")
+		return ""
 	}
 }
 

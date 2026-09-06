@@ -25,6 +25,7 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	cmd.WaitDelay = time.Second
 	cmd.Env = env
 
 	var b bytes.Buffer

@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/go-shellwords"
@@ -98,6 +99,7 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	//nolint:gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
+	cmd.WaitDelay = time.Second
 	cmd.Env = []string{}
 	for _, key := range passthroughEnvVars {
 		if value := os.Getenv(key); value != "" {
