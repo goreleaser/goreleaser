@@ -143,24 +143,19 @@ func TestFormulaDescriptionEscapesRubyString(t *testing.T) {
 	for name, tt := range map[string]struct {
 		description string
 		env         []string
-		expected    string
 	}{
 		"literal": {
 			description: `Say "hello"`,
-			expected:    `desc "Say \"hello\""`,
 		},
 		"templated": {
 			description: `Say "{{ .Env.WORD }}"`,
 			env:         []string{`WORD=hello`},
-			expected:    `desc "Say \"hello\""`,
 		},
 		"interpolation": {
 			description: `Say "#{hello}"`,
-			expected:    `desc "Say \"\#{hello}\""`,
 		},
 		"complex": {
 			description: "It's \"quoted\" \\ path #{value}\nnext line",
-			expected:    `desc "It's \"quoted\" \\ path \#{value}\nnext line"`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -171,7 +166,7 @@ func TestFormulaDescriptionEscapesRubyString(t *testing.T) {
 				Env:         tt.env,
 			}), data)
 			require.NoError(t, err)
-			require.Contains(t, formulae, tt.expected)
+			golden.RequireEqualRb(t, []byte(formulae))
 		})
 	}
 }

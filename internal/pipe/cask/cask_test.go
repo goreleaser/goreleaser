@@ -216,24 +216,19 @@ func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 	for name, tt := range map[string]struct {
 		description string
 		env         []string
-		expected    string
 	}{
 		"literal": {
 			description: `Say "hello"`,
-			expected:    `desc "Say \"hello\""`,
 		},
 		"templated": {
 			description: `Say "{{ .Env.WORD }}"`,
 			env:         []string{`WORD=hello`},
-			expected:    `desc "Say \"hello\""`,
 		},
 		"interpolation": {
 			description: `Say "#{hello}"`,
-			expected:    `desc "Say \"\#{hello}\""`,
 		},
 		"complex": {
 			description: "It's \"quoted\" \\ path #{value}\nnext line",
-			expected:    `desc "It's \"quoted\" \\ path \#{value}\nnext line"`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -244,7 +239,7 @@ func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 				Env:         tt.env,
 			}), data)
 			require.NoError(t, err)
-			require.Contains(t, cask, tt.expected)
+			golden.RequireEqualRb(t, []byte(cask))
 		})
 	}
 }
@@ -870,8 +865,7 @@ func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, string(distBts), cli.Content)
 			require.Equal(t, "Casks/"+filename, cli.Path)
-			require.Contains(t, cli.Content, `cask "`+tt.token+`" do`)
-			require.Contains(t, cli.Content, `binary "foo"`)
+			golden.RequireEqualRb(t, distBts)
 
 			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 			require.Len(t, casks, 1)
@@ -1141,9 +1135,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
 	for name, tt := range map[string]struct {
-		artifacts         []*artifact.Artifact
-		expectedContains  []string
-		expectedOmissions []string
+		artifacts []*artifact.Artifact
 	}{
 		"all-archive": {
 			artifacts: []*artifact.Artifact{
@@ -1160,12 +1152,6 @@ func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
 					},
 				},
 			},
-			expectedContains: []string{
-				"\n  binary \"foo\"\n",
-			},
-			expectedOmissions: []string{
-				`target: "foo"`,
-			},
 		},
 		"all-binary": {
 			artifacts: []*artifact.Artifact{
@@ -1180,12 +1166,6 @@ func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
 						artifact.ExtraBinary: "foo",
 					},
 				},
-			},
-			expectedContains: []string{
-				`binary "foo_linux_amd64", target: "foo"`,
-			},
-			expectedOmissions: []string{
-				"\n  binary \"foo\"\n",
 			},
 		},
 		"mixed-archive-and-binary": {
@@ -1213,13 +1193,6 @@ func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
 						artifact.ExtraBinary: "foo",
 					},
 				},
-			},
-			expectedContains: []string{
-				`binary "foo_linux_amd64", target: "foo"`,
-				"\n      binary \"foo\"\n",
-			},
-			expectedOmissions: []string{
-				"\n  binary \"foo\"\n",
 			},
 		},
 	} {
@@ -1255,15 +1228,7 @@ func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
 			require.NoError(t, runAll(ctx, cli))
 			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 			require.Len(t, casks, 1)
-			content, err := os.ReadFile(casks[0].Path)
-			require.NoError(t, err)
-
-			for _, expected := range tt.expectedContains {
-				require.Contains(t, string(content), expected)
-			}
-			for _, omitted := range tt.expectedOmissions {
-				require.NotContains(t, string(content), omitted)
-			}
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
 		})
 	}
 }
@@ -1631,24 +1596,11 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 
 func TestRunPipeUniversalBinaryWrappedIn(t *testing.T) {
 	for name, tt := range map[string]struct {
-		wrappedIn         string
-		expectedContains  []string
-		expectedOmissions []string
+		wrappedIn string
 	}{
-		"unwrapped": {
-			expectedContains: []string{
-				`binary "unibin"`,
-			},
-			expectedOmissions: []string{
-				`rename "bundle/unibin", "unibin"`,
-			},
-		},
+		"unwrapped": {},
 		"wrapped": {
 			wrappedIn: "bundle",
-			expectedContains: []string{
-				`rename "bundle/unibin", "unibin"`,
-				`binary "unibin"`,
-			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -1700,15 +1652,7 @@ func TestRunPipeUniversalBinaryWrappedIn(t *testing.T) {
 			require.NoError(t, runAll(ctx, cli))
 			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 			require.Len(t, casks, 1)
-			content, err := os.ReadFile(casks[0].Path)
-			require.NoError(t, err)
-
-			for _, expected := range tt.expectedContains {
-				require.Contains(t, string(content), expected)
-			}
-			for _, omitted := range tt.expectedOmissions {
-				require.NotContains(t, string(content), omitted)
-			}
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
 		})
 	}
 }
@@ -1879,42 +1823,11 @@ func TestRunPipeWrappedIn(t *testing.T) {
 
 func TestRunPipeWrappedInArtifactSources(t *testing.T) {
 	for name, tt := range map[string]struct {
-		wrapped           bool
-		expectedContains  []string
-		expectedOmissions []string
+		wrapped bool
 	}{
-		"unwrapped": {
-			expectedContains: []string{
-				`manpage "man/wrappedin.1"`,
-				`bash_completion "completions/wrappedin.bash"`,
-				`fish_completion "completions/wrappedin.fish"`,
-				`zsh_completion "completions/wrappedin.zsh"`,
-			},
-			expectedOmissions: []string{
-				`rename "wrappedin_1.0.1_darwin_arm64/man/wrappedin.1", "man/wrappedin.1"`,
-				`rename "wrappedin_1.0.1_linux_amd64/man/wrappedin.1", "man/wrappedin.1"`,
-				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
-				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
-			},
-		},
+		"unwrapped": {},
 		"wrapped": {
 			wrapped: true,
-			expectedContains: []string{
-				`rename "wrappedin_1.0.1_darwin_arm64/wrappedin", "wrappedin"`,
-				`rename "wrappedin_1.0.1_darwin_arm64/man/wrappedin.1", "man/wrappedin.1"`,
-				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
-				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.fish", "completions/wrappedin.fish"`,
-				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.zsh", "completions/wrappedin.zsh"`,
-				`rename "wrappedin_1.0.1_linux_amd64/wrappedin", "wrappedin"`,
-				`rename "wrappedin_1.0.1_linux_amd64/man/wrappedin.1", "man/wrappedin.1"`,
-				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
-				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.fish", "completions/wrappedin.fish"`,
-				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.zsh", "completions/wrappedin.zsh"`,
-				`manpage "man/wrappedin.1"`,
-				`bash_completion "completions/wrappedin.bash"`,
-				`fish_completion "completions/wrappedin.fish"`,
-				`zsh_completion "completions/wrappedin.zsh"`,
-			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -1993,15 +1906,7 @@ func TestRunPipeWrappedInArtifactSources(t *testing.T) {
 			require.NoError(t, runAll(ctx, client.NewMock()))
 			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 			require.Len(t, casks, 1)
-			content, err := os.ReadFile(casks[0].Path)
-			require.NoError(t, err)
-
-			for _, expected := range tt.expectedContains {
-				require.Contains(t, string(content), expected)
-			}
-			for _, omitted := range tt.expectedOmissions {
-				require.NotContains(t, string(content), omitted)
-			}
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
 		})
 	}
 }
