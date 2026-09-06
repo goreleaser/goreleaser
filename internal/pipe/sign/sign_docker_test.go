@@ -119,7 +119,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Artifacts: "all",
 					Stdin:     &password,
 					Cmd:       "cosign",
-					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}", "--yes"},
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "--tlog-upload=false", "${artifact}@${digest}", "--yes"},
 				},
 			},
 		},
@@ -270,7 +270,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 		wd, err := os.Getwd()
 		require.NoError(tb, err)
 		tmp := testlib.Mktmp(tb)
-		require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+		for _, sign := range cfg.Signs {
+			if sign.Cmd == "cosign" || sign.Certificate != "" {
+				require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+				break
+			}
+		}
 		ctx.Config.Dist = "dist"
 		require.NoError(tb, os.Mkdir("dist", 0o755))
 
