@@ -216,15 +216,20 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	log.WithField("cmd", cfg.Cmd).
 		WithField("sbom", strings.Join(names, "\n")).
 		Info("cataloging")
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return nil, gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("could not catalog artifact"),
 			gerrors.WithDetails(
 				"cmd", cfg.Cmd,
@@ -233,6 +238,12 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 			),
 			gerrors.WithOutput(b.String()),
 		)
+	}
+	if stderrErr != nil {
+		return nil, stderrErr
+	}
+	if stdoutErr != nil {
+		return nil, stdoutErr
 	}
 
 	var artifacts []*artifact.Artifact

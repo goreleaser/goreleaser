@@ -12,7 +12,7 @@ import (
 // variable values in the written data with their "$NAME" counterparts.
 //
 // Each entry in env should be in "KEY=VALUE" format.
-func Writer(w io.Writer, env []string) io.Writer {
+func Writer(w io.Writer, env []string) io.WriteCloser {
 	return &redactWriter{
 		re: redact(env),
 		w:  w,
@@ -20,37 +20,50 @@ func Writer(w io.Writer, env []string) io.Writer {
 }
 
 type redactWriter struct {
-	re *strings.Replacer
-	w  io.Writer
+	re      *redacter
+	w       io.Writer
+	pending string
 }
 
 // Write implements [io.Writer].
 func (w *redactWriter) Write(p []byte) (int, error) {
-	_, err := io.WriteString(w.w, w.re.Replace(string(p)))
+	s := w.pending + string(p)
+	redacted, pending := w.re.replacePartial(s)
+	_, err := io.WriteString(w.w, redacted)
 	if err != nil {
 		return 0, err
 	}
+	w.pending = pending
 	return len(p), nil
 }
 
-// redact returns a strings.Replacer that replaces all occurrences of
+// Close flushes any pending data that may have been a secret prefix.
+func (w *redactWriter) Close() error {
+	if w.pending == "" {
+		return nil
+	}
+	_, err := io.WriteString(w.w, w.re.Replace(w.pending))
+	w.pending = ""
+	return err
+}
+
+// redact returns a redacter that replaces all occurrences of
 // secret-looking environment variable values in s with their "$NAME"
 // counterparts.
 //
 // Each entry in env should be in "KEY=VALUE" format.
-func redact(env []string) *strings.Replacer {
-	type kv struct{ k, v string }
-	var secrets []kv
+func redact(env []string) *redacter {
+	var secrets []secret
 	for _, e := range env {
 		k, v, ok := strings.Cut(e, "=")
 		if !ok || v == "" {
 			continue
 		}
 		if looksSecret(k, v) {
-			secrets = append(secrets, kv{k, v})
+			secrets = append(secrets, secret{k, v})
 		}
 	}
-	slices.SortFunc(secrets, func(a, b kv) int {
+	slices.SortFunc(secrets, func(a, b secret) int {
 		if c := cmp.Compare(len(b.v), len(a.v)); c != 0 {
 			return c
 		}
@@ -60,7 +73,74 @@ func redact(env []string) *strings.Replacer {
 	for _, e := range secrets {
 		oldnew = append(oldnew, e.v, "$"+e.k)
 	}
-	return strings.NewReplacer(oldnew...)
+	return &redacter{
+		secrets:  secrets,
+		maxLen:   maxSecretLen(secrets),
+		replacer: strings.NewReplacer(oldnew...),
+	}
+}
+
+type redacter struct {
+	secrets  []secret
+	maxLen   int
+	replacer *strings.Replacer
+}
+
+type secret struct{ k, v string }
+
+func (r *redacter) Replace(s string) string {
+	return r.replacer.Replace(s)
+}
+
+func (r *redacter) replacePartial(s string) (redacted, pending string) {
+	if len(r.secrets) == 0 {
+		return s, ""
+	}
+
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		rest := s[i:]
+		if r.isIncompleteSecret(rest) {
+			return b.String(), rest
+		}
+		if secret, ok := r.match(rest); ok {
+			b.WriteString("$" + secret.k)
+			i += len(secret.v)
+			continue
+		}
+		b.WriteByte(s[i])
+		i++
+	}
+	return b.String(), ""
+}
+
+func (r *redacter) isIncompleteSecret(s string) bool {
+	if len(s) >= r.maxLen {
+		return false
+	}
+	for _, secret := range r.secrets {
+		if len(secret.v) > len(s) && strings.HasPrefix(secret.v, s) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *redacter) match(s string) (secret, bool) {
+	for _, secret := range r.secrets {
+		if strings.HasPrefix(s, secret.v) {
+			return secret, true
+		}
+	}
+	return secret{}, false
+}
+
+func maxSecretLen(secrets []secret) int {
+	var maxLen int
+	for _, secret := range secrets {
+		maxLen = max(maxLen, len(secret.v))
+	}
+	return maxLen
 }
 
 var keySuffixes = []string{

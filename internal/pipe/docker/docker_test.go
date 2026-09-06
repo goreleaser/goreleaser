@@ -1175,6 +1175,65 @@ func TestBuildCommand(t *testing.T) {
 	}
 }
 
+func TestDockerImagerPushUsesFlags(t *testing.T) {
+	const digest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	dir := t.TempDir()
+	source := filepath.Join(dir, "main.go")
+	require.NoError(t, os.WriteFile(source, []byte(`package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if err := os.WriteFile(os.Getenv("DOCKER_ARGS_FILE"), []byte(strings.Join(os.Args[1:], "\n")), 0o644); err != nil {
+		panic(err)
+	}
+	fmt.Println("digest: `+digest+`")
+}
+`), 0o644))
+	fakeDocker := filepath.Join(dir, "docker")
+	if os.PathSeparator == '\\' {
+		fakeDocker += ".exe"
+	}
+	out, err := exec.CommandContext(t.Context(), "go", "build", "-o", fakeDocker, source).CombinedOutput()
+	require.NoError(t, err, string(out))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		name  string
+		flags []string
+		want  []string
+	}{
+		{
+			name:  "empty flags",
+			flags: nil,
+			want:  []string{"push", "example.invalid/app:v1"},
+		},
+		{
+			name:  "configured flags",
+			flags: []string{"--disable-content-trust=false"},
+			want:  []string{"push", "--disable-content-trust=false", "example.invalid/app:v1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			argsFile := filepath.Join(t.TempDir(), "args")
+			t.Setenv("DOCKER_ARGS_FILE", argsFile)
+
+			gotDigest, err := dockerImager{}.Push(testctx.Wrap(t.Context()), "example.invalid/app:v1", tt.flags)
+			require.NoError(t, err)
+			require.Equal(t, digest, gotDigest)
+			bts, err := os.ReadFile(argsFile)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, strings.Split(string(bts), "\n"))
+		})
+	}
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
@@ -1555,6 +1614,71 @@ func (i *countingImager) Build(*context.Context, string, []string, []string) err
 
 func (i *countingImager) Push(*context.Context, string, []string) (string, error) {
 	return "", nil
+}
+
+type wheelIDImager struct {
+	calls atomic.Int32
+}
+
+func (i *wheelIDImager) Build(_ *context.Context, root string, _ []string, _ []string) error {
+	i.calls.Add(1)
+	if _, err := os.Stat(filepath.Join(root, "mytool-1.0.0-py3-none-any.whl")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *wheelIDImager) Push(*context.Context, string, []string) (string, error) {
+	return "", nil
+}
+
+func TestRunWithSelectedWheelID(t *testing.T) {
+	const imagerName = "test-wheel-id"
+	lock.Lock()
+	previous, existed := imagers[imagerName]
+	lock.Unlock()
+	t.Cleanup(func() {
+		lock.Lock()
+		defer lock.Unlock()
+		if existed {
+			imagers[imagerName] = previous
+		} else {
+			delete(imagers, imagerName)
+		}
+	})
+
+	dir := t.TempDir()
+	wheel := filepath.Join(dir, "mytool-1.0.0-py3-none-any.whl")
+	require.NoError(t, os.WriteFile(wheel, []byte("wheel"), 0o644))
+	dockerfile := filepath.Join(dir, "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("FROM scratch\nCOPY mytool-1.0.0-py3-none-any.whl /wheel.whl\n"), 0o644))
+
+	im := &wheelIDImager{}
+	registerImager(imagerName, im)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dockers: []config.Docker{
+			{
+				Use:            imagerName,
+				Dockerfile:     dockerfile,
+				ImageTemplates: []string{"example.invalid/mytool:latest"},
+				IDs:            []string{"python"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mytool-1.0.0-py3-none-any.whl",
+		Path:   wheel,
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: map[string]any{
+			artifact.ExtraID: "python",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, int32(1), im.calls.Load())
 }
 
 func TestDockerBuildRetries(t *testing.T) {

@@ -92,10 +92,6 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 }
 
 func executeCommand(c *command, artifact *artifact.Artifact) error {
-	log.WithField("args", c.Args).
-		WithField("artifact", artifact.Name).
-		Debug("executing command")
-
 	//nolint:gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
 	cmd.Env = []string{}
@@ -110,26 +106,49 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 		cmd.Dir = c.Dir
 	}
 
+	log.WithField("args", redactArgs(c.Args, cmd.Env)).
+		WithField("artifact", artifact.Name).
+		Debug("executing command")
+
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	log := log.WithField("cmd", c.Args[0]).
 		WithField("artifact", artifact.Name)
 
 	log.Info("publishing")
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("publishing failed"),
 			gerrors.WithDetails("cmd", cmd.Args[0]),
 			gerrors.WithOutput(b.String()),
 		)
 	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
+	}
 
 	log.Debug("command finished successfully")
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }
 
 func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifact.Artifact {

@@ -273,6 +273,39 @@ func TestRun(t *testing.T) {
 		require.Equal(t, "x86_64-apple-darwin", ctx.PartialTarget)
 	})
 
+	t.Run("using runtime with other languages preserves match across unmatched builds", func(t *testing.T) {
+		t.Setenv("GGOOS", "darwin")
+		t.Setenv("GGOARCH", "arm64")
+
+		matching := config.Build{
+			Builder: "rust",
+			Targets: []string{
+				"aarch64-apple-darwin",
+			},
+		}
+		unmatched := config.Build{
+			Builder: "rust",
+			Targets: []string{
+				"aarch64-unknown-linux-gnu",
+			},
+		}
+
+		for name, builds := range map[string][]config.Build{
+			"matching first":  {matching, unmatched},
+			"matching second": {unmatched, matching},
+		} {
+			t.Run(name, func(t *testing.T) {
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					Dist:   "dist",
+					Builds: builds,
+				}, testctx.Partial)
+
+				require.NoError(t, pipe.Run(ctx))
+				require.Equal(t, "aarch64-apple-darwin", ctx.PartialTarget)
+			})
+		}
+	})
+
 	t.Run("using runtime with other languages no match", func(t *testing.T) {
 		t.Setenv("GGOOS", "darwin")
 		t.Setenv("GGOARCH", "amd64")

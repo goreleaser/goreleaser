@@ -2,9 +2,12 @@ package publish
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -24,6 +27,45 @@ func TestPublish(t *testing.T) {
 	}, testctx.GitHubTokenType)
 
 	require.NoError(t, New().Run(ctx))
+}
+
+func TestPublishPipelineWritesDockerDigestsAfterKo(t *testing.T) {
+	pipeline := New().pipeline
+	require.Less(t, publisherIndex(t, pipeline, "ko"), publisherIndex(t, pipeline, "docker digests"))
+	require.Less(t, publisherIndex(t, pipeline, "docker digests"), publisherIndex(t, pipeline, "signing docker images"))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Config.Dist = t.TempDir()
+	ctx.Config.DockerDigest.NameTemplate = "digests.txt"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "example.com/app:v1",
+		Type: artifact.DockerImage,
+		Extra: artifact.Extras{
+			artifact.ExtraDigest: "sha256:dockerdigest",
+		},
+	})
+
+	err := Pipe{
+		pipeline: []Publisher{
+			&testArtifactPublisher{
+				artifact: &artifact.Artifact{
+					Name: "example.com/ko:v1",
+					Type: artifact.DockerManifest,
+					Extra: artifact.Extras{
+						artifact.ExtraDigest: "sha256:kodigest",
+					},
+				},
+			},
+			dockerdigest.Pipe{},
+		},
+	}.Run(ctx)
+	require.NoError(t, err)
+
+	bts, err := os.ReadFile(ctx.Config.Dist + "/digests.txt")
+	require.NoError(t, err)
+	require.Equal(t, `dockerdigest  example.com/app:v1
+kodigest  example.com/ko:v1
+`, string(bts))
 }
 
 func TestPublishSuccess(t *testing.T) {
@@ -82,6 +124,27 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
+}
+
+func publisherIndex(tb testing.TB, pipeline []Publisher, name string) int {
+	tb.Helper()
+	for i, publisher := range pipeline {
+		if publisher.String() == name {
+			return i
+		}
+	}
+	tb.Fatalf("publisher %q not found", name)
+	return -1
+}
+
+type testArtifactPublisher struct {
+	artifact *artifact.Artifact
+}
+
+func (t *testArtifactPublisher) String() string { return "test artifact publisher" }
+func (t *testArtifactPublisher) Publish(ctx *context.Context) error {
+	ctx.Artifacts.Add(t.artifact)
+	return nil
 }
 
 type testPublisher struct {

@@ -14,7 +14,7 @@ import (
 )
 
 func TestArchive(t *testing.T) {
-	for _, format := range []string{"tar.gz", "tar", "zip"} {
+	for _, format := range []string{"tar.gz", "tar", "zip", "tgz"} {
 		t.Run(format, func(t *testing.T) {
 			tmp := testlib.Mktmp(t)
 			require.NoError(t, os.Mkdir("dist", 0o744))
@@ -143,6 +143,7 @@ func doVerifyTestArchive(tb testing.TB, ctx *context.Context, tmp, format string
 	stat, err := os.Stat(path)
 	require.NoError(tb, err)
 	require.Greater(tb, stat.Size(), int64(100))
+	require.NoFileExists(tb, path+".bkp")
 
 	require.ElementsMatch(tb, expected, testlib.LsArchive(tb, path, format))
 

@@ -29,7 +29,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			ctx.PartialTarget = getGoEnvFilter()
 			break
 		}
-		ctx.PartialTarget = findRuntime(b.Targets)
+		if target := findRuntime(b.Targets); target != "" {
+			ctx.PartialTarget = target
+		}
 	}
 
 	if ctx.PartialTarget == "" {

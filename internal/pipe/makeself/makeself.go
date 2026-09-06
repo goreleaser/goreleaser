@@ -202,11 +202,16 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	if err := cmd.Run(); err != nil {
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
+	runErr := cmd.Run()
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("could not create makeself package"),
 			gerrors.WithDetails(
 				"args", strings.Join(cmd.Args, " "),
@@ -214,6 +219,12 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 			),
 			gerrors.WithOutput(b.String()),
 		)
+	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
 	}
 
 	path := filepath.Join(dir, filename)

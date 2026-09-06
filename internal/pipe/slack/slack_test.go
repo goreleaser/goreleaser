@@ -2,10 +2,13 @@ package slack
 
 import (
 	"bytes"
+	stdctx "context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -79,6 +82,57 @@ func TestAnnounceWithQuotes(t *testing.T) {
 	})
 }
 
+func TestAnnounceCancelsPendingWebhook(t *testing.T) {
+	releaseResponse := make(chan struct{})
+	requestReceived := make(chan struct{})
+	var receivedOnce sync.Once
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedOnce.Do(func() {
+			close(requestReceived)
+		})
+		select {
+		case <-releaseResponse:
+			w.WriteHeader(http.StatusOK)
+		case <-r.Context().Done():
+		}
+	}))
+	t.Cleanup(func() {
+		close(releaseResponse)
+		srv.Close()
+	})
+	t.Setenv("SLACK_WEBHOOK", srv.URL)
+
+	parent, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(parent, config.Project{
+		Announce: config.Announce{
+			Slack: config.Slack{
+				MessageTemplate: "hello",
+			},
+		},
+	})
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- Pipe{}.Announce(ctx)
+	}()
+
+	select {
+	case <-requestReceived:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for Slack webhook request")
+	}
+
+	cancel()
+
+	select {
+	case err := <-errCh:
+		require.ErrorIs(t, err, stdctx.Canceled)
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for Slack webhook cancellation")
+	}
+}
+
 func TestAnnounceMissingEnv(t *testing.T) {
 	t.Setenv("SLACK_WEBHOOK", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -146,6 +200,50 @@ func TestParseRichText(t *testing.T) {
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.ErrorContains(t, err, "json")
 	})
+}
+
+func TestParseRichTextPreservesQuotesAndRenderedNewlines(t *testing.T) {
+	t.Parallel()
+
+	const conf = `
+version: 2
+announce:
+  slack:
+    enabled: true
+    message_template: fallback
+    blocks:
+      - type: section
+        text:
+          type: plain_text
+          text: 'Release "stable"'
+      - type: section
+        text:
+          type: plain_text
+          text: '{{ .ReleaseNotes }}'
+    attachments:
+      - text: 'Release "stable"'
+      - text: '{{ .ReleaseNotes }}'
+`
+	project, err := config.LoadReader(bytes.NewBufferString(conf))
+	require.NoError(t, err)
+	ctx := testctx.WrapWithCfg(t.Context(), project)
+	ctx.ReleaseNotes = "line \"one\"\nline two"
+
+	blocks, attachments, err := parseAdvancedFormatting(ctx)
+	require.NoError(t, err)
+	require.Len(t, blocks.BlockSet, 2)
+	require.Len(t, attachments, 2)
+
+	section, ok := blocks.BlockSet[0].(*slack.SectionBlock)
+	require.True(t, ok)
+	require.Equal(t, `Release "stable"`, section.Text.Text)
+
+	section, ok = blocks.BlockSet[1].(*slack.SectionBlock)
+	require.True(t, ok)
+	require.Equal(t, "line \"one\"\nline two", section.Text.Text)
+
+	require.Equal(t, `Release "stable"`, attachments[0].Text)
+	require.Equal(t, "line \"one\"\nline two", attachments[1].Text)
 }
 
 func TestRichText(t *testing.T) {

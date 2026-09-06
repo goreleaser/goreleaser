@@ -131,6 +131,26 @@ func TestInitConfigAlreadyExist(t *testing.T) {
 	require.Equal(t, string(content), string(bts))
 }
 
+func TestInitInvalidLanguageDoesNotCreateConfig(t *testing.T) {
+	folder := setupInitTest(t)
+	configPath := filepath.Join(folder, ".goreleaser.yaml")
+
+	cmd := newInitCmd().cmd
+	cmd.SetArgs([]string{"--language", "ggo"})
+	require.EqualError(t, cmd.Execute(), "invalid language: ggo")
+	require.NoFileExists(t, configPath)
+	require.NoFileExists(t, filepath.Join(folder, ".gitignore"))
+
+	cmd = newInitCmd().cmd
+	cmd.SetArgs([]string{"--language", "go"})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(configPath)
+	require.NoError(t, err)
+	require.Equal(t, string(static.GoExampleConfig), string(bts))
+}
+
 func TestInitGitIgnoreExists(t *testing.T) {
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
@@ -242,6 +262,20 @@ func TestSetupGitignore(t *testing.T) {
 			lines:          []string{"dist/"},
 			expectContent:  "dist/\n",
 			expectModified: false,
+		},
+		{
+			name:           "comment does not contain line",
+			existing:       "# dist/\n",
+			lines:          []string{"dist/"},
+			expectContent:  "# dist/\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
+			name:           "suffix match does not contain line",
+			existing:       "otherdist/\n",
+			lines:          []string{"dist/"},
+			expectContent:  "otherdist/\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
 		},
 		{
 			name:           "multiple lines",

@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +45,7 @@ func TestCheckConfigUnmarshalError(t *testing.T) {
 func TestCheckConfigInvalid(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/invalid.yml"})
-	require.Error(t, cmd.cmd.Execute())
+	require.EqualError(t, cmd.cmd.Execute(), "1 out of 1 configuration file(s) have issues")
 	require.Equal(t, 1, cmd.checked)
 }
 
@@ -58,6 +59,18 @@ func TestCheckConfigInvalidQuiet(t *testing.T) {
 func TestCheckConfigDeprecated(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--deprecated"})
-	require.Error(t, cmd.cmd.Execute())
+	require.EqualError(t, cmd.cmd.Execute(), "1 out of 1 configuration file(s) have issues")
 	require.Equal(t, 1, cmd.checked)
+}
+
+func TestCheckConfigInvalidAndDeprecated(t *testing.T) {
+	cmd := newCheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/invalid.yml", "--deprecated"})
+	err := cmd.cmd.Execute()
+	require.EqualError(t, err, "1 out of 1 configuration file(s) have issues")
+	require.Equal(t, 1, cmd.checked)
+
+	var detailed gerrors.ErrDetailed
+	require.ErrorAs(t, err, &detailed)
+	require.Equal(t, 1, detailed.Exit())
 }
