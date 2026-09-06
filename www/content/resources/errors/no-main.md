@@ -39,6 +39,30 @@ For more information, check the [builds documentation](/customization/builds/bui
 
 Run goreleaser in the root of the project.
 
+## If your `main` is an ellipsis path and the package is behind a build tag
+
+GoReleaser discovers `main` packages using the environment it runs in. It does
+not apply the `tags` and `flags` of the build, nor the `GOOS` and `GOARCH` of
+each target, so a package guarded by a build constraint is not found:
+
+```yaml {filename=".goreleaser.yaml"}
+builds:
+  - main: ./... # cmd/feature/main.go has `//go:build feature`
+    tags: [feature]
+```
+
+Set `main` to the package path instead, and use one build per package:
+
+```yaml {filename=".goreleaser.yaml"}
+builds:
+  - id: feature
+    main: ./cmd/feature
+    tags: [feature]
+```
+
+The same applies to a `main` package that only builds on one operating system,
+for example one with `//go:build linux` when you release from macOS.
+
 ## If you are building in `plugin`, `c-shared` or `c-archive` build modes
 
 You can set `no_main_check` to `true`:
