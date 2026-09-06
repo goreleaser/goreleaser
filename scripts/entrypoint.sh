@@ -28,5 +28,4 @@ fi
 # prevents git from complaining about unsafe dir, specially when using github actions
 git config --global --add safe.directory "$PWD"
 
-# shellcheck disable=SC2068
-exec goreleaser $@
+exec goreleaser "$@"
