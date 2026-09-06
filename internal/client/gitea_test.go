@@ -39,6 +39,34 @@ func (s *GetInstanceURLSuite) TestWithScheme() {
 	require.Equal(t, rootURL, result)
 }
 
+func (s *GetInstanceURLSuite) TestWithSubpath() {
+	t := s.T()
+	rootURL := "https://gitea.com/forge"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: rootURL + "/api/v1",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, rootURL, result)
+}
+
+func (s *GetInstanceURLSuite) TestWithSubpathTrailingSlash() {
+	t := s.T()
+	rootURL := "https://gitea.com/forge"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: rootURL + "/api/v1/",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, rootURL, result)
+}
+
 func (s *GetInstanceURLSuite) TestParseError() {
 	t := s.T()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -816,6 +844,25 @@ func TestGiteaNewGiteaInstanceURLError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: "{{ .NoKeyLikeThat }}"}})
 	_, err := newGitea(ctx, "giteatoken")
 	require.Error(t, err)
+}
+
+func TestGiteaNewGiteaPreservesSubpath(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path != "/forge/api/v1/version" {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusNotFound)
+			return
+		}
+		fmt.Fprint(w, `{"version":"1.22.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL + "/forge/api/v1"},
+	})
+	_, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
 }
 
 func TestGiteaCreateFileNewFile(t *testing.T) {

@@ -53,9 +53,9 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	u.Path = ""
+	u.Path = strings.TrimSuffix(strings.TrimSuffix(u.Path, "/"), "/api/v1")
 	rawurl := u.String()
-	if rawurl == "" {
+	if u.Scheme == "" || u.Host == "" || rawurl == "" {
 		return "", fmt.Errorf("invalid URL: %q", ctx.Config.GiteaURLs.API)
 	}
 	return rawurl, nil
