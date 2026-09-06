@@ -407,6 +407,35 @@ func TestGitClientRemovesInlinePrivateKey(t *testing.T) {
 	})
 }
 
+func TestGitClientUsesRepositorySpecificCheckout(t *testing.T) {
+	sshKey := testlib.MakeNewSSHKey(t, "")
+	author := config.CommitAuthor{
+		Name:  "Foo",
+		Email: "foo@bar.com",
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+	})
+	cli := NewGitUploadClient("main")
+
+	first := testlib.GitMakeBareRepository(t)
+	second := testlib.GitMakeBareRepository(t)
+	repo := Repo{
+		PrivateKey: sshKey,
+		Name:       "homebrew-tap",
+		Branch:     "main",
+	}
+
+	repo.GitURL = first
+	require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("first"), "first.rb", "add first"))
+
+	repo.GitURL = second
+	require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("second"), "second.rb", "add second"))
+
+	require.Equal(t, "first.rb", gitInBare(t, first, "ls-tree", "--name-only", "-r", "main"))
+	require.Equal(t, "second.rb", gitInBare(t, second, "ls-tree", "--name-only", "-r", "main"))
+}
+
 func TestGitClientWithSigning(t *testing.T) {
 	t.Parallel()
 

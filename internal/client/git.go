@@ -2,6 +2,7 @@ package client
 
 import (
 	"cmp"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -83,7 +84,7 @@ func (g *gitClient) CreateFiles(
 	}
 
 	parent := filepath.Join(ctx.Config.Dist, "git")
-	name := repo.Name + "-" + g.branch
+	name := checkoutDirName(repo.Name, url, g.branch)
 	cwd := filepath.Join(parent, name)
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 
@@ -250,6 +251,11 @@ func pushRepo(ctx *context.Context, cwd string, env []string) error {
 		},
 		retryx.IsNetworkError,
 	)
+}
+
+func checkoutDirName(name, url, branch string) string {
+	sum := sha256.Sum256([]byte(url + "\x00" + branch))
+	return fmt.Sprintf("%s-%s-%x", name, branch, sum[:8])
 }
 
 func runGitCmd(ctx *context.Context, cwd string, env []string, cmd ...string) error {
