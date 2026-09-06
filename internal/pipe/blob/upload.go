@@ -36,6 +36,41 @@ import (
 
 const awsKMSMaxPlaintextSize = 4096
 
+var (
+	findExtraFiles = extrafiles.Find
+	newUploader    = newProductionUploader
+)
+
+func newProductionUploader(conf config.Blob, provider string) uploader {
+	up := &productionUploader{
+		cacheControl:       conf.CacheControl,
+		contentDisposition: conf.ContentDisposition,
+	}
+	if provider == "s3" && conf.ACL != "" {
+		up.beforeWrite = func(asFunc func(any) bool) error {
+			req := &transfermanager.UploadObjectInput{}
+			if !asFunc(&req) {
+				return errors.New("could not apply before write")
+			}
+			acl := types.ObjectCannedACL(conf.ACL)
+			switch acl {
+			case types.ObjectCannedACLPrivate,
+				types.ObjectCannedACLPublicRead,
+				types.ObjectCannedACLPublicReadWrite,
+				types.ObjectCannedACLAuthenticatedRead,
+				types.ObjectCannedACLAwsExecRead,
+				types.ObjectCannedACLBucketOwnerRead,
+				types.ObjectCannedACLBucketOwnerFullControl:
+				req.ACL = acl
+				return nil
+			default:
+				return fmt.Errorf("invalid ACL %q", conf.ACL)
+			}
+		}
+	}
+	return up
+}
+
 func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
 	if err != nil {
@@ -108,37 +143,16 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	up := &productionUploader{
-		cacheControl:       conf.CacheControl,
-		contentDisposition: conf.ContentDisposition,
-	}
-	if provider == "s3" && conf.ACL != "" {
-		up.beforeWrite = func(asFunc func(any) bool) error {
-			req := &transfermanager.UploadObjectInput{}
-			if !asFunc(&req) {
-				return errors.New("could not apply before write")
-			}
-			acl := types.ObjectCannedACL(conf.ACL)
-			switch acl {
-			case types.ObjectCannedACLPrivate,
-				types.ObjectCannedACLPublicRead,
-				types.ObjectCannedACLPublicReadWrite,
-				types.ObjectCannedACLAuthenticatedRead,
-				types.ObjectCannedACLAwsExecRead,
-				types.ObjectCannedACLBucketOwnerRead,
-				types.ObjectCannedACLBucketOwnerFullControl:
-				req.ACL = acl
-				return nil
-			default:
-				return fmt.Errorf("invalid ACL %q", conf.ACL)
-			}
-		}
-	}
-
+	up := newUploader(conf, provider)
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
 	defer up.Close()
+
+	files, err := findExtraFiles(ctx, conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
 	artifacts := artifactList(ctx, conf)
@@ -152,10 +166,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
-	if err != nil {
-		return err
-	}
 	for name, fullpath := range files {
 		g.Go(func() error {
 			uploadFile := path.Join(dir, name)
