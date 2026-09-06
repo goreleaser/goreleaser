@@ -430,9 +430,13 @@ func writeDockerV2TestCommand(t *testing.T, dir string) {
 	t.Helper()
 	script := fmt.Sprintf("#!/bin/sh\nexec %q -test.run=TestDockerV2CommandHelper -- \"$@\"\n", os.Args[0])
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "docker"), []byte(script), 0o755))
+	if testlib.IsWindows() {
+		script := fmt.Sprintf("@echo off\r\n%q -test.run=TestDockerV2CommandHelper -- %%*\r\n", os.Args[0])
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "docker.bat"), []byte(script), 0o755))
+	}
 }
 
-func TestDockerV2CommandHelper(t *testing.T) {
+func TestDockerV2CommandHelper(_ *testing.T) {
 	if os.Getenv("GO_WANT_DOCKER_V2_COMMAND_HELPER") != "1" {
 		return
 	}
@@ -451,15 +455,8 @@ func TestDockerV2CommandHelper(t *testing.T) {
 
 func unsetEnv(t *testing.T, key string) {
 	t.Helper()
-	old, ok := os.LookupEnv(key)
+	t.Setenv(key, "")
 	require.NoError(t, os.Unsetenv(key))
-	t.Cleanup(func() {
-		if ok {
-			require.NoError(t, os.Setenv(key, old))
-			return
-		}
-		require.NoError(t, os.Unsetenv(key))
-	})
 }
 
 func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {

@@ -91,7 +91,7 @@ func TestRunCommandEnvPrecedence(t *testing.T) {
 	}
 }
 
-func TestDockerCommandHelper(t *testing.T) {
+func TestDockerCommandHelper(_ *testing.T) {
 	if os.Getenv("GO_WANT_DOCKER_COMMAND_HELPER") != "1" {
 		return
 	}
@@ -109,15 +109,8 @@ func TestDockerCommandHelper(t *testing.T) {
 
 func unsetEnv(t *testing.T, key string) {
 	t.Helper()
-	old, ok := os.LookupEnv(key)
+	t.Setenv(key, "")
 	require.NoError(t, os.Unsetenv(key))
-	t.Cleanup(func() {
-		if ok {
-			require.NoError(t, os.Setenv(key, old))
-			return
-		}
-		require.NoError(t, os.Unsetenv(key))
-	})
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...

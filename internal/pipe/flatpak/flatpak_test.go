@@ -350,9 +350,13 @@ func writeFlatpakTestCommand(t *testing.T, dir, name string) {
 	t.Helper()
 	script := fmt.Sprintf("#!/bin/sh\nexec %q -test.run=TestFlatpakCommandHelper -- %q \"$@\"\n", os.Args[0], name)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	if testlib.IsWindows() {
+		script := fmt.Sprintf("@echo off\r\n%q -test.run=TestFlatpakCommandHelper -- %q %%*\r\n", os.Args[0], name)
+		require.NoError(t, os.WriteFile(filepath.Join(dir, name+".bat"), []byte(script), 0o755))
+	}
 }
 
-func TestFlatpakCommandHelper(t *testing.T) {
+func TestFlatpakCommandHelper(_ *testing.T) {
 	if os.Getenv("GO_WANT_FLATPAK_COMMAND_HELPER") != "1" {
 		return
 	}
@@ -443,14 +447,12 @@ func runInstallHelper(args []string) {
 		fmt.Fprintf(os.Stderr, "open install record: %v\n", err)
 		os.Exit(2)
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			fmt.Fprintf(os.Stderr, "close install record: %v\n", err)
-			os.Exit(2)
-		}
-	}()
 	if _, err := fmt.Fprintf(f, "%s\n%s\n", args[1], args[2]); err != nil {
 		fmt.Fprintf(os.Stderr, "write install record: %v\n", err)
+		os.Exit(2)
+	}
+	if err := f.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "close install record: %v\n", err)
 		os.Exit(2)
 	}
 	os.Exit(0)
@@ -458,13 +460,6 @@ func runInstallHelper(args []string) {
 
 func unsetEnv(t *testing.T, key string) {
 	t.Helper()
-	old, ok := os.LookupEnv(key)
+	t.Setenv(key, "")
 	require.NoError(t, os.Unsetenv(key))
-	t.Cleanup(func() {
-		if ok {
-			require.NoError(t, os.Setenv(key, old))
-			return
-		}
-		require.NoError(t, os.Unsetenv(key))
-	})
 }
