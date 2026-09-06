@@ -291,19 +291,6 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	for _, a := range allbinaries {
-		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
-			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
-			if ha := getHeaderArtifactForLibrary(
-				build,
-				t,
-				fullPathWithoutExt,
-			); ha != nil {
-				ctx.Artifacts.Add(ha)
-			}
-		}
-	}
-
 	if len(testEnvs) > 0 {
 		for i := range allbinaries {
 			allbinaries[i].Extra["testEnvs"] = testEnvs
@@ -325,6 +312,14 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	if err := ensureWASMEllipsisOutputs(mains, allbinaries, options.Ext); err != nil {
 		return err
+	}
+	for _, a := range allbinaries {
+		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
+			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
+				ctx.Artifacts.Add(ha)
+			}
+		}
 	}
 
 	for _, a := range allbinaries {

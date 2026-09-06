@@ -1487,6 +1487,83 @@ func TestBuildModTimestamp(t *testing.T) {
 	require.Equal(t, modTime, fi.ModTime().UTC())
 }
 
+func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
+	for mode, ext := range map[string]string{
+		"c-archive": cArchiveExt(),
+		"c-shared":  cSharedExt(),
+	} {
+		t.Run(mode, func(t *testing.T) {
+			folder := t.TempDir()
+			writeGoMod(t, folder, "github.com/foo/bar")
+			writeCExportMain(t, folder)
+
+			target := mustParse(t, runtimeTarget)
+			build := config.Build{
+				ID:        "cexport",
+				Dir:       folder,
+				Main:      ".",
+				Tool:      "go",
+				Command:   "build",
+				Buildmode: mode,
+				Env:       []string{"CGO_ENABLED=1"},
+			}
+			options := api.Options{
+				Target: target,
+				Name:   "cexport" + ext,
+				Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
+				Ext:    ext,
+			}
+			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			require.NoError(t, Default.Build(ctx, build, options))
+
+			libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
+			require.Len(t, libraries, 1)
+			require.Equal(t, options.Path, libraries[0].Path)
+
+			headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
+			require.Len(t, headers, 1)
+			require.Equal(t, filepath.Join(folder, "dist", runtimeTarget, "cexport.h"), headers[0].Path)
+			require.Equal(t, "cexport.h", headers[0].Name)
+			require.Equal(t, target.Target, headers[0].Target)
+			require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
+			require.Equal(t, "cexport.h", headers[0].Extra[artifact.ExtraBinary])
+			require.Equal(t, ".h", headers[0].Extra[artifact.ExtraExt])
+		})
+	}
+}
+
+func TestBuildCgoLibraryFailureDoesNotRegisterStaleHeader(t *testing.T) {
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeCExportMain(t, folder)
+
+	target := mustParse(t, runtimeTarget)
+	output := filepath.Join(folder, "dist", runtimeTarget, "cexport.a")
+	require.NoError(t, os.MkdirAll(filepath.Dir(output), 0o755))
+	require.NoError(t, os.WriteFile(strings.TrimSuffix(output, ".a")+".h", []byte("stale"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{{
+		ID:        "cexport",
+		Dir:       folder,
+		Main:      ".",
+		Tool:      "go",
+		Command:   "build",
+		Buildmode: "c-archive",
+		Flags:     []string{"-flag-that-dont-exists-to-force-failure"},
+	}}})
+
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: target,
+		Name:   "cexport.a",
+		Path:   output,
+		Ext:    ".a",
+	})
+	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	require.Empty(t, ctx.Artifacts.List())
+}
+
 func TestBuildGoBuildLine(t *testing.T) {
 	requireEqualCmd := func(tb testing.TB, build config.Build, expected []string) {
 		tb.Helper()
@@ -2411,6 +2488,44 @@ func writeTaggedMain(tb testing.TB, folder, tags string) {
 		[]byte("//go:build "+tags+"\n\npackage main\nfunc main() {println(0)}"),
 		0o644,
 	))
+}
+
+func writeCExportMain(tb testing.TB, folder string) {
+	tb.Helper()
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte(`package main
+
+import "C"
+
+//export Add
+func Add(a, b C.int) C.int {
+	return a + b
+}
+
+func main() {}
+`),
+		0o644,
+	))
+}
+
+func cArchiveExt() string {
+	if runtime.GOOS == "windows" {
+		return ".lib"
+	}
+	return ".a"
+}
+
+func cSharedExt() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return ".dylib"
+	case "windows":
+		return ".dll"
+	default:
+		return ".so"
+	}
 }
 
 func writeTest(tb testing.TB, folder string) {
