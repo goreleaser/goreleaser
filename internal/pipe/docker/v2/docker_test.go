@@ -187,6 +187,51 @@ func TestBuildImageRemovesTemporaryDirOnSuccess(t *testing.T) {
 	require.Empty(t, dockerContextDirs(t, tmp))
 }
 
+func TestMakeContextUsesStableAmd64Variant(t *testing.T) {
+	for name, order := range map[string][]string{
+		"v1 then v3": {"v1", "v3"},
+		"v3 then v1": {"v3", "v1"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir, _ := isolatedDockerContextTemp(t)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+			for _, goamd64 := range []string{"v1", "v3"} {
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin-"+goamd64), []byte(goamd64), 0o644))
+			}
+
+			ctx := testctx.Wrap(t.Context())
+			for _, goamd64 := range order {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "mybin",
+					Path:    "mybin-" + goamd64,
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: goamd64,
+					Type:    artifact.Binary,
+					Extra: artifact.Extras{
+						artifact.ExtraID: "cli",
+					},
+				})
+			}
+
+			d := config.DockerV2{
+				ID:        "test",
+				IDs:       []string{"cli"},
+				Platforms: []string{"linux/amd64"},
+			}
+			wd, err := makeContext(d, contextArtifacts(ctx, d), "Dockerfile")
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = os.RemoveAll(wd)
+			})
+
+			content, err := os.ReadFile(filepath.Join(wd, "linux/amd64/mybin"))
+			require.NoError(t, err)
+			require.Equal(t, "v1", string(content))
+		})
+	}
+}
+
 func isolatedDockerContextTemp(t *testing.T) (string, string) {
 	t.Helper()
 	root := t.TempDir()
@@ -502,6 +547,11 @@ func TestToPlatform(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "amd64",
 		},
+		"linux/amd64/v3": {
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v3",
+		},
 		"linux/arm64": {
 			Goos:   "linux",
 			Goarch: "arm64",
@@ -572,7 +622,8 @@ func TestToPlatform(t *testing.T) {
 
 func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
-		"linux/amd64":    {os: "linux", arch: "amd64"},
+		"linux/amd64":    {os: "linux", arch: "amd64", amd64: "v1"},
+		"linux/amd64/v3": {os: "linux", arch: "amd64", amd64: "v3"},
 		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
 		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
 		"linux":          {os: "linux"},
@@ -633,6 +684,29 @@ func TestContextArtifacts(t *testing.T) {
 			Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
 		})
 		require.Len(t, arts, 5)
+	})
+
+	t.Run("amd64 variant", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		for _, goamd64 := range []string{"v1", "v3"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "mybin",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: goamd64,
+				Type:    artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "id1",
+				},
+			})
+		}
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/amd64/v3"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 1)
+		require.Equal(t, "v3", arts[0].Goamd64)
 	})
 
 	t.Run("arm64 variant", func(t *testing.T) {

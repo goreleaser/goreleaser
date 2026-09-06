@@ -537,6 +537,9 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 		if plat.arm64 != "" {
 			filters = append(filters, byGoarm64(plat.arm64))
 		}
+		if plat.amd64 != "" {
+			filters = append(filters, artifact.ByGoamd64(plat.amd64))
+		}
 		platFilters = append(platFilters, artifact.And(filters...))
 	}
 
@@ -579,8 +582,13 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		return "", fmt.Errorf("unsupported OS: %q", a.Goos)
 	}
 	switch a.Goarch {
-	case "amd64", "arm64", "386", "ppc64le", "s390x", "riscv64":
+	case "arm64", "386", "ppc64le", "s390x", "riscv64":
 		parts = append(parts, a.Goarch)
+	case "amd64":
+		parts = append(parts, a.Goarch)
+		if a.Goamd64 != "" && a.Goamd64 != "v1" {
+			parts = append(parts, a.Goamd64)
+		}
 	case "arm":
 		parts = append(parts, a.Goarch)
 		switch a.Goarm {
@@ -599,6 +607,7 @@ type platform struct {
 	os, arch string
 	arm      string
 	arm64    string
+	amd64    string
 }
 
 func parsePlatform(p string) platform {
@@ -608,9 +617,14 @@ func parsePlatform(p string) platform {
 	}
 	if len(parts) >= 2 {
 		result.arch = parts[1]
+		if result.arch == "amd64" {
+			result.amd64 = "v1"
+		}
 	}
 	if len(parts) >= 3 {
 		switch result.arch {
+		case "amd64":
+			result.amd64 = toGoamd64(parts[2])
 		case "arm":
 			result.arm = strings.TrimPrefix(parts[2], "v")
 		case "arm64":
@@ -618,6 +632,14 @@ func parsePlatform(p string) platform {
 		}
 	}
 	return result
+}
+
+func toGoamd64(variant string) string {
+	variant = strings.TrimPrefix(variant, "v")
+	if variant == "" {
+		return ""
+	}
+	return "v" + variant
 }
 
 func toGoarm64(variant string) string {
