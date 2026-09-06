@@ -606,6 +606,7 @@ func copyImage(src, dst string) (string, error) {
 }
 
 func makeArtifact(id, name, digest string) *artifact.Artifact {
+	name = digestFreeReference(name)
 	art := &artifact.Artifact{
 		Type:  artifact.DockerManifest,
 		Name:  name,
@@ -619,4 +620,11 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		art.Extra[artifact.ExtraDigest] = digest
 	}
 	return art
+}
+
+func digestFreeReference(ref string) string {
+	if idx := strings.LastIndex(ref, "@"); idx != -1 {
+		return ref[:idx]
+	}
+	return ref
 }

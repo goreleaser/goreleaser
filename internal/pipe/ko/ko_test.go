@@ -194,6 +194,24 @@ func TestSecondaryDestinationsUseKoNamer(t *testing.T) {
 	require.Empty(t, secondaryDestinations(one))
 }
 
+func TestMakeArtifactStoresDigestFreePath(t *testing.T) {
+	const digest = "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
+
+	art := makeArtifact("default", "ghcr.io/acme/app:v1.2.3@"+digest, digest)
+	require.Equal(t, "ghcr.io/acme/app:v1.2.3", art.Name)
+	require.Equal(t, art.Name, art.Path)
+	require.Equal(t, "default", art.Extra[artifact.ExtraID])
+	require.Equal(t, digest, art.Extra[artifact.ExtraDigest])
+
+	signingRef := art.Path + "@" + artifact.ExtraOr(*art, artifact.ExtraDigest, "")
+	require.Equal(t, 1, strings.Count(signingRef, "@sha256:"))
+	_, err := name.ParseReference(signingRef)
+	require.NoError(t, err)
+
+	art = makeArtifact("default", "ghcr.io/acme/app:v1.2.3", digest)
+	require.Equal(t, "ghcr.io/acme/app:v1.2.3", art.Path)
+}
+
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
