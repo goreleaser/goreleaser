@@ -244,6 +244,20 @@ func TestSetupGitignore(t *testing.T) {
 			expectModified: false,
 		},
 		{
+			name:           "comment does not contain line",
+			existing:       "# dist/\n",
+			lines:          []string{"dist/"},
+			expectContent:  "# dist/\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
+			name:           "suffix match does not contain line",
+			existing:       "otherdist/\n",
+			lines:          []string{"dist/"},
+			expectContent:  "otherdist/\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
 			name:           "multiple lines",
 			existing:       "",
 			lines:          []string{"dist/", "target/", "build/"},

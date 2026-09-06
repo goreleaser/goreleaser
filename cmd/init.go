@@ -120,6 +120,10 @@ func newInitCmd() *initCmd {
 func setupGitignore(path string, lines []string) (bool, error) {
 	ignored, _ := os.ReadFile(path)
 	content := strings.ReplaceAll(string(ignored), "\r\n", "\n")
+	ignoredLines := map[string]bool{}
+	for _, line := range strings.Split(content, "\n") {
+		ignoredLines[line] = true
+	}
 
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
@@ -135,7 +139,7 @@ func setupGitignore(path string, lines []string) (bool, error) {
 
 	var modified bool
 	for _, line := range lines {
-		if !strings.Contains(content, line+"\n") {
+		if !ignoredLines[line] {
 			if !modified {
 				line = "# Added by goreleaser init:\n" + line
 				modified = true
