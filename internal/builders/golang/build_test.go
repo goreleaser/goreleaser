@@ -1185,7 +1185,7 @@ func TestBuildOutput(t *testing.T) {
 	})
 }
 
-func TestExecGoKeepsFailureOutput(t *testing.T) {
+func TestLogFilterKeepsFailureOutput(t *testing.T) {
 	err := base.Exec(
 		testctx.Wrap(t.Context()),
 		[]string{"go", "build", "-flag-that-dont-exists-to-force-failure"},
@@ -2130,7 +2130,7 @@ func TestCheckBuildElipsisIDsAreTargetIndependent(t *testing.T) {
 	}, ids)
 }
 
-func TestCheckBuildElipsisDropsListIncompatibleFlags(t *testing.T) {
+func TestCheckBuildElipsisFiltersBuildFlags(t *testing.T) {
 	t.Parallel()
 	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")

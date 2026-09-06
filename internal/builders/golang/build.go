@@ -823,10 +823,8 @@ func logIDChange(build config.Build, bin string) {
 		return
 	}
 	log.Warn(logext.Warning(
-		"the artifact ID of this build is now " + logext.Keyword(bin) +
-			" instead of " + logext.Keyword(build.ID) +
-			", because " + logext.Keyword("main") + " is an ellipsis path and " +
-			logext.Keyword("id") + " is not set: set " + logext.Keyword("id") +
+		"the artifact ID of this build changed from " + logext.Keyword(build.ID) +
+			" to " + logext.Keyword(bin) + ": set " + logext.Keyword("id") +
 			" if you reference it in an " + logext.Keyword("ids") + " field",
 	))
 }
