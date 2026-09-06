@@ -1084,6 +1084,106 @@ func TestPublishGitHubOIDCGetTokenErrorKeepsExistingTokenFiles(t *testing.T) {
 	require.Equal(t, registryToken, string(bts))
 }
 
+func TestPublishCleansUpCreatedLegacyTokenFiles(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	var receivedRequest apiv0.ServerJSON
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &receivedRequest))
+
+		w.WriteHeader(http.StatusCreated)
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(apiv0.ServerResponse{
+			Meta: apiv0.ResponseMeta{
+				Official: &apiv0.RegistryExtensions{Status: "pending"},
+			},
+		}))
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "github",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+
+	pipe := &Pipe{registry: srv.URL}
+	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
+		return &mockAuthProvider{
+			token: "test-token",
+			loginFn: func(context.Context) error {
+				require.NoError(t, os.WriteFile(legacyGitHubTokenFilePath, []byte("github-token"), 0o600))
+				require.NoError(t, os.WriteFile(legacyRegistryTokenFilePath, []byte("registry-token"), 0o600))
+				return nil
+			},
+		}, nil
+	}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Publish(ctx))
+	require.Equal(t, "test-server", receivedRequest.Name)
+
+	for _, file := range []string{legacyGitHubTokenFilePath, legacyRegistryTokenFilePath} {
+		_, err := os.Stat(file)
+		require.Truef(t, os.IsNotExist(err), "%s should be removed", file)
+	}
+}
+
+func TestPublishRestoresExistingLegacyTokenFiles(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	const (
+		gitHubToken   = "existing github token"
+		registryToken = "existing registry token"
+	)
+	require.NoError(t, os.WriteFile(legacyGitHubTokenFilePath, []byte(gitHubToken), 0o600))
+	require.NoError(t, os.WriteFile(legacyRegistryTokenFilePath, []byte(registryToken), 0o600))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "github",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+
+	pipe := &Pipe{registry: "http://localhost"}
+	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
+		return &mockAuthProvider{
+			getTokenErr: fmt.Errorf("token retrieval failed"),
+			loginFn: func(context.Context) error {
+				require.NoError(t, os.WriteFile(legacyGitHubTokenFilePath, []byte("new github token"), 0o600))
+				require.NoError(t, os.WriteFile(legacyRegistryTokenFilePath, []byte("new registry token"), 0o600))
+				return nil
+			},
+		}, nil
+	}
+	require.NoError(t, pipe.Default(ctx))
+	err := pipe.Publish(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not get token")
+
+	bts, err := os.ReadFile(legacyGitHubTokenFilePath)
+	require.NoError(t, err)
+	require.Equal(t, gitHubToken, string(bts))
+	bts, err = os.ReadFile(legacyRegistryTokenFilePath)
+	require.NoError(t, err)
+	require.Equal(t, registryToken, string(bts))
+}
+
 func TestPublishNoPackages(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req apiv0.ServerJSON
@@ -1159,6 +1259,7 @@ type mockAuthProvider struct {
 	token       string
 	loginErr    error
 	getTokenErr error
+	loginFn     func(context.Context) error
 }
 
 func (m *mockAuthProvider) GetToken(context.Context) (string, error) {
