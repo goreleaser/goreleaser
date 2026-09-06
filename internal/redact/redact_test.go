@@ -208,12 +208,12 @@ func TestRedactWriter(t *testing.T) {
 		t.Parallel()
 		var buf bytes.Buffer
 		w := Writer(&buf, []string{
-			"SHORT_TOKEN=key123",
-			"API_KEY=key123key123",
+			"SHORT_TOKEN=redacted-test",
+			"API_KEY=redacted-test-value",
 		})
-		_, err := io.WriteString(w, "key123")
+		_, err := io.WriteString(w, "redacted-test")
 		require.NoError(t, err)
-		_, err = io.WriteString(w, "key123")
+		_, err = io.WriteString(w, "-value")
 		require.NoError(t, err)
 		require.Equal(t, "$API_KEY", buf.String())
 	})
