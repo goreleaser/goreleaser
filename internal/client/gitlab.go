@@ -96,6 +96,7 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 		gitlab.WithHTTPClient(&http.Client{
 			Transport: transport,
 		}),
+		gitlab.WithRequestOptions(gitlab.WithContext(ctx)),
 		// the SDK retries 429s and 5xx on its own, with its own budget and
 		// backoff. retryx does that too, honoring the user configuration, so
 		// let it own the retries.
@@ -205,13 +206,13 @@ func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 
 // getDefaultBranch get the default branch
 func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
+	if branch := gitlabCIDefaultBranch(repo); branch != "" {
 		return branch, nil
 	}
 	if err := c.checkIsPrivateToken(); err != nil {
 		return "", fmt.Errorf("get default branch: %w", err)
 	}
-	projectID := repo.String()
+	projectID := gitlabProjectID(repo)
 	p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
 		return c.client.Projects.GetProject(projectID, nil)
 	})
@@ -226,12 +227,33 @@ func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 	return p.DefaultBranch, nil
 }
 
-// checkBranchExists checks if a branch exists
-func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch string) (bool, error) {
+func gitlabCIDefaultBranch(repo Repo) string {
+	branch := os.Getenv("CI_DEFAULT_BRANCH")
+	if branch == "" {
+		return ""
+	}
+
+	projectID := gitlabProjectID(repo)
+	if projectID == "" {
+		return ""
+	}
+	if os.Getenv("CI_PROJECT_PATH") == projectID || os.Getenv("CI_PROJECT_ID") == projectID {
+		return branch
+	}
+	return ""
+}
+
+func gitlabProjectID(repo Repo) string {
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
 	}
+	return projectID
+}
+
+// checkBranchExists checks if a branch exists
+func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch string) (bool, error) {
+	projectID := gitlabProjectID(repo)
 
 	_, res, err := gitlabDo(ctx, func() (*gitlab.Branch, *gitlab.Response, error) {
 		return c.client.Branches.GetBranch(projectID, branch)
@@ -291,10 +313,7 @@ func (c *gitlabClient) CreateFile(
 		return fmt.Errorf("create file: %w", err)
 	}
 
-	projectID := repo.Name
-	if repo.Owner != "" {
-		projectID = repo.Owner + "/" + projectID
-	}
+	projectID := gitlabProjectID(repo)
 
 	log.
 		WithField("projectID", projectID).
@@ -705,9 +724,13 @@ func (c *gitlabClient) Upload(
 		)
 		if err != nil {
 			if resp != nil && resp.StatusCode == http.StatusBadRequest {
-				return c.replaceReleaseLink(ctx, projectID, releaseID, name, err)
+				releaseLink, err = c.replaceReleaseLink(ctx, projectID, releaseID, name, opt, err)
+				if err != nil {
+					return err
+				}
+			} else {
+				return gitlabError(err, resp)
 			}
-			return gitlabError(err, resp)
 		}
 
 		log.WithField("id", releaseLink.ID).
@@ -725,27 +748,27 @@ func (c *gitlabClient) Upload(
 
 // replaceReleaseLink handles a failed release link creation that is likely
 // caused by a link with the same name already existing: it deletes the existing
-// link, if the user allowed it, and returns a retriable error so the upload
-// happens again.
+// link, if the user allowed it, and recreates it with the already uploaded URL.
 //
 // The failed creation does not return the ID of the existing link, so it has to
 // be found in the release link list first.
 func (c *gitlabClient) replaceReleaseLink(
 	ctx *context.Context,
 	projectID, releaseID, name string,
+	opt *gitlab.CreateReleaseLinkOptions,
 	createErr error,
-) error {
+) (*gitlab.ReleaseLink, error) {
 	if !ctx.Config.Release.ReplaceExistingArtifacts {
-		return retryx.Unrecoverable(createErr)
+		return nil, retryx.Unrecoverable(createErr)
 	}
 
 	link, err := c.getReleaseLinkByName(projectID, releaseID, name)
 	if err != nil {
-		return errors.Join(createErr, err)
+		return nil, errors.Join(createErr, err)
 	}
 	if link == nil {
 		// the creation failed for some other reason.
-		return retryx.Unrecoverable(createErr)
+		return nil, retryx.Unrecoverable(createErr)
 	}
 
 	if _, resp, err := c.client.ReleaseLinks.DeleteReleaseLink(
@@ -753,14 +776,18 @@ func (c *gitlabClient) replaceReleaseLink(
 		releaseID,
 		link.ID,
 	); err != nil {
-		return errors.Join(createErr, gitlabError(err, resp))
+		return nil, errors.Join(createErr, gitlabError(err, resp))
 	}
 
 	log.WithField("id", link.ID).
 		WithField("name", name).
 		Debug("deleted existing release link")
 
-	return retryx.Retriable(createErr)
+	releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(projectID, releaseID, opt)
+	if err != nil {
+		return nil, errors.Join(createErr, gitlabError(err, resp))
+	}
+	return releaseLink, nil
 }
 
 // getReleaseLinkByName returns the release link with the given name, or nil if

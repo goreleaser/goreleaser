@@ -1,6 +1,7 @@
 package client
 
 import (
+	stdctx "context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -613,9 +614,133 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 	}
 
 	t.Setenv("CI_DEFAULT_BRANCH", "foo")
+	t.Setenv("CI_PROJECT_PATH", "someone/something")
 	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "foo", b)
+}
+
+func TestGitLabGetDefaultBranchEnvProjectID(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
+			return
+		}
+		t.Error("shouldn't have made any calls to the API")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_ID", "123456789")
+	b, err := client.getDefaultBranch(ctx, Repo{Name: "123456789"})
+	require.NoError(t, err)
+	require.Equal(t, "main", b)
+}
+
+func TestGitLabCreateFileUsesTargetDefaultBranch(t *testing.T) {
+	var gotRef string
+	var gotBranch string
+	var decodeErr error
+	var projectLookups int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case r.URL.Path == "/api/v4/projects/target/project":
+			projectLookups++
+			fmt.Fprint(w, `{"default_branch":"trunk"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodGet:
+			gotRef = r.URL.Query().Get("ref")
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodPost:
+			var req map[string]string
+			decodeErr = json.NewDecoder(r.Body).Decode(&req)
+			gotBranch = req["branch"]
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"trunk"}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_PATH", "source/project")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.CreateFile(
+		ctx,
+		config.CommitAuthor{Name: "user", Email: "u@e.com"},
+		Repo{Owner: "target", Name: "project"},
+		[]byte("content"),
+		"test.rb",
+		"add test",
+	)
+	require.NoError(t, err)
+	require.NoError(t, decodeErr)
+	require.Equal(t, 1, projectLookups)
+	require.Equal(t, "trunk", gotRef)
+	require.Equal(t, "trunk", gotBranch)
+}
+
+func TestGitLabCreateFileExplicitBranchIgnoresCIDefaultBranch(t *testing.T) {
+	var gotRef string
+	var gotBranch string
+	var decodeErr error
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/trunk"):
+			fmt.Fprint(w, `{"name":"trunk"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodGet:
+			gotRef = r.URL.Query().Get("ref")
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodPost:
+			var req map[string]string
+			decodeErr = json.NewDecoder(r.Body).Decode(&req)
+			gotBranch = req["branch"]
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"trunk"}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_PATH", "source/project")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.CreateFile(
+		ctx,
+		config.CommitAuthor{Name: "user", Email: "u@e.com"},
+		Repo{Owner: "target", Name: "project", Branch: "trunk"},
+		[]byte("content"),
+		"test.rb",
+		"add test",
+	)
+	require.NoError(t, err)
+	require.NoError(t, decodeErr)
+	require.Equal(t, "trunk", gotRef)
+	require.Equal(t, "trunk", gotBranch)
 }
 
 func TestGitLabGetDefaultBranchErr(t *testing.T) {
@@ -1182,6 +1307,106 @@ func TestGitLabVersionProbeIsBounded(t *testing.T) {
 	require.Less(t, time.Since(start), 10*time.Second)
 }
 
+func TestGitLabVersionRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if !strings.HasPrefix(r.URL.Path, "/api/v4/version") {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+			return
+		}
+		select {
+		case entered <- struct{}{}:
+		default:
+		}
+		<-releaseResponse
+		fmt.Fprint(w, `{"version":"18.0.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for GitLab version request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("GitLab version request did not return after cancellation")
+	}
+	close(releaseResponse)
+}
+
+func TestGitLabChangelogRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case strings.Contains(r.URL.Path, "/repository/compare"):
+			select {
+			case entered <- struct{}{}:
+			default:
+			}
+			<-releaseResponse
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := client.Changelog(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for GitLab compare request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("GitLab compare request did not return after cancellation")
+	}
+	close(releaseResponse)
+}
+
 func TestGitLabRateLimitRetryAfter(t *testing.T) {
 	t.Parallel()
 	reset := time.Now().Add(42 * time.Second)
@@ -1711,30 +1936,49 @@ func TestGitLabPublishRelease(t *testing.T) {
 func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 	t.Parallel()
 	for name, tt := range map[string]struct {
-		links       string
-		linksStatus int
-		replace     bool
-		wantDeletes int64
-		wantErrs    []string
+		links           string
+		linksStatus     int
+		replace         bool
+		failFirstCreate bool
+		retryAttempts   uint
+		wantCreates     int64
+		wantDeletes     int64
+		wantErrs        []string
 	}{
-		"replaces it": {
-			links:       `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
-			replace:     true,
-			wantDeletes: 1,
+		"replaces it without another retry": {
+			links:         `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:       true,
+			retryAttempts: 1,
+			wantCreates:   2,
+			wantDeletes:   1,
+		},
+		"replaces it after an earlier transient failure": {
+			links:           `[{"id":1,"name":"other"},{"id":2,"name":"test.tar.gz"}]`,
+			replace:         true,
+			failFirstCreate: true,
+			retryAttempts:   2,
+			wantCreates:     3,
+			wantDeletes:     1,
 		},
 		"replace disabled": {
-			links:    `[{"id":2,"name":"test.tar.gz"}]`,
-			wantErrs: []string{"has already been taken"},
+			links:         `[{"id":2,"name":"test.tar.gz"}]`,
+			retryAttempts: 2,
+			wantCreates:   1,
+			wantErrs:      []string{"has already been taken"},
 		},
 		"no link with that name": {
-			links:    `[{"id":1,"name":"other"}]`,
-			replace:  true,
-			wantErrs: []string{"has already been taken"},
+			links:         `[{"id":1,"name":"other"}]`,
+			replace:       true,
+			retryAttempts: 2,
+			wantCreates:   1,
+			wantErrs:      []string{"has already been taken"},
 		},
 		"listing the links fails": {
-			links:       `{"message":"404 Project Not Found"}`,
-			linksStatus: http.StatusNotFound,
-			replace:     true,
+			links:         `{"message":"404 Project Not Found"}`,
+			linksStatus:   http.StatusNotFound,
+			replace:       true,
+			retryAttempts: 2,
+			wantCreates:   1,
 			// the create error must survive: it names the real problem.
 			wantErrs: []string{"has already been taken", "404"},
 		},
@@ -1742,7 +1986,8 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			var deletes atomic.Int64
-			var created atomic.Bool
+			var createAttempts atomic.Int64
+			var duplicateReturned atomic.Bool
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				defer r.Body.Close()
 				_, _ = io.Copy(io.Discard, r.Body)
@@ -1762,14 +2007,19 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 				case r.Method == http.MethodDelete:
 					deletes.Add(1)
 					fmt.Fprint(w, `{"id":2,"name":"test.tar.gz"}`)
-				case !created.Swap(true):
+				case tt.failFirstCreate && createAttempts.Load() == 0:
+					createAttempts.Add(1)
+					http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+				case !duplicateReturned.Swap(true):
 					// the link already exists, so the first create fails.
+					createAttempts.Add(1)
 					http.Error(
 						w,
 						`{"message":{"name":["has already been taken"]}}`,
 						http.StatusBadRequest,
 					)
 				default:
+					createAttempts.Add(1)
 					fmt.Fprint(w, `{"id":3,"name":"test.tar.gz"}`)
 				}
 			}))
@@ -1787,7 +2037,7 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 					},
 					ReplaceExistingArtifacts: tt.replace,
 				},
-				Retry: config.Retry{Attempts: 2},
+				Retry: config.Retry{Attempts: tt.retryAttempts},
 			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 			client, err := newGitLab(ctx, "test-token")
 			require.NoError(t, err)
@@ -1800,6 +2050,7 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 			for _, want := range tt.wantErrs {
 				require.ErrorContains(t, err, want)
 			}
+			require.Equal(t, tt.wantCreates, createAttempts.Load())
 			require.Equal(t, tt.wantDeletes, deletes.Load())
 		})
 	}

@@ -222,6 +222,8 @@ winget:
       branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
+        body: |
+          cc/ @caarlos0
         base:
           owner: microsoft
           name: winget-pkgs

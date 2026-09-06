@@ -7,6 +7,7 @@ import (
 
 	_ "embed"
 
+	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 )
 
@@ -84,25 +85,7 @@ func stripGlibcVersion(target string) (string, bool) {
 }
 
 func convertToGoarch(s string) string {
-	ss, ok := map[string]string{
-		"aarch64":     "arm64",
-		"x86_64":      "amd64",
-		"i686":        "386",
-		"i586":        "386",
-		"i386":        "386",
-		"powerpc":     "ppc",
-		"powerpc64":   "ppc64",
-		"powerpc64le": "ppc64le",
-		"riscv64":     "riscv64",
-		"s390x":       "s390x",
-		"arm":         "arm",
-		"armv7":       "arm",
-		"wasm32":      "wasm",
-	}[s]
-	if ok {
-		return ss
-	}
-	return s
+	return buildtarget.Goarch(s)
 }
 
 func isValid(target string) bool {

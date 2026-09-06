@@ -25,6 +25,12 @@ func TestHealthcheckMissingTool(t *testing.T) {
 	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
 }
 
+func TestHealthcheckBlankSignerIsSkipped(t *testing.T) {
+	cmd := newHealthcheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/blank_tool.yml"})
+	require.NoError(t, cmd.cmd.Execute())
+}
+
 func TestHealthcheckQuier(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--quiet"})
@@ -41,6 +47,8 @@ func TestCheckPath(t *testing.T) {
 	// nothing. It is also slow to refuse: 5.26s on the windows job.
 	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
+	require.NoError(t, checkPath(t.Context(), checked, " \t "))
+	require.Error(t, checkPath(t.Context(), checked, `"unterminated`))
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {

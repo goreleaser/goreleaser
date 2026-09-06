@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -96,6 +97,75 @@ func TestWithDefaults(t *testing.T) {
 		})
 		require.Error(t, err)
 	})
+}
+
+func TestBuildCopiesCompilerBinaryBasename(t *testing.T) {
+	for name, tt := range map[string]struct {
+		binary string
+	}{
+		"unwrapped": {binary: "app"},
+		"wrapped":   {binary: filepath.Join("bin", "app")},
+	} {
+		t.Run(name, func(t *testing.T) {
+			testlib.Mktmp(t)
+			createFakeZigBuild(t, filepath.Join("zig-out", "aarch64-macos", "bin", "app"), "built by zig")
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "app",
+			})
+			build, err := Default.WithDefaults(config.Build{
+				ID:      "default",
+				Dir:     ".",
+				Targets: []string{"aarch64-macos"},
+			})
+			require.NoError(t, err)
+
+			target, err := Default.Parse("aarch64-macos")
+			require.NoError(t, err)
+			options := api.Options{
+				Name:   tt.binary,
+				Path:   filepath.Join("dist", "default_aarch64-macos", tt.binary),
+				Target: target,
+			}
+			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+			require.NoError(t, Default.Build(ctx, build, options))
+
+			got, err := os.ReadFile(options.Path)
+			require.NoError(t, err)
+			require.Equal(t, "built by zig", string(got))
+
+			bins := ctx.Artifacts.List()
+			require.Len(t, bins, 1)
+			require.Equal(t, tt.binary, bins[0].Name)
+			require.Equal(t, filepath.ToSlash(options.Path), bins[0].Path)
+			require.Equal(t, "app", bins[0].Extra[artifact.ExtraBinary])
+		})
+	}
+}
+
+func createFakeZigBuild(tb testing.TB, output, contents string) {
+	tb.Helper()
+	dir := tb.TempDir()
+	name := "zig"
+	script := fmt.Sprintf(`#!/bin/sh
+mkdir -p %q
+printf '%%s' %q > %q
+`, filepath.ToSlash(filepath.Dir(output)), contents, filepath.ToSlash(output))
+	if runtime.GOOS == "windows" {
+		name += ".bat"
+		output = filepath.Clean(output)
+		outputDir := filepath.Dir(output)
+		script = fmt.Sprintf(
+			"@echo off\r\nif not exist \"%s\" mkdir \"%s\"\r\n> \"%s\" <nul set /p dummy=%s\r\nexit /b 0\r\n",
+			outputDir,
+			outputDir,
+			output,
+			contents,
+		)
+	}
+	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
 func TestBuild(t *testing.T) {

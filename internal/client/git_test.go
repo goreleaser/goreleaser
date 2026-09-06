@@ -260,14 +260,16 @@ func TestKeyPath(t *testing.T) {
 
 	t.Run("with valid path", func(t *testing.T) {
 		t.Parallel()
-		result, err := keyPath(sshKey)
+		result, cleanup, err := keyPath(sshKey)
 		require.NoError(t, err)
+		require.Nil(t, cleanup)
 		require.Equal(t, sshKey, result)
 	})
 	t.Run("with invalid path", func(t *testing.T) {
 		t.Parallel()
-		result, err := keyPath("testdata/nope")
+		result, cleanup, err := keyPath("testdata/nope")
 		require.ErrorIs(t, err, os.ErrNotExist)
+		require.Nil(t, cleanup)
 		require.Empty(t, result)
 	})
 
@@ -277,22 +279,25 @@ func TestKeyPath(t *testing.T) {
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
-		result, err := keyPath(string(bts))
+		result, cleanup, err := keyPath(string(bts))
 		require.EqualError(t, err, "git: key is password-protected")
+		require.Nil(t, cleanup)
 		require.Empty(t, result)
 	})
 
 	t.Run("with key", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := keyPath(sshKey)
+		_, cleanup, err := keyPath(sshKey)
 		require.NoError(t, err)
+		require.Nil(t, cleanup)
 	})
 
 	t.Run("empty", func(t *testing.T) {
 		t.Parallel()
-		result, err := keyPath("")
+		result, cleanup, err := keyPath("")
 		require.EqualError(t, err, `private_key is empty`)
+		require.Nil(t, cleanup)
 		require.Empty(t, result)
 	})
 
@@ -301,13 +306,134 @@ func TestKeyPath(t *testing.T) {
 		bts, err := os.ReadFile(sshKey)
 		require.NoError(t, err)
 
-		result, err := keyPath(strings.TrimSpace(string(bts)))
+		result, cleanup, err := keyPath(strings.TrimSpace(string(bts)))
 		require.NoError(t, err)
+		require.NotNil(t, cleanup)
 
 		resultbts, err := os.ReadFile(result)
 		require.NoError(t, err)
 		require.Equal(t, string(bts), string(resultbts))
+		require.NoError(t, cleanup())
+		require.NoFileExists(t, result)
 	})
+}
+
+func TestGitClientRemovesInlinePrivateKey(t *testing.T) {
+	author := config.CommitAuthor{
+		Name:  "Foo",
+		Email: "foo@bar.com",
+	}
+	sshKey := testlib.MakeNewSSHKey(t, "")
+	bts, err := os.ReadFile(sshKey)
+	require.NoError(t, err)
+	inlineKey := string(bts)
+
+	temp := t.TempDir()
+	t.Setenv("TMPDIR", temp)
+	t.Setenv("TMP", temp)
+	t.Setenv("TEMP", temp)
+
+	requireNoGeneratedKeys := func(tb testing.TB) {
+		tb.Helper()
+		entries, err := os.ReadDir(temp)
+		require.NoError(tb, err)
+		for _, entry := range entries {
+			require.False(tb, strings.HasPrefix(entry.Name(), "id_"), "generated key %q was not removed", entry.Name())
+		}
+	}
+
+	t.Run("success", func(t *testing.T) {
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+		})
+
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: inlineKey,
+			Name:       "inline-key-success",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+		require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("content"), "file.txt", "add file"))
+		requireNoGeneratedKeys(t)
+	})
+
+	t.Run("clone failure", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+		})
+
+		repo := Repo{
+			GitURL:        "git@localhost:nope/nopenopenopenope",
+			PrivateKey:    inlineKey,
+			GitSSHCommand: `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=1 -o BatchMode=yes -F /dev/null`,
+		}
+		cli := NewGitUploadClient(repo.Branch)
+		err := cli.CreateFile(ctx, author, repo, []byte{}, "filename", "msg")
+		require.ErrorContains(t, err, "failed to clone")
+		requireNoGeneratedKeys(t)
+	})
+
+	t.Run("ssh command template failure", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+		})
+
+		repo := Repo{
+			GitURL:        testlib.GitMakeBareRepository(t),
+			PrivateKey:    inlineKey,
+			GitSSHCommand: "{{.Foo}}",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+		testlib.RequireTemplateError(t, cli.CreateFile(ctx, author, repo, []byte{}, "filename", "msg"))
+		requireNoGeneratedKeys(t)
+	})
+
+	t.Run("caller-owned path", func(t *testing.T) {
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+		})
+
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: sshKey,
+			Name:       "caller-owned-key",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+		require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("content"), "file.txt", "add file"))
+		require.FileExists(t, sshKey)
+		requireNoGeneratedKeys(t)
+	})
+}
+
+func TestGitClientUsesRepositorySpecificCheckout(t *testing.T) {
+	sshKey := testlib.MakeNewSSHKey(t, "")
+	author := config.CommitAuthor{
+		Name:  "Foo",
+		Email: "foo@bar.com",
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+	})
+	cli := NewGitUploadClient("main")
+
+	first := testlib.GitMakeBareRepository(t)
+	second := testlib.GitMakeBareRepository(t)
+	repo := Repo{
+		PrivateKey: sshKey,
+		Name:       "homebrew-tap",
+		Branch:     "main",
+	}
+
+	repo.GitURL = first
+	require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("first"), "first.rb", "add first"))
+
+	repo.GitURL = second
+	require.NoError(t, cli.CreateFile(ctx, author, repo, []byte("second"), "second.rb", "add second"))
+
+	require.Equal(t, "first.rb", gitInBare(t, first, "ls-tree", "--name-only", "-r", "main"))
+	require.Equal(t, "second.rb", gitInBare(t, second, "ls-tree", "--name-only", "-r", "main"))
 }
 
 func TestGitClientWithSigning(t *testing.T) {

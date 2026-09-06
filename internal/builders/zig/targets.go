@@ -7,6 +7,7 @@ import (
 
 	_ "embed"
 
+	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 )
 
@@ -57,14 +58,7 @@ func convertToGoos(s string) string {
 }
 
 func convertToGoarch(s string) string {
-	switch s {
-	case "aarch64":
-		return "arm64"
-	case "x86_64":
-		return "amd64"
-	default:
-		return s
-	}
+	return buildtarget.Goarch(s)
 }
 
 type targetStatus uint8

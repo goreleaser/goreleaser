@@ -40,7 +40,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			continue
 		}
 
-		if err := tmplInfo(template, &f.Info); err != nil {
+		if err := EvalInfo(template, &f.Info); err != nil {
 			return result, err
 		}
 
@@ -70,7 +70,8 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 	return unique(result), nil
 }
 
-func tmplInfo(template *tmpl.Template, info *config.FileInfo) error {
+// EvalInfo applies templates and parses file-info fields.
+func EvalInfo(template *tmpl.Template, info *config.FileInfo) error {
 	if err := template.ApplyAll(
 		&info.Owner,
 		&info.Group,

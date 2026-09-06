@@ -108,9 +108,11 @@ stdenvNoCC.mkDerivation {
 {{- end }}
 
   installPhase = ''
+    runHook preInstall
     {{- range $index, $element := .Install }}
     {{ . -}}
     {{- end }}
+    runHook postInstall
   '';
 
   {{- with .PostInstall }}

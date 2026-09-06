@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -89,4 +90,51 @@ func TestMakeArgsWithBaseImage(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, da.args, "org.opencontainers.image.base.name="+ref)
 	require.Contains(t, da.args, "org.opencontainers.image.base.digest="+digest)
+}
+
+func TestMakeArgsWithBaseImageBuildArgOverride(t *testing.T) {
+	const defaultRef = "alpine@sha256:1111111111111111111111111111111111111111111111111111111111111111"
+	const overrideRef = "busybox@sha256:2222222222222222222222222222222222222222222222222222222222222222"
+	const overrideDigest = "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+
+	dir := t.TempDir()
+	dockerfile := filepath.Join(dir, "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("ARG BASE="+defaultRef+"\nFROM ${BASE}\n"), 0o644))
+
+	for name, tt := range map[string]struct {
+		ctx      *context.Context
+		buildArg string
+	}{
+		"literal": {
+			ctx:      testctx.Wrap(t.Context()),
+			buildArg: overrideRef,
+		},
+		"templated": {
+			ctx:      testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"BASE": overrideRef})),
+			buildArg: "{{ .Env.BASE }}",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			da, err := makeArgs(
+				tt.ctx,
+				config.DockerV2{
+					Dockerfile: dockerfile,
+					Images:     []string{"ghcr.io/foo/bar"},
+					Tags:       []string{"latest"},
+					Platforms:  []string{"linux/amd64"},
+					BuildArgs: map[string]string{
+						"BASE": tt.buildArg,
+					},
+					Annotations: map[string]string{
+						"org.opencontainers.image.base.name":   "{{.BaseImage}}",
+						"org.opencontainers.image.base.digest": "{{.BaseImageDigest}}",
+					},
+				},
+				nil,
+			)
+			require.NoError(t, err)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+overrideRef)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.digest="+overrideDigest)
+		})
+	}
 }

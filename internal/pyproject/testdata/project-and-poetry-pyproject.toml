@@ -1,0 +1,7 @@
+[project]
+name = "project-name"
+version = "1.2.3"
+
+[tool.poetry]
+name = "poetry-name"
+version = "4.5.6"

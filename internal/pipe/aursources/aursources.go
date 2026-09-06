@@ -201,17 +201,7 @@ func fixLines(s string) string {
 }
 
 func quoteField(v string) string {
-	simpleQuote := strings.Contains(v, `'`)
-	doubleQuote := strings.Contains(v, `"`)
-
-	switch {
-	case simpleQuote && doubleQuote:
-		return `"` + strings.ReplaceAll(v, `"`, `'`) + `"`
-	case simpleQuote:
-		return `"` + v + `"`
-	default:
-		return `'` + v + `'`
-	}
+	return "'" + strings.ReplaceAll(v, "'", "'\\''") + "'"
 }
 
 func applyTemplate(ctx *context.Context, tpl string, data templateData) (string, error) {

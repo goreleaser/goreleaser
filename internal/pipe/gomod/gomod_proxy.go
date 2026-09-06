@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -17,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"golang.org/x/mod/modfile"
 )
 
 // ErrReplaceWithProxy happens when the configuration has gomod.proxy enabled,
@@ -33,13 +33,14 @@ func (CheckGoModPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy
 }
 
-var replaceRe = regexp.MustCompile("^replace .* => .*$")
-
 // Run the ReplaceCheckPipe.
 func (CheckGoModPipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Builds {
 		build := &ctx.Config.Builds[i]
-		path := filepath.Join(build.UnproxiedDir, "go.mod")
+		if build.Builder != "" && build.Builder != "go" {
+			continue
+		}
+		path := goModPath(ctx, build)
 		mod, err := os.ReadFile(path)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
@@ -47,17 +48,18 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 			}
 			return fmt.Errorf("could not check %q: %w", path, err)
 		}
-		for line := range strings.SplitSeq(string(mod), "\n") {
-			if !replaceRe.MatchString(line) {
-				continue
-			}
+		file, err := modfile.Parse(path, mod, nil)
+		if err != nil {
+			return fmt.Errorf("could not parse %q: %w", path, err)
+		}
+		for _, replace := range file.Replace {
 			log.Warnf(
 				"your %[2]s file has %[1]s directive in it, and go mod proxying is enabled - "+
 					"this does not work, and you need to either disable it or remove the %[1]s directive",
 				logext.Keyword("replace"),
 				logext.Keyword("go.mod"),
 			)
-			log.Warnf("the offending line is %s", logext.Keyword(strings.TrimSpace(line)))
+			log.Warnf("the offending line is %s", logext.Keyword(formatReplace(replace)))
 			if ctx.Snapshot {
 				// only warn on snapshots
 				break
@@ -67,6 +69,43 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 	}
 
 	return nil
+}
+
+func goModPath(ctx *context.Context, build *config.Build) string {
+	dir := build.UnproxiedDir
+	if dir == "" {
+		dir = ctx.Config.GoMod.Dir
+	}
+	if dir == "" {
+		dir = build.Dir
+	}
+	if dir == "" {
+		dir = "."
+	}
+
+	for {
+		path := filepath.Join(dir, "go.mod")
+		if _, err := os.Stat(path); err == nil || !errors.Is(err, os.ErrNotExist) {
+			return path
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return path
+		}
+		dir = parent
+	}
+}
+
+func formatReplace(replace *modfile.Replace) string {
+	oldPath := replace.Old.Path
+	if replace.Old.Version != "" {
+		oldPath += " " + replace.Old.Version
+	}
+	newPath := replace.New.Path
+	if replace.New.Version != "" {
+		newPath += " " + replace.New.Version
+	}
+	return strings.TrimSpace(fmt.Sprintf("replace %s => %s", oldPath, newPath))
 }
 
 // ProxyPipe for gomod proxy.
@@ -82,6 +121,9 @@ func (ProxyPipe) Skip(ctx *context.Context) bool {
 func (ProxyPipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Builds {
 		build := &ctx.Config.Builds[i]
+		if build.Builder != "" && build.Builder != "go" {
+			continue
+		}
 		if err := proxyBuild(ctx, build); err != nil {
 			return err
 		}
@@ -163,7 +205,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 		func() error {
 			cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
 			cmd.Dir = dir
-			cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
+			cmd.Env = append(ctx.Env.Strings(), ctx.Config.GoMod.Env...)
 			if out, err := cmd.CombinedOutput(); err != nil {
 				return newDetailedErrProxy(err, string(out))
 			}

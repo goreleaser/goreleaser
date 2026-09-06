@@ -110,6 +110,51 @@ func TestForceToken(t *testing.T) {
 	})
 }
 
+func TestForceTokenIgnoresExcludedTokenFileErrors(t *testing.T) {
+	t.Run("config selector", func(t *testing.T) {
+		isolateEnv(t)
+		t.Setenv("GITHUB_TOKEN", "fake")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ForceToken: "github",
+			EnvFiles: config.EnvFiles{
+				GitLabToken: t.TempDir(),
+			},
+		})
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, context.TokenTypeGitHub, ctx.TokenType)
+		require.Equal(t, "fake", ctx.Token)
+	})
+
+	t.Run("environment selector", func(t *testing.T) {
+		isolateEnv(t)
+		t.Setenv("GITHUB_TOKEN", "fake")
+		t.Setenv("GORELEASER_FORCE_TOKEN", "github")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			EnvFiles: config.EnvFiles{
+				GitLabToken: t.TempDir(),
+			},
+		})
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, context.TokenTypeGitHub, ctx.TokenType)
+		require.Equal(t, "fake", ctx.Token)
+	})
+
+	t.Run("selected provider error is returned", func(t *testing.T) {
+		isolateEnv(t)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ForceToken: "github",
+			EnvFiles: config.EnvFiles{
+				GitHubToken: t.TempDir(),
+			},
+		})
+
+		err := Pipe{}.Run(ctx)
+		require.ErrorContains(t, err, "failed to load github token")
+	})
+}
+
 func TestValidGithubEnv(t *testing.T) {
 	isolateEnv(t)
 	t.Setenv("GITHUB_TOKEN", "asdf")

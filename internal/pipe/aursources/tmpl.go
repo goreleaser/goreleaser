@@ -118,8 +118,14 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	{{ range .Provides -}}
 	provides = {{ . }}
 	{{ end -}}
+	{{ range .Backup -}}
+	backup = {{ . }}
+	{{ end -}}
+	{{ if .Install -}}
+	install = {{ .Name }}.install
+	{{ end -}}
 	{{- with .Sources }}
-	source = {{ .DownloadURL }}
+	source = {{ $.Name }}_{{ $.Version }}.{{ .Format }}::{{ .DownloadURL }}
 	sha256sums = {{ .SHA256 }}
 	{{ end -}}
 {{ printf "\n" -}}
