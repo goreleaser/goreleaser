@@ -82,6 +82,9 @@ func (ProxyPipe) Skip(ctx *context.Context) bool {
 func (ProxyPipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Builds {
 		build := &ctx.Config.Builds[i]
+		if build.Builder != "" && build.Builder != "go" {
+			continue
+		}
 		if err := proxyBuild(ctx, build); err != nil {
 			return err
 		}

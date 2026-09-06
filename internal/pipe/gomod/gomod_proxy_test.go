@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -230,6 +231,44 @@ func TestGoModProxy(t *testing.T) {
 		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 	})
+
+	t.Run("mixed builders", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: fakeGoBinary(t),
+			},
+			Builds: []config.Build{
+				{
+					ID:      "go-app",
+					Builder: "go",
+					Goos:    []string{runtime.GOOS},
+					Goarch:  []string{runtime.GOARCH},
+					Main:    "./cmd/fake",
+				},
+				{
+					ID:      "rust-app",
+					Builder: "rust",
+					Dir:     "rust",
+					Main:    ".",
+				},
+			},
+		}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
+
+		fakeGoModAndSum(t, ctx.ModulePath)
+		require.NoError(t, ProxyPipe{}.Run(ctx))
+		require.Equal(t, ctx.ModulePath+"/cmd/fake", ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "go-app"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, "./cmd/fake", ctx.Config.Builds[0].UnproxiedMain)
+		require.Empty(t, ctx.Config.Builds[0].UnproxiedDir)
+		require.Equal(t, "rust", ctx.Config.Builds[1].Dir)
+		require.Equal(t, ".", ctx.Config.Builds[1].Main)
+		require.Empty(t, ctx.Config.Builds[1].UnproxiedDir)
+		require.Empty(t, ctx.Config.Builds[1].UnproxiedMain)
+	})
 }
 
 func TestProxyDescription(t *testing.T) {
@@ -336,6 +375,18 @@ func fakeGoModAndSum(tb testing.TB, module string) {
 func fakeGoMod(tb testing.TB, module string) {
 	tb.Helper()
 	require.NoError(tb, os.WriteFile("go.mod", fmt.Appendf(nil, "module %s\n", module), 0o666))
+}
+
+func fakeGoBinary(tb testing.TB) string {
+	tb.Helper()
+	bin := filepath.Join(tb.TempDir(), "go.bin")
+	content := []byte("#!/bin/sh\nexit 0")
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\nexit /b 0")
+	}
+	require.NoError(tb, os.WriteFile(bin, content, 0o755))
+	return bin
 }
 
 func withTestModulePath(ctx *context.Context) {
