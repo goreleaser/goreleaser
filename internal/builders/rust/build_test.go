@@ -3,7 +3,6 @@ package rust
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -270,25 +270,22 @@ printf '%%s' %q > %q
 	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
+func setupRustProject(t *testing.T) string {
+	t.Helper()
+	folder := t.TempDir()
+	require.NoError(t, gio.Copy("testdata/proj", folder))
+	t.Chdir(folder)
+	// Keep build outputs isolated while sharing the content-addressed global cache.
+	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
+	testlib.SharedZigCache(t)
+	return folder
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 
-	folder := testlib.Mktmp(t)
-	// CI (mlugg/setup-zig) forces a shared zig cache at the repo root, which
-	// gets corrupted when this package and the zig package build in parallel.
-	// Use a per-test cache so they cannot race.
-	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	testlib.SharedZigCache(t)
-	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
-	require.NoError(t, err)
-
-	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
-	require.NoError(t, err)
-	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
-	require.NoError(t, f.Close())
-	require.NoError(t, err)
-
+	folder := setupRustProject(t)
 	target := "aarch64-unknown-linux-gnu.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -360,21 +357,7 @@ func TestBuildArm(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 
-	folder := testlib.Mktmp(t)
-	// CI (mlugg/setup-zig) forces a shared zig cache at the repo root, which
-	// gets corrupted when this package and the zig package build in parallel.
-	// Use a per-test cache so they cannot race.
-	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	testlib.SharedZigCache(t)
-	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
-	require.NoError(t, err)
-
-	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
-	require.NoError(t, err)
-	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
-	require.NoError(t, f.Close())
-	require.NoError(t, err)
-
+	folder := setupRustProject(t)
 	target := "armv7-unknown-linux-gnueabihf.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

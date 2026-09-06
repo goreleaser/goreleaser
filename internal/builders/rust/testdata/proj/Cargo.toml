@@ -1,0 +1,7 @@
+[package]
+name = "proj"
+version = "0.1.0"
+edition = "2024"
+
+[profile.release]
+opt-level = 0

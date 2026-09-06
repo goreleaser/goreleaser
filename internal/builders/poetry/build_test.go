@@ -3,13 +3,13 @@ package poetry
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/pyproject"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -203,12 +203,8 @@ func TestBuildLegacyPoetryProject(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "poetry")
 
-	folder := testlib.Mktmp(t)
-	cmd := exec.CommandContext(t.Context(), "poetry", "new", "proj")
-	cmd.Dir = folder
-	_, err := cmd.CombinedOutput()
-	require.NoError(t, err)
-
+	folder := t.TempDir()
+	require.NoError(t, gio.Copy("testdata/proj", filepath.Join(folder, "proj")))
 	t.Chdir(filepath.Join(folder, "proj"))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
