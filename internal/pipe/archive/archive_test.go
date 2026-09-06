@@ -479,6 +479,55 @@ func TestRunPipeInvalidBuildsInfoMTime(t *testing.T) {
 	require.ErrorContains(t, Pipe{}.Run(ctx), "failed to parse not-a-date")
 }
 
+func TestRunPipeDistinctCPUVariants(t *testing.T) {
+	dist := t.TempDir()
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		binPath := filepath.Join(dist, "linuxarm64"+variant, "mybin")
+		require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+		require.NoError(t, os.WriteFile(binPath, []byte(variant), 0o755))
+	}
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					ID:           "default",
+					IDs:          []string{"default"},
+					NameTemplate: "archive_{{ .Os }}_{{ .Arch }}_{{ .Arm64 }}",
+					Formats:      []string{"tar.gz"},
+					Files:        []config.File{{Source: "missing*", Default: true}},
+				},
+			},
+		},
+		testctx.WithVersion("0.0.1"),
+		testctx.WithCurrentTag("v0.0.1"))
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: variant,
+			Name:    "mybin",
+			Path:    filepath.Join(dist, "linuxarm64"+variant, "mybin"),
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "mybin",
+				artifact.ExtraID:     "default",
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 2)
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		path := filepath.Join(dist, "archive_linux_arm64_"+variant+".tar.gz")
+		require.Equal(t, []string{"mybin"}, testlib.LsArchive(t, path, "tar.gz"))
+		require.Equal(t, variant, string(testlib.GetFileFromArchive(t, path, "tar.gz", "mybin")))
+	}
+}
+
 func TestRunPipeNoBinaries(t *testing.T) {
 	t.Parallel()
 	folder := t.TempDir()
