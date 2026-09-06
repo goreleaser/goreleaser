@@ -130,6 +130,11 @@ type input struct {
 	offset int64
 }
 
+type sliceKey struct {
+	cpu    uint32
+	subcpu uint32
+}
+
 const (
 	// Alignment wanted for each sub-file.
 	// amd64 needs 12 bits, arm64 needs 14. We choose the max of all requirements here.
@@ -164,16 +169,24 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		Infof("creating from %d binaries", len(binaries))
 
 	var inputs []input
+	slices := map[sliceKey]string{}
 	offset := int64(align)
 	for _, f := range binaries {
 		data, err := os.ReadFile(f.Path)
 		if err != nil {
 			return fmt.Errorf("failed to read binary: %w", err)
 		}
+		cpu := binary.LittleEndian.Uint32(data[4:8])
+		subcpu := binary.LittleEndian.Uint32(data[8:12])
+		key := sliceKey{cpu: cpu, subcpu: subcpu}
+		if previous, ok := slices[key]; ok {
+			return fmt.Errorf("duplicate darwin binary slice for cpu %d subtype %d: %s and %s", cpu, subcpu, previous, f.Path)
+		}
+		slices[key] = f.Path
 		inputs = append(inputs, input{
 			data:   data,
-			cpu:    binary.LittleEndian.Uint32(data[4:8]),
-			subcpu: binary.LittleEndian.Uint32(data[8:12]),
+			cpu:    cpu,
+			subcpu: subcpu,
 			offset: offset,
 		})
 		offset += int64(len(data))
