@@ -3,6 +3,7 @@ package exec
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -125,6 +126,10 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	log.Info("publishing")
 	runErr := cmd.Run()
+	if errors.Is(runErr, exec.ErrWaitDelay) && cmd.ProcessState.Success() {
+		log.Warn("command exited successfully but left its output open: output may be incomplete")
+		runErr = nil
+	}
 	stderrErr := stderr.Close()
 	stdoutErr := stdout.Close()
 	if runErr != nil {

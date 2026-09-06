@@ -382,18 +382,16 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 
 	dir := t.TempDir()
 	ready := filepath.Join(dir, "ready")
-	release := filepath.Join(dir, "release")
-	t.Cleanup(func() {
-		require.NoError(t, os.WriteFile(release, nil, 0o600))
-	})
 
 	ctx, cancel := context.WithCancel(t.Context())
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- executeCommand(&command{
-			Ctx:  testctx.Wrap(ctx),
-			Env:  []string{"READY=" + ready, "RELEASE=" + release},
-			Args: []string{"sh", "-c", `sh -c ': > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
+			Ctx: testctx.Wrap(ctx),
+			Env: []string{"READY=" + ready},
+			// the descendant keeps stdout and stderr open for much longer
+			// than WaitDelay, and stops by itself so the test leaks nothing.
+			Args: []string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & while :; do sleep 1; done`},
 		}, &artifact.Artifact{Name: "test"})
 	}()
 
@@ -407,6 +405,30 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 	case err := <-errCh:
 		require.Error(t, err)
 	case <-time.After(3 * time.Second):
+		t.Fatal("command did not return while descendant held stdout and stderr open")
+	}
+}
+
+func TestExecuteCommandSucceedsWithDescendantHeldOutputPipe(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses a unix shell")
+
+	dir := t.TempDir()
+	ready := filepath.Join(dir, "ready")
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- executeCommand(&command{
+			Ctx: testctx.Wrap(t.Context()),
+			Env: []string{"READY=" + ready},
+			// exits 0 while a descendant keeps stdout and stderr open.
+			Args: []string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & echo done`},
+		}, &artifact.Artifact{Name: "test"})
+	}()
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err, "a successful command must not fail because a descendant held its pipes")
+	case <-time.After(5 * time.Second):
 		t.Fatal("command did not return while descendant held stdout and stderr open")
 	}
 }

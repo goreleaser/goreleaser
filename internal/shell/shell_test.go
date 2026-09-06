@@ -68,10 +68,6 @@ func TestRunCommand(t *testing.T) {
 
 		dir := t.TempDir()
 		ready := filepath.Join(dir, "ready")
-		release := filepath.Join(dir, "release")
-		t.Cleanup(func() {
-			require.NoError(t, os.WriteFile(release, nil, 0o600))
-		})
 
 		ctx, cancel := context.WithCancel(t.Context())
 		errCh := make(chan error, 1)
@@ -79,8 +75,10 @@ func TestRunCommand(t *testing.T) {
 			errCh <- shell.Run(
 				testctx.Wrap(ctx),
 				"",
-				[]string{"sh", "-c", `sh -c ': > "$READY"; while [ ! -f "$RELEASE" ]; do sleep 1; done' & while :; do sleep 1; done`},
-				append(os.Environ(), "READY="+ready, "RELEASE="+release),
+				// the descendant keeps stdout and stderr open for much longer
+				// than WaitDelay, and stops by itself so the test leaks nothing.
+				[]string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & while :; do sleep 1; done`},
+				append(os.Environ(), "READY="+ready),
 				false,
 			)
 		}()
@@ -95,6 +93,31 @@ func TestRunCommand(t *testing.T) {
 		case err := <-errCh:
 			require.Error(t, err)
 		case <-time.After(3 * time.Second):
+			t.Fatal("command did not return while descendant held stdout and stderr open")
+		}
+	})
+
+	t.Run("success with descendant-held output pipe", func(t *testing.T) {
+		testlib.SkipIfWindows(t, "uses a unix shell")
+
+		ready := filepath.Join(t.TempDir(), "ready")
+
+		errCh := make(chan error, 1)
+		go func() {
+			errCh <- shell.Run(
+				testctx.Wrap(t.Context()),
+				"",
+				// exits 0 while a descendant keeps stdout and stderr open.
+				[]string{"sh", "-c", `sh -c ': > "$READY"; sleep 30' & echo done`},
+				append(os.Environ(), "READY="+ready),
+				false,
+			)
+		}()
+
+		select {
+		case err := <-errCh:
+			require.NoError(t, err, "a successful command must not fail because a descendant held its pipes")
+		case <-time.After(5 * time.Second):
 			t.Fatal("command did not return while descendant held stdout and stderr open")
 		}
 	})
