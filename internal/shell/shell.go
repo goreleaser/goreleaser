@@ -39,7 +39,7 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 		cmd.Dir = dir
 	}
 
-	log.WithField("cmd", command).
+	log.WithField("cmd", redactArgs(command, cmd.Env)).
 		WithField("dir", dir).
 		Debug("running")
 
@@ -65,4 +65,12 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 	}
 
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }

@@ -92,10 +92,6 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 }
 
 func executeCommand(c *command, artifact *artifact.Artifact) error {
-	log.WithField("args", c.Args).
-		WithField("artifact", artifact.Name).
-		Debug("executing command")
-
 	//nolint:gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
 	cmd.Env = []string{}
@@ -109,6 +105,10 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	if c.Dir != "" {
 		cmd.Dir = c.Dir
 	}
+
+	log.WithField("args", redactArgs(c.Args, cmd.Env)).
+		WithField("artifact", artifact.Name).
+		Debug("executing command")
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
@@ -141,6 +141,14 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	log.Debug("command finished successfully")
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }
 
 func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifact.Artifact {
