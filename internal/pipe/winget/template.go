@@ -13,7 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.Type, locale string) error {
+func createYAML(ctx *context.Context, winget config.Winget, artifactID string, in any, tp artifact.Type, locale string) error {
 	versionContent, err := yaml.Marshal(in)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 
 	extra := map[string]any{
 		wingetConfigExtra: winget,
-		artifact.ExtraID:  winget.Name,
+		artifact.ExtraID:  artifactID,
 	}
 	if tp == artifact.WingetDefaultLocale || tp == artifact.WingetLocale {
 		extra[wingetLocaleExtra] = locale

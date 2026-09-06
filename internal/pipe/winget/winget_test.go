@@ -1182,6 +1182,115 @@ func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
 	)).List())
 }
 
+func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "tool",
+			Winget: []config.Winget{
+				{
+					Name:              "tool",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "acme",
+						Name:  "winget",
+					},
+				},
+				{
+					Name:              "tool",
+					Publisher:         "Other",
+					PackageIdentifier: "Other.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "other",
+						Name:  "winget",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+	rec := newRecordingWingetClient()
+	require.NoError(t, pipe.publishAll(ctx, rec))
+	require.Len(t, rec.paths, 6)
+	for i, path := range rec.paths {
+		switch {
+		case strings.Contains(path, "Acme.Tool"):
+			require.Equal(t, "acme", rec.repos[i].Owner)
+		case strings.Contains(path, "Other.Tool"):
+			require.Equal(t, "other", rec.repos[i].Owner)
+		default:
+			require.Failf(t, "unexpected publish path", "path: %s", path)
+		}
+	}
+}
+
+func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "tool",
+			Winget: []config.Winget{
+				{
+					Name:              "tool",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					SkipUpload:        "true",
+					Repository: config.RepoRef{
+						Owner: "acme",
+						Name:  "winget",
+					},
+				},
+				{
+					Name:              "tool",
+					Publisher:         "Other",
+					PackageIdentifier: "Other.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "other",
+						Name:  "winget",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+	rec := newRecordingWingetClient()
+	require.ErrorContains(t, pipe.publishAll(ctx, rec), "winget.skip_upload is set")
+	require.Len(t, rec.paths, 3)
+	for i, path := range rec.paths {
+		require.Contains(t, path, "Other.Tool")
+		require.Equal(t, "other", rec.repos[i].Owner)
+	}
+}
+
 type recordingWingetClient struct {
 	*client.Mock
 	repos []client.Repo
