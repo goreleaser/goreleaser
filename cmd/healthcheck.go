@@ -116,6 +116,11 @@ func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
 		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("invalid command"))
 		return exec.ErrNotFound
 	}
+	if strings.ContainsAny(tool, `/\`) {
+		if path, err := exec.LookPath(tool); err == nil {
+			args = []string{path}
+		}
+	}
 	if _, err := exec.LookPath(args[0]); err != nil {
 		st := log.Styles[log.ErrorLevel]
 		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))

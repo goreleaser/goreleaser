@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -49,6 +51,23 @@ func TestCheckPath(t *testing.T) {
 	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
 	require.ErrorIs(t, checkPath(t.Context(), checked, " \t "), exec.ErrNotFound)
+}
+
+func TestCheckPathWithSpacesInToolPath(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "tools with spaces")
+	require.NoError(t, os.MkdirAll(dir, 0o755))
+
+	tool := filepath.Join(dir, filepath.Base(os.Args[0]))
+	src, err := os.Open(os.Args[0])
+	require.NoError(t, err)
+	defer src.Close()
+	dst, err := os.OpenFile(tool, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	require.NoError(t, err)
+	_, err = io.Copy(dst, src)
+	require.NoError(t, err)
+	require.NoError(t, dst.Close())
+
+	require.NoError(t, checkPath(t.Context(), map[string]bool{}, tool))
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {
