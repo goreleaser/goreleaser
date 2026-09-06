@@ -350,7 +350,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 func TestMinioUploadSkip(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
-	name := "basic"
+	name := "skip"
 	directory := t.TempDir()
 	debpath := filepath.Join(directory, "bin.deb")
 	tgzpath := filepath.Join(directory, "bin.tar.gz")
