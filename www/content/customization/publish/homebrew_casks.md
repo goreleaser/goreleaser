@@ -209,7 +209,8 @@ homebrew_casks:
     #
     # The `install` and `uninstall` options are deprecated. If you set both
     # `install` and `install_steps`, `install_steps` wins, and `install` is
-    # ignored. The same applies to `uninstall` and `uninstall_steps`.
+    # not written to the Cask. It is still checked as a template, so it must
+    # remain valid. The same applies to `uninstall` and `uninstall_steps`.
     #
     # All four `_steps` options are {{< g_inline_version "v2.19-unreleased" >}}.
     #
