@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -149,20 +150,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 		return err
 	}
 	if strings.TrimSpace(pkg) == "" {
-		art := archives[0]
-		switch art.Type {
-		case artifact.UploadableBinary:
-			name := art.Name
-			bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-			pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+name, "${pkgdir}/usr/bin/"+bin)
-		case artifact.UploadableArchive:
-			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-				path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
-				pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin)
-				break
-			}
-		}
+		pkg = inferPackage(archives)
 		log.Warnf("guessing package to be %q", pkg)
 	}
 	aur.Package = pkg
@@ -210,6 +198,48 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 	}
 
 	return nil
+}
+
+func inferPackage(archives []*artifact.Artifact) string {
+	packages := map[string]string{}
+	for _, art := range archives {
+		packages[toPkgBuildArch(art.Goarch+art.Goarm)] = inferPackageForArtifact(art)
+	}
+
+	arches := slices.Sorted(maps.Keys(packages))
+	first := packages[arches[0]]
+	for _, arch := range arches[1:] {
+		if packages[arch] != first {
+			var out strings.Builder
+			out.WriteString(`case "${CARCH}" in`)
+			for _, arch := range arches {
+				out.WriteString("\n")
+				out.WriteString(arch)
+				out.WriteString(")\n")
+				out.WriteString(packages[arch])
+				out.WriteString("\n;;")
+			}
+			out.WriteString("\nesac")
+			return out.String()
+		}
+	}
+	return first
+}
+
+func inferPackageForArtifact(art *artifact.Artifact) string {
+	switch art.Type {
+	case artifact.UploadableBinary:
+		name := art.Name
+		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
+		return fmt.Sprintf("install -Dm755 %q %q", "./"+name, "${pkgdir}/usr/bin/"+bin)
+	case artifact.UploadableArchive:
+		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
+			return fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin)
+		}
+	}
+	return ""
 }
 
 func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact, tpl string) (string, error) {

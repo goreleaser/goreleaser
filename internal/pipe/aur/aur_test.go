@@ -736,6 +736,57 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
+func TestRunPipeDefaultPackageUsesArchitectureWrapper(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs:        []config.AUR{{}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	for _, archive := range []struct {
+		name      string
+		goarch    string
+		wrappedIn string
+	}{
+		{name: "foo_linux_amd64.tar.gz", goarch: "amd64", wrappedIn: "foo_linux_amd64"},
+		{name: "foo_linux_arm64.tar.gz", goarch: "arm64", wrappedIn: "foo_linux_arm64"},
+	} {
+		path := filepath.Join(folder, archive.name)
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    archive.name,
+			Path:    path,
+			Goos:    "linux",
+			Goarch:  archive.goarch,
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "foo",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: archive.wrappedIn,
+			},
+		})
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	pkgbuild := filepath.Join(folder, "aur", "foo-bin.pkgbuild")
+	runPackage(t, pkgbuild, "x86_64", "foo_linux_amd64", "amd64 payload")
+	runPackage(t, pkgbuild, "aarch64", "foo_linux_arm64", "arm64 payload")
+}
+
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
@@ -1101,4 +1152,39 @@ func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
 	out, err := cmd.Output()
 	require.NoError(tb, err)
 	return string(out)
+}
+
+func runPackage(tb testing.TB, pkgbuild, carch, sourceDir, payload string) {
+	tb.Helper()
+	workdir := tb.TempDir()
+	source := filepath.Join(workdir, sourceDir, "foo")
+	require.NoError(tb, os.MkdirAll(filepath.Dir(source), 0o755))
+	require.NoError(tb, os.WriteFile(source, []byte(payload), 0o644))
+
+	fakebin := tb.TempDir()
+	install := filepath.Join(fakebin, "install")
+	require.NoError(tb, os.WriteFile(install, []byte(`#!/bin/sh
+set -e
+src=
+dst=
+for arg do
+	case "$arg" in
+		-*) ;;
+		*) if [ -z "$src" ]; then src="$arg"; else dst="$arg"; fi ;;
+	esac
+done
+mkdir -p "$(dirname "$dst")"
+cp "$src" "$dst"
+`), 0o755))
+
+	pkgdir := filepath.Join(workdir, "pkg")
+	cmd := exec.CommandContext(tb.Context(), "bash", "-c", `source "$1"; pkgdir="$2"; CARCH="$3"; package`, "bash", pkgbuild, pkgdir, carch)
+	cmd.Dir = workdir
+	cmd.Env = append(os.Environ(), "PATH="+fakebin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	out, err := cmd.CombinedOutput()
+	require.NoError(tb, err, string(out))
+
+	bts, err := os.ReadFile(filepath.Join(pkgdir, "usr/bin/foo"))
+	require.NoError(tb, err)
+	require.Equal(tb, payload, string(bts))
 }
