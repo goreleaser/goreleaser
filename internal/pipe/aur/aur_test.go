@@ -3,6 +3,7 @@ package aur
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -965,8 +966,59 @@ func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
 
 	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
 	require.NoError(t, err)
-	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
-	require.Contains(t, string(bts), `url="https://example.com/~o'brien"`)
-	require.Contains(t, string(bts), `license=("Nobody's")`)
-	require.Contains(t, string(bts), `provides=("fo'o" 'bar')`)
+	require.Contains(t, string(bts), `pkgdesc='Let'\''s go'`)
+	require.Contains(t, string(bts), `url='https://example.com/~o'\''brien'`)
+	require.Contains(t, string(bts), `license=('Nobody'\''s')`)
+	require.Contains(t, string(bts), `provides=('fo'\''o' 'bar')`)
+}
+
+func TestRunPipeMetadataQuotingIsLossless(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{{
+				Description: `Let's inspect $HOME and this is a "test"`,
+			}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "foo_linux_amd64")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	desc := sourcePkgDesc(t, filepath.Join(folder, "aur", "foo-bin.pkgbuild"))
+	require.Equal(t, `Let's inspect $HOME and this is a "test"`, desc)
+}
+
+func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
+	tb.Helper()
+	cmd := exec.CommandContext(tb.Context(), "bash", "-c", `source "$1"; printf '%s' "$pkgdesc"`, "bash", pkgbuild)
+	cmd.Env = append(os.Environ(), "HOME=/expanded-home")
+	out, err := cmd.Output()
+	require.NoError(tb, err)
+	return string(out)
 }
