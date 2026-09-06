@@ -936,14 +936,15 @@ func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
 		transport.RegisterResponder(
 			http.MethodGet,
 			"https://api.github.com/repos/owner/repo/compare/v1...v2",
-			func(_ *http.Request) (*http.Response, error) {
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(http.StatusOK, `{"commits":[]}`)
 				if compareCalls.Add(1) == 1 {
 					// The SDK caches this one-second secondary rate-limit window.
-					resp := httpmock.NewStringResponse(http.StatusForbidden, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
+					resp = httpmock.NewStringResponse(http.StatusForbidden, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
 					resp.Header.Set("Retry-After", "1")
-					return resp, nil
 				}
-				return httpmock.NewStringResponse(http.StatusOK, `{"commits":[]}`), nil
+				resp.Request = req
+				return resp, nil
 			},
 		)
 		api, err := github.NewClient(
