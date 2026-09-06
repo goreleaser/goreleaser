@@ -309,7 +309,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := base.Exec(ctx, cmd, env, build.Dir, base.WithLogFilter(buildOutput)); err != nil {
 		return err
 	}
-	if err := ensureEllipsisOutputs(allbinaries, options.Ext); err != nil {
+	if err := ensureEllipsisOutputs(allbinaries, options.Ext, build.Command, t.Goos); err != nil {
 		return err
 	}
 
@@ -320,6 +320,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
 			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
 			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
+				// the header belongs to the library, so `ids` filters have to
+				// match them together.
+				ha.Extra[artifact.ExtraID] = a.Extra[artifact.ExtraID]
 				if err := base.ChTimes(build, tpl.WithArtifact(ha), ha); err != nil {
 					return err
 				}
@@ -334,30 +337,54 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-// ensureEllipsisOutputs renames the outputs `go build` named itself.
+// ensureEllipsisOutputs renames the outputs `go` named itself.
 //
 // With more than one main package, `-o` has to be a directory, and go names
-// each output after its package. That matches the name GoReleaser registered
-// on every target except wasm, where go writes no extension and GoReleaser
-// uses `.wasm`.
-//
-// Builds that resolve to a single main package get an exact `-o` and never
-// need this, which is why the buildmodes that change the extension are not
-// handled here: go requires exactly one main package for `c-archive` and
-// `c-shared`.
-func ensureEllipsisOutputs(binaries []*artifact.Artifact, ext string) error {
-	if ext != ".wasm" {
+// each output after its package instead of using the name GoReleaser
+// registered. Anything that resolves to a single main package, ellipsis or
+// not, gets an exact `-o` and never needs this.
+func ensureEllipsisOutputs(binaries []*artifact.Artifact, ext, command, goos string) error {
+	if len(binaries) < 2 {
 		return nil
 	}
+
+	type rename struct{ src, tmp, dst string }
+	var renames []rename
 	for _, a := range binaries {
-		if _, err := os.Stat(a.Path); err == nil {
+		bin := strings.TrimSuffix(a.Name, ext)
+		src := filepath.Join(filepath.Dir(a.Path), goOutputName(bin, command, goos))
+		if src == a.Path {
 			continue
 		}
-		if err := os.Rename(strings.TrimSuffix(a.Path, ext), a.Path); err != nil {
-			return fmt.Errorf("rename %s: %w", a.Name, err)
+		renames = append(renames, rename{src: src, tmp: src + ".goreleaser-tmp", dst: a.Path})
+	}
+
+	// move every output aside before moving any into place: one output may be
+	// named like another output's destination, e.g. `app` and `app.wasm` when
+	// building `./cmd/app` and `./cmd/app.wasm` for wasm.
+	for _, r := range renames {
+		if err := os.Rename(r.src, r.tmp); err != nil {
+			return fmt.Errorf("rename build output: %w", err)
+		}
+	}
+	for _, r := range renames {
+		if err := os.Rename(r.tmp, r.dst); err != nil {
+			return fmt.Errorf("rename build output: %w", err)
 		}
 	}
 	return nil
+}
+
+// goOutputName is the name go gives an output when `-o` is a directory: the
+// package name, plus `.test` for `go test -c`, plus the executable suffix.
+func goOutputName(bin, command, goos string) string {
+	if command == "test" {
+		bin += ".test"
+	}
+	if goos == "windows" {
+		bin += ".exe"
+	}
+	return bin
 }
 
 func buildEnv(ctx *context.Context, details config.BuildDetails, options api.Options, a *artifact.Artifact) ([]string, []string, error) {
@@ -779,7 +806,8 @@ func keepListFlags(flags []string) []string {
 	for _, flag := range flags {
 		if strings.HasPrefix(flag, "-") {
 			name, _, _ := strings.Cut(flag, "=")
-			keep = slices.Contains(listFlags, name)
+			// go accepts both -tags and --tags.
+			keep = slices.Contains(listFlags, "-"+strings.TrimLeft(name, "-"))
 		}
 		// a value passed as a separate argument shares the fate of its flag.
 		if keep {
@@ -823,9 +851,9 @@ func logIDChange(build config.Build, bin string) {
 		return
 	}
 	log.Warn(logext.Warning(
-		"the artifact ID of this build changed from " + logext.Keyword(build.ID) +
-			" to " + logext.Keyword(bin) + ": set " + logext.Keyword("id") +
-			" if you reference it in an " + logext.Keyword("ids") + " field",
+		"the artifact ID of this build is " + logext.Keyword(bin) +
+			", its binary name: set " + logext.Keyword("id") +
+			" if you reference this build in an " + logext.Keyword("ids") + " field",
 	))
 }
 

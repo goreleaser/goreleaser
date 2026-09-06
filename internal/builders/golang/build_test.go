@@ -1017,11 +1017,11 @@ func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
 	require.Equal(t, modTime, info.ModTime().UTC())
 }
 
-func TestBuildVariadicWasmDottedSiblingNames(t *testing.T) {
+func TestBuildVariadicWasmCollidingSiblingNames(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeGoodMain(t, filepath.Join(folder, "cmd", "app"))
-	writeGoodMain(t, filepath.Join(folder, "cmd", "app.v2"))
+	writeGoodMain(t, filepath.Join(folder, "cmd", "app.wasm"))
 
 	target := mustParse(t, "js_wasm")
 	build := config.Build{
@@ -1045,7 +1045,8 @@ func TestBuildVariadicWasmDottedSiblingNames(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
 	require.NoError(t, Default.Build(ctx, build, options))
 
-	// `app.v2` must not be mistaken for the output of `app`.
+	// `cmd/app.wasm` is written as `app.wasm`, which is also the registered
+	// name of `cmd/app`. Neither may consume the other's output.
 	var paths []string
 	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List() {
 		require.FileExists(t, a.Path)
@@ -1053,7 +1054,7 @@ func TestBuildVariadicWasmDottedSiblingNames(t *testing.T) {
 	}
 	require.ElementsMatch(t, []string{
 		filepath.ToSlash(filepath.Join("dist", target.Target, "app.wasm")),
-		filepath.ToSlash(filepath.Join("dist", target.Target, "app.v2.wasm")),
+		filepath.ToSlash(filepath.Join("dist", target.Target, "app.wasm.wasm")),
 	}, paths)
 }
 
@@ -1604,8 +1605,11 @@ func TestBuildEllipsisLibraryArtifactsExist(t *testing.T) {
 			writeCExportMain(t, filepath.Join(folder, "cmd", "cexport"))
 
 			target := mustParse(t, runtimeTarget)
+			// the build ID differs from the package name on purpose: the
+			// library takes the binary name as its ID, and the header has to
+			// follow it, otherwise `ids` filters drop the header.
 			build := config.Build{
-				ID:           "cexport",
+				ID:           "myproject",
 				Dir:          folder,
 				Main:         "./cmd/...",
 				Tool:         "go",
@@ -1636,7 +1640,63 @@ func TestBuildEllipsisLibraryArtifactsExist(t *testing.T) {
 			require.NoError(t, err)
 			require.NotZero(t, info.Size())
 			require.Equal(t, modTime, info.ModTime().UTC())
+
+			require.Equal(t, "cexport", libraries[0].Extra[artifact.ExtraID])
+			headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
+			require.Len(t, headers, 1)
+			require.Equal(
+				t,
+				libraries[0].Extra[artifact.ExtraID],
+				headers[0].Extra[artifact.ExtraID],
+			)
 		})
+	}
+}
+
+func TestBuildVariadicTestCommandOutputs(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	for _, name := range []string{"app", "other"} {
+		dir := filepath.Join(folder, "cmd", name)
+		writeGoodMain(t, dir)
+		require.NoError(t, os.WriteFile(
+			filepath.Join(dir, "main_test.go"),
+			[]byte("package main\nimport \"testing\"\nfunc TestX(t *testing.T) {}"),
+			0o644,
+		))
+	}
+
+	target := mustParse(t, runtimeTarget)
+	ext := ""
+	if runtime.GOOS == "windows" {
+		ext = ".exe"
+	}
+	build := config.Build{
+		ID:      "foo",
+		Main:    "./cmd/...",
+		Tool:    "go",
+		Command: "test",
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "app" + ext,
+		Path:   filepath.Join(folder, "dist", target.Target, "app"+ext),
+		Ext:    ext,
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	// `go test -c` appends `.test` to every output it names itself.
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 2)
+	for _, a := range bins {
+		require.FileExists(t, a.Path)
 	}
 }
 
@@ -2206,6 +2266,7 @@ func TestKeepListFlags(t *testing.T) {
 		flags := []string{
 			"-tags=foo", "-tags", "bar", "-race", "-msan", "-asan",
 			"-mod=vendor", "-modfile", "go.local.mod", "-overlay=o.json",
+			"--tags=double", "--mod=vendor",
 		}
 		require.Equal(t, flags, keepListFlags(flags))
 	})
