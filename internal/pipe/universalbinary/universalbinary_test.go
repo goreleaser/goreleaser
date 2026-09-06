@@ -497,5 +497,8 @@ func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	require.True(tb, strings.HasSuffix(unibin.Path, unibin.ID()+"_darwin_all/foo"))
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
+	defer func() {
+		require.NoError(tb, f.Close())
+	}()
 	require.Len(tb, f.Arches, 2)
 }
