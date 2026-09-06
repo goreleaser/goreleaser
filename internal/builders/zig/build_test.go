@@ -156,10 +156,13 @@ printf '%%s' %q > %q
 		name += ".bat"
 		output = filepath.Clean(output)
 		outputDir := filepath.Dir(output)
-		script = fmt.Sprintf(`@echo off
-if not exist "%s" mkdir "%s"
-> "%s" <nul set /p dummy=%s
-`, outputDir, outputDir, output, contents)
+		script = fmt.Sprintf(
+			"@echo off\r\nif not exist \"%s\" mkdir \"%s\"\r\n> \"%s\" <nul set /p dummy=%s\r\nexit /b 0\r\n",
+			outputDir,
+			outputDir,
+			output,
+			contents,
+		)
 	}
 	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
 	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
