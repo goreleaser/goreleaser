@@ -12,7 +12,7 @@
     {{- end }}
     {{- if .WrappedIn }}
     {{- $wrap := .WrappedIn }}
-    {{- range .Binaries }}
+    {{- range .Wrapped }}
     rename "{{ $wrap }}/{{ . }}", "{{ . }}"
     {{- end }}
     {{- end }}

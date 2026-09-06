@@ -1872,3 +1872,132 @@ func TestRunPipeWrappedIn(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, cli.Content, string(distBts))
 }
+
+func TestRunPipeWrappedInArtifactSources(t *testing.T) {
+	for name, tt := range map[string]struct {
+		wrapped           bool
+		expectedContains  []string
+		expectedOmissions []string
+	}{
+		"unwrapped": {
+			expectedContains: []string{
+				`manpage "man/wrappedin.1"`,
+				`bash_completion "completions/wrappedin.bash"`,
+				`fish_completion "completions/wrappedin.fish"`,
+				`zsh_completion "completions/wrappedin.zsh"`,
+			},
+			expectedOmissions: []string{
+				`rename "wrappedin_1.0.1_darwin_arm64/man/wrappedin.1", "man/wrappedin.1"`,
+				`rename "wrappedin_1.0.1_linux_amd64/man/wrappedin.1", "man/wrappedin.1"`,
+				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
+				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
+			},
+		},
+		"wrapped": {
+			wrapped: true,
+			expectedContains: []string{
+				`rename "wrappedin_1.0.1_darwin_arm64/wrappedin", "wrappedin"`,
+				`rename "wrappedin_1.0.1_darwin_arm64/man/wrappedin.1", "man/wrappedin.1"`,
+				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
+				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.fish", "completions/wrappedin.fish"`,
+				`rename "wrappedin_1.0.1_darwin_arm64/completions/wrappedin.zsh", "completions/wrappedin.zsh"`,
+				`rename "wrappedin_1.0.1_linux_amd64/wrappedin", "wrappedin"`,
+				`rename "wrappedin_1.0.1_linux_amd64/man/wrappedin.1", "man/wrappedin.1"`,
+				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.bash", "completions/wrappedin.bash"`,
+				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.fish", "completions/wrappedin.fish"`,
+				`rename "wrappedin_1.0.1_linux_amd64/completions/wrappedin.zsh", "completions/wrappedin.zsh"`,
+				`manpage "man/wrappedin.1"`,
+				`bash_completion "completions/wrappedin.bash"`,
+				`fish_completion "completions/wrappedin.fish"`,
+				`zsh_completion "completions/wrappedin.zsh"`,
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "wrappedin",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "wrappedin",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "wrappedin",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"wrappedin",
+							},
+							Binaries: []string{"wrappedin"},
+							Manpages: []string{"man/wrappedin.1"},
+							Completions: config.HomebrewCaskCompletions{
+								Bash: "completions/wrappedin.bash",
+								Fish: "completions/wrappedin.fish",
+								Zsh:  "completions/wrappedin.zsh",
+							},
+						},
+					},
+				},
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"))
+
+			extraFiles := []string{
+				"man/wrappedin.1",
+				"completions/wrappedin.bash",
+				"completions/wrappedin.fish",
+				"completions/wrappedin.zsh",
+			}
+			for _, art := range []*artifact.Artifact{
+				{
+					Name:   "bin_arm64.tar.gz",
+					Path:   filepath.Join(folder, "bin_arm64.tar.gz"),
+					Goos:   "darwin",
+					Goarch: "arm64",
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "wrappedin",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"wrappedin"},
+						artifact.ExtraFiles:    extraFiles,
+					},
+				},
+				{
+					Name:    "bin_linux.tar.gz",
+					Path:    filepath.Join(folder, "bin_linux.tar.gz"),
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "wrappedin",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"wrappedin"},
+						artifact.ExtraFiles:    extraFiles,
+					},
+				},
+			} {
+				if tt.wrapped {
+					art.Extra[artifact.ExtraWrappedIn] = "wrappedin_1.0.1_" + art.Goos + "_" + art.Goarch
+				}
+				require.NoError(t, os.WriteFile(art.Path, []byte("foo"), 0o644))
+				ctx.Artifacts.Add(art)
+			}
+
+			require.NoError(t, runAll(ctx, client.NewMock()))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			content, err := os.ReadFile(casks[0].Path)
+			require.NoError(t, err)
+
+			for _, expected := range tt.expectedContains {
+				require.Contains(t, string(content), expected)
+			}
+			for _, omitted := range tt.expectedOmissions {
+				require.NotContains(t, string(content), omitted)
+			}
+		})
+	}
+}

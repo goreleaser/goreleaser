@@ -480,6 +480,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			pkg.Binaries = artifact.ExtraOr(*art, string(artifact.ExtraBinaries), []string{})
 			pkg.CaskBins = cfg.Binaries
 			pkg.WrappedIn = artifact.ExtraOr(*art, string(artifact.ExtraWrappedIn), "")
+			pkg.Wrapped = wrappedArtifactSources(cfg, pkg.Binaries)
 		}
 
 		formatCounts[art.Type]++
@@ -506,6 +507,28 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)
 	return result, nil
+}
+
+func wrappedArtifactSources(cfg config.HomebrewCask, binaries []string) []string {
+	seen := map[string]bool{}
+	result := make([]string, 0, len(binaries)+len(cfg.Manpages)+3)
+	add := func(source string) {
+		if source == "" || seen[source] {
+			return
+		}
+		seen[source] = true
+		result = append(result, source)
+	}
+	for _, binary := range binaries {
+		add(binary)
+	}
+	for _, manpage := range cfg.Manpages {
+		add(manpage)
+	}
+	add(cfg.Completions.Bash)
+	add(cfg.Completions.Fish)
+	add(cfg.Completions.Zsh)
+	return result
 }
 
 // archStanzaRank orders packages so the generated `on_*` blocks come out in

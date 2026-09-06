@@ -31,6 +31,7 @@ type releasePackage struct {
 	Binaries  []string
 	CaskBins  []string
 	WrappedIn string
+	Wrapped   []string
 }
 
 type downloadURL struct {
