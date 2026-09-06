@@ -485,6 +485,26 @@ func TestReadFile(t *testing.T) {
 	})
 }
 
+func TestEnglishJoinDoesNotMutateInput(t *testing.T) {
+	items := []string{"a", " ", "b"}
+	tpl := New(testctx.Wrap(t.Context())).WithExtraFields(Fields{
+		"Items": items,
+	})
+
+	got, err := tpl.Apply(`{{ .Items | englishJoin }}`)
+	require.NoError(t, err)
+	require.Equal(t, "a and b", got)
+	require.Equal(t, []string{"a", " ", "b"}, items)
+}
+
+func TestEnglishJoinDoesNotMutateTemplateList(t *testing.T) {
+	got, err := New(testctx.Wrap(t.Context())).Apply(
+		`{{ $items := list "a" "" "b" }}{{ $items | englishJoin }}|{{ index $items 1 | printf "%q" }}/{{ index $items 2 | printf "%q" }}`,
+	)
+	require.NoError(t, err)
+	require.Equal(t, `a and b|""/"b"`, got)
+}
+
 func TestApplyAll(t *testing.T) {
 	tpl := New(testctx.Wrap(t.Context())).WithEnvS([]string{
 		"FOO=bar",

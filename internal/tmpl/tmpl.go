@@ -556,7 +556,7 @@ func readFile(path string) string {
 }
 
 func englishJoin(ss []string) string {
-	ss = slices.DeleteFunc(ss, func(s string) bool {
+	ss = slices.DeleteFunc(slices.Clone(ss), func(s string) bool {
 		return strings.TrimSpace(s) == ""
 	})
 	if len(ss) == 0 {
