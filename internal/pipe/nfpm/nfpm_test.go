@@ -1975,8 +1975,9 @@ func TestSkipSign(t *testing.T) {
 		require.NoError(tb, os.Mkdir(dist, 0o755))
 		require.NoError(tb, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 		binPath := filepath.Join(dist, "mybin", "mybin")
-		_, err := os.Create(binPath)
+		f, err := os.Create(binPath)
 		require.NoError(tb, err)
+		require.NoError(tb, f.Close())
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
