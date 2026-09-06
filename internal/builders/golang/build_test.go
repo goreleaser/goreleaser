@@ -1785,9 +1785,67 @@ func TestOverrides(t *testing.T) {
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
-			require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
+			require.Equal(t, []string{"BAR=foo", "FOO=overridden"}, dets.Env)
 		})
 	}
+
+	t.Run("env order is stable", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{"A=value", "B={{.Env.A}}", "C=original"},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:    "linux",
+						Goarch:  "amd64",
+						Ldflags: []string{"overridden"},
+						Env:     []string{"C=override", "D={{.Env.B}}"},
+					},
+				},
+			}, mustParse(t, "linux_amd64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{"A=value", "B={{.Env.A}}", "C=override", "D={{.Env.B}}"}, dets.Env)
+	})
+
+	t.Run("dependent env templates survive overrides", func(t *testing.T) {
+		folder := testlib.Mktmp(t)
+		writeGoodMain(t, folder)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Builds: []config.Build{
+				{
+					ID:      "foo",
+					Binary:  "foo",
+					Targets: []string{runtimeTarget},
+					Tool:    "go",
+					Command: "build",
+					Env: []string{
+						"GO111MODULE=off",
+						"TEST_A=value",
+						"TEST_B={{.Env.TEST_A}}",
+					},
+					BuildDetailsOverrides: []config.BuildDetailsOverride{
+						{
+							Goos:    runtime.GOOS,
+							Goarch:  runtime.GOARCH,
+							Ldflags: []string{"-s -w"},
+						},
+					},
+				},
+			},
+		}, testctx.WithCurrentTag("5.6.7"))
+
+		build := ctx.Config.Builds[0]
+		require.NoError(t, Default.Build(ctx, build, api.Options{
+			Target: mustParse(t, runtimeTarget),
+			Name:   build.Binary,
+			Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		}))
+
+		bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+		require.Len(t, bins, 1)
+		require.Equal(t, []string{"TEST_A=value", "TEST_B=value"}, bins[0].Extra["testEnvs"])
+	})
 
 	t.Run("single sided", func(t *testing.T) {
 		dets, err := withOverrides(

@@ -400,7 +400,7 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				return build.BuildDetails, err
 			}
 
-			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
+			dets.Env = mergeEnv(build.Env, o.BuildDetails.Env)
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
@@ -408,6 +408,27 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 	}
 
 	return build.BuildDetails, nil
+}
+
+func mergeEnv(base, overrides []string) []string {
+	values := make(map[string]string, len(base)+len(overrides))
+	var keys []string
+	for _, env := range append(slices.Clone(base), overrides...) {
+		key, value, ok := strings.Cut(env, "=")
+		if !ok || key == "" {
+			continue
+		}
+		if _, exists := values[key]; !exists {
+			keys = append(keys, key)
+		}
+		values[key] = value
+	}
+
+	result := make([]string, 0, len(keys))
+	for _, key := range keys {
+		result = append(result, key+"="+values[key])
+	}
+	return result
 }
 
 func buildGoBuildLine(
