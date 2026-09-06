@@ -1296,7 +1296,7 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 		ids       []string
 		prepare   func(t *testing.T, ctx *context.Context, folder string)
 		wantErr   error
-		manifest  int
+		manifests int
 		publishes int
 	}
 	for name, tt := range map[string]testcase{
@@ -1327,7 +1327,7 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 
 				createFakeWingetArchive(t, ctx, folder, "zip")
 			},
-			manifest:  3,
+			manifests: 3,
 			publishes: 3,
 		},
 	} {
@@ -1370,7 +1370,7 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 				artifact.WingetDefaultLocale,
 				artifact.WingetLocale,
 			)).List()
-			require.Len(t, manifests, tt.manifest)
+			require.Len(t, manifests, tt.manifests)
 
 			rec := newRecordingWingetClient()
 			require.NoError(t, pipe.publishAll(ctx, rec))
@@ -1405,9 +1405,10 @@ func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id str
 		bin     = "foo.exe"
 	)
 
-	path := filepath.Join(folder, "dist", id+"_"+goos+"_"+goarch+goamd64+".zip")
+	name := id + "_" + goos + "_" + goarch + goamd64 + ".zip"
+	path := filepath.Join(folder, "dist", name)
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:    id + "_" + goos + "_" + goarch + goamd64 + ".zip",
+		Name:    name,
 		Path:    path,
 		Goos:    goos,
 		Goarch:  goarch,
@@ -1429,9 +1430,10 @@ func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id str
 func createFakeWingetBinary(tb testing.TB, ctx *context.Context, folder, id, goos, goarch, bin string) {
 	tb.Helper()
 
-	path := filepath.Join(folder, "dist", id+"_"+goos+"_"+goarch+".exe")
+	name := id + "_" + goos + "_" + goarch + ".exe"
+	path := filepath.Join(folder, "dist", name)
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   id + "_" + goos + "_" + goarch + ".exe",
+		Name:   name,
 		Path:   path,
 		Goos:   goos,
 		Goarch: goarch,

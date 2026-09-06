@@ -1032,7 +1032,6 @@ func TestRunPipeWrappedArchiveBinMatchesArchiveMember(t *testing.T) {
 func createKrewTestTarGz(tb testing.TB, target, member string) {
 	tb.Helper()
 
-	require.NoError(tb, os.MkdirAll(filepath.Dir(target), 0o755))
 	file, err := os.Create(target)
 	require.NoError(tb, err)
 	defer func() { require.NoError(tb, file.Close()) }()
