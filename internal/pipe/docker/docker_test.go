@@ -1175,6 +1175,65 @@ func TestBuildCommand(t *testing.T) {
 	}
 }
 
+func TestDockerImagerPushUsesFlags(t *testing.T) {
+	const digest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	dir := t.TempDir()
+	source := filepath.Join(dir, "main.go")
+	require.NoError(t, os.WriteFile(source, []byte(`package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if err := os.WriteFile(os.Getenv("DOCKER_ARGS_FILE"), []byte(strings.Join(os.Args[1:], "\n")), 0o644); err != nil {
+		panic(err)
+	}
+	fmt.Println("digest: `+digest+`")
+}
+`), 0o644))
+	fakeDocker := filepath.Join(dir, "docker")
+	if os.PathSeparator == '\\' {
+		fakeDocker += ".exe"
+	}
+	out, err := exec.CommandContext(t.Context(), "go", "build", "-o", fakeDocker, source).CombinedOutput()
+	require.NoError(t, err, string(out))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		name  string
+		flags []string
+		want  []string
+	}{
+		{
+			name:  "empty flags",
+			flags: nil,
+			want:  []string{"push", "example.invalid/app:v1"},
+		},
+		{
+			name:  "configured flags",
+			flags: []string{"--disable-content-trust=false"},
+			want:  []string{"push", "--disable-content-trust=false", "example.invalid/app:v1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			argsFile := filepath.Join(t.TempDir(), "args")
+			t.Setenv("DOCKER_ARGS_FILE", argsFile)
+
+			gotDigest, err := dockerImager{}.Push(testctx.Wrap(t.Context()), "example.invalid/app:v1", tt.flags)
+			require.NoError(t, err)
+			require.Equal(t, digest, gotDigest)
+			bts, err := os.ReadFile(argsFile)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, strings.Split(string(bts), "\n"))
+		})
+	}
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
