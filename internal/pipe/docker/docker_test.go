@@ -1557,6 +1557,71 @@ func (i *countingImager) Push(*context.Context, string, []string) (string, error
 	return "", nil
 }
 
+type wheelIDImager struct {
+	calls atomic.Int32
+}
+
+func (i *wheelIDImager) Build(_ *context.Context, root string, _ []string, _ []string) error {
+	i.calls.Add(1)
+	if _, err := os.Stat(filepath.Join(root, "mytool-1.0.0-py3-none-any.whl")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *wheelIDImager) Push(*context.Context, string, []string) (string, error) {
+	return "", nil
+}
+
+func TestRunWithSelectedWheelID(t *testing.T) {
+	const imagerName = "test-wheel-id"
+	lock.Lock()
+	previous, existed := imagers[imagerName]
+	lock.Unlock()
+	t.Cleanup(func() {
+		lock.Lock()
+		defer lock.Unlock()
+		if existed {
+			imagers[imagerName] = previous
+		} else {
+			delete(imagers, imagerName)
+		}
+	})
+
+	dir := t.TempDir()
+	wheel := filepath.Join(dir, "mytool-1.0.0-py3-none-any.whl")
+	require.NoError(t, os.WriteFile(wheel, []byte("wheel"), 0o644))
+	dockerfile := filepath.Join(dir, "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("FROM scratch\nCOPY mytool-1.0.0-py3-none-any.whl /wheel.whl\n"), 0o644))
+
+	im := &wheelIDImager{}
+	registerImager(imagerName, im)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dockers: []config.Docker{
+			{
+				Use:            imagerName,
+				Dockerfile:     dockerfile,
+				ImageTemplates: []string{"example.invalid/mytool:latest"},
+				IDs:            []string{"python"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mytool-1.0.0-py3-none-any.whl",
+		Path:   wheel,
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: map[string]any{
+			artifact.ExtraID: "python",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, int32(1), im.calls.Load())
+}
+
 func TestDockerBuildRetries(t *testing.T) {
 	for _, name := range []string{"test-build-retriable", "test-build-fatal"} {
 		lock.Lock()

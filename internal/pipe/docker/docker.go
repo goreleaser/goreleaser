@@ -186,7 +186,6 @@ func (Pipe) Run(ctx *context.Context) error {
 			}
 
 			filter := artifact.And(filters...)
-			matched := ctx.Artifacts.Filter(filter)
 			artifacts := ctx.Artifacts.Filter(
 				artifact.Or(
 					filter,
@@ -196,8 +195,8 @@ func (Pipe) Run(ctx *context.Context) error {
 					),
 				),
 			)
-			if d := len(docker.IDs); d > 0 && len(matched.GroupByID()) != d {
-				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(matched.List()))
+			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
+				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
 			}
 			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
 			return process(ctx, docker, artifacts.List())
