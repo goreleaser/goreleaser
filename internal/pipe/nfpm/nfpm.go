@@ -437,8 +437,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		})
 	}
 
-	if len(fpm.Deb.Lintian) > 0 && (format == "deb" || format == "termux.deb") {
-		lintian, err := setupLintian(ctx, fpm, packageName, format, arch)
+	if len(overridden.Deb.Lintian) > 0 && (format == "deb" || format == "termux.deb") {
+		lintian, err := setupLintian(ctx, overridden.Deb.Lintian, packageName, format, arch)
 		if err != nil {
 			return err
 		}
@@ -644,9 +644,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	path := filepath.Join(ctx.Config.Dist, packageFilename)
 	log.WithField("file", path).Info("creating")
-	w, err := os.Create(path)
+	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
-		return err
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("package file already exists: %s: %w", path, err)
+		}
+		return fmt.Errorf("could not create package file: %w", err)
 	}
 	defer w.Close()
 
@@ -684,9 +687,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	return nil
 }
 
-func setupLintian(ctx *context.Context, fpm config.NFPM, packageName, format, arch string) (*files.Content, error) {
-	lines := make([]string, 0, len(fpm.Deb.Lintian))
-	for _, ov := range fpm.Deb.Lintian {
+func setupLintian(ctx *context.Context, lintian []string, packageName, format, arch string) (*files.Content, error) {
+	lines := make([]string, 0, len(lintian))
+	for _, ov := range lintian {
 		lines = append(lines, fmt.Sprintf("%s: %s", packageName, ov))
 	}
 	lintianPath := filepath.Join(ctx.Config.Dist, format, packageName+"_"+arch, "lintian")

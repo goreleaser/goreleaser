@@ -3,6 +3,7 @@ package aursources
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -121,9 +122,20 @@ func TestSrcInfoSimple(t *testing.T) {
 	require.Contains(t, pkg, `pkgbase = test`)
 	require.Contains(t, pkg, `pkgname = test`)
 	require.Contains(t, pkg, `url = https://example.com`)
-	require.Contains(t, pkg, `source = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
+	require.Contains(t, pkg, `backup = /etc/mypkg.conf`)
+	require.Contains(t, pkg, `backup = /var/share/mypkg`)
+	require.Contains(t, pkg, `source = test_0.1.3.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
 	require.Contains(t, pkg, `sha256sums = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67`)
 	require.Contains(t, pkg, `pkgver = 0.1.3`)
+}
+
+func TestSrcInfoIncludesInstall(t *testing.T) {
+	data := createTemplateData()
+	data.Install = "./testdata/install.sh"
+
+	pkg, err := applyTemplate(testctx.Wrap(t.Context()), srcInfoTemplate, data)
+	require.NoError(t, err)
+	require.Contains(t, pkg, `install = test.install`)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -874,8 +886,55 @@ func TestRunPipeTemplatedDescriptionWithQuotes(t *testing.T) {
 
 	bts, err := os.ReadFile(filepath.Join(folder, "aur", "foo.pkgbuild"))
 	require.NoError(t, err)
-	require.Contains(t, string(bts), `pkgdesc="Let's go"`)
-	require.Contains(t, string(bts), `url="https://example.com/~o'brien"`)
-	require.Contains(t, string(bts), `license=("Nobody's")`)
-	require.Contains(t, string(bts), `provides=("fo'o" 'bar')`)
+	require.Contains(t, string(bts), `pkgdesc='Let'\''s go'`)
+	require.Contains(t, string(bts), `url='https://example.com/~o'\''brien'`)
+	require.Contains(t, string(bts), `license=('Nobody'\''s')`)
+	require.Contains(t, string(bts), `provides=('fo'\''o' 'bar')`)
+}
+
+func TestRunPipeMetadataQuotingIsLossless(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURSources: []config.AURSource{{
+				Description: `Let's inspect $HOME and this is a "test"`,
+			}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "foo.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "foo.tar.gz",
+		Path: path,
+		Type: artifact.UploadableSourceArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
+		},
+	})
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	desc := sourcePkgDesc(t, filepath.Join(folder, "aur", "foo.pkgbuild"))
+	require.Equal(t, `Let's inspect $HOME and this is a "test"`, desc)
+}
+
+func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
+	tb.Helper()
+	cmd := exec.CommandContext(tb.Context(), "bash", "-c", `source "$1"; printf '%s' "$pkgdesc"`, "bash", pkgbuild)
+	cmd.Env = append(os.Environ(), "HOME=/expanded-home")
+	out, err := cmd.Output()
+	require.NoError(tb, err)
+	return string(out)
 }

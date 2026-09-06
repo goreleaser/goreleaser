@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -15,7 +16,7 @@ import (
 )
 
 const (
-	// maxReleaseBodyLength defines the max characters size of the body
+	// maxReleaseBodyLength defines the max byte size of the body
 	maxReleaseBodyLength = 125000
 	// ellipsis to be used when release notes body is too long
 	ellipsis = "..."
@@ -178,7 +179,11 @@ func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) 
 
 func truncateReleaseBody(body string) string {
 	if len(body) > maxReleaseBodyLength {
-		body = body[:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
+		cutoff := maxReleaseBodyLength - len(ellipsis)
+		for !utf8.RuneStart(body[cutoff]) {
+			cutoff--
+		}
+		body = body[:cutoff] + ellipsis
 	}
 	return body
 }

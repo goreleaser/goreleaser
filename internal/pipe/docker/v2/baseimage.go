@@ -33,12 +33,12 @@ type dockerImage struct{ name, digest string }
 // getBaseImage returns the base image of dockerfile and its manifest digest.
 // Returns errNoBaseImage when there's no usable FROM. Returns (base, "", err)
 // on digest resolution failure, so callers can still use the image name.
-func getBaseImage(ctx *context.Context, dockerfile string) (dockerImage, error) {
+func getBaseImage(ctx *context.Context, dockerfile string, buildArgs ...map[string]string) (dockerImage, error) {
 	content, err := os.ReadFile(dockerfile)
 	if err != nil {
 		return dockerImage{}, err
 	}
-	base := parseBaseImage(string(content))
+	base := parseBaseImage(string(content), buildArgs...)
 	if base == "" || strings.EqualFold(base, "scratch") {
 		return dockerImage{}, errNoBaseImage
 	}
@@ -58,17 +58,20 @@ var (
 	fromRe         = regexp.MustCompile(`(?i)^FROM(?:\s+--\S+)*\s+(\S+)(?:\s+AS\s+(\S+))?\s*$`)
 )
 
-// parseBaseImage returns the final stage's base image, following AS
-// aliases and substituting global ARG defaults. Returns "" if no FROM
-// is found. Doesn't try to be a full Dockerfile parser — only enough
-// to fill the BaseImage/BaseImageDigest template vars. If it gets it
-// wrong the user just won't get the annotation; the real `docker
-// build` is the source of truth.
-func parseBaseImage(content string) string {
+// parseBaseImage returns the final stage's base image, following AS aliases and
+// substituting effective global ARG values. Returns "" if no FROM is found.
+// Doesn't try to be a full Dockerfile parser — only enough to fill the
+// BaseImage/BaseImageDigest template vars. The real `docker build` is the
+// source of truth.
+func parseBaseImage(content string, buildArgs ...map[string]string) string {
 	content = continuationRe.ReplaceAllString(content, " ")
 
 	args := map[string]string{}
 	aliases := map[string]string{}
+	overrides := map[string]string{}
+	if len(buildArgs) > 0 {
+		overrides = buildArgs[0]
+	}
 	var base string
 
 	for line := range strings.SplitSeq(content, "\n") {
@@ -80,6 +83,9 @@ func parseBaseImage(content string) string {
 		if m := argRe.FindStringSubmatch(line); m != nil && base == "" {
 			// Only global ARGs (before any FROM) are usable in FROM lines.
 			args[m[1]] = strings.Trim(m[2], `"'`)
+			if override := overrides[m[1]]; override != "" {
+				args[m[1]] = override
+			}
 			continue
 		}
 

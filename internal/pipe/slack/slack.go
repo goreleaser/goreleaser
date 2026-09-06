@@ -4,7 +4,6 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
@@ -73,7 +72,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	return retryx.Do(ctx, ctx.Config.Retry, func() error {
-		return slack.PostWebhook(cfg.Webhook, wm)
+		return slack.PostWebhookContext(ctx, cfg.Webhook, wm)
 	}, retryx.IsNetworkError)
 }
 
@@ -105,18 +104,53 @@ func unmarshal(ctx *context.Context, in any, target any) error {
 		return fmt.Errorf("failed to marshal input as JSON: %w", err)
 	}
 
-	body := string(jazon)
-	// ensure that double quotes that are inside the string get un-escaped so they can be interpreted for templates
-	body = strings.ReplaceAll(body, "\\\"", "\"")
+	var raw any
+	if err := json.Unmarshal(jazon, &raw); err != nil {
+		return fmt.Errorf("failed to unmarshal input as JSON: %w", err)
+	}
 
-	tplApplied, err := tmpl.New(ctx).Apply(body)
+	tplApplied, err := applyTemplates(tmpl.New(ctx), raw)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate template: %w", err)
 	}
 
-	if err = json.Unmarshal([]byte(tplApplied), target); err != nil {
+	jazon, err = json.Marshal(tplApplied)
+	if err != nil {
+		return fmt.Errorf("failed to marshal rendered input as JSON: %w", err)
+	}
+
+	if err = json.Unmarshal(jazon, target); err != nil {
 		return fmt.Errorf("failed to unmarshal into target: %w", err)
 	}
 
 	return nil
+}
+
+func applyTemplates(tpl *tmpl.Template, in any) (any, error) {
+	switch v := in.(type) {
+	case string:
+		return tpl.Apply(v)
+	case []any:
+		out := make([]any, len(v))
+		for i, item := range v {
+			applied, err := applyTemplates(tpl, item)
+			if err != nil {
+				return nil, err
+			}
+			out[i] = applied
+		}
+		return out, nil
+	case map[string]any:
+		out := make(map[string]any, len(v))
+		for key, value := range v {
+			applied, err := applyTemplates(tpl, value)
+			if err != nil {
+				return nil, err
+			}
+			out[key] = applied
+		}
+		return out, nil
+	default:
+		return v, nil
+	}
 }
