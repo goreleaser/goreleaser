@@ -34,6 +34,24 @@ func TestCopySymlink(t *testing.T) {
 	require.Equal(t, a, filepath.ToSlash(l))
 }
 
+func TestCopyDirectorySymlinkWithTrailingSeparator(t *testing.T) {
+	testlib.SkipIfWindows(t, "trailing slash follows directory symlinks on Unix")
+	t.Parallel()
+	src := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(src, "asset.txt"), []byte("asset"), 0o644))
+	link := filepath.Join(t.TempDir(), "assets")
+	require.NoError(t, os.Symlink(src, link))
+	dst := t.TempDir()
+
+	require.NoError(t, Copy(link+string(os.PathSeparator), dst))
+	data, err := os.ReadFile(filepath.Join(dst, "asset.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "asset", string(data))
+	info, err := os.Lstat(dst)
+	require.NoError(t, err)
+	require.True(t, info.IsDir())
+}
+
 func TestEqualFilesModeChanged(t *testing.T) {
 	testlib.SkipIfWindows(t)
 	tmp := t.TempDir()

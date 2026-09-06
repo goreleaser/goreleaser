@@ -17,7 +17,6 @@ func Copy(src, dst string) error {
 // CopyWithMode recursively copies src into dst with the given mode.
 // The given mode applies only to files. Their parent dirs will have the same mode as their src counterparts.
 func CopyWithMode(src, dst string, mode os.FileMode) error {
-	src = filepath.Clean(src)
 	dst = filepath.Clean(dst)
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
