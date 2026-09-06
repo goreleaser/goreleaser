@@ -219,40 +219,11 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
-	ext := extFor(target, build.BuildDetails)
-	buildOpts := builders.Options{
-		Ext: ext,
-	}
-
 	t, err := builders.For(build.Builder).Parse(target)
 	if err != nil {
 		return nil, err
 	}
-	buildOpts.Target = t
-
-	bin, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
-	if err != nil {
-		return nil, err
-	}
-
-	name := bin + ext
-	dir := fmt.Sprintf("%s_%s", build.ID, t)
-	noUnique, err := tmpl.New(ctx).Bool(build.NoUniqueDistDir)
-	if err != nil {
-		return nil, err
-	}
-	if noUnique {
-		dir = ""
-	}
-	relpath := filepath.Join(ctx.Config.Dist, dir, name)
-	path, err := filepath.Abs(relpath)
-	if err != nil {
-		return nil, err
-	}
-	buildOpts.Path = path
-	buildOpts.Name = name
-
-	return &buildOpts, nil
+	return base.OptionsForTarget(ctx, build, t, extFor(target, build.BuildDetails))
 }
 
 // TODO: this should probably be the responsibility of each builder.
