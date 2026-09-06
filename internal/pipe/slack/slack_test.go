@@ -202,6 +202,50 @@ func TestParseRichText(t *testing.T) {
 	})
 }
 
+func TestParseRichTextPreservesQuotesAndRenderedNewlines(t *testing.T) {
+	t.Parallel()
+
+	const conf = `
+version: 2
+announce:
+  slack:
+    enabled: true
+    message_template: fallback
+    blocks:
+      - type: section
+        text:
+          type: plain_text
+          text: 'Release "stable"'
+      - type: section
+        text:
+          type: plain_text
+          text: '{{ .ReleaseNotes }}'
+    attachments:
+      - text: 'Release "stable"'
+      - text: '{{ .ReleaseNotes }}'
+`
+	project, err := config.LoadReader(bytes.NewBufferString(conf))
+	require.NoError(t, err)
+	ctx := testctx.WrapWithCfg(t.Context(), project)
+	ctx.ReleaseNotes = "line \"one\"\nline two"
+
+	blocks, attachments, err := parseAdvancedFormatting(ctx)
+	require.NoError(t, err)
+	require.Len(t, blocks.BlockSet, 2)
+	require.Len(t, attachments, 2)
+
+	section, ok := blocks.BlockSet[0].(*slack.SectionBlock)
+	require.True(t, ok)
+	require.Equal(t, `Release "stable"`, section.Text.Text)
+
+	section, ok = blocks.BlockSet[1].(*slack.SectionBlock)
+	require.True(t, ok)
+	require.Equal(t, "line \"one\"\nline two", section.Text.Text)
+
+	require.Equal(t, `Release "stable"`, attachments[0].Text)
+	require.Equal(t, "line \"one\"\nline two", attachments[1].Text)
+}
+
 func TestRichText(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
