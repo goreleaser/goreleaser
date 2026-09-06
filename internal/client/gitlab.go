@@ -205,13 +205,13 @@ func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 
 // getDefaultBranch get the default branch
 func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
+	if branch := gitlabCIDefaultBranch(repo); branch != "" {
 		return branch, nil
 	}
 	if err := c.checkIsPrivateToken(); err != nil {
 		return "", fmt.Errorf("get default branch: %w", err)
 	}
-	projectID := repo.String()
+	projectID := gitlabProjectID(repo)
 	p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
 		return c.client.Projects.GetProject(projectID, nil)
 	})
@@ -226,12 +226,33 @@ func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 	return p.DefaultBranch, nil
 }
 
-// checkBranchExists checks if a branch exists
-func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch string) (bool, error) {
+func gitlabCIDefaultBranch(repo Repo) string {
+	branch := os.Getenv("CI_DEFAULT_BRANCH")
+	if branch == "" {
+		return ""
+	}
+
+	projectID := gitlabProjectID(repo)
+	if projectID == "" {
+		return ""
+	}
+	if os.Getenv("CI_PROJECT_PATH") == projectID || os.Getenv("CI_PROJECT_ID") == projectID {
+		return branch
+	}
+	return ""
+}
+
+func gitlabProjectID(repo Repo) string {
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
 	}
+	return projectID
+}
+
+// checkBranchExists checks if a branch exists
+func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch string) (bool, error) {
+	projectID := gitlabProjectID(repo)
 
 	_, res, err := gitlabDo(ctx, func() (*gitlab.Branch, *gitlab.Response, error) {
 		return c.client.Branches.GetBranch(projectID, branch)
@@ -291,10 +312,7 @@ func (c *gitlabClient) CreateFile(
 		return fmt.Errorf("create file: %w", err)
 	}
 
-	projectID := repo.Name
-	if repo.Owner != "" {
-		projectID = repo.Owner + "/" + projectID
-	}
+	projectID := gitlabProjectID(repo)
 
 	log.
 		WithField("projectID", projectID).

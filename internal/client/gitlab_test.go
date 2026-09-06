@@ -613,9 +613,133 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 	}
 
 	t.Setenv("CI_DEFAULT_BRANCH", "foo")
+	t.Setenv("CI_PROJECT_PATH", "someone/something")
 	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "foo", b)
+}
+
+func TestGitLabGetDefaultBranchEnvProjectID(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveGitLabVersion(w, r) {
+			return
+		}
+		t.Error("shouldn't have made any calls to the API")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_ID", "123456789")
+	b, err := client.getDefaultBranch(ctx, Repo{Name: "123456789"})
+	require.NoError(t, err)
+	require.Equal(t, "main", b)
+}
+
+func TestGitLabCreateFileUsesTargetDefaultBranch(t *testing.T) {
+	var gotRef string
+	var gotBranch string
+	var decodeErr error
+	var projectLookups int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case r.URL.Path == "/api/v4/projects/target/project":
+			projectLookups++
+			fmt.Fprint(w, `{"default_branch":"trunk"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodGet:
+			gotRef = r.URL.Query().Get("ref")
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodPost:
+			var req map[string]string
+			decodeErr = json.NewDecoder(r.Body).Decode(&req)
+			gotBranch = req["branch"]
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"trunk"}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_PATH", "source/project")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.CreateFile(
+		ctx,
+		config.CommitAuthor{Name: "user", Email: "u@e.com"},
+		Repo{Owner: "target", Name: "project"},
+		[]byte("content"),
+		"test.rb",
+		"add test",
+	)
+	require.NoError(t, err)
+	require.NoError(t, decodeErr)
+	require.Equal(t, 1, projectLookups)
+	require.Equal(t, "trunk", gotRef)
+	require.Equal(t, "trunk", gotBranch)
+}
+
+func TestGitLabCreateFileExplicitBranchIgnoresCIDefaultBranch(t *testing.T) {
+	var gotRef string
+	var gotBranch string
+	var decodeErr error
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case serveGitLabVersion(w, r):
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/trunk"):
+			fmt.Fprint(w, `{"name":"trunk"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodGet:
+			gotRef = r.URL.Query().Get("ref")
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/test.rb") && r.Method == http.MethodPost:
+			var req map[string]string
+			decodeErr = json.NewDecoder(r.Body).Decode(&req)
+			gotBranch = req["branch"]
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"trunk"}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	t.Setenv("CI_DEFAULT_BRANCH", "main")
+	t.Setenv("CI_PROJECT_PATH", "source/project")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.CreateFile(
+		ctx,
+		config.CommitAuthor{Name: "user", Email: "u@e.com"},
+		Repo{Owner: "target", Name: "project", Branch: "trunk"},
+		[]byte("content"),
+		"test.rb",
+		"add test",
+	)
+	require.NoError(t, err)
+	require.NoError(t, decodeErr)
+	require.Equal(t, "trunk", gotRef)
+	require.Equal(t, "trunk", gotBranch)
 }
 
 func TestGitLabGetDefaultBranchErr(t *testing.T) {
