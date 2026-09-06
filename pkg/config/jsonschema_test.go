@@ -90,3 +90,23 @@ func TestSignJSONSchema(t *testing.T) {
 		}
 	}
 }
+
+func TestMCPPackageStrictConfig(t *testing.T) {
+	t.Parallel()
+
+	project, err := LoadReader(strings.NewReader(`
+mcp:
+  name: io.github.test/server
+  title: Test Server
+  auth:
+    type: none
+  packages:
+    - registry_type: mcpb
+      identifier: https://github.com/test/server/releases/download/v1.0.0/server.mcpb
+      file_sha256: fe333e598595000ae021bd27117db32ec69af6987f507ba7a63c90638ff633ce
+      transport:
+        type: stdio
+`))
+	require.NoError(t, err)
+	require.Equal(t, "fe333e598595000ae021bd27117db32ec69af6987f507ba7a63c90638ff633ce", project.MCP.Packages[0].FileSHA256)
+}

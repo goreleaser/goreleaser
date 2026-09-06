@@ -125,6 +125,17 @@ mcp:
       transport:
         type: stdio
 
+    # MCPB package example
+    - registry_type: mcpb
+      identifier: "https://github.com/user/myserver/releases/download/{{ .Version }}/myserver.mcpb"
+      # SHA-256 hash of the MCPB file.
+      #
+      # Required for mcpb packages.
+      # Templates: allowed.
+      file_sha256: "fe333e598595000ae021bd27117db32ec69af6987f507ba7a63c90638ff633ce"
+      transport:
+        type: stdio
+
   # Set to true to skip MCP publication. No local manifest is written.
   # If set to auto, the manifest will not be published in case there is an
   # indicator for prerelease in the tag e.g. v1.0.0-rc1

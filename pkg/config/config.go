@@ -1708,6 +1708,7 @@ type MCPAuth struct {
 type MCPPackage struct {
 	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget,enum=mcpb"`
 	Identifier   string       `yaml:"identifier" json:"identifier"`
+	FileSHA256   string       `yaml:"file_sha256,omitempty" json:"file_sha256,omitempty"`
 	Transport    MCPTransport `yaml:"transport" json:"transport"`
 }
 

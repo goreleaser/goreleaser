@@ -134,8 +134,12 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	for _, pkg := range mcp.Packages {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
+			&pkg.FileSHA256,
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
+		}
+		if pkg.RegistryType == "mcpb" && pkg.FileSHA256 == "" {
+			return fmt.Errorf("mcpb package %q requires file_sha256", pkg.Identifier)
 		}
 		version := ctx.Version
 		if pkg.RegistryType == "oci" {
@@ -145,6 +149,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			RegistryType: pkg.RegistryType,
 			Identifier:   pkg.Identifier,
 			Version:      version,
+			FileSHA256:   pkg.FileSHA256,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
 			},
