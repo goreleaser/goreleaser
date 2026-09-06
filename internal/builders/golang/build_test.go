@@ -2092,7 +2092,6 @@ func TestOverrides(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I/opt/osxcross/include"}, out)
 	})
-
 }
 
 func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
