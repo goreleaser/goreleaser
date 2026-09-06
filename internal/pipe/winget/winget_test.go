@@ -1291,6 +1291,88 @@ func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
 	}
 }
 
+func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) {
+	type testcase struct {
+		ids       []string
+		prepare   func(t *testing.T, ctx *context.Context, folder string)
+		wantErr   error
+		manifest  int
+		publishes int
+	}
+	for name, tt := range map[string]testcase{
+		"duplicate-platform": {
+			ids: []string{"a", "b"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				createFakeWingetArchive(t, ctx, folder, "a", "windows", "amd64", "v1", "foo.exe")
+				createFakeWingetArchive(t, ctx, folder, "b", "windows", "amd64", "v1", "foo.exe")
+			},
+			wantErr: errMultipleArchives,
+		},
+		"mixed-format": {
+			ids: []string{"zip", "bin"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				createFakeWingetArchive(t, ctx, folder, "zip", "windows", "amd64", "v1", "foo.exe")
+				createFakeWingetBinary(t, ctx, folder, "bin", "windows", "386", "foo")
+			},
+			wantErr: errMixedFormats,
+		},
+		"valid": {
+			ids: []string{"zip"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				createFakeWingetArchive(t, ctx, folder, "zip", "windows", "amd64", "v1", "foo.exe")
+			},
+			manifest:  3,
+			publishes: 3,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "tool",
+					Winget: []config.Winget{{
+						Name:              "tool",
+						Publisher:         "Acme",
+						PackageIdentifier: "Acme.Tool",
+						License:           "MIT",
+						ShortDescription:  "tool",
+						IDs:               tt.ids,
+						Repository: config.RepoRef{
+							Owner: "foo",
+							Name:  "bar",
+						},
+					}},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+			tt.prepare(t, ctx, folder)
+
+			pipe := Pipe{}
+			require.NoError(t, pipe.Default(ctx))
+			err := pipe.runAll(ctx, client.NewMock())
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+
+			manifests := ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
+				artifact.WingetLocale,
+			)).List()
+			require.Len(t, manifests, tt.manifest)
+
+			rec := newRecordingWingetClient()
+			require.NoError(t, pipe.publishAll(ctx, rec))
+			require.Len(t, rec.paths, tt.publishes)
+		})
+	}
+}
+
 type recordingWingetClient struct {
 	*client.Mock
 	repos []client.Repo
@@ -1329,6 +1411,25 @@ func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id, go
 	f, err := os.Create(path)
 	require.NoError(tb, err)
 	require.NoError(tb, f.Close())
+}
+
+func createFakeWingetBinary(tb testing.TB, ctx *context.Context, folder, id, goos, goarch, bin string) {
+	tb.Helper()
+
+	path := filepath.Join(folder, "dist", id+"_"+goos+"_"+goarch+".exe")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   id + "_" + goos + "_" + goarch + ".exe",
+		Path:   path,
+		Goos:   goos,
+		Goarch: goarch,
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     id,
+			artifact.ExtraBinary: bin,
+		},
+	})
+	require.NoError(tb, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(tb, os.WriteFile(path, []byte("binary"), 0o644))
 }
 
 func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {

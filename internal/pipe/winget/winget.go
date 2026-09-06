@@ -238,6 +238,11 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
+	installer, err := makeInstaller(ctx, winget, archives)
+	if err != nil {
+		return err
+	}
+
 	if err := createYAML(ctx, winget, artifactID, Version{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
@@ -245,11 +250,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ManifestType:      "version",
 		ManifestVersion:   manifestVersion,
 	}, artifact.WingetVersion, winget.DefaultLocale); err != nil {
-		return err
-	}
-
-	installer, err := makeInstaller(ctx, winget, archives)
-	if err != nil {
 		return err
 	}
 
