@@ -304,10 +304,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
 	if !upload.CustomArtifactName {
-		targetURL, err = appendArtifactNameToTargetURL(targetURL, artifact.Name)
-		if err != nil {
-			return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
-		}
+		targetURL = appendArtifactNameToTargetURL(targetURL, artifact.Name)
 	}
 	log.Debugf("generated target url: %s", redact.String(targetURL, ctx.Env.Strings()))
 
@@ -343,13 +340,13 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	return nil
 }
 
-func appendArtifactNameToTargetURL(target, name string) (string, error) {
+func appendArtifactNameToTargetURL(target, name string) string {
 	u, err := url.Parse(target)
 	if err != nil {
 		if !strings.HasSuffix(target, "/") {
 			target += "/"
 		}
-		return target + url.PathEscape(name), nil
+		return target + url.PathEscape(name)
 	}
 
 	path := u.EscapedPath()
@@ -358,12 +355,10 @@ func appendArtifactNameToTargetURL(target, name string) (string, error) {
 	}
 	path += url.PathEscape(name)
 
-	u.Path, err = url.PathUnescape(path)
-	if err != nil {
-		return "", err
-	}
+	// path is built only from already-escaped parts, so it always unescapes.
+	u.Path, _ = url.PathUnescape(path)
 	u.RawPath = path
-	return u.String(), nil
+	return u.String()
 }
 
 // uploadAssetToServer uploads the asset file to target.
