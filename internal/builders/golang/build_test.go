@@ -1080,6 +1080,29 @@ func TestBuildFailed(t *testing.T) {
 	require.Empty(t, ctx.Artifacts.List())
 }
 
+func TestBuildOutput(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Empty(t, buildOutput(nil))
+	})
+
+	t.Run("download only", func(t *testing.T) {
+		require.Empty(t, buildOutput([]byte("go: downloading github.com/caarlos0/env/v11 v11.4.1\n")))
+	})
+
+	t.Run("mixed", func(t *testing.T) {
+		require.Equal(
+			t,
+			"# example.com/foo\n./main.go:3:2: undefined: nope",
+			buildOutput([]byte("go: downloading github.com/caarlos0/env/v11 v11.4.1\n# example.com/foo\n./main.go:3:2: undefined: nope\n")),
+		)
+	})
+}
+
+func TestExecGoKeepsFailureOutput(t *testing.T) {
+	err := execGo(testctx.Wrap(t.Context()), []string{"go", "build", "-flag-that-dont-exists-to-force-failure"}, nil, t.TempDir())
+	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+}
+
 func TestRunInvalidAsmflags(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)

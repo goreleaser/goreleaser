@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"maps"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"slices"
@@ -334,7 +335,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
+	if err := execGo(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
 
@@ -348,6 +349,33 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		ctx.Artifacts.Add(a)
 	}
 	return nil
+}
+
+func execGo(ctx *context.Context, command, env []string, dir string) error {
+	/* #nosec */
+	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	cmd.Env = env
+	cmd.Dir = dir
+	log.WithField("cmd", command[0]).Debug("executing")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, string(out))
+	}
+	if s := buildOutput(out); s != "" {
+		log.WithField("output", s).Info(strings.Join(command, " "))
+	}
+	return nil
+}
+
+func buildOutput(out []byte) string {
+	var lines []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if line == "" || strings.HasPrefix(line, "go: downloading") {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
 }
 
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
