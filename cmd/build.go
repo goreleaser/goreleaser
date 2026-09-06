@@ -116,6 +116,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or `GOOS`, `G
 
 func buildProject(parent stdctx.Context, options buildOpts) error {
 	start := time.Now()
+	options.snapshot = impliedSnapshot(parent, options.snapshot, options.autoSnapshot)
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return decorateWithCtxErr(parent, err, "build", after(start))
@@ -142,6 +143,13 @@ func buildProject(parent stdctx.Context, options buildOpts) error {
 	deprecateWarn(ctx)
 	log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %s", after(start).String())))
 	return nil
+}
+
+func impliedSnapshot(parent stdctx.Context, snapshot, autoSnapshot bool) bool {
+	if snapshot || !autoSnapshot {
+		return snapshot
+	}
+	return git.CheckDirty(context.Wrap(parent, config.Project{})) != nil
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {

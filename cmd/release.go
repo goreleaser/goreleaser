@@ -100,6 +100,7 @@ func newReleaseCmd() *releaseCmd {
 func releaseProject(parent stdctx.Context, options releaseOpts) error {
 	start := time.Now()
 	log.Infof(boldStyle.Render("starting release"))
+	options.snapshot = impliedSnapshot(parent, options.snapshot, options.autoSnapshot)
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return decorateWithCtxErr(parent, err, "release", after(start))

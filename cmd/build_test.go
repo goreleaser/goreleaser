@@ -38,6 +38,36 @@ func TestBuildAutoSnapshot(t *testing.T) {
 	})
 }
 
+func TestBuildAutoSnapshotWithProConfig(t *testing.T) {
+	t.Run("explicit snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("dirty automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("clean automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.ErrorIs(t, cmd.cmd.Execute(), config.ErrProConfig)
+	})
+}
+
 func TestBuildSingleTarget(t *testing.T) {
 	setup(t)
 	cmd := newBuildCmd()
