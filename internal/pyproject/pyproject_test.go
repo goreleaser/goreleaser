@@ -14,6 +14,20 @@ func TestOpen(t *testing.T) {
 	require.False(t, proj.IsPoetry())
 }
 
+func TestOpenLegacyPoetry(t *testing.T) {
+	proj, err := Open("../builders/poetry/testdata/pyproject.toml")
+	require.NoError(t, err)
+	require.Equal(t, "testdata", proj.Project.Name)
+	require.Equal(t, "0.1.0", proj.Project.Version)
+}
+
+func TestOpenProjectMetadataPrecedence(t *testing.T) {
+	proj, err := Open("./testdata/project-and-poetry-pyproject.toml")
+	require.NoError(t, err)
+	require.Equal(t, "project-name", proj.Project.Name)
+	require.Equal(t, "1.2.3", proj.Project.Version)
+}
+
 func TestOpenError(t *testing.T) {
 	_, err := Open("./testdata/nope.toml")
 	require.Error(t, err)

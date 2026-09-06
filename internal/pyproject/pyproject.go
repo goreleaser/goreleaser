@@ -16,6 +16,8 @@ type PyProject struct {
 	}
 	Tool struct {
 		Poetry struct {
+			Name     string
+			Version  string
 			Packages []any
 		}
 	}
@@ -55,6 +57,14 @@ func Open(name string) (PyProject, error) {
 	if err != nil {
 		return proj, err
 	}
-	err = toml.Unmarshal(data, &proj)
-	return proj, err
+	if err := toml.Unmarshal(data, &proj); err != nil {
+		return proj, err
+	}
+	if proj.Project.Name == "" {
+		proj.Project.Name = proj.Tool.Poetry.Name
+	}
+	if proj.Project.Version == "" {
+		proj.Project.Version = proj.Tool.Poetry.Version
+	}
+	return proj, nil
 }
