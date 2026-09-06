@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -2046,6 +2047,52 @@ func TestOverrides(t *testing.T) {
 			Env:     []string{},
 		}, dets)
 	})
+
+	t.Run("env order is stable", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{"A=value", "B={{.Env.A}}", "C=original"},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:    "linux",
+						Goarch:  "amd64",
+						Ldflags: []string{"overridden"},
+						Env:     []string{"C=override", "D={{.Env.B}}"},
+					},
+				},
+			}, mustParse(t, "linux_amd64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{"A=value", "B={{.Env.A}}", "C=override", "D={{.Env.B}}"}, dets.Env)
+	})
+
+	t.Run("redefined env keeps the base position", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{
+					"SYSROOT=/usr",
+					"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "darwin",
+						Goarch: "arm64",
+						Env:    []string{"SYSROOT=/opt/osxcross"},
+					},
+				},
+			}, mustParse(t, "darwin_arm64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include"}, dets.Env)
+
+		// the base entries that reference it must still template.
+		out, err := base.TemplateEnv(dets.Env, tmpl.New(testctx.Wrap(t.Context())))
+		require.NoError(t, err)
+		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I/opt/osxcross/include"}, out)
+	})
+
 }
 
 func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {

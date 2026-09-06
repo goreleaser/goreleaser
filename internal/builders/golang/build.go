@@ -372,7 +372,7 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				return build.BuildDetails, err
 			}
 
-			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
+			dets.Env = mergeEnv(build.Env, o.Env)
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
@@ -380,6 +380,34 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 	}
 
 	return build.BuildDetails, nil
+}
+
+// mergeEnv merges the override entries into the defaults, keeping insertion
+// order so that entries can reference the ones defined before them.
+//
+// A key keeps the position of its first definition and the value of its last,
+// so an override that redefines a base variable does not move it past the base
+// variables that reference it.
+func mergeEnv(defaults, overrides []string) []string {
+	all := append(slices.Clone(defaults), overrides...)
+	values := make(map[string]string, len(all))
+	keys := make([]string, 0, len(all))
+	for _, env := range all {
+		key, value, ok := strings.Cut(env, "=")
+		if !ok || key == "" {
+			continue
+		}
+		if _, exists := values[key]; !exists {
+			keys = append(keys, key)
+		}
+		values[key] = value
+	}
+
+	result := make([]string, 0, len(keys))
+	for _, key := range keys {
+		result = append(result, key+"="+values[key])
+	}
+	return result
 }
 
 func buildGoBuildLine(
