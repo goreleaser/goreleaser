@@ -1135,6 +1135,135 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
+func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
+	for name, tt := range map[string]struct {
+		artifacts         []*artifact.Artifact
+		expectedContains  []string
+		expectedOmissions []string
+	}{
+		"all-archive": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:    "foo_darwin_arm64.tar.gz",
+					Goos:    "darwin",
+					Goarch:  "arm64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "foo",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+			},
+			expectedContains: []string{
+				"\n  binary \"foo\"\n",
+			},
+			expectedOmissions: []string{
+				`target: "foo"`,
+			},
+		},
+		"all-binary": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:   "foo_linux_amd64",
+					Goos:   "linux",
+					Goarch: "amd64",
+					Type:   artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     "foo",
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				},
+			},
+			expectedContains: []string{
+				`binary "foo_linux_amd64", target: "foo"`,
+			},
+			expectedOmissions: []string{
+				"\n  binary \"foo\"\n",
+			},
+		},
+		"mixed-archive-and-binary": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:    "foo_darwin_arm64.tar.gz",
+					Goos:    "darwin",
+					Goarch:  "arm64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "foo",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_linux_amd64",
+					Goos:   "linux",
+					Goarch: "amd64",
+					Type:   artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     "foo",
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				},
+			},
+			expectedContains: []string{
+				`binary "foo_linux_amd64", target: "foo"`,
+				"\n      binary \"foo\"\n",
+			},
+			expectedOmissions: []string{
+				"\n  binary \"foo\"\n",
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "foo",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "foo",
+								Name:  "bar",
+							},
+							Binaries: []string{"foo"},
+						},
+					},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"))
+
+			for _, art := range tt.artifacts {
+				art.Path = filepath.Join(folder, art.Name)
+				require.NoError(t, os.WriteFile(art.Path, []byte("foo"), 0o644))
+				ctx.Artifacts.Add(art)
+			}
+
+			cli := client.NewMock()
+			require.NoError(t, runAll(ctx, cli))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			content, err := os.ReadFile(casks[0].Path)
+			require.NoError(t, err)
+
+			for _, expected := range tt.expectedContains {
+				require.Contains(t, string(content), expected)
+			}
+			for _, omitted := range tt.expectedOmissions {
+				require.NotContains(t, string(content), omitted)
+			}
+		})
+	}
+}
+
 func TestRunPipePullRequest(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),

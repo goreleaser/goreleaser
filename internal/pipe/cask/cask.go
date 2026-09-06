@@ -478,6 +478,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			pkg.Name = art.Name
 		} else {
 			pkg.Binaries = artifact.ExtraOr(*art, string(artifact.ExtraBinaries), []string{})
+			pkg.CaskBins = cfg.Binaries
 			pkg.WrappedIn = artifact.ExtraOr(*art, string(artifact.ExtraWrappedIn), "")
 		}
 
@@ -500,6 +501,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 
 	result.HasOnlyAmd64MacOsPkg = len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64"
 	result.HasOnlyBinaryPkgs = len(formatCounts) == 1 && formatCounts[artifact.UploadableBinary] > 0
+	result.HasMixedPackageTypes = formatCounts[artifact.UploadableArchive] > 0 && formatCounts[artifact.UploadableBinary] > 0
 
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)

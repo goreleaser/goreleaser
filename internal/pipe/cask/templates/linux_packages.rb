@@ -16,6 +16,11 @@
     rename "{{ $wrap }}/{{ . }}", "{{ . }}"
     {{- end }}
     {{- end }}
+    {{- if $.HasMixedPackageTypes }}
+    {{- range .CaskBins }}
+    binary "{{ . }}"
+    {{- end }}
+    {{- end }}
   end
 {{- end }}
 {{- end }}
