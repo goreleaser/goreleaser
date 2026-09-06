@@ -115,7 +115,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			},
 			artifact: "binary",
 			cmd:      defaultCmd,
-			sboms:    []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"},
+			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sbom.json`},
 			args:     defaultArgs,
 		},
 		{
@@ -551,6 +551,94 @@ func TestSBOMCatalogRealSyft(t *testing.T) {
 	sboms := ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List()
 	require.Len(t, sboms, 1)
 	require.Equal(t, "fake_bin_1.0.0_linux_amd64.sbom.json", sboms[0].Name)
+}
+
+func TestSBOMCatalogBinaryGoamd64Variants(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses /bin/sh")
+
+	for name, cfg := range map[string]struct {
+		sbom             config.SBOM
+		expectedContents map[string]string
+	}{
+		"default documents include non-v1 goamd64": {
+			sbom: config.SBOM{
+				Artifacts: "binary",
+			},
+			expectedContents: map[string]string{
+				"demo_1.2.3_linux_amd64.sbom.json":   "demo-v1",
+				"demo_1.2.3_linux_amd64v2.sbom.json": "demo-v2",
+			},
+		},
+		"custom documents are left alone": {
+			sbom: config.SBOM{
+				Artifacts: "binary",
+				Documents: []string{"{{ .ArtifactName }}.sbom.json"},
+			},
+			expectedContents: map[string]string{
+				"demo-v1.sbom.json": "demo-v1",
+				"demo-v2.sbom.json": "demo-v2",
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				SBOMs: []config.SBOM{
+					cfg.sbom,
+				},
+			}, testctx.WithVersion("1.2.3"))
+
+			artifacts := []artifact.Artifact{
+				{
+					Name:    "demo-v1",
+					Path:    filepath.Join(dist, "demo-v1"),
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Type:    artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraBinary: "demo",
+						artifact.ExtraID:     "demo",
+					},
+				},
+				{
+					Name:    "demo-v2",
+					Path:    filepath.Join(dist, "demo-v2"),
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: "v2",
+					Type:    artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraBinary: "demo",
+						artifact.ExtraID:     "demo",
+					},
+				},
+			}
+			for i := range artifacts {
+				a := artifacts[i]
+				require.NoError(t, os.WriteFile(a.Path, []byte("binary"), 0o644))
+				ctx.Artifacts.Add(&artifacts[i])
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			ctx.Config.SBOMs[0].Cmd = "/bin/sh"
+			ctx.Config.SBOMs[0].Args = []string{
+				"-c",
+				`printf "%s" "$artifact" > "$document"`,
+			}
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			sboms := ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List()
+			require.Len(t, sboms, 2)
+
+			for _, sbom := range sboms {
+				content, err := os.ReadFile(sbom.Path)
+				require.NoError(t, err)
+				require.Equal(t, cfg.expectedContents[sbom.Name], string(content))
+			}
+		})
+	}
 }
 
 func testSBOMCataloging(
