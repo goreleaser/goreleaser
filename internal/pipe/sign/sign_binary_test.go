@@ -3,6 +3,7 @@ package sign
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -206,4 +207,83 @@ func TestBinarySign(t *testing.T) {
 		})
 		require.Len(t, sigs, 1)
 	})
+}
+
+func TestBinarySignUniversalBinary(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses /bin/sh")
+	dist := t.TempDir()
+	calls := filepath.Join(dist, "calls")
+	for _, name := range []string{"binary", "universal", "excluded"} {
+		require.NoError(t, os.WriteFile(filepath.Join(dist, name), []byte("foo"), 0o644))
+	}
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		BinarySigns: []config.BinarySign{
+			{
+				Artifacts: "binary",
+				IDs:       []string{"foo"},
+				Signature: "{{ .ArtifactName }}_{{ .Os }}_{{ .Arch }}.sig",
+				Cmd:       "/bin/sh",
+				Args: []string{
+					"-c",
+					`printf "%s\n" "$artifact" >> "$CALLS" && printf signature > "$signature"`,
+				},
+				Env: []string{"CALLS=" + calls},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "binary",
+		Path:   filepath.Join(dist, "binary"),
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "app",
+			artifact.ExtraID:     "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "universal",
+		Path:   filepath.Join(dist, "universal"),
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UniversalBinary,
+		Extra: map[string]any{
+			artifact.ExtraBinary:   "app",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraReplaces: true,
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "excluded",
+		Path:   filepath.Join(dist, "excluded"),
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UniversalBinary,
+		Extra: map[string]any{
+			artifact.ExtraBinary:   "app",
+			artifact.ExtraID:       "bar",
+			artifact.ExtraReplaces: true,
+		},
+	})
+
+	require.NoError(t, BinaryPipe{}.Default(ctx))
+	require.NoError(t, BinaryPipe{}.Run(ctx))
+
+	callBytes, err := os.ReadFile(calls)
+	require.NoError(t, err)
+	require.ElementsMatch(t, []string{
+		filepath.Join(dist, "binary"),
+		filepath.Join(dist, "universal"),
+	}, strings.Split(strings.TrimSpace(string(callBytes)), "\n"))
+
+	sigs := ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List()
+	require.Len(t, sigs, 2)
+	require.ElementsMatch(t, []string{
+		"binary_darwin_amd64.sig",
+		"universal_darwin_all.sig",
+	}, []string{sigs[0].Name, sigs[1].Name})
+	require.NoFileExists(t, filepath.Join(dist, "excluded_darwin_all.sig"))
 }
