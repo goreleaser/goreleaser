@@ -1270,7 +1270,10 @@ func (m *mockAuthProvider) NeedsLogin() bool {
 	return false
 }
 
-func (m *mockAuthProvider) Login(context.Context) error {
+func (m *mockAuthProvider) Login(ctx context.Context) error {
+	if m.loginFn != nil {
+		return m.loginFn(ctx)
+	}
 	return m.loginErr
 }
 
