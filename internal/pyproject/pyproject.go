@@ -27,7 +27,25 @@ func (p PyProject) IsPoetry() bool {
 
 // Name returns the project name.
 func (p PyProject) Name() string {
-	return strings.ReplaceAll(p.Project.Name, "-", "_")
+	return normalizeName(p.Project.Name)
+}
+
+func normalizeName(name string) string {
+	var b strings.Builder
+	previousWasSeparator := false
+	for _, r := range strings.ToLower(name) {
+		switch r {
+		case '-', '_', '.':
+			if !previousWasSeparator {
+				b.WriteRune('_')
+			}
+			previousWasSeparator = true
+		default:
+			b.WriteRune(r)
+			previousWasSeparator = false
+		}
+	}
+	return b.String()
 }
 
 // Open opens and parses a pyproject.toml file.

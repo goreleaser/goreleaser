@@ -25,6 +25,24 @@ func TestName(t *testing.T) {
 	require.Equal(t, "python_test", proj.Name())
 }
 
+func TestNormalizeName(t *testing.T) {
+	for name, expected := range map[string]string{
+		"My..Pkg":          "my_pkg",
+		"my-pkg":           "my_pkg",
+		"my__pkg":          "my_pkg",
+		"my-_.pkg":         "my_pkg",
+		"python-test":      "python_test",
+		"already_normal":   "already_normal",
+		"package.with.dot": "package_with_dot",
+	} {
+		t.Run(name, func(t *testing.T) {
+			var proj PyProject
+			proj.Project.Name = name
+			require.Equal(t, expected, proj.Name())
+		})
+	}
+}
+
 func TestIsPoetry(t *testing.T) {
 	proj, err := Open("./testdata/poetry-pyproject.toml")
 	require.NoError(t, err)
