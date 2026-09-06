@@ -149,15 +149,9 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()))
 
-	// the SEA config is kept in a per-target temporary directory, so it must
-	// not show up next to the binary.
-	entries, err := os.ReadDir(filepath.Dir(options.Path))
-	require.NoError(t, err)
-	names := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		names = append(names, entry.Name())
-	}
-	require.Equal(t, []string{"proj"}, names)
+	// the SEA config lives in a per-target scratch directory: sharing the
+	// output directory made concurrent targets overwrite each other's config.
+	require.NoFileExists(t, filepath.Join(filepath.Dir(options.Path), "sea-config.json"))
 }
 
 func TestBuildRejectsUnsupportedHostNode(t *testing.T) {

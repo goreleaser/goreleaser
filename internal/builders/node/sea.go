@@ -57,7 +57,7 @@ func createSEAConfig(tpl *tmpl.Template, build config.Build, name, targetNode, o
 // sea-config.json in buildDir (if any), then forces the
 // goreleaser-owned fields and rewrites relative `assets` paths to be
 // absolute relative to buildDir so they survive the move into the
-// dist directory.
+// scratch directory.
 func buildSEAConfigJSON(buildDir, mainPath, targetNode, output string) (map[string]any, error) {
 	cfg, err := loadUserSEAConfig(buildDir)
 	if err != nil {
@@ -96,8 +96,8 @@ func loadUserSEAConfig(buildDir string) (map[string]any, error) {
 // rewriteAssetPaths converts relative asset values in cfg["assets"]
 // into absolute paths anchored at buildDir. Node resolves `assets`
 // paths relative to the directory containing sea-config.json, but
-// goreleaser writes the merged config into the dist directory, so
-// relative user paths would otherwise break.
+// goreleaser writes the merged config into a per-target scratch
+// directory, so relative user paths would otherwise break.
 func rewriteAssetPaths(cfg map[string]any, buildDir string) {
 	assets, ok := cfg["assets"].(map[string]any)
 	if !ok {

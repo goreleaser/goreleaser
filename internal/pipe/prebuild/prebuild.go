@@ -17,6 +17,8 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	tpl := tmpl.New(ctx)
 	for i := range ctx.Config.Builds {
+		// the node builder renders Main per target, because it accepts
+		// target-aware fields such as .Target, .Os and .Arch.
 		if ctx.Config.Builds[i].Builder == "node" {
 			continue
 		}
