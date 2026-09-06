@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 
@@ -24,11 +23,6 @@ import (
 	proto "github.com/modelcontextprotocol/registry/cmd/publisher/commands"
 	apiv0 "github.com/modelcontextprotocol/registry/pkg/api/v0"
 	"github.com/modelcontextprotocol/registry/pkg/model"
-)
-
-const (
-	gitHubTokenFilePath   = ".mcpregistry_github_token"   // #nosec:G101
-	registryTokenFilePath = ".mcpregistry_registry_token" // #nosec:G101
 )
 
 // Pipe for MCP.
@@ -103,11 +97,6 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	if err := provider.Login(ctx); err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
-	defer func() {
-		// logout...
-		_ = os.Remove(gitHubTokenFilePath)
-		_ = os.Remove(registryTokenFilePath)
-	}()
 	token, err := provider.GetToken(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get token: %w", err)

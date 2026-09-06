@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -1016,6 +1017,58 @@ func TestPublishGetTokenError(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "could not get token")
 	require.Contains(t, err.Error(), "token retrieval failed")
+}
+
+func TestPublishGitHubOIDCGetTokenErrorKeepsExistingTokenFiles(t *testing.T) {
+	t.Setenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN", "")
+	t.Setenv("ACTIONS_ID_TOKEN_REQUEST_URL", "")
+	t.Chdir(t.TempDir())
+
+	const (
+		gitHubTokenFile   = ".mcpregistry_github_token"
+		registryTokenFile = ".mcpregistry_registry_token"
+		gitHubToken       = "existing github token"
+		registryToken     = "existing registry token"
+	)
+	require.NoError(t, os.WriteFile(gitHubTokenFile, []byte(gitHubToken), 0o600))
+	require.NoError(t, os.WriteFile(registryTokenFile, []byte(registryToken), 0o600))
+
+	var requested atomic.Bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requested.Store(true)
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "github-oidc",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+
+	pipe := &Pipe{
+		registry:       srv.URL,
+		authProviderFn: authProvider,
+	}
+	require.NoError(t, pipe.Default(ctx))
+	err := pipe.Publish(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "ACTIONS_ID_TOKEN_REQUEST_TOKEN environment variable not found")
+	require.False(t, requested.Load())
+
+	bts, err := os.ReadFile(gitHubTokenFile)
+	require.NoError(t, err)
+	require.Equal(t, gitHubToken, string(bts))
+	bts, err = os.ReadFile(registryTokenFile)
+	require.NoError(t, err)
+	require.Equal(t, registryToken, string(bts))
 }
 
 func TestPublishNoPackages(t *testing.T) {
