@@ -567,4 +567,32 @@ Binary names will be inferred just like `go build` does.
 If you have multiple build configurations that change only the `main` and
 `binary` portions, this might be your friend.
 
+### Discovery uses the host build context
+
+GoReleaser looks for `main` packages using the environment it runs in.
+It does not apply the `tags` and `flags` of the build, nor the `GOOS` and
+`GOARCH` of each target.
+
+Because of that, an ellipsis path does not see a `main` package whose build
+constraints are not satisfied in that environment:
+
+```yaml {filename=".goreleaser.yaml"}
+builds:
+  - main: ./... # cmd/feature/main.go has `//go:build feature`
+    tags: [feature]
+```
+
+This fails with `directory does not contain any main function`, and a
+`main` package with `//go:build linux` is skipped when you release from
+macOS.
+
+Set `main` to the package path in that case, and use one build per package:
+
+```yaml {filename=".goreleaser.yaml"}
+builds:
+  - id: feature
+    main: ./cmd/feature
+    tags: [feature]
+```
+
 {{< g_templates >}}
