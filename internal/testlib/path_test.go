@@ -1,10 +1,36 @@
 package testlib
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestSharedZigCache(t *testing.T) {
+	for name, runnerTemp := range map[string]string{
+		"runner":   t.TempDir(),
+		"fallback": "",
+	} {
+		t.Run(name, func(t *testing.T) {
+			tmp := t.TempDir()
+			t.Setenv("TMPDIR", tmp)
+			t.Setenv("TMP", tmp)
+			t.Setenv("TEMP", tmp)
+			t.Setenv("RUNNER_TEMP", runnerTemp)
+			if runnerTemp != "" {
+				tmp = runnerTemp
+			}
+
+			SharedZigCache(t)
+
+			dir := filepath.Join(tmp, "goreleaser-zig-global-cache")
+			require.Equal(t, dir, os.Getenv("ZIG_GLOBAL_CACHE_DIR"))
+			require.DirExists(t, dir)
+		})
+	}
+}
 
 func TestCheckPath(t *testing.T) {
 	requireSkipped := func(tb testing.TB, skipped bool) {

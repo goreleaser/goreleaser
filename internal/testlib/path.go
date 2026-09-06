@@ -1,6 +1,7 @@
 package testlib
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"os/exec"
@@ -97,11 +98,12 @@ func Exit(status int) string {
 // $GITHUB_WORKSPACE/.zig-cache between runs, and restoring a half-saved copy of
 // that is what actually produced the "manifest hit with missing outputs"
 // corruption in goreleaser#6754, not concurrent access.
+// CI saves this separate cache only after the tests finish successfully.
 func SharedZigCache(tb testing.TB) {
 	tb.Helper()
 	// tb.TempDir() is deliberately not used: it is per-test, and the whole
 	// point here is one directory shared by every test.
-	dir := filepath.Join(os.TempDir(), "goreleaser-zig-global-cache") //nolint:usetesting
+	dir := filepath.Join(cmp.Or(os.Getenv("RUNNER_TEMP"), os.TempDir()), "goreleaser-zig-global-cache") //nolint:usetesting
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		tb.Fatalf("could not create shared zig cache: %v", err)
 	}

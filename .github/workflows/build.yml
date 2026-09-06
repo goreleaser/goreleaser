@@ -183,7 +183,22 @@ jobs:
       - uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
       - run: task setup
       - run: task build
+      - name: restore-zig-test-cache
+        id: zig-test-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/goreleaser-zig-global-cache
+          key: zig-tests-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/build.yml') }}-${{ github.sha }}
+          restore-keys: |
+            zig-tests-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/build.yml') }}-
       - run: task test ${{ matrix.test-args }}
+      - name: save-zig-test-cache
+        # Never save a cancelled or failed build's partial compiler cache.
+        if: success() && steps.zig-test-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/goreleaser-zig-global-cache
+          key: ${{ steps.zig-test-cache.outputs.cache-primary-key }}
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: matrix.os == 'ubuntu-latest'
         with:
