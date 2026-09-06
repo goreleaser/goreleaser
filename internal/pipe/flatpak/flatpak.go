@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"al.essio.dev/pkg/shellescape"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
@@ -195,8 +194,8 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 		})
 		installCmds = append(installCmds, fmt.Sprintf(
 			"install -Dm755 %s %s",
-			shellescape.Quote(binaryName),
-			shellescape.Quote("/app/bin/"+binaryName),
+			quoteField(binaryName),
+			quoteField("/app/bin/"+binaryName),
 		))
 	}
 
@@ -272,6 +271,10 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 		},
 	})
 	return nil
+}
+
+func quoteField(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\\''") + "'"
 }
 
 func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error {

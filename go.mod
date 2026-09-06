@@ -3,7 +3,6 @@ module github.com/goreleaser/goreleaser/v2
 go 1.27.1
 
 require (
-	al.essio.dev/pkg/shellescape v1.6.0
 	charm.land/lipgloss/v2 v2.0.6
 	code.gitea.io/sdk/gitea v0.25.1
 	dario.cat/mergo v1.0.2
@@ -64,6 +63,7 @@ require (
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.6.0 // indirect
 	cel.dev/expr v0.25.2 // indirect
 	cloud.google.com/go v0.123.0 // indirect
 	cloud.google.com/go/auth v0.20.0 // indirect
