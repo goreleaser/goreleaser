@@ -459,6 +459,12 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary dir: %w", err)
 	}
+	ok := false
+	defer func() {
+		if !ok {
+			_ = os.RemoveAll(tmp)
+		}
+	}()
 
 	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return "", fmt.Errorf("failed to copy dockerfile: %w: %s", err, d.ID)
@@ -500,6 +506,7 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 		}
 	}
 
+	ok = true
 	return tmp, nil
 }
 

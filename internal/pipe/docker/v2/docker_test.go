@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -115,6 +116,113 @@ func TestMakeContext(t *testing.T) {
 		require.FileExists(t, filepath.Join(dir, "linux/arm/v7/mybin"))
 		require.FileExists(t, filepath.Join(dir, "testdata/foo.conf"))
 	})
+}
+
+func TestMakeContextRemovesTemporaryDirOnCopyError(t *testing.T) {
+	for name, setup := range map[string]func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact){
+		"extra file": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+			t.Helper()
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "assets.bin"), []byte(strings.Repeat("a", 8192)), 0o644))
+			return config.DockerV2{
+				ID:         "test",
+				ExtraFiles: []string{"assets.bin", "missing.txt"},
+			}, nil
+		},
+		"artifact": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+			t.Helper()
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin"), []byte("binary"), 0o644))
+			return config.DockerV2{ID: "test"}, []*artifact.Artifact{
+				{
+					Name:   "mybin",
+					Path:   "mybin",
+					Goos:   "linux",
+					Goarch: "amd64",
+				},
+				{
+					Name:   "missing",
+					Path:   "missing",
+					Goos:   "linux",
+					Goarch: "amd64",
+				},
+			}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir, tmp := isolatedDockerContextTemp(t)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+			d, artifacts := setup(t, dir)
+
+			wd, err := makeContext(d, artifacts, "Dockerfile")
+
+			require.Error(t, err)
+			require.Empty(t, wd)
+			require.Empty(t, dockerContextDirs(t, tmp))
+		})
+	}
+}
+
+func TestBuildImageRemovesTemporaryDirOnSuccess(t *testing.T) {
+	dir, tmp := isolatedDockerContextTemp(t)
+	fakeDockerBuildxBuild(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin"), []byte("binary"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
+
+	require.NoError(t, buildImage(ctx, config.DockerV2{
+		ID:         "test",
+		Dockerfile: "Dockerfile",
+		Images:     []string{"ghcr.io/foo/bar"},
+		Tags:       []string{"latest"},
+		Platforms:  []string{"linux/amd64"},
+	}, "--load"))
+
+	require.Empty(t, dockerContextDirs(t, tmp))
+}
+
+func isolatedDockerContextTemp(t *testing.T) (string, string) {
+	t.Helper()
+	root := t.TempDir()
+	dir := filepath.Join(root, "work")
+	tmp := filepath.Join(root, "tmp")
+	require.NoError(t, os.MkdirAll(dir, 0o755))
+	require.NoError(t, os.MkdirAll(tmp, 0o755))
+	t.Setenv("TMPDIR", tmp)
+	t.Chdir(dir)
+	return dir, tmp
+}
+
+func dockerContextDirs(t *testing.T, tmp string) []string {
+	t.Helper()
+	entries, err := os.ReadDir(tmp)
+	require.NoError(t, err)
+	var dirs []string
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), "goreleaserdocker") {
+			dirs = append(dirs, entry.Name())
+		}
+	}
+	return dirs
+}
+
+func fakeDockerBuildxBuild(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	name := "docker"
+	script := "#!/bin/sh\nprintf 'sha256:test' > id.txt\n"
+	if testlib.IsWindows() {
+		name = "docker.bat"
+		script = "@echo off\r\necho sha256:test> id.txt\r\n"
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
 func TestPublishExtraArgs(t *testing.T) {
