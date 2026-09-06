@@ -9,6 +9,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -106,11 +107,20 @@ func check(name string, err error) error {
 // checkPath reports whether tool is usable. checked dedupes tools listed by
 // more than one pipe within a single healthcheck run.
 func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
+	tool = strings.TrimSpace(tool)
+	if len(tool) == 0 {
+		return nil
+	}
 	if checked[tool] {
 		return nil
 	}
 	checked[tool] = true
-	args := strings.Fields(tool)
+	args, err := shellwords.Parse(tool)
+	if err != nil {
+		st := log.Styles[log.ErrorLevel]
+		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("is not a valid command"))
+		return err
+	}
 	if _, err := exec.LookPath(args[0]); err != nil {
 		st := log.Styles[log.ErrorLevel]
 		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))

@@ -47,6 +47,8 @@ func TestCheckPath(t *testing.T) {
 	// nothing. It is also slow to refuse: 5.26s on the windows job.
 	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
+	require.NoError(t, checkPath(t.Context(), checked, " \t "))
+	require.Error(t, checkPath(t.Context(), checked, `"unterminated`))
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {

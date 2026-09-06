@@ -880,25 +880,6 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
 }
 
-func TestDependenciesSkipsUncheckableCmds(t *testing.T) {
-	cmds := []string{"cosign", " ", "", "/tmp/tools with spaces/signer"}
-	signs := make([]config.Sign, 0, len(cmds))
-	binarySigns := make([]config.BinarySign, 0, len(cmds))
-	for _, cmd := range cmds {
-		signs = append(signs, config.Sign{Cmd: cmd})
-		binarySigns = append(binarySigns, config.BinarySign{Cmd: cmd})
-	}
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Signs:       signs,
-		BinarySigns: binarySigns,
-		DockerSigns: signs,
-	})
-
-	require.Equal(t, []string{"cosign"}, Pipe{}.Dependencies(ctx))
-	require.Equal(t, []string{"cosign"}, BinaryPipe{}.Dependencies(ctx))
-	require.Equal(t, []string{"cosign"}, DockerPipe{}.Dependencies(ctx))
-}
-
 func TestSignerWroteNothing(t *testing.T) {
 	// TODO(v3): this should fail, and the artifact should not be recorded.
 	sign := func(tb testing.TB, dist string, cfg config.Sign) (*context.Context, string) {

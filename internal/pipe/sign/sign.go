@@ -44,23 +44,7 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 	for _, s := range ctx.Config.Signs {
 		cmds = append(cmds, s.Cmd)
 	}
-	return checkableCmds(cmds)
-}
-
-// checkableCmds drops the commands healthcheck cannot verify: blank ones, and
-// ones containing spaces. healthcheck splits a dependency on whitespace so it
-// can run probes such as `git version`, so an executable path with spaces
-// cannot be expressed there. Signing runs cfg.Cmd literally, with cfg.Args
-// supplied separately, so such a path is still valid to sign with.
-func checkableCmds(cmds []string) []string {
-	var deps []string
-	for _, cmd := range cmds {
-		if len(strings.Fields(cmd)) != 1 {
-			continue
-		}
-		deps = append(deps, cmd)
-	}
-	return deps
+	return cmds
 }
 
 const defaultGpg = "gpg"
