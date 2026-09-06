@@ -90,3 +90,23 @@ func TestSignJSONSchema(t *testing.T) {
 		}
 	}
 }
+
+func TestMCPTransportStrictConfig(t *testing.T) {
+	t.Parallel()
+
+	project, err := LoadReader(strings.NewReader(`
+mcp:
+  name: io.github.test/server
+  title: Test Server
+  auth:
+    type: none
+  packages:
+    - registry_type: npm
+      identifier: '@test/server'
+      transport:
+        type: streamable-http
+        url: https://example.com/mcp
+`))
+	require.NoError(t, err)
+	require.Equal(t, "https://example.com/mcp", project.MCP.Packages[0].Transport.URL)
+}

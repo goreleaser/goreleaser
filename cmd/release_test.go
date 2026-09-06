@@ -34,6 +34,36 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 	})
 }
 
+func TestReleaseAutoSnapshotWithProConfig(t *testing.T) {
+	t.Run("explicit snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--snapshot", "--skip=publish", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_0.0.2-SNAPSHOT-*_checksums.txt")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("dirty automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_0.0.2-SNAPSHOT-*_checksums.txt")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("clean automatic snapshot", func(t *testing.T) {
+		setupPro(t)
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish", "--timeout=1m", "--parallelism=2", "--deprecated"})
+		require.ErrorIs(t, cmd.cmd.Execute(), config.ErrProConfig)
+	})
+}
+
 func TestReleaseInvalidConfig(t *testing.T) {
 	mktmp(t)
 	createFile(t, "goreleaser.yml", "foo: bar\nversion: 2")

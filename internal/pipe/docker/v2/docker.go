@@ -287,7 +287,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 				Debug("running docker build")
 			cmd := exec.CommandContext(ctx, "docker", arg...)
 			cmd.Dir = wd
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			cmd.Env = append(cmd.Environ(), ctx.Env.Strings()...)
 			var b bytes.Buffer
 			w := gio.Safe(&b)
 			stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)

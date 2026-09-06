@@ -273,6 +273,109 @@ func TestRun(t *testing.T) {
 		require.Equal(t, "x86_64-apple-darwin", ctx.PartialTarget)
 	})
 
+	t.Run("using runtime with node and bun targets", func(t *testing.T) {
+		for name, tt := range map[string]struct {
+			builder  string
+			goos     string
+			goarch   string
+			targets  []string
+			expected string
+		}{
+			"node darwin arm64": {
+				builder:  "node",
+				goos:     "darwin",
+				goarch:   "arm64",
+				targets:  []string{"linux-x64", "darwin-arm64"},
+				expected: "darwin-arm64",
+			},
+			"node darwin amd64": {
+				builder:  "node",
+				goos:     "darwin",
+				goarch:   "amd64",
+				targets:  []string{"linux-x64", "darwin-x64"},
+				expected: "darwin-x64",
+			},
+			"node linux arm64": {
+				builder:  "node",
+				goos:     "linux",
+				goarch:   "arm64",
+				targets:  []string{"darwin-x64", "linux-arm64"},
+				expected: "linux-arm64",
+			},
+			"node linux amd64": {
+				builder:  "node",
+				goos:     "linux",
+				goarch:   "amd64",
+				targets:  []string{"darwin-arm64", "linux-x64"},
+				expected: "linux-x64",
+			},
+			"node windows arm64": {
+				builder:  "node",
+				goos:     "windows",
+				goarch:   "arm64",
+				targets:  []string{"linux-x64", "win-arm64"},
+				expected: "win-arm64",
+			},
+			"node windows amd64": {
+				builder:  "node",
+				goos:     "windows",
+				goarch:   "amd64",
+				targets:  []string{"linux-x64", "win-x64"},
+				expected: "win-x64",
+			},
+			"bun darwin arm64": {
+				builder:  "bun",
+				goos:     "darwin",
+				goarch:   "arm64",
+				targets:  []string{"linux-x64-modern", "darwin-arm64"},
+				expected: "darwin-arm64",
+			},
+			"bun darwin amd64": {
+				builder:  "bun",
+				goos:     "darwin",
+				goarch:   "amd64",
+				targets:  []string{"linux-arm64", "darwin-x64"},
+				expected: "darwin-x64",
+			},
+			"bun linux amd64": {
+				builder:  "bun",
+				goos:     "linux",
+				goarch:   "amd64",
+				targets:  []string{"darwin-arm64", "linux-x64-modern"},
+				expected: "linux-x64-modern",
+			},
+			"bun linux arm64": {
+				builder:  "bun",
+				goos:     "linux",
+				goarch:   "arm64",
+				targets:  []string{"darwin-arm64", "linux-arm64"},
+				expected: "linux-arm64",
+			},
+			"bun windows amd64": {
+				builder:  "bun",
+				goos:     "windows",
+				goarch:   "amd64",
+				targets:  []string{"darwin-arm64", "windows-x64-modern"},
+				expected: "windows-x64-modern",
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				t.Setenv("GGOOS", tt.goos)
+				t.Setenv("GGOARCH", tt.goarch)
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					Dist: "dist",
+					Builds: []config.Build{{
+						Builder: tt.builder,
+						Targets: tt.targets,
+					}},
+				}, testctx.Partial)
+
+				require.NoError(t, pipe.Run(ctx))
+				require.Equal(t, tt.expected, ctx.PartialTarget)
+			})
+		}
+	})
+
 	t.Run("using runtime with other languages preserves match across unmatched builds", func(t *testing.T) {
 		t.Setenv("GGOOS", "darwin")
 		t.Setenv("GGOARCH", "arm64")
@@ -299,7 +402,6 @@ func TestRun(t *testing.T) {
 					Dist:   "dist",
 					Builds: builds,
 				}, testctx.Partial)
-
 				require.NoError(t, pipe.Run(ctx))
 				require.Equal(t, "aarch64-apple-darwin", ctx.PartialTarget)
 			})

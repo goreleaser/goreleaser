@@ -18,6 +18,7 @@ type templateData struct {
 	MacOSPackages        []releasePackage
 	HasOnlyAmd64MacOsPkg bool
 	HasOnlyBinaryPkgs    bool
+	HasMixedPackageTypes bool
 }
 
 type releasePackage struct {
@@ -28,7 +29,9 @@ type releasePackage struct {
 	Name      string
 	Binary    string
 	Binaries  []string
+	CaskBins  []string
 	WrappedIn string
+	Wrapped   []string
 }
 
 type downloadURL struct {

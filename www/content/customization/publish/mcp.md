@@ -96,7 +96,7 @@ mcp:
   # Package configurations for different distribution methods.
   packages:
     # Registry type indicating how to download packages.
-    # Valid values: oci, npm, pypi, nuget, mcpb.
+    # Valid values: oci, npm, pypi, nuget.
     - registry_type: npm
 
       # Package identifier - either a package name (for registries) or URL (for direct downloads).
@@ -124,6 +124,18 @@ mcp:
       identifier: "@myorg/myserver"
       transport:
         type: stdio
+
+    # HTTP transport example
+    - registry_type: npm
+      identifier: "@myorg/myserver-http"
+      transport:
+        type: streamable-http
+
+        # URL for streamable-http or sse transports.
+        #
+        # Required for streamable-http and sse transports.
+        # Templates: allowed. {{< g_inline_version "v2.19-unreleased" >}}
+        url: "https://example.com/myserver/mcp"
 
   # Set to true to skip MCP publication. No local manifest is written.
   # If set to auto, the manifest will not be published in case there is an

@@ -139,6 +139,38 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(formulae))
 }
 
+func TestFormulaDescriptionEscapesRubyString(t *testing.T) {
+	for name, tt := range map[string]struct {
+		description string
+		env         []string
+	}{
+		"literal": {
+			description: `Say "hello"`,
+		},
+		"templated": {
+			description: `Say "{{ .Env.WORD }}"`,
+			env:         []string{`WORD=hello`},
+		},
+		"interpolation": {
+			description: `Say "#{hello}"`,
+		},
+		"complex": {
+			description: "It's \"quoted\" \\ path #{value}\nnext line",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Desc = tt.description
+			formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "foo",
+				Env:         tt.env,
+			}), data)
+			require.NoError(t, err)
+			golden.RequireEqualRb(t, []byte(formulae))
+		})
+	}
+}
+
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}

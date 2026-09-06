@@ -212,6 +212,38 @@ func TestFullCaskMacOSOnly(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(cask))
 }
 
+func TestCaskDescriptionEscapesRubyString(t *testing.T) {
+	for name, tt := range map[string]struct {
+		description string
+		env         []string
+	}{
+		"literal": {
+			description: `Say "hello"`,
+		},
+		"templated": {
+			description: `Say "{{ .Env.WORD }}"`,
+			env:         []string{`WORD=hello`},
+		},
+		"interpolation": {
+			description: `Say "#{hello}"`,
+		},
+		"complex": {
+			description: "It's \"quoted\" \\ path #{value}\nnext line",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Description = tt.description
+			cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "foo",
+				Env:         tt.env,
+			}), data)
+			require.NoError(t, err)
+			golden.RequireEqualRb(t, []byte(cask))
+		})
+	}
+}
+
 func TestCaskSimple(t *testing.T) {
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
@@ -763,6 +795,85 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
+func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
+	for name, tt := range map[string]struct {
+		caskName string
+		token    string
+	}{
+		"already-normalized": {
+			caskName: "foo-bar",
+			token:    "foo-bar",
+		},
+		"spaced": {
+			caskName: "Foo Bar",
+			token:    "foo-bar",
+		},
+		"uppercase": {
+			caskName: "Foo",
+			token:    "foo",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        tt.caskName,
+							Description: "Foo bar",
+							Homepage:    "https://goreleaser.com",
+							Binaries:    []string{"foo"},
+							Repository: config.RepoRef{
+								Owner: "foo",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"foo",
+							},
+						},
+					},
+				},
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"))
+
+			path := filepath.Join(folder, "bin.tar.gz")
+			require.NoError(t, os.WriteFile(path, []byte("foo"), 0o644))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+
+			cli := client.NewMock()
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, runAll(ctx, cli))
+			require.NoError(t, publishAll(ctx, cli))
+
+			filename := tt.token + ".rb"
+			distFile := filepath.Join(folder, "homebrew", "Casks", filename)
+			distBts, err := os.ReadFile(distFile)
+			require.NoError(t, err)
+			require.Equal(t, string(distBts), cli.Content)
+			require.Equal(t, "Casks/"+filename, cli.Path)
+			golden.RequireEqualRb(t, distBts)
+
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			require.Equal(t, filename, casks[0].Name)
+		})
+	}
+}
+
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
@@ -1020,6 +1131,106 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualRb(t, []byte(client.Content))
+}
+
+func TestRunPipeBinaryStanzasMatchPackageTypes(t *testing.T) {
+	for name, tt := range map[string]struct {
+		artifacts []*artifact.Artifact
+	}{
+		"all-archive": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:    "foo_darwin_arm64.tar.gz",
+					Goos:    "darwin",
+					Goarch:  "arm64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "foo",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+			},
+		},
+		"all-binary": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:   "foo_linux_amd64",
+					Goos:   "linux",
+					Goarch: "amd64",
+					Type:   artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     "foo",
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				},
+			},
+		},
+		"mixed-archive-and-binary": {
+			artifacts: []*artifact.Artifact{
+				{
+					Name:    "foo_darwin_arm64.tar.gz",
+					Goos:    "darwin",
+					Goarch:  "arm64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "foo",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_linux_amd64",
+					Goos:   "linux",
+					Goarch: "amd64",
+					Type:   artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     "foo",
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				},
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "foo",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "foo",
+								Name:  "bar",
+							},
+							Binaries: []string{"foo"},
+						},
+					},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"))
+
+			for _, art := range tt.artifacts {
+				art.Path = filepath.Join(folder, art.Name)
+				require.NoError(t, os.WriteFile(art.Path, []byte("foo"), 0o644))
+				ctx.Artifacts.Add(art)
+			}
+
+			cli := client.NewMock()
+			require.NoError(t, runAll(ctx, cli))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
+		})
+	}
 }
 
 func TestRunPipePullRequest(t *testing.T) {
@@ -1383,6 +1594,69 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
+func TestRunPipeUniversalBinaryWrappedIn(t *testing.T) {
+	for name, tt := range map[string]struct {
+		wrappedIn string
+	}{
+		"unwrapped": {},
+		"wrapped": {
+			wrappedIn: "bundle",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "unibin",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "unibin",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "unibin",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"unibin",
+							},
+							Binaries: []string{"unibin"},
+						},
+					},
+				},
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"))
+
+			path := filepath.Join(folder, "bin.tar.gz")
+			extra := map[string]any{
+				artifact.ExtraID:       "unibin",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"unibin"},
+				artifact.ExtraReplaces: true,
+			}
+			if tt.wrappedIn != "" {
+				extra[artifact.ExtraWrappedIn] = tt.wrappedIn
+			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "all",
+				Type:   artifact.UploadableArchive,
+				Extra:  extra,
+			})
+
+			require.NoError(t, os.WriteFile(path, []byte("foo"), 0o644))
+			cli := client.NewMock()
+			require.NoError(t, runAll(ctx, cli))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
+		})
+	}
+}
+
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
@@ -1545,4 +1819,94 @@ func TestRunPipeWrappedIn(t *testing.T) {
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, cli.Content, string(distBts))
+}
+
+func TestRunPipeWrappedInArtifactSources(t *testing.T) {
+	for name, tt := range map[string]struct {
+		wrapped bool
+	}{
+		"unwrapped": {},
+		"wrapped": {
+			wrapped: true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "wrappedin",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "wrappedin",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "wrappedin",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"wrappedin",
+							},
+							Binaries: []string{"wrappedin"},
+							Manpages: []string{"man/wrappedin.1"},
+							Completions: config.HomebrewCaskCompletions{
+								Bash: "completions/wrappedin.bash",
+								Fish: "completions/wrappedin.fish",
+								Zsh:  "completions/wrappedin.zsh",
+							},
+						},
+					},
+				},
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"))
+
+			extraFiles := []string{
+				"man/wrappedin.1",
+				"completions/wrappedin.bash",
+				"completions/wrappedin.fish",
+				"completions/wrappedin.zsh",
+			}
+			for _, art := range []*artifact.Artifact{
+				{
+					Name:   "bin_arm64.tar.gz",
+					Path:   filepath.Join(folder, "bin_arm64.tar.gz"),
+					Goos:   "darwin",
+					Goarch: "arm64",
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "wrappedin",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"wrappedin"},
+						artifact.ExtraFiles:    extraFiles,
+					},
+				},
+				{
+					Name:    "bin_linux.tar.gz",
+					Path:    filepath.Join(folder, "bin_linux.tar.gz"),
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]any{
+						artifact.ExtraID:       "wrappedin",
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"wrappedin"},
+						artifact.ExtraFiles:    extraFiles,
+					},
+				},
+			} {
+				if tt.wrapped {
+					art.Extra[artifact.ExtraWrappedIn] = "wrappedin_1.0.1_" + art.Goos + "_" + art.Goarch
+				}
+				require.NoError(t, os.WriteFile(art.Path, []byte("foo"), 0o644))
+				ctx.Artifacts.Add(art)
+			}
+
+			require.NoError(t, runAll(ctx, client.NewMock()))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			golden.RequireEqualRb(t, golden.RequireReadFile(t, casks[0].Path))
+		})
+	}
 }

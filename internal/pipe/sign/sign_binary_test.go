@@ -3,6 +3,7 @@ package sign
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -10,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -205,5 +207,147 @@ func TestBinarySign(t *testing.T) {
 			IDs: []string{"bar"},
 		})
 		require.Len(t, sigs, 1)
+	})
+}
+
+func TestBinarySignUniversalBinary(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses /bin/sh")
+	dist := t.TempDir()
+	calls := filepath.Join(dist, "calls")
+	for _, name := range []string{"binary", "universal", "excluded"} {
+		require.NoError(t, os.WriteFile(filepath.Join(dist, name), []byte("foo"), 0o644))
+	}
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		BinarySigns: []config.BinarySign{
+			{
+				Artifacts: "binary",
+				IDs:       []string{"foo"},
+				Signature: "{{ .ArtifactName }}_{{ .Os }}_{{ .Arch }}.sig",
+				Cmd:       "/bin/sh",
+				Args: []string{
+					"-c",
+					`printf "%s\n" "$artifact" >> "$CALLS" && printf signature > "$signature"`,
+				},
+				Env: []string{"CALLS=" + calls},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "binary",
+		Path:   filepath.Join(dist, "binary"),
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "app",
+			artifact.ExtraID:     "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "universal",
+		Path:   filepath.Join(dist, "universal"),
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UniversalBinary,
+		Extra: map[string]any{
+			artifact.ExtraBinary:   "app",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraReplaces: true,
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "excluded",
+		Path:   filepath.Join(dist, "excluded"),
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UniversalBinary,
+		Extra: map[string]any{
+			artifact.ExtraBinary:   "app",
+			artifact.ExtraID:       "bar",
+			artifact.ExtraReplaces: true,
+		},
+	})
+
+	require.NoError(t, BinaryPipe{}.Default(ctx))
+	require.NoError(t, BinaryPipe{}.Run(ctx))
+
+	callBytes, err := os.ReadFile(calls)
+	require.NoError(t, err)
+	require.ElementsMatch(t, []string{
+		filepath.Join(dist, "binary"),
+		filepath.Join(dist, "universal"),
+	}, strings.Split(strings.TrimSpace(string(callBytes)), "\n"))
+
+	sigs := ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List()
+	require.Len(t, sigs, 2)
+	require.ElementsMatch(t, []string{
+		"binary_darwin_amd64.sig",
+		"universal_darwin_all.sig",
+	}, []string{sigs[0].Name, sigs[1].Name})
+	require.NoFileExists(t, filepath.Join(dist, "excluded_darwin_all.sig"))
+}
+
+// When `replace` is true the per-arch binaries are gone, and the universal
+// binary carries `universal_binaries.id` (the project name by default), not the
+// build IDs it was made from. This is the same contract as `archives.ids`.
+func TestBinarySignUniversalBinaryReplaced(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses /bin/sh")
+
+	newContext := func(tb testing.TB, ids []string) (*context.Context, string) {
+		tb.Helper()
+
+		dist := tb.TempDir()
+		require.NoError(tb, os.WriteFile(filepath.Join(dist, "universal"), []byte("foo"), 0o644))
+		ctx := testctx.WrapWithCfg(tb.Context(), config.Project{
+			Dist: dist,
+			BinarySigns: []config.BinarySign{
+				{
+					Artifacts: "binary",
+					IDs:       ids,
+					Signature: "{{ .ArtifactName }}.sig",
+					Cmd:       "/bin/sh",
+					Args:      []string{"-c", `printf signature > "$signature"`},
+				},
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "universal",
+			Path:   filepath.Join(dist, "universal"),
+			Goos:   "darwin",
+			Goarch: "all",
+			Type:   artifact.UniversalBinary,
+			Extra: map[string]any{
+				artifact.ExtraBinary:   "app",
+				artifact.ExtraID:       "proj",
+				artifact.ExtraReplaces: true,
+			},
+		})
+		return ctx, dist
+	}
+
+	t.Run("no ids signs it", func(t *testing.T) {
+		ctx, dist := newContext(t, nil)
+		require.NoError(t, BinaryPipe{}.Default(ctx))
+		require.NoError(t, BinaryPipe{}.Run(ctx))
+		require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List(), 1)
+		require.FileExists(t, filepath.Join(dist, "universal.sig"))
+	})
+
+	t.Run("universal binary id signs it", func(t *testing.T) {
+		ctx, dist := newContext(t, []string{"proj"})
+		require.NoError(t, BinaryPipe{}.Default(ctx))
+		require.NoError(t, BinaryPipe{}.Run(ctx))
+		require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List(), 1)
+		require.FileExists(t, filepath.Join(dist, "universal.sig"))
+	})
+
+	t.Run("build ids do not sign it", func(t *testing.T) {
+		ctx, dist := newContext(t, []string{"darwin-amd64", "darwin-arm64"})
+		require.NoError(t, BinaryPipe{}.Default(ctx))
+		require.NoError(t, BinaryPipe{}.Run(ctx))
+		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List())
+		require.NoFileExists(t, filepath.Join(dist, "universal.sig"))
 	})
 }

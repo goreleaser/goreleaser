@@ -40,7 +40,7 @@ sboms:
     # "artifacts" is "any".
     #
     # Default:
-    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
+    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sbom.json"]
     #   When "any":      []
     #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
     # Templates: allowed.

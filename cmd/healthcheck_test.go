@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -49,6 +50,8 @@ func TestCheckPath(t *testing.T) {
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
 	require.NoError(t, checkPath(t.Context(), checked, " \t "))
 	require.Error(t, checkPath(t.Context(), checked, `"unterminated`))
+	// shell syntax alone parses to no arguments at all.
+	require.ErrorIs(t, checkPath(t.Context(), checked, "|"), exec.ErrNotFound)
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {

@@ -79,12 +79,12 @@ func getGoEnvFilter() string {
 var goosToOthers = map[string][]string{
 	"darwin":  {"macos", "darwin"},
 	"linux":   {"linux"},
-	"windows": {"windows"},
+	"windows": {"windows", "win"},
 }
 
 var goarchToOthers = map[string][]string{
-	"arm64": {"aarch64"},
-	"amd64": {"x86_64"},
+	"arm64": {"arm64", "aarch64"},
+	"amd64": {"amd64", "x64", "x86_64"},
 	"386":   {"i686", "i586", "i386"},
 }
 

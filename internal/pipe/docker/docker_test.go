@@ -36,6 +36,83 @@ func start(tb testing.TB) {
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
 }
 
+func TestRunCommandEnvPrecedence(t *testing.T) {
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			key := "GORELEASER_TEST_DOCKER_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_DOCKER_COMMAND_HELPER", "1")
+			t.Setenv("DOCKER_ENV_HELPER_KEY", key)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+
+			t.Run("without output", func(t *testing.T) {
+				record := filepath.Join(t.TempDir(), "record")
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", record)
+				require.NoError(t, runCommand(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper"))
+
+				bts, err := os.ReadFile(record)
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(bts))
+			})
+
+			t.Run("with output", func(t *testing.T) {
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", "")
+				out, err := runCommandWithOutput(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper")
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(out))
+			})
+		})
+	}
+}
+
+func TestDockerCommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_DOCKER_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	value := os.Getenv(os.Getenv("DOCKER_ENV_HELPER_KEY"))
+	if record := os.Getenv("DOCKER_ENV_HELPER_RECORD"); record != "" {
+		if err := os.WriteFile(record, []byte(value), 0o644); err != nil {
+			fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+			os.Exit(2)
+		}
+	}
+	fmt.Fprint(os.Stdout, value)
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
+}
+
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
 	testlib.CheckDocker(t)

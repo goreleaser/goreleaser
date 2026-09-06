@@ -6,7 +6,7 @@
 require_relative "{{ .CustomRequire }}"
 {{ end -}}
 class {{ .Name }} < Formula
-  desc "{{ .Desc }}"
+  desc {{ .Desc | rubyString }}
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   {{- if .License }}
