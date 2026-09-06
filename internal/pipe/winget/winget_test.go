@@ -1113,7 +1113,7 @@ func TestRunPipeTemplatesPackageIdentifier(t *testing.T) {
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-			createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+			createFakeWingetArchive(t, ctx, folder, "tool")
 
 			pipe := Pipe{}
 			require.NoError(t, pipe.Default(ctx))
@@ -1168,7 +1168,7 @@ func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
 		},
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"))
-	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+	createFakeWingetArchive(t, ctx, folder, "tool")
 
 	pipe := Pipe{}
 	require.NoError(t, pipe.Default(ctx))
@@ -1218,7 +1218,7 @@ func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+	createFakeWingetArchive(t, ctx, folder, "tool")
 
 	pipe := Pipe{}
 	require.NoError(t, pipe.Default(ctx))
@@ -1276,7 +1276,7 @@ func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool", "windows", "amd64", "v1", "foo.exe")
+	createFakeWingetArchive(t, ctx, folder, "tool")
 
 	pipe := Pipe{}
 	require.NoError(t, pipe.Default(ctx))
@@ -1303,15 +1303,19 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 		"duplicate-platform": {
 			ids: []string{"a", "b"},
 			prepare: func(t *testing.T, ctx *context.Context, folder string) {
-				createFakeWingetArchive(t, ctx, folder, "a", "windows", "amd64", "v1", "foo.exe")
-				createFakeWingetArchive(t, ctx, folder, "b", "windows", "amd64", "v1", "foo.exe")
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "a")
+				createFakeWingetArchive(t, ctx, folder, "b")
 			},
 			wantErr: errMultipleArchives,
 		},
 		"mixed-format": {
 			ids: []string{"zip", "bin"},
 			prepare: func(t *testing.T, ctx *context.Context, folder string) {
-				createFakeWingetArchive(t, ctx, folder, "zip", "windows", "amd64", "v1", "foo.exe")
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "zip")
 				createFakeWingetBinary(t, ctx, folder, "bin", "windows", "386", "foo")
 			},
 			wantErr: errMixedFormats,
@@ -1319,7 +1323,9 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 		"valid": {
 			ids: []string{"zip"},
 			prepare: func(t *testing.T, ctx *context.Context, folder string) {
-				createFakeWingetArchive(t, ctx, folder, "zip", "windows", "amd64", "v1", "foo.exe")
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "zip")
 			},
 			manifest:  3,
 			publishes: 3,
@@ -1389,8 +1395,15 @@ func (c *recordingWingetClient) CreateFile(ctx *context.Context, author config.C
 	return c.Mock.CreateFile(ctx, author, repo, content, path, msg)
 }
 
-func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id, goos, goarch, goamd64, bin string) {
+func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id string) {
 	tb.Helper()
+
+	const (
+		goos    = "windows"
+		goarch  = "amd64"
+		goamd64 = "v1"
+		bin     = "foo.exe"
+	)
 
 	path := filepath.Join(folder, "dist", id+"_"+goos+"_"+goarch+goamd64+".zip")
 	ctx.Artifacts.Add(&artifact.Artifact{
