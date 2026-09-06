@@ -188,15 +188,14 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 			return err
 		}
 		env = append(env, hookEnv...)
+		tpl = tpl.WithEnvS(env)
 
-		dir, err := tmpl.New(ctx).WithBuildOptions(opts).Apply(hook.Dir)
+		dir, err := tpl.Apply(hook.Dir)
 		if err != nil {
 			return err
 		}
 
-		sh, err := tmpl.New(ctx).WithBuildOptions(opts).
-			WithEnvS(env).
-			Apply(hook.Cmd)
+		sh, err := tpl.Apply(hook.Cmd)
 		if err != nil {
 			return err
 		}
