@@ -26,15 +26,11 @@ func TestSignMachO(t *testing.T) {
 	original, err := os.ReadFile(path)
 	require.NoError(t, err)
 
-	offset, command := machoSignatureLocation(t, original)
-	placeholder := bytes.Clone(original[:offset])
-	binary.LittleEndian.PutUint32(placeholder[command+12:command+16], 0)
-
 	// Node leaves a zero-size signature command pointing at EOF. Keep that case as
 	// well as replacing the valid signature produced by the Go linker.
 	for name, contents := range map[string][]byte{
 		"signed":      original,
-		"placeholder": placeholder,
+		"placeholder": machoSignaturePlaceholder(t, original),
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "macho")
@@ -54,6 +50,28 @@ func TestSignMachO(t *testing.T) {
 			require.Contains(t, string(signature[:size]), identity+"\x00")
 		})
 	}
+}
+
+func machoSignaturePlaceholder(tb testing.TB, original []byte) []byte {
+	tb.Helper()
+	offset, command := machoSignatureLocation(tb, original)
+	placeholder := bytes.Clone(original[:offset])
+	binary.LittleEndian.PutUint32(placeholder[command+12:command+16], 0)
+
+	file, err := macho.NewFile(bytes.NewReader(original))
+	require.NoError(tb, err)
+	command = 32
+	for _, load := range file.Loads {
+		if segment, ok := load.(*macho.Segment); ok && segment.Name == "__LINKEDIT" {
+			// Truncating the signature also shortens its containing segment.
+			require.LessOrEqual(tb, segment.Offset, uint64(len(placeholder)))
+			file.ByteOrder.PutUint64(placeholder[command+48:command+56], uint64(len(placeholder))-segment.Offset)
+			return placeholder
+		}
+		command += len(load.Raw())
+	}
+	tb.Fatal("missing Mach-O link-edit segment")
+	return nil
 }
 
 func machoSignatureLocation(tb testing.TB, contents []byte) (uint32, int) {
