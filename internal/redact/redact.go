@@ -96,6 +96,10 @@ func (r *redacter) replacePartial(s string) (redacted, pending string) {
 	if len(r.secrets) == 0 {
 		return s, ""
 	}
+	// Only writes ending in a secret prefix need the streaming matcher.
+	if !r.hasIncompleteSuffix(s) {
+		return r.Replace(s), ""
+	}
 
 	var b strings.Builder
 	for i := 0; i < len(s); {
@@ -112,6 +116,15 @@ func (r *redacter) replacePartial(s string) (redacted, pending string) {
 		i++
 	}
 	return b.String(), ""
+}
+
+func (r *redacter) hasIncompleteSuffix(s string) bool {
+	for i := max(0, len(s)-r.maxLen+1); i < len(s); i++ {
+		if r.isIncompleteSecret(s[i:]) {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *redacter) isIncompleteSecret(s string) bool {
