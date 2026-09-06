@@ -345,6 +345,18 @@ builds:
 > [!NOTE]
 > Learn more about [build hooks](/customization/builds/hooks/).
 
+> [!NOTE]
+> **Environment order in overrides**
+>
+> `env` entries are templated in order, so an entry can reference the entries
+> before it with `{{ .Env.NAME }}`.
+> An override keeps the position of each variable it redefines, so the base
+> entries that reference it still work.
+>
+> Because of that, an override cannot introduce a new variable that a
+> *redefined* base variable references. Define such a variable in the base
+> `env` instead, and let the override replace its value.
+
 > [!WARNING]
 > **GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64**
 >
@@ -571,9 +583,21 @@ If you don't set an `id`, each resulting binary gets its own artifact ID, which
 is its binary name. Set `id` only if the ellipsis resolves to a single `main`
 package.
 
-!!! warning
+> [!WARNING]
+> Build constraints are evaluated per target, so an ellipsis path may resolve
+> to a different set of `main` packages on each target.
+> Artifact IDs do not depend on how many packages a given target resolves to,
+> so they stay the same on every target.
 
-    Build constraints are evaluated per target, so an ellipsis path may resolve
-    to a different set of `main` packages on each target.
+> [!WARNING]
+> **Changed in v2.19**
+>
+> Before v2.19, an ellipsis path that resolved to a *single* `main` package
+> kept the build ID, which is the project name by default.
+> It now uses the binary name, like every other ellipsis build.
+>
+> If you reference that build in an `ids` field of `archives`, `nfpms`,
+> `brews`, or `dockers`, set `id` on the build explicitly to keep the old
+> value. GoReleaser warns when it builds a configuration affected by this.
 
 {{< g_templates >}}

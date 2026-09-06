@@ -369,6 +369,11 @@ func ensureEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifac
 func findBuildOutput(expected, ext string) (string, error) {
 	name := filepath.Base(expected)
 	prefix := strings.TrimSuffix(expected, ext)
+	if _, err := os.Stat(prefix); err == nil {
+		return prefix, nil
+	}
+
+	// only c-archive on Windows gets here: go writes `.a`, we want `.lib`.
 	matches, err := filepath.Glob(prefix + ".*")
 	if err != nil {
 		return "", fmt.Errorf("find build output for %s: %w", name, err)
@@ -377,9 +382,6 @@ func findBuildOutput(expected, ext string) (string, error) {
 	candidates := slices.DeleteFunc(matches, func(m string) bool {
 		return filepath.Ext(m) == ".h"
 	})
-	if _, err := os.Stat(prefix); err == nil {
-		candidates = append(candidates, prefix)
-	}
 	if len(candidates) != 1 {
 		return "", fmt.Errorf("could not find the build output for %s", name)
 	}
@@ -458,9 +460,11 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 // mergeEnv merges the override entries into the defaults, keeping insertion
 // order so that entries can reference the ones defined before them.
 //
-// The last definition of a key sets both its value and its position, so an
-// override that redefines a key in terms of a variable it also introduces
-// still comes out after it.
+// A key keeps the position of its first definition, so an override that
+// redefines a base variable does not move it past the base variables that
+// reference it. The reverse case, an override that introduces a variable
+// referenced by a base variable it also redefines, cannot work without
+// ordering by reference, and is documented as unsupported.
 func mergeEnv(defaults, overrides []string) []string {
 	all := append(slices.Clone(defaults), overrides...)
 	values := make(map[string]string, len(all))
@@ -470,9 +474,9 @@ func mergeEnv(defaults, overrides []string) []string {
 		if !ok || key == "" {
 			continue
 		}
-		// a redefined key drops its old position.
-		keys = slices.DeleteFunc(keys, func(k string) bool { return k == key })
-		keys = append(keys, key)
+		if _, exists := values[key]; !exists {
+			keys = append(keys, key)
+		}
 		values[key] = value
 	}
 
@@ -736,6 +740,9 @@ func checkBuildElipsis(
 		// found for this target.
 		if build.InternalDefaults.ID {
 			a.Extra[artifact.ExtraID] = bin
+			if len(mains) == 1 && bin != build.ID {
+				logIDChange(build, bin)
+			}
 		}
 		binaries = append(binaries, a)
 	}
@@ -755,7 +762,7 @@ func buildSelectionFlags(
 	if err != nil {
 		return nil, err
 	}
-	flags = dropListIncompatibleFlags(flags)
+	flags = keepListFlags(flags)
 
 	if len(details.Tags) > 0 {
 		tags, err := tpl.Slice(details.Tags, tmpl.NonEmpty())
@@ -767,22 +774,37 @@ func buildSelectionFlags(
 	return flags, nil
 }
 
-// dropListIncompatibleFlags removes the flags `go list` rejects, as they only
-// make sense when actually building. They cannot change package selection.
-func dropListIncompatibleFlags(flags []string) []string {
-	result := make([]string, 0, len(flags))
-	for i := 0; i < len(flags); i++ {
-		name, _, hasValue := strings.Cut(flags[i], "=")
-		switch name {
-		case "-c":
-			continue
-		case "-o":
-			if !hasValue {
-				i++ // the value is a separate argument.
-			}
-			continue
+// listFlags are the build flags that can change which packages `go list`
+// returns: `-tags`, `-race`, `-msan` and `-asan` set build tags, and the rest
+// change module resolution.
+//
+// Anything else only affects code generation, and `go list` rejects several of
+// them, notably the `go test` flags `-c`, `-count`, `-run`, `-timeout`,
+// `-bench` and `-exec`, which `command: test` makes reachable.
+var listFlags = []string{
+	"-tags",
+	"-race",
+	"-msan",
+	"-asan",
+	"-mod",
+	"-modfile",
+	"-overlay",
+}
+
+// keepListFlags filters build flags down to the ones `go list` understands and
+// that can change which packages it returns.
+func keepListFlags(flags []string) []string {
+	var result []string
+	keep := false
+	for _, flag := range flags {
+		if strings.HasPrefix(flag, "-") {
+			name, _, _ := strings.Cut(flag, "=")
+			keep = slices.Contains(listFlags, name)
 		}
-		result = append(result, flags[i])
+		// a value passed as a separate argument shares the fate of its flag.
+		if keep {
+			result = append(result, flag)
+		}
 	}
 	return result
 }
@@ -809,6 +831,24 @@ func logFindingMains(build config.Build, main string) {
 			WithField("path", main).
 			Info("finding all " + logext.Keyword("func main()"))
 	}
+}
+
+var idChangeLog = sync.Map{}
+
+// logIDChange warns the users whose artifact ID changed: before, an ellipsis
+// path that resolved to a single main package kept the build ID, and now it
+// uses the binary name like any other ellipsis build.
+func logIDChange(build config.Build, bin string) {
+	if _, loaded := idChangeLog.LoadOrStore(build.ID, true); loaded {
+		return
+	}
+	log.Warn(logext.Warning(
+		"the artifact ID of this build is now " + logext.Keyword(bin) +
+			" instead of " + logext.Keyword(build.ID) +
+			", because " + logext.Keyword("main") + " is an ellipsis path and " +
+			logext.Keyword("id") + " is not set: set " + logext.Keyword("id") +
+			" if you reference it in an " + logext.Keyword("ids") + " field",
+	))
 }
 
 func logBuild[T string | []string](paths T, binaries T, target string) {

@@ -1017,6 +1017,46 @@ func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
 	require.Equal(t, modTime, info.ModTime().UTC())
 }
 
+func TestBuildVariadicWasmDottedSiblingNames(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "app"))
+	writeGoodMain(t, filepath.Join(folder, "cmd", "app.v2"))
+
+	target := mustParse(t, "js_wasm")
+	build := config.Build{
+		ID:      "foo",
+		Main:    "./cmd/...",
+		Tool:    "go",
+		Command: "build",
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+			ID:     true,
+		},
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "app.wasm",
+		Path:   filepath.Join(folder, "dist", target.Target, "app.wasm"),
+		Ext:    ".wasm",
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	// `app.v2` must not be mistaken for the output of `app`.
+	var paths []string
+	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List() {
+		require.FileExists(t, a.Path)
+		paths = append(paths, a.Path)
+	}
+	require.ElementsMatch(t, []string{
+		filepath.ToSlash(filepath.Join("dist", target.Target, "app.wasm")),
+		filepath.ToSlash(filepath.Join("dist", target.Target, "app.v2.wasm")),
+	}, paths)
+}
+
 func TestBuildInvalidEnv(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
@@ -2106,7 +2146,7 @@ func TestCheckBuildElipsisDropsListIncompatibleFlags(t *testing.T) {
 		Main:    "./cmd/...",
 		Dir:     folder,
 		Command: "test",
-		Flags:   []string{"-c", "-o", "somewhere", "-trimpath"},
+		Flags:   []string{"-c", "-count=1", "-run=X", "-timeout=1s", "-bench=.", "-exec", "echo", "-o", "somewhere", "-trimpath"},
 		InternalDefaults: config.BuildInternalDefaults{
 			Binary: true,
 			ID:     true,
@@ -2118,13 +2158,34 @@ func TestCheckBuildElipsisDropsListIncompatibleFlags(t *testing.T) {
 	require.Len(t, binaries, 1)
 }
 
-func TestDropListIncompatibleFlags(t *testing.T) {
+func TestKeepListFlags(t *testing.T) {
 	t.Parallel()
-	require.Equal(
-		t,
-		[]string{"-trimpath", "-tags=foo"},
-		dropListIncompatibleFlags([]string{"-c", "-o", "somewhere", "-trimpath", "-o=elsewhere", "-tags=foo"}),
-	)
+	t.Run("keeps selection flags", func(t *testing.T) {
+		t.Parallel()
+		flags := []string{
+			"-tags=foo", "-tags", "bar", "-race", "-msan", "-asan",
+			"-mod=vendor", "-modfile", "go.local.mod", "-overlay=o.json",
+		}
+		require.Equal(t, flags, keepListFlags(flags))
+	})
+
+	t.Run("drops everything else", func(t *testing.T) {
+		t.Parallel()
+		require.Empty(t, keepListFlags([]string{
+			"-c", "-count=1", "-run=X", "-timeout=1s", "-bench=.",
+			"-exec", "echo", "-o", "somewhere", "-trimpath",
+			"-ldflags", "-s -w", "-gcflags=-N", "-cover", "-covermode=set",
+		}))
+	})
+
+	t.Run("drops a value given as a separate argument", func(t *testing.T) {
+		t.Parallel()
+		require.Equal(
+			t,
+			[]string{"-tags", "foo"},
+			keepListFlags([]string{"-o", "somewhere", "-tags", "foo", "-exec", "echo"}),
+		)
+	})
 }
 
 func TestOverrides(t *testing.T) {
@@ -2178,22 +2239,30 @@ func TestOverrides(t *testing.T) {
 		require.Equal(t, []string{"A=value", "B={{.Env.A}}", "C=override", "D={{.Env.B}}"}, dets.Env)
 	})
 
-	t.Run("redefined env moves to the override position", func(t *testing.T) {
+	t.Run("redefined env keeps the base position", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.Wrap(t.Context()),
 			config.Build{
-				Env: []string{"CC=gcc"},
+				Env: []string{
+					"SYSROOT=/usr",
+					"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
 						Goos:   "darwin",
 						Goarch: "arm64",
-						Env:    []string{"SDK=/opt/sdk", "CC={{.Env.SDK}}/bin/cc"},
+						Env:    []string{"SYSROOT=/opt/osxcross"},
 					},
 				},
 			}, mustParse(t, "darwin_arm64"),
 		)
 		require.NoError(t, err)
-		require.Equal(t, []string{"SDK=/opt/sdk", "CC={{.Env.SDK}}/bin/cc"}, dets.Env)
+		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include"}, dets.Env)
+
+		// the base entries that reference it must still template.
+		out, err := base.TemplateEnv(dets.Env, tmpl.New(testctx.Wrap(t.Context())))
+		require.NoError(t, err)
+		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I/opt/osxcross/include"}, out)
 	})
 
 	t.Run("dependent env templates survive overrides", func(t *testing.T) {
