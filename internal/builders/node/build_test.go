@@ -211,11 +211,9 @@ func TestBuildUsesPerTargetSEAConfig(t *testing.T) {
 	var wg sync.WaitGroup
 	errs := make(chan error, len(targets))
 	for _, target := range targets {
-		target := target
-		outputs[target] = filepath.Join(tmp, "dist", "proj-"+target)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		output := filepath.Join(tmp, "dist", "proj-"+target)
+		outputs[target] = output
+		wg.Go(func() {
 			parsed, err := Default.Parse(target)
 			if err != nil {
 				errs <- err
@@ -223,10 +221,10 @@ func TestBuildUsesPerTargetSEAConfig(t *testing.T) {
 			}
 			errs <- Default.Build(ctx, build, api.Options{
 				Name:   "proj-" + target,
-				Path:   outputs[target],
+				Path:   output,
 				Target: parsed,
 			})
-		}()
+		})
 	}
 	wg.Wait()
 	close(errs)
@@ -310,7 +308,7 @@ func createFakeNodeBuildHelper(tb testing.TB) string {
 	return name
 }
 
-func TestNodeBuildHelperProcess(t *testing.T) {
+func TestNodeBuildHelperProcess(_ *testing.T) {
 	if os.Getenv("GO_WANT_NODE_BUILD_HELPER_PROCESS") != "1" {
 		return
 	}
