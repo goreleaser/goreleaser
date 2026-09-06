@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caarlos0/log"
 )
@@ -18,30 +17,31 @@ func Copy(src, dst string) error {
 // CopyWithMode recursively copies src into dst with the given mode.
 // The given mode applies only to files. Their parent dirs will have the same mode as their src counterparts.
 func CopyWithMode(src, dst string, mode os.FileMode) error {
-	src = filepath.ToSlash(src)
-	dst = filepath.ToSlash(dst)
+	src = filepath.Clean(src)
+	dst = filepath.Clean(dst)
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
 		}
-		path = filepath.ToSlash(path)
-		// We have the following:
-		// - src = "a/b"
-		// - dst = "dist/linuxamd64/b"
-		// - path = "a/b/c.txt"
-		// So we join "a/b" with "c.txt" and use it as the destination.
-		dst := filepath.ToSlash(filepath.Join(dst, strings.Replace(path, src, "", 1)))
-		log.WithField("src", path).WithField("dst", dst).Debug("copying file")
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
+		}
+		target := dst
+		if rel != "." {
+			target = filepath.Join(dst, rel)
+		}
+		log.WithField("src", filepath.ToSlash(path)).WithField("dst", filepath.ToSlash(target)).Debug("copying file")
 		if info.IsDir() {
-			return os.MkdirAll(dst, info.Mode())
+			return os.MkdirAll(target, info.Mode())
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
-			return copySymlink(path, dst)
+			return copySymlink(path, target)
 		}
 		if mode != 0 {
-			return copyFile(path, dst, mode)
+			return copyFile(path, target, mode)
 		}
-		return copyFile(path, dst, info.Mode())
+		return copyFile(path, target, info.Mode())
 	})
 }
 
