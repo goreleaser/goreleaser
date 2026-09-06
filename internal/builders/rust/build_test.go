@@ -287,9 +287,11 @@ func createFakeRustup(tb testing.TB, log string) {
 	if runtime.GOOS == "windows" {
 		name += ".bat"
 		log = filepath.ToSlash(log)
+		// Expand after parsing so environment values cannot become batch operators.
 		script = fmt.Sprintf(`@echo off
-> "%s" echo cwd=%%CD%%
->> "%s" echo toolchain=%%RUSTUP_TOOLCHAIN%%
+setlocal EnableDelayedExpansion
+> "%s" echo cwd=!CD!
+>> "%s" echo toolchain=!RUSTUP_TOOLCHAIN!
 >> "%s" echo args=%%*
 `, log, log, log)
 	}
