@@ -148,6 +148,7 @@ func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifa
 		artifact.SBOM,
 		artifact.PySdist,
 		artifact.PyWheel,
+		artifact.SourceRPM,
 	}
 
 	if publisher.Checksum {

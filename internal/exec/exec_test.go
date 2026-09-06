@@ -353,6 +353,29 @@ func TestExecuteEmptyCommandWithNoMatchingArtifacts(t *testing.T) {
 	}}))
 }
 
+func TestExecuteSourceRPM(t *testing.T) {
+	outDir := t.TempDir()
+	file := filepath.Join(t.TempDir(), "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(file, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: file,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+
+	require.NoError(t, Execute(ctx, []config.Publisher{{
+		Name: "source-rpm",
+		Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+	}}))
+	require.Equal(t, []string{"pkg.src.rpm"}, dirFiles(t, outDir))
+}
+
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 	testlib.SkipIfWindows(t, "uses unix shell and fifo")
 

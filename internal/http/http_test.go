@@ -750,3 +750,48 @@ func TestManyUploads(t *testing.T) {
 	require.True(t, pipe.IsSkip(err), err)
 	require.True(t, uploaded.Load(), "should have uploaded")
 }
+
+func TestUploadSourceRPM(t *testing.T) {
+	var requests atomic.Int64
+	requestURIs := make(chan string, 2)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		requestURIs <- r.URL.RequestURI()
+		w.WriteHeader(http.StatusCreated)
+	}))
+	t.Cleanup(srv.Close)
+
+	dir := t.TempDir()
+	sourceRPM := filepath.Join(dir, "pkg.src.rpm")
+	require.NoError(t, os.WriteFile(sourceRPM, []byte("rpm"), 0o644))
+	binaryRPM := filepath.Join(dir, "pkg.x86_64.rpm")
+	require.NoError(t, os.WriteFile(binaryRPM, []byte("rpm"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.src.rpm",
+		Path: sourceRPM,
+		Type: artifact.SourceRPM,
+		Extra: map[string]any{
+			artifact.ExtraExt:    ".src.rpm",
+			artifact.ExtraFormat: "src.rpm",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "pkg.x86_64.rpm",
+		Path: binaryRPM,
+		Type: artifact.LinuxPackage,
+		Extra: map[string]any{
+			artifact.ExtraExt: ".rpm",
+		},
+	})
+
+	require.NoError(t, Upload(ctx, []config.Upload{{
+		Name:   "source-rpm",
+		Mode:   ModeArchive,
+		Target: srv.URL + "/uploads/",
+		Exts:   []string{"src.rpm"},
+	}}, "test", func(*http.Response) error { return nil }))
+	require.Equal(t, int64(1), requests.Load())
+	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
+}

@@ -216,6 +216,7 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 			artifact.Flatpak,
 			artifact.PySdist,
 			artifact.PyWheel,
+			artifact.SourceRPM,
 		)
 	case ModeBinary:
 		types = append(types, artifact.UploadableBinary)
