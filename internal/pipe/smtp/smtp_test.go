@@ -86,7 +86,8 @@ func requireTLSValidationError(t *testing.T, port int, serve func(net.Listener, 
 	})
 
 	serverErr := make(chan error, 1)
-	go serve(ln, smtpTestCertificate(t), serverErr)
+	cert := smtpTestCertificate(t)
+	go serve(ln, cert, serverErr)
 
 	t.Setenv("SMTP_PASSWORD", "secret")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

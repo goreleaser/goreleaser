@@ -311,7 +311,7 @@ func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
 				w.Header().Set("Content-Type", "application/x-amz-json-1.1")
 
 				var input struct {
-					Plaintext []byte `json:"Plaintext"`
+					Plaintext []byte `json:"Plaintext"` //nolint:tagliatelle // AWS KMS Encrypt wire format uses Plaintext.
 				}
 				if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
