@@ -214,7 +214,7 @@ func (s *GetExistingReleaseSuite) TestNoReleases() {
 
 func (s *GetExistingReleaseSuite) TestNoRepo() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
+	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(500, ""))
 
 	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
@@ -234,8 +234,60 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 }
 
+func (s *GetExistingReleaseSuite) TestReleaseExistsOnFallbackSecondPage() {
+	t := s.T()
+	release := gitea.Release{TagName: s.tag}
+	responder := func(req *http.Request) (*http.Response, error) {
+		switch req.URL.Query().Get("page") {
+		case "", "1":
+			return httpmock.NewJsonResponse(200, []gitea.Release{{TagName: "older-tag"}})
+		case "2":
+			return httpmock.NewJsonResponse(200, []gitea.Release{release})
+		default:
+			return httpmock.NewJsonResponse(200, []gitea.Release{})
+		}
+	}
+	httpmock.RegisterResponder("GET", s.releasesURL, responder)
+
+	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.Equal(t, release, *result)
+}
+
 func TestGiteaGetExistingReleaseSuite(t *testing.T) {
 	suite.Run(t, new(GetExistingReleaseSuite))
+}
+
+func TestGiteaGetExistingReleaseByTag(t *testing.T) {
+	listed := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.22.0"}`)
+		case r.URL.Path == "/api/v1/repos/owner/repo/releases/tags/v1.0.0":
+			fmt.Fprint(w, `{"id":123,"tag_name":"v1.0.0"}`)
+		case r.URL.Path == "/api/v1/repos/owner/repo/releases":
+			listed = true
+			http.Error(w, "unexpected release list", http.StatusInternalServerError)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	release, err := client.getExistingRelease(ctx, "owner", "repo", "v1.0.0")
+	require.NoError(t, err)
+	require.False(t, listed)
+	require.NotNil(t, release)
+	require.EqualValues(t, 123, release.ID)
 }
 
 type GiteacreateReleaseSuite struct {

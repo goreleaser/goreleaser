@@ -257,20 +257,16 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(ctx *context.Context, owner, repoName, tagName string) (*gitea.Release, error) {
-	releases, _, err := giteaDo(ctx, func() ([]*gitea.Release, *gitea.Response, error) {
-		return c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
+	release, resp, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
+		return c.client.GetReleaseByTag(owner, repoName, tagName)
 	})
 	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
 		return nil, err
 	}
-
-	for _, release := range releases {
-		if release.TagName == tagName {
-			return release, nil
-		}
-	}
-
-	return nil, nil
+	return release, nil
 }
 
 func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id int64) (*gitea.Release, error) {
