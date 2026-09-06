@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	h "net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
@@ -303,10 +304,10 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
 	if !upload.CustomArtifactName {
-		if !strings.HasSuffix(targetURL, "/") {
-			targetURL += "/"
+		targetURL, err = appendArtifactNameToTargetURL(targetURL, artifact.Name)
+		if err != nil {
+			return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 		}
-		targetURL += artifact.Name
 	}
 	log.Debugf("generated target url: %s", redact.String(targetURL, ctx.Env.Strings()))
 
@@ -340,6 +341,29 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	}
 
 	return nil
+}
+
+func appendArtifactNameToTargetURL(target, name string) (string, error) {
+	u, err := url.Parse(target)
+	if err != nil {
+		if !strings.HasSuffix(target, "/") {
+			target += "/"
+		}
+		return target + url.PathEscape(name), nil
+	}
+
+	path := u.EscapedPath()
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	path += url.PathEscape(name)
+
+	u.Path, err = url.PathUnescape(path)
+	if err != nil {
+		return "", err
+	}
+	u.RawPath = path
+	return u.String(), nil
 }
 
 // uploadAssetToServer uploads the asset file to target.

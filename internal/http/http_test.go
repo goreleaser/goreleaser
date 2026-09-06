@@ -795,3 +795,71 @@ func TestUploadSourceRPM(t *testing.T) {
 	require.Equal(t, int64(1), requests.Load())
 	require.Equal(t, "/uploads/pkg.src.rpm", <-requestURIs)
 }
+
+func TestUploadArtifactNameTargetURL(t *testing.T) {
+	for name, tt := range map[string]struct {
+		target             string
+		artifact           string
+		customArtifactName bool
+		want               string
+	}{
+		"target with query": {
+			target:   "/files?token=abc",
+			artifact: "notes.txt",
+			want:     "/files/notes.txt?token=abc",
+		},
+		"filename with fragment": {
+			target:   "/files/",
+			artifact: "notes#draft.txt",
+			want:     "/files/notes%23draft.txt",
+		},
+		"filename with query": {
+			target:   "/files/",
+			artifact: "notes?draft.txt",
+			want:     "/files/notes%3Fdraft.txt",
+		},
+		"filename with percent": {
+			target:   "/files/",
+			artifact: "notes%.txt",
+			want:     "/files/notes%25.txt",
+		},
+		"escaped path with query": {
+			target:   "/projects/foo%2Fbar/files?token=abc",
+			artifact: "notes#draft.txt",
+			want:     "/projects/foo%2Fbar/files/notes%23draft.txt?token=abc",
+		},
+		"custom artifact name": {
+			target:             "/files/notes.txt?token=abc",
+			artifact:           "ignored#draft.txt",
+			customArtifactName: true,
+			want:               "/files/notes.txt?token=abc",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			requestURIs := make(chan string, 1)
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requestURIs <- r.URL.RequestURI()
+				w.WriteHeader(http.StatusCreated)
+			}))
+			t.Cleanup(srv.Close)
+
+			path := filepath.Join(t.TempDir(), "asset")
+			require.NoError(t, os.WriteFile(path, []byte("asset"), 0o644))
+
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: tt.artifact,
+				Path: path,
+				Type: artifact.UploadableArchive,
+			})
+
+			require.NoError(t, Upload(ctx, []config.Upload{{
+				Name:               "target-url",
+				Mode:               ModeArchive,
+				Target:             srv.URL + tt.target,
+				CustomArtifactName: tt.customArtifactName,
+			}}, "test", func(*http.Response) error { return nil }))
+			require.Equal(t, tt.want, <-requestURIs)
+		})
+	}
+}
