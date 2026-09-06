@@ -1625,6 +1625,90 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
+func TestRunPipeUniversalBinaryWrappedIn(t *testing.T) {
+	for name, tt := range map[string]struct {
+		wrappedIn         string
+		expectedContains  []string
+		expectedOmissions []string
+	}{
+		"unwrapped": {
+			expectedContains: []string{
+				`binary "unibin"`,
+			},
+			expectedOmissions: []string{
+				`rename "bundle/unibin", "unibin"`,
+			},
+		},
+		"wrapped": {
+			wrappedIn: "bundle",
+			expectedContains: []string{
+				`rename "bundle/unibin", "unibin"`,
+				`binary "unibin"`,
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "unibin",
+					Casks: []config.HomebrewCask{
+						{
+							Name:        "unibin",
+							Homepage:    "https://goreleaser.com",
+							Description: "Fake desc",
+							Repository: config.RepoRef{
+								Owner: "unibin",
+								Name:  "bar",
+							},
+							IDs: []string{
+								"unibin",
+							},
+							Binaries: []string{"unibin"},
+						},
+					},
+				},
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"))
+
+			path := filepath.Join(folder, "bin.tar.gz")
+			extra := map[string]any{
+				artifact.ExtraID:       "unibin",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"unibin"},
+				artifact.ExtraReplaces: true,
+			}
+			if tt.wrappedIn != "" {
+				extra[artifact.ExtraWrappedIn] = tt.wrappedIn
+			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "all",
+				Type:   artifact.UploadableArchive,
+				Extra:  extra,
+			})
+
+			require.NoError(t, os.WriteFile(path, []byte("foo"), 0o644))
+			cli := client.NewMock()
+			require.NoError(t, runAll(ctx, cli))
+			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+			require.Len(t, casks, 1)
+			content, err := os.ReadFile(casks[0].Path)
+			require.NoError(t, err)
+
+			for _, expected := range tt.expectedContains {
+				require.Contains(t, string(content), expected)
+			}
+			for _, omitted := range tt.expectedOmissions {
+				require.NotContains(t, string(content), omitted)
+			}
+		})
+	}
+}
+
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),

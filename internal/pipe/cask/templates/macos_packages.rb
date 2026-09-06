@@ -6,6 +6,12 @@
   {{- if .Binary }}
   binary "{{ .Name }}", target: "{{ .Binary }}"
   {{- end }}
+  {{- if .WrappedIn }}
+  {{- $wrap := .WrappedIn }}
+  {{- range .Binaries }}
+  rename "{{ $wrap }}/{{ . }}", "{{ . }}"
+  {{- end }}
+  {{- end }}
 
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
