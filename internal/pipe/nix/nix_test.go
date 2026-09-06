@@ -490,11 +490,6 @@ func TestRunPipe(t *testing.T) {
 				}
 				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
-
-				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
-				f, err := os.Create(path)
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
 			}
 
 			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
