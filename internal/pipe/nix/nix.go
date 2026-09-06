@@ -226,6 +226,33 @@ func format(ctx *context.Context, fmt, path string) bool {
 	}
 }
 
+func formatContent(ctx *context.Context, formatter, content string) (string, error) {
+	file, err := os.CreateTemp("", "goreleaser-nix-*.nix")
+	if err != nil {
+		return "", fmt.Errorf("create temporary nixpkg: %w", err)
+	}
+	path := file.Name()
+	defer func() { _ = os.Remove(path) }()
+
+	if _, err := file.WriteString(content); err != nil {
+		_ = file.Close()
+		return "", fmt.Errorf("write temporary nixpkg: %w", err)
+	}
+	if err := file.Close(); err != nil {
+		return "", fmt.Errorf("close temporary nixpkg: %w", err)
+	}
+
+	if !format(ctx, formatter, path) {
+		return content, nil
+	}
+
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("read temporary nixpkg: %w", err)
+	}
+	return string(bts), nil
+}
+
 func preparePkg(
 	ctx *context.Context,
 	nix config.Nix,
@@ -407,6 +434,12 @@ func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *a
 	content, err := preparePkg(ctx, nix, cl, hasher)
 	if err != nil {
 		return err
+	}
+	if fmt := nix.Formatter; fmt != "" {
+		content, err = formatContent(ctx, fmt, content)
+		if err != nil {
+			return err
+		}
 	}
 
 	if nix.Repository.Git.URL != "" {
