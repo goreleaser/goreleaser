@@ -221,7 +221,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	realPath := filepath.Join(build.Dir, "target", t.clean(), "release", options.Name)
+	realPath := filepath.Join(build.Dir, "target", t.clean(), "release", filepath.Base(options.Name))
 	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err
 	}
