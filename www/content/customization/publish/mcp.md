@@ -96,7 +96,7 @@ mcp:
   # Package configurations for different distribution methods.
   packages:
     # Registry type indicating how to download packages.
-    # Valid values: oci, npm, pypi, nuget, mcpb.
+    # Valid values: oci, npm, pypi, nuget.
     - registry_type: npm
 
       # Package identifier - either a package name (for registries) or URL (for direct downloads).

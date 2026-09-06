@@ -2,18 +2,14 @@ package mcp
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -354,140 +350,6 @@ func TestPublishWithTemplates(t *testing.T) {
 	}
 	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
-}
-
-func TestPublishMCPBPackageFileSHA256(t *testing.T) {
-	const artifactContents = "mcpb package"
-	artifactPath := filepath.Join(t.TempDir(), "server.mcpb")
-	require.NoError(t, os.WriteFile(artifactPath, []byte(artifactContents), 0o644))
-	sum := sha256.Sum256([]byte(artifactContents))
-	fileSHA256 := hex.EncodeToString(sum[:])
-
-	checksumPath := filepath.Join(t.TempDir(), "server.mcpb.txt")
-	require.NoError(t, os.WriteFile(checksumPath, []byte("wrong artifact"), 0o644))
-
-	var receivedRequest apiv0.ServerJSON
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, json.Unmarshal(body, &receivedRequest))
-
-		response := apiv0.ServerResponse{
-			Meta: apiv0.ResponseMeta{
-				Official: &apiv0.RegistryExtensions{
-					Status: "pending",
-				},
-			},
-		}
-
-		w.WriteHeader(http.StatusCreated)
-		w.Header().Set("Content-Type", "application/json")
-		assert.NoError(t, json.NewEncoder(w).Encode(response))
-	}))
-	defer srv.Close()
-
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		MCP: config.MCP{
-			MCPDetails: config.MCPDetails{
-				Name:  "test-server",
-				Title: "Test Server",
-				Packages: []config.MCPPackage{
-					{
-						RegistryType: "mcpb",
-						Identifier:   "https://github.com/fixture/server/releases/download/{{ .Version }}/server.mcpb",
-						Transport: config.MCPTransport{
-							Type: "stdio",
-						},
-					},
-					{
-						RegistryType: "npm",
-						Identifier:   "@test/server",
-						Transport: config.MCPTransport{
-							Type: "stdio",
-						},
-					},
-				},
-				Auth: config.MCPAuth{
-					Type: "none",
-				},
-			},
-		},
-	})
-	ctx.Version = "v1.0.0"
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "server.mcpb",
-		Path: artifactPath,
-		Type: artifact.UploadableFile,
-	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "server.mcpb",
-		Path: checksumPath,
-		Type: artifact.Checksum,
-	})
-
-	pipe := &Pipe{registry: srv.URL}
-	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
-		return &mockAuthProvider{token: "test-token"}, nil
-	}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.Publish(ctx))
-
-	require.Len(t, receivedRequest.Packages, 2)
-	require.Equal(t, model.Package{
-		RegistryType: "mcpb",
-		Identifier:   "https://github.com/fixture/server/releases/download/v1.0.0/server.mcpb",
-		Version:      "v1.0.0",
-		FileSHA256:   fileSHA256,
-		Transport: model.Transport{
-			Type: "stdio",
-		},
-	}, receivedRequest.Packages[0])
-	require.Empty(t, receivedRequest.Packages[1].FileSHA256)
-}
-
-func TestPublishMCPBPackageRequiresArtifact(t *testing.T) {
-	var requested bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		requested = true
-		w.WriteHeader(http.StatusCreated)
-		assert.NoError(t, json.NewEncoder(w).Encode(apiv0.ServerResponse{
-			Meta: apiv0.ResponseMeta{
-				Official: &apiv0.RegistryExtensions{Status: "pending"},
-			},
-		}))
-	}))
-	defer srv.Close()
-
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		MCP: config.MCP{
-			MCPDetails: config.MCPDetails{
-				Name:  "test-server",
-				Title: "Test Server",
-				Packages: []config.MCPPackage{
-					{
-						RegistryType: "mcpb",
-						Identifier:   "https://github.com/fixture/server/releases/download/v1.0.0/server.mcpb",
-						Transport: config.MCPTransport{
-							Type: "stdio",
-						},
-					},
-				},
-				Auth: config.MCPAuth{
-					Type: "none",
-				},
-			},
-		},
-	})
-	ctx.Version = "v1.0.0"
-
-	pipe := &Pipe{registry: srv.URL}
-	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
-		return &mockAuthProvider{token: "test-token"}, nil
-	}
-	require.NoError(t, pipe.Default(ctx))
-	err := pipe.Publish(ctx)
-	require.EqualError(t, err, `mcpb package "https://github.com/fixture/server/releases/download/v1.0.0/server.mcpb": could not find artifact "server.mcpb"`)
-	require.False(t, requested)
 }
 
 func TestPublishPackageTransportURL(t *testing.T) {

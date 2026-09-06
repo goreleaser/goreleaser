@@ -3140,8 +3140,7 @@
 							"oci",
 							"npm",
 							"pypi",
-							"nuget",
-							"mcpb"
+							"nuget"
 						]
 					},
 					"identifier": {

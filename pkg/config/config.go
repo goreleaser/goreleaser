@@ -1706,7 +1706,7 @@ type MCPAuth struct {
 
 // MCPPackage represents an MCP package configuration.
 type MCPPackage struct {
-	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget,enum=mcpb"`
+	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget"`
 	Identifier   string       `yaml:"identifier" json:"identifier"`
 	Transport    MCPTransport `yaml:"transport" json:"transport"`
 }
