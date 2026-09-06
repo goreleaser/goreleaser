@@ -365,6 +365,9 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		"conflicts":           conflictsString,
 		"depends":             dependsString,
 		"generateCompletions": generateCompletionsString,
+		"rubyString": func(v string) (string, error) {
+			return rubyString(ctx, v)
+		},
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -404,6 +407,22 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+func rubyString(ctx *context.Context, v string) (string, error) {
+	v, err := tmpl.New(ctx).Apply(v)
+	if err != nil {
+		return "", err
+	}
+	v = strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"\n", `\n`,
+		"\r", `\r`,
+		"\t", `\t`,
+	).Replace(v)
+	v = strings.ReplaceAll(v, "#{", `\#{`)
+	return `"` + v + `"`, nil
 }
 
 func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {

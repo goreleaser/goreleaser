@@ -21,7 +21,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   name "{{ .Name }}"
-  desc "{{ .Description }}"
+  desc {{ .Description | rubyString }}
   homepage "{{ .Homepage }}"
 
   livecheck do

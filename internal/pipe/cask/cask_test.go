@@ -212,6 +212,39 @@ func TestFullCaskMacOSOnly(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(cask))
 }
 
+func TestCaskDescriptionEscapesRubyString(t *testing.T) {
+	for name, tt := range map[string]struct {
+		description string
+		env         []string
+		expected    string
+	}{
+		"literal": {
+			description: `Say "hello"`,
+			expected:    `desc "Say \"hello\""`,
+		},
+		"templated": {
+			description: `Say "{{ .Env.WORD }}"`,
+			env:         []string{`WORD=hello`},
+			expected:    `desc "Say \"hello\""`,
+		},
+		"interpolation": {
+			description: `Say "#{hello}"`,
+			expected:    `desc "Say \"\#{hello}\""`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Description = tt.description
+			cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "foo",
+				Env:         tt.env,
+			}), data)
+			require.NoError(t, err)
+			require.Contains(t, cask, tt.expected)
+		})
+	}
+}
+
 func TestCaskSimple(t *testing.T) {
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
