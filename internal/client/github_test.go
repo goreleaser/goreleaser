@@ -167,6 +167,70 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 	)
 }
 
+func TestGitHubSecondaryRateLimitHonorsRetryAfter(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		retryAfter string
+		expected   time.Duration
+	}{
+		{"short delay", "1", time.Second},
+		{"absent header", "", time.Minute},
+		{"longer delay", "90", 90 * time.Second},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				var calls atomic.Int32
+
+				transport := httpmock.NewMockTransport()
+				transport.RegisterResponder(http.MethodGet, "https://api.github.com/rate_limit",
+					func(req *http.Request) (*http.Response, error) {
+						resp := httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(
+							`{"resources":{"core":{"remaining":5000,"reset":%d}}}`,
+							time.Now().Add(time.Hour).Unix(),
+						))
+						resp.Request = req
+						return resp, nil
+					})
+				transport.RegisterResponder(http.MethodGet, "https://api.github.com/repos/owner/repo/compare/v1...v2",
+					func(req *http.Request) (*http.Response, error) {
+						if calls.Add(1) == 1 {
+							resp := httpmock.NewStringResponse(http.StatusForbidden,
+								`{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
+							resp.Request = req
+							if tt.retryAfter != "" {
+								resp.Header.Set("Retry-After", tt.retryAfter)
+							}
+							return resp, nil
+						}
+						resp := httpmock.NewStringResponse(http.StatusOK, `{"commits":[]}`)
+						resp.Request = req
+						return resp, nil
+					})
+
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					Retry: config.Retry{
+						Attempts: 3,
+						Delay:    10 * time.Millisecond,
+						MaxDelay: 5 * time.Minute,
+					},
+				})
+
+				api, err := github.NewClient(github.WithHTTPClient(&http.Client{Transport: transport}))
+				require.NoError(t, err)
+				client := &githubClient{client: api}
+
+				start := time.Now()
+				_, err = client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+				elapsed := time.Since(start)
+
+				require.NoError(t, err)
+				require.Equal(t, int32(2), calls.Load())
+				require.Equal(t, tt.expected, elapsed)
+			})
+		})
+	}
+}
+
 func TestGitHubReleaseURLTemplate(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
