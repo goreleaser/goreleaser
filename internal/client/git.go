@@ -65,9 +65,14 @@ func (g *gitClient) CreateFiles(
 		return fmt.Errorf("git: failed to template private key: %w", err)
 	}
 
-	key, err = keyPath(key)
+	key, cleanupKey, err := keyPath(key)
 	if err != nil {
 		return err
+	}
+	if cleanupKey != nil {
+		defer func() {
+			err = errors.Join(err, cleanupKey())
+		}()
 	}
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -141,26 +146,38 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 	}})
 }
 
-func keyPath(key string) (string, error) {
+func keyPath(key string) (path string, cleanup func() error, err error) {
 	if key == "" {
-		return "", pipe.Skip("private_key is empty")
+		return "", nil, pipe.Skip("private_key is empty")
 	}
 
-	path := key
+	path = key
 
-	_, err := ssh.ParsePrivateKey([]byte(key))
+	_, err = ssh.ParsePrivateKey([]byte(key))
 	if isPasswordError(err) {
-		return "", errors.New("git: key is password-protected")
+		return "", nil, errors.New("git: key is password-protected")
 	}
 
 	if err == nil {
 		// if it can be parsed as a valid private key, we write it to a
 		// temp file and use that path on GIT_SSH_COMMAND.
-		f, err := os.CreateTemp("", "id_*")
-		if err != nil {
-			return "", fmt.Errorf("git: failed to store private key: %w", err)
+		f, createErr := os.CreateTemp("", "id_*")
+		if createErr != nil {
+			return "", nil, fmt.Errorf("git: failed to store private key: %w", createErr)
 		}
-		defer f.Close()
+		generatedPath := f.Name()
+		path = generatedPath
+		cleanup = func() error {
+			if err := os.Remove(generatedPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("git: failed to remove private_key: %w", err)
+			}
+			return nil
+		}
+		defer func() {
+			if err != nil {
+				err = errors.Join(err, cleanup())
+			}
+		}()
 
 		// the key needs to EOF at an empty line, seems like github actions
 		// is somehow removing them.
@@ -168,25 +185,32 @@ func keyPath(key string) (string, error) {
 			key += "\n"
 		}
 
-		if _, err := io.WriteString(f, key); err != nil {
-			return "", fmt.Errorf("git: failed to store private key: %w", err)
+		if _, err = io.WriteString(f, key); err != nil {
+			err = errors.Join(fmt.Errorf("git: failed to store private key: %w", err), f.Close())
+			path = ""
+			return
 		}
-		if err := f.Close(); err != nil {
-			return "", fmt.Errorf("git: failed to store private key: %w", err)
+		if err = f.Close(); err != nil {
+			err = fmt.Errorf("git: failed to store private key: %w", err)
+			path = ""
+			return
 		}
-		path = f.Name()
 	}
 
-	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("git: could not stat private_key: %w", err)
+	if _, err = os.Stat(path); err != nil {
+		err = fmt.Errorf("git: could not stat private_key: %w", err)
+		path = ""
+		return
 	}
 
 	// in any case, ensure the key has the correct permissions.
-	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("git: failed to ensure private_key permissions: %w", err)
+	if err = os.Chmod(path, 0o600); err != nil {
+		err = fmt.Errorf("git: failed to ensure private_key permissions: %w", err)
+		path = ""
+		return
 	}
 
-	return path, nil
+	return path, cleanup, nil
 }
 
 func isPasswordError(err error) bool {
