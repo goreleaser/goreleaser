@@ -34,6 +34,29 @@ func TestRun(t *testing.T) {
 		})
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
+
+	t.Run("leaves node mains for target-aware rendering", func(t *testing.T) {
+		for name, main := range map[string]string{
+			"literal":      "index.js",
+			"global":       "build/{{ .ProjectName }}.js",
+			"target":       "build/{{ .Target }}.js",
+			"os":           "build/{{ .Os }}.js",
+			"architecture": "build/{{ .Arch }}.js",
+		} {
+			t.Run(name, func(t *testing.T) {
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					ProjectName: "proj",
+					Builds: []config.Build{{
+						Builder: "node",
+						Main:    main,
+					}},
+				})
+
+				require.NoError(t, Pipe{}.Run(ctx))
+				require.Equal(t, main, ctx.Config.Builds[0].Main)
+			})
+		}
+	})
 }
 
 func TestString(t *testing.T) {

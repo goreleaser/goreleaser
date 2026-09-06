@@ -17,6 +17,9 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	tpl := tmpl.New(ctx)
 	for i := range ctx.Config.Builds {
+		if ctx.Config.Builds[i].Builder == "node" {
+			continue
+		}
 		m, err := tpl.Apply(ctx.Config.Builds[i].Main)
 		if err != nil {
 			return err
