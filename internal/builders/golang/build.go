@@ -397,7 +397,7 @@ func execGo(ctx *context.Context, command, env []string, dir string) error {
 
 func buildOutput(out []byte) string {
 	var lines []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 		if line == "" || strings.HasPrefix(line, "go: downloading") {
 			continue
 		}
@@ -428,7 +428,7 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				return build.BuildDetails, err
 			}
 
-			dets.Env = mergeEnv(build.Env, o.BuildDetails.Env)
+			dets.Env = mergeEnv(build.Env, o.Env)
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}

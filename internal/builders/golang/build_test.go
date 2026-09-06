@@ -1009,7 +1009,7 @@ func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
 
 	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
 	require.Len(t, bins, 1)
-	require.Equal(t, filepath.Join("dist", target.Target, "foo.wasm"), bins[0].Path)
+	require.Equal(t, filepath.ToSlash(filepath.Join("dist", target.Target, "foo.wasm")), bins[0].Path)
 	info, err := os.Stat(bins[0].Path)
 	require.NoError(t, err)
 	require.NotZero(t, info.Size())
@@ -1520,11 +1520,11 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 
 			libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
 			require.Len(t, libraries, 1)
-			require.Equal(t, options.Path, libraries[0].Path)
+			require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
 
 			headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
 			require.Len(t, headers, 1)
-			require.Equal(t, filepath.Join(folder, "dist", runtimeTarget, "cexport.h"), headers[0].Path)
+			require.Equal(t, filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, "cexport.h")), headers[0].Path)
 			require.Equal(t, "cexport.h", headers[0].Name)
 			require.Equal(t, target.Target, headers[0].Target)
 			require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
@@ -1871,7 +1871,7 @@ func TestBuildVariadicUsesTargetEnvForDiscovery(t *testing.T) {
 
 	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
 	require.Len(t, bins, 1)
-	require.Equal(t, filepath.Join("dist", target.Target, "target"), bins[0].Path)
+	require.Equal(t, filepath.ToSlash(filepath.Join("dist", target.Target, "target")), bins[0].Path)
 	info, err := os.Stat(bins[0].Path)
 	require.NoError(t, err)
 	require.NotZero(t, info.Size())
