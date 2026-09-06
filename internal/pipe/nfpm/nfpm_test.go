@@ -1215,6 +1215,7 @@ func TestDebSpecificConfig(t *testing.T) {
 			"changelog-file-missing-in-native-package",
 		}
 		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "deb", "termux.deb", "ipk"}
+		ctx.Config.NFPMs[0].FileNameTemplate = "{{ .ConventionalFileName }}"
 
 		require.NoError(t, Pipe{}.Run(ctx))
 		for _, format := range []string{"apk", "rpm", "ipk"} {
@@ -1226,11 +1227,61 @@ func TestDebSpecificConfig(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
 		}
+		packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).Filter(artifact.ByFormat("deb")).List()
+		require.Len(t, packages, 2)
+		for _, pkg := range packages {
+			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", debDataFile(t, pkg.Path, "usr/share/lintian/overrides/foo"))
+		}
 		require.DirExists(t, filepath.Join(ctx.Config.Dist, "termux.deb"))
 		for _, goarch := range []string{"x86_64", "i686"} {
 			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "termux.deb", "foo_"+goarch, "lintian"))
 			require.NoError(t, err)
 			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
+	})
+
+	t.Run("lintian override only", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].Overrides = map[string]config.NFPMOverridables{
+			"deb": {
+				Deb: config.NFPMDeb{
+					Lintian: []string{"statically-linked-binary"},
+				},
+			},
+		}
+		ctx.Config.NFPMs[0].FileNameTemplate = "{{ .ConventionalFileName }}"
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).Filter(artifact.ByFormat("deb")).List()
+		require.Len(t, packages, 2)
+		for _, pkg := range packages {
+			require.Equal(t, "foo: statically-linked-binary", debDataFile(t, pkg.Path, "usr/share/lintian/overrides/foo"))
+		}
+	})
+
+	t.Run("lintian override replaces top level", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].Deb.Lintian = []string{"statically-linked-binary"}
+		ctx.Config.NFPMs[0].Overrides = map[string]config.NFPMOverridables{
+			"deb": {
+				Deb: config.NFPMDeb{
+					Lintian: []string{"no-manual-page"},
+				},
+			},
+		}
+		ctx.Config.NFPMs[0].FileNameTemplate = "{{ .ConventionalFileName }}"
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).Filter(artifact.ByFormat("deb")).List()
+		require.Len(t, packages, 2)
+		for _, pkg := range packages {
+			require.Equal(t, "foo: no-manual-page", debDataFile(t, pkg.Path, "usr/share/lintian/overrides/foo"))
 		}
 	})
 
@@ -2366,4 +2417,42 @@ func sources(contents files.Contents) []string {
 		result = append(result, f.Source)
 	}
 	return result
+}
+
+func debDataFile(tb testing.TB, path, name string) string {
+	tb.Helper()
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	defer f.Close()
+
+	reader := ar.NewReader(f)
+	for {
+		hdr, err := reader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(tb, err)
+		if strings.TrimRight(hdr.Name, "/ ") != "data.tar.gz" {
+			continue
+		}
+		gz, err := gzip.NewReader(reader)
+		require.NoError(tb, err)
+		defer gz.Close()
+		tr := tar.NewReader(gz)
+		for {
+			th, err := tr.Next()
+			if errors.Is(err, io.EOF) {
+				tb.Fatalf("%s not found in %s", name, path)
+			}
+			require.NoError(tb, err)
+			if strings.TrimPrefix(th.Name, "./") != strings.TrimPrefix(name, "./") {
+				continue
+			}
+			bts, err := io.ReadAll(tr)
+			require.NoError(tb, err)
+			return string(bts)
+		}
+	}
+	tb.Fatalf("%s not found in %s", name, path)
+	return ""
 }
