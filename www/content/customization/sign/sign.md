@@ -136,9 +136,13 @@ templates:
 You can sign your artifacts with [cosign][] as well.
 
 Cosign uses the `--bundle` flag, which combines the certificate and
-signature into a single `.sigstore.json` file:
+signature into a single `.sigstore.json` file. This example signs the checksum
+file, not each archive:
 
 ```yaml {filename=".goreleaser.yaml"}
+checksum:
+  name_template: checksums.txt
+
 signs:
   - cmd: cosign
     signature: "${artifact}.sigstore.json"
@@ -150,11 +154,28 @@ signs:
     artifacts: checksum
 ```
 
-Your users can then verify the signature with:
+Download `checksums.txt`, `checksums.txt.sigstore.json`, and the artifacts you
+want to verify into the same directory.
+
+First, verify the checksum file's signature against the publisher's expected
+identity and OIDC issuer. For a GitHub Actions release, replace `<owner>`,
+`<repository>`, the workflow path, and the tag with the publisher's actual
+values:
 
 ```sh
-cosign verify-blob --bundle file.tar.gz.sigstore.json file.tar.gz
+cosign verify-blob \
+  --certificate-identity 'https://github.com/<owner>/<repository>/.github/workflows/release.yml@refs/tags/v1.2.3' \
+  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+  --bundle checksums.txt.sigstore.json checksums.txt
 ```
+
+Only after that succeeds, verify the downloaded artifacts with GNU `sha256sum`:
+
+```sh
+sha256sum --check --ignore-missing checksums.txt
+```
+
+Use the publisher's checksum filename if it differs from this example.
 
 ## Signing and notarizing macOS executables
 

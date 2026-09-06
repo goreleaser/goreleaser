@@ -91,21 +91,88 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("migrate from github to mcp", func(t *testing.T) {
+		legacy := config.MCPDetails{
+			Name:        "test-server",
+			Title:       "Test Title",
+			Description: "Test description",
+			Homepage:    "https://example.com",
+			Packages: []config.MCPPackage{{
+				RegistryType: "npm",
+				Identifier:   "@test/server",
+				Transport:    config.MCPTransport{Type: "stdio"},
+			}},
+			Transports: []config.MCPTransport{{Type: "streamable-http"}},
+			Disable:    "auto",
+			Repository: config.MCPRepository{
+				URL:       "https://github.com/test/repo",
+				Source:    "github",
+				ID:        "test/repo",
+				Subfolder: "server",
+			},
+			Auth: config.MCPAuth{
+				Type:  "github-oidc",
+				Token: "test-token",
+			},
+		}
+		for name, details := range map[string]config.MCPDetails{
+			"empty": {},
+			"partial": {
+				Title: "Top-level title",
+				Auth:  config.MCPAuth{Type: "none"},
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					MCP: config.MCP{
+						GitHub:     legacy,
+						MCPDetails: details,
+					},
+				})
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.Equal(t, legacy, ctx.Config.MCP.MCPDetails)
+				require.Equal(t, legacy, ctx.Config.MCP.GitHub)
+				require.Same(t, &legacy.Packages[0], &ctx.Config.MCP.Packages[0])
+				require.Same(t, &legacy.Transports[0], &ctx.Config.MCP.Transports[0])
+				require.True(t, ctx.Deprecated)
+			})
+		}
+	})
+
+	t.Run("keep explicit top-level mcp", func(t *testing.T) {
+		details := config.MCPDetails{
+			Name:  "top-level-server",
+			Title: "Top-level title",
+			Auth:  config.MCPAuth{Type: "none"},
+		}
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
 				GitHub: config.MCPDetails{
-					Name:  "test-server",
-					Title: "Test Title",
-					Auth: config.MCPAuth{
-						Type: "github-oidc",
-					},
+					Name: "legacy-server",
+					Auth: config.MCPAuth{Type: "github-oidc"},
+				},
+				MCPDetails: details,
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, details, ctx.Config.MCP.MCPDetails)
+		require.False(t, ctx.Deprecated)
+	})
+
+	t.Run("migrate without auth", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				GitHub: config.MCPDetails{
+					Name: "test-server",
 				},
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "test-server", ctx.Config.MCP.Name)
-		require.Equal(t, "Test Title", ctx.Config.MCP.Title)
-		require.Equal(t, "github-oidc", ctx.Config.MCP.Auth.Type)
+		require.Equal(t, config.MCPDetails{
+			Name: "test-server",
+			Auth: config.MCPAuth{Type: "none"},
+		}, ctx.Config.MCP.MCPDetails)
+		require.Empty(t, ctx.Config.MCP.GitHub.Auth.Type)
+		require.True(t, ctx.Deprecated)
 	})
 }
 
@@ -283,6 +350,87 @@ func TestPublishWithTemplates(t *testing.T) {
 	}
 	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
+}
+
+func TestPublishPackageTransportURL(t *testing.T) {
+	var receivedRequest apiv0.ServerJSON
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &receivedRequest))
+
+		response := apiv0.ServerResponse{
+			Meta: apiv0.ResponseMeta{
+				Official: &apiv0.RegistryExtensions{
+					Status: "pending",
+				},
+			},
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "test-server",
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server-http",
+						Transport: config.MCPTransport{
+							Type: "streamable-http",
+							URL:  "https://example.com/{{ .ProjectName }}/mcp",
+						},
+					},
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server-sse",
+						Transport: config.MCPTransport{
+							Type: "sse",
+							URL:  "https://example.com/{{ .Version }}/sse",
+						},
+					},
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server-stdio",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
+					},
+				},
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.2.3"
+
+	pipe := &Pipe{registry: srv.URL}
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
+		return &mockAuthProvider{token: "test-token"}, nil
+	}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Publish(ctx))
+
+	require.Len(t, receivedRequest.Packages, 3)
+	require.Equal(t, model.Transport{
+		Type: "streamable-http",
+		URL:  "https://example.com/test-server/mcp",
+	}, receivedRequest.Packages[0].Transport)
+	require.Equal(t, model.Transport{
+		Type: "sse",
+		URL:  "https://example.com/1.2.3/sse",
+	}, receivedRequest.Packages[1].Transport)
+	require.Equal(t, model.Transport{
+		Type: "stdio",
+	}, receivedRequest.Packages[2].Transport)
 }
 
 func TestPublishDisabled(t *testing.T) {

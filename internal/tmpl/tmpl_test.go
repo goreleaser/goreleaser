@@ -1,9 +1,11 @@
 package tmpl
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"text/template"
 	"time"
@@ -483,6 +485,26 @@ func TestReadFile(t *testing.T) {
 	})
 }
 
+func TestEnglishJoinDoesNotMutateInput(t *testing.T) {
+	items := []string{"a", " ", "b"}
+	tpl := New(testctx.Wrap(t.Context())).WithExtraFields(Fields{
+		"Items": items,
+	})
+
+	got, err := tpl.Apply(`{{ .Items | englishJoin }}`)
+	require.NoError(t, err)
+	require.Equal(t, "a and b", got)
+	require.Equal(t, []string{"a", " ", "b"}, items)
+}
+
+func TestEnglishJoinDoesNotMutateTemplateList(t *testing.T) {
+	got, err := New(testctx.Wrap(t.Context())).Apply(
+		`{{ $items := list "a" "" "b" }}{{ $items | englishJoin }}|{{ index $items 1 | printf "%q" }}/{{ index $items 2 | printf "%q" }}`,
+	)
+	require.NoError(t, err)
+	require.Equal(t, `a and b|""/"b"`, got)
+}
+
 func TestApplyAll(t *testing.T) {
 	tpl := New(testctx.Wrap(t.Context())).WithEnvS([]string{
 		"FOO=bar",
@@ -495,7 +517,9 @@ func TestApplyAll(t *testing.T) {
 	t.Run("failure", func(t *testing.T) {
 		foo := "{{.Env.FOO}}"
 		bar := "{{.Env.NOPE}}"
-		require.Error(t, tpl.ApplyAll(&foo, &bar))
+		err := tpl.ApplyAll(&foo, &bar)
+		require.Error(t, err)
+		requireTemplateErrorOnce(t, err, bar)
 		require.Equal(t, "bar", foo)
 		require.Equal(t, "{{.Env.NOPE}}", bar)
 	})
@@ -512,7 +536,9 @@ func TestApplySlice(t *testing.T) {
 	})
 	t.Run("failure", func(t *testing.T) {
 		foo := []string{"{{.Env.BAR}}"}
-		require.Error(t, tpl.ApplySlice(&foo))
+		err := tpl.ApplySlice(&foo)
+		require.Error(t, err)
+		requireTemplateErrorOnce(t, err, foo[0])
 		require.Equal(t, "{{.Env.BAR}}", foo[0])
 	})
 }
@@ -767,6 +793,14 @@ func TestSliceInvalid(t *testing.T) {
 	require.Nil(t, flags)
 }
 
+func TestSliceErrorIsNotWrappedTwice(t *testing.T) {
+	source := []string{"{{ .NotAField }}"}
+	flags, err := New(testctx.Wrap(t.Context())).Slice(source)
+	require.Error(t, err)
+	requireTemplateErrorOnce(t, err, source[0])
+	require.Nil(t, flags)
+}
+
 func TestSliceIgnoreEmptyFlags(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
 	source := []string{
@@ -787,6 +821,17 @@ type testTarget struct {
 }
 
 func (t testTarget) String() string { return t.Target }
+
+func requireTemplateErrorOnce(t *testing.T, err error, tmpl string) {
+	t.Helper()
+
+	require.ErrorAs(t, err, &Error{})
+
+	var inner Error
+	require.False(t, errors.As(errors.Unwrap(err), &inner))
+
+	require.Equal(t, 1, strings.Count(err.Error(), `template: failed to apply "`+tmpl+`"`))
+}
 
 func (t testTarget) Fields() map[string]string {
 	return map[string]string{

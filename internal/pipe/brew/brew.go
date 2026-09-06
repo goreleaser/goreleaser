@@ -344,6 +344,9 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 			}
 			return strings.Join(items, ",\n")
 		},
+		"rubyString": func(v string) (string, error) {
+			return rubyString(ctx, v)
+		},
 	}).ParseFS(formulaTemplate, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -374,6 +377,22 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+func rubyString(ctx *context.Context, v string) (string, error) {
+	v, err := tmpl.New(ctx).Apply(v)
+	if err != nil {
+		return "", err
+	}
+	v = strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"\n", `\n`,
+		"\r", `\r`,
+		"\t", `\t`,
+	).Replace(v)
+	v = strings.ReplaceAll(v, "#{", `\#{`)
+	return `"` + v + `"`, nil
 }
 
 func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {

@@ -57,6 +57,10 @@ func (cmd *rootCmd) Execute(args []string) {
 }
 
 func errorHandler(_ io.Writer, _ fang.Styles, err error) {
+	// commands that disable logs still need to report their errors.
+	if logger, ok := log.Log.(*log.Logger); ok && logger.Level > log.ErrorLevel {
+		logger.Level = log.ErrorLevel
+	}
 	log := log.WithError(err)
 	var message string
 	if de, ok := errors.AsType[gerrors.ErrDetailed](err); ok {

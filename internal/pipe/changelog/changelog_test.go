@@ -178,6 +178,37 @@ func TestChangelog(t *testing.T) {
 	require.NotEmpty(t, string(bts))
 }
 
+func TestChangelogHonorsMailmapAuthors(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, ".mailmap"),
+		[]byte("Canonical Author <canonical@example.invalid> Old Author <old@example.invalid>\n"),
+		0o644,
+	))
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "mailmap")
+	testlib.GitTag(t, "v0.0.1")
+	gitCommitWithAuthor(t, "Old Author", "old@example.invalid", "feat: mapped author")
+	gitCommitWithAuthor(t, "Ordinary Author", "ordinary@example.invalid", "feat: ordinary author")
+	testlib.GitTag(t, "v0.0.2")
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Use:    "git",
+			Sort:   "asc",
+			Format: `{{ .AuthorName }} <{{ .AuthorEmail }}> / {{ range .Authors }}{{ .Name }} <{{ .Email }}>{{ end }}: {{ .Message }}`,
+		},
+	}, testctx.WithCurrentTag("v0.0.2"), testctx.WithPreviousTag("v0.0.1"))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "Canonical Author <canonical@example.invalid> / Canonical Author <canonical@example.invalid>: feat: mapped author")
+	require.NotContains(t, ctx.ReleaseNotes, "Old Author <canonical@example.invalid>")
+	require.Contains(t, ctx.ReleaseNotes, "Ordinary Author <ordinary@example.invalid> / Ordinary Author <ordinary@example.invalid>: feat: ordinary author")
+}
+
 func TestChangelogInclude(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -762,6 +793,7 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitLab, func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
@@ -774,6 +806,7 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitLab+" no previous", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
@@ -1467,4 +1500,17 @@ func withFirstCommit(tb testing.TB) testctx.Opt {
 		require.NoError(tb, err)
 		ctx.Git.FirstCommit = s
 	}
+}
+
+func gitCommitWithAuthor(tb testing.TB, name, email, msg string) {
+	tb.Helper()
+	out, err := git.Run(
+		tb.Context(),
+		"-c", "user.name="+name,
+		"-c", "user.email="+email,
+		"-c", "commit.gpgSign=false",
+		"commit", "--allow-empty", "-m", msg,
+	)
+	require.NoError(tb, err)
+	require.Contains(tb, out, "main", msg)
 }

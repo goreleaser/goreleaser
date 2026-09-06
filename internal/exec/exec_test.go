@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -308,6 +310,30 @@ func TestExecute(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExecuteCommandRedactsDebugArgs(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previousLog })
+
+	const secret = "key123key123"
+	err := executeCommand(&command{
+		Ctx: testctx.Wrap(t.Context()),
+		Env: []string{"API_KEY=" + secret},
+		Args: []string{
+			"sh",
+			"-c",
+			`test "$API_KEY" = "key123key123" && echo "$API_KEY"`,
+		},
+	}, &artifact.Artifact{Name: "artifact"})
+	require.NoError(t, err)
+	require.NotContains(t, logs.String(), secret)
+	require.Contains(t, logs.String(), "$API_KEY")
 }
 
 func assertEnv(kvs map[string]string) string {

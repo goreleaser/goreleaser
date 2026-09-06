@@ -409,11 +409,9 @@ following build details are exposed:
 
 ### `GOMAXPROCS` for GoReleaser
 
-GoReleaser uses
-[`automaxprocs`](https://pkg.go.dev/go.uber.org/automaxprocs/maxprocs) to
-automatically set `GOMAXPROCS` based on available CPUs, including honoring
-container CPU limits.
-This determines the number of threads GoReleaser itself uses internally.
+GoReleaser uses the Go runtime's `GOMAXPROCS` setting. It limits the number of
+OS threads that can execute Go code simultaneously, not the total number of
+OS threads the process can create.
 
 GoReleaser also provides a `--parallelism` flag to control how many internal
 tasks (e.g., builds, archives, uploads) run concurrently.
@@ -423,17 +421,19 @@ If `--parallelism` is not set, GoReleaser defaults to the current value of
 ### `GOMAXPROCS` for `go build` commands
 
 Each `go build` command launched by GoReleaser inherits the environment,
-including `GOMAXPROCS`.
-If `GOMAXPROCS` is not explicitly set, Go will default to the number of **host**
-CPUs.
+including `GOMAXPROCS`, unless you override it in the build configuration.
+If it is not explicitly set, each Go process uses its runtime's default.
 
-If you're running inside a container and want to respect CPU limits during
-builds, you must set `GOMAXPROCS` manually.
+Starting with Go 1.25, the default on Linux accounts for container CPU quotas.
+The behavior depends on the toolchain, the program's Go language version, and
+`GODEBUG` settings. Older programs and explicit overrides can use different
+defaults. See the [runtime documentation](https://pkg.go.dev/runtime#GOMAXPROCS)
+for the current rules.
 
 ### Example
 
-If you want GoReleaser to run up to 10 tasks in parallel, but restrict `go
-build` to use only 2 threads:
+To run up to 10 GoReleaser tasks concurrently while limiting simultaneous
+Go execution in each inheriting process to two threads:
 
 ```sh
 GOMAXPROCS=2 goreleaser release --parallelism=10
@@ -442,7 +442,8 @@ GOMAXPROCS=2 goreleaser release --parallelism=10
 This configures:
 
 - GoReleaser to run up to 10 internal tasks concurrently
-- `go build` subprocesses to use only 2 OS threads
+- GoReleaser and each inheriting Go subprocess to execute Go code on at most
+  two OS threads at a time, without limiting their total OS thread count
 
 ## Passing environment variables to ldflags
 
@@ -452,7 +453,7 @@ example:
 ```yaml {filename=".goreleaser.yaml"}
 builds:
   - ldflags:
-   - -s -w -X "main.goversion={{.Env.GOVERSION}}"
+      - -s -w -X "main.goversion={{.Env.GOVERSION}}"
 ```
 
 Then you can run:

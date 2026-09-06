@@ -38,7 +38,7 @@ import (
 type Publisher interface {
 	fmt.Stringer
 
-	// Default sets the configuration defaults
+	// Publish publishes the configured artifacts.
 	Publish(ctx *context.Context) error
 }
 
@@ -53,8 +53,8 @@ func New() Pipe {
 			docker.Pipe{},
 			docker.ManifestPipe{},
 			dockerv2.Publish{},
-			dockerdigest.Pipe{},
 			ko.Pipe{},
+			dockerdigest.Pipe{},
 			sign.DockerPipe{},
 			snapcraft.Pipe{},
 			// This should be one of the last steps

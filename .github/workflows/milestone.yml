@@ -32,21 +32,38 @@ jobs:
               return;
             }
 
-            milestones = await github.rest.issues.listMilestones({
+            const milestones = await github.paginate(github.rest.issues.listMilestones, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              sort: 'due_on',
-              direction: 'asc'
+              per_page: 100
             })
-            if (milestones.data.length === 0) {
-              console.log('There are no milestones, skipping.');
+
+            // milestones are named after the release they'll go out in, so pick
+            // the lowest version: due dates are never set, and any other order
+            // would milestone this PR into some far away future release.
+            const parse = (title) => {
+              const m = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(title.trim());
+              return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+            };
+            const next = milestones
+              .map((milestone) => ({ milestone, version: parse(milestone.title) }))
+              .filter(({ version }) => version !== null)
+              .sort((a, b) =>
+                a.version[0] - b.version[0] ||
+                a.version[1] - b.version[1] ||
+                a.version[2] - b.version[2]
+              )[0];
+
+            if (!next) {
+              console.log('There are no open versioned milestones, skipping.');
               return;
             }
 
+            console.log(`Setting milestone to ${next.milestone.title}.`);
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
-              milestone: milestones.data[0].number
+              milestone: next.milestone.number
             });

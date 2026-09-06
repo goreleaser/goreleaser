@@ -3,9 +3,13 @@ package flatpak
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"maps"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -196,6 +200,103 @@ func TestRunPipe(t *testing.T) {
 	require.Equal(t, "simple", manifest.Modules[0].BuildSystem)
 }
 
+func TestRunPipeQuotesInstallPaths(t *testing.T) {
+	testlib.SkipIfWindows(t, "flatpak build commands are shell commands")
+
+	for name, binaryName := range map[string]string{
+		"ordinary": "myapp",
+		"spaces":   "my app",
+		"quotes":   `my "app's"`,
+		"hostile":  "my 'app\" with space \\ $HOME `whoami` $(id)\nnext",
+	} {
+		t.Run(name, func(t *testing.T) {
+			binDir := t.TempDir()
+			writeFlatpakTestCommand(t, binDir, "flatpak-builder")
+			writeFlatpakTestCommand(t, binDir, "flatpak")
+			writeFlatpakTestCommand(t, binDir, "install")
+			t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+			t.Setenv("GO_WANT_FLATPAK_COMMAND_HELPER", "1")
+			t.Setenv("EXPECTED_INSTALL_SOURCE", binaryName)
+			t.Setenv("EXPECTED_INSTALL_DEST", "/app/bin/"+binaryName)
+			record := filepath.Join(t.TempDir(), "install-record")
+			t.Setenv("INSTALL_RECORD", record)
+
+			dist := filepath.Join(t.TempDir(), "dist")
+			require.NoError(t, os.Mkdir(dist, 0o755))
+			fp := validFlatpak()
+			fp.NameTemplate = "foo_{{.Arch}}"
+			fp.AppID = "org.example.MyBin"
+			fp.IDs = []string{binaryName}
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "mybin",
+				Dist:        dist,
+				Flatpaks:    []config.Flatpak{fp},
+			}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
+			addBinaries(t, ctx, binaryName, dist)
+			requireNoGerror(t, Pipe{}.Run(ctx))
+
+			contents, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Contains(t, string(contents), binaryName)
+			require.Contains(t, string(contents), "/app/bin/"+binaryName)
+		})
+	}
+}
+
+func TestRunCmdEnvPrecedence(t *testing.T) {
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			key := "GORELEASER_TEST_FLATPAK_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_FLATPAK_COMMAND_HELPER", "1")
+			t.Setenv("FLATPAK_ENV_HELPER_KEY", key)
+			record := filepath.Join(t.TempDir(), "record")
+			t.Setenv("FLATPAK_ENV_HELPER_RECORD", record)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+			require.NoError(t, runCmd(
+				ctx,
+				t.TempDir(),
+				"failed to run flatpak helper",
+				os.Args[0],
+				"-test.run=TestFlatpakCommandHelper",
+				"--",
+				"env",
+			))
+
+			bts, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, string(bts))
+		})
+	}
+}
+
 func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"flatpak-builder", "flatpak"}, Pipe{}.Dependencies(nil))
 }
@@ -244,4 +345,122 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 			ctx.Artifacts.Add(a)
 		}
 	}
+}
+
+func writeFlatpakTestCommand(t *testing.T, dir, name string) {
+	t.Helper()
+	script := fmt.Sprintf("#!/bin/sh\nexec %q -test.run=TestFlatpakCommandHelper -- %q \"$@\"\n", os.Args[0], name)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	if testlib.IsWindows() {
+		script := fmt.Sprintf("@echo off\r\n%q -test.run=TestFlatpakCommandHelper -- %q %%*\r\n", os.Args[0], name)
+		require.NoError(t, os.WriteFile(filepath.Join(dir, name+".bat"), []byte(script), 0o755))
+	}
+}
+
+func TestFlatpakCommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_FLATPAK_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	args := flatpakCommandHelperArgs()
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "missing helper command")
+		os.Exit(2)
+	}
+
+	switch args[0] {
+	case "flatpak-builder":
+		runFlatpakBuilderHelper(args[1:])
+	case "flatpak":
+		os.Exit(0)
+	case "install":
+		runInstallHelper(args[1:])
+	case "env":
+		runFlatpakEnvHelper()
+	default:
+		fmt.Fprintf(os.Stderr, "unknown helper command: %s\n", args[0])
+		os.Exit(2)
+	}
+}
+
+func flatpakCommandHelperArgs() []string {
+	for i, arg := range os.Args {
+		if arg == "--" {
+			return os.Args[i+1:]
+		}
+	}
+	return nil
+}
+
+func runFlatpakBuilderHelper(args []string) {
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "missing manifest path")
+		os.Exit(2)
+	}
+
+	manifestBytes, err := os.ReadFile(args[len(args)-1])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "read manifest: %v\n", err)
+		os.Exit(2)
+	}
+
+	var manifest Manifest
+	if err := json.Unmarshal(manifestBytes, &manifest); err != nil {
+		fmt.Fprintf(os.Stderr, "unmarshal manifest: %v\n", err)
+		os.Exit(2)
+	}
+
+	for _, module := range manifest.Modules {
+		for _, buildCommand := range module.BuildCommands {
+			cmd := exec.Command("sh", "-c", buildCommand)
+			cmd.Env = os.Environ()
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "run build command %q: %v\n%s", buildCommand, err, out)
+				os.Exit(1)
+			}
+		}
+	}
+	os.Exit(0)
+}
+
+func runFlatpakEnvHelper() {
+	value := os.Getenv(os.Getenv("FLATPAK_ENV_HELPER_KEY"))
+	if err := os.WriteFile(os.Getenv("FLATPAK_ENV_HELPER_RECORD"), []byte(value), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
+func runInstallHelper(args []string) {
+	expected := []string{
+		"-Dm755",
+		os.Getenv("EXPECTED_INSTALL_SOURCE"),
+		os.Getenv("EXPECTED_INSTALL_DEST"),
+	}
+	if !slices.Equal(args, expected) {
+		fmt.Fprintf(os.Stderr, "install args: got %#v, want %#v\n", args, expected)
+		os.Exit(64)
+	}
+	f, err := os.OpenFile(os.Getenv("INSTALL_RECORD"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "open install record: %v\n", err)
+		os.Exit(2)
+	}
+	if _, err := fmt.Fprintf(f, "%s\n%s\n", args[1], args[2]); err != nil {
+		fmt.Fprintf(os.Stderr, "write install record: %v\n", err)
+		os.Exit(2)
+	}
+	if err := f.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "close install record: %v\n", err)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
 }

@@ -13,6 +13,7 @@ func setupGitHub(ctx *context.Context) error {
 		if err != nil && !ctx.Snapshot {
 			return err
 		}
+		repo.Token = ctx.Config.Release.GitHub.Token
 		ctx.Config.Release.GitHub = repo
 	}
 
@@ -40,6 +41,7 @@ func setupGitLab(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		repo.Token = ctx.Config.Release.GitLab.Token
 		ctx.Config.Release.GitLab = repo
 	}
 
@@ -67,6 +69,7 @@ func setupGitea(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		repo.Token = ctx.Config.Release.Gitea.Token
 		ctx.Config.Release.Gitea = repo
 	}
 

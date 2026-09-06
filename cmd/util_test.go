@@ -86,3 +86,41 @@ release:
 `
 	createFile(tb, "goreleaser.yml", yaml)
 }
+
+func setupPro(tb testing.TB) {
+	tb.Helper()
+
+	mktmp(tb)
+
+	createProGoReleaserYaml(tb)
+	createMainGo(tb)
+	goModInit(tb)
+	testlib.GitInit(tb)
+	testlib.GitAdd(tb)
+	testlib.GitCommit(tb, "asdf")
+	testlib.GitTag(tb, "v0.0.1")
+	testlib.GitCommit(tb, "asas89d")
+	testlib.GitCommit(tb, "assssf")
+	testlib.GitCommit(tb, "assd")
+	testlib.GitTag(tb, "v0.0.2")
+	testlib.GitRemoteAdd(tb, "git@github.com:goreleaser/fake.git")
+}
+
+func createProGoReleaserYaml(tb testing.TB) {
+	tb.Helper()
+	yaml := `version: 2
+pro: true
+includes: []
+builds:
+- binary: 'fake{{if .IsSnapshot}}_snapshot{{end}}'
+  goos:
+    - linux
+  goarch:
+    - amd64
+release:
+  github:
+    owner: goreleaser
+    name: fake
+`
+	createFile(tb, "goreleaser.yml", yaml)
+}

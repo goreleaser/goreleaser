@@ -199,7 +199,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 			imgs = append(imgs, withDigest(str, artifacts))
 		}
 	}
-	if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
+	if strings.TrimSpace(strings.Join(imgs, "")) == "" {
 		return imgs, pipe.Skip("manifest has no images")
 	}
 	return imgs, nil

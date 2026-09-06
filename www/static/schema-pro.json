@@ -2436,9 +2436,6 @@
 					"template": {
 						"type": "string"
 					},
-					"verified": {
-						"type": "string"
-					},
 					"using": {
 						"type": "string"
 					},
@@ -2465,6 +2462,9 @@
 							"type": "string"
 						},
 						"type": "object"
+					},
+					"verified": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3140,8 +3140,7 @@
 							"oci",
 							"npm",
 							"pypi",
-							"nuget",
-							"mcpb"
+							"nuget"
 						]
 					},
 					"identifier": {
@@ -3191,6 +3190,9 @@
 							"streamable-http",
 							"sse"
 						]
+					},
+					"url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

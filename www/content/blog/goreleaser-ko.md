@@ -136,7 +136,7 @@ put the workflow file into it:
 
 ```bash
 $ mkdir -p .github/workflows
-$ cat <<EOF > .github/workflows/release.yaml
+$ cat <<'EOF' > .github/workflows/release.yaml
 name: Releasing artifacts with GoReleaser and ko
 on:
   push:

@@ -1,7 +1,6 @@
 package winget
 
 import (
-	"html/template"
 	"maps"
 	"os"
 	"path/filepath"
@@ -16,7 +15,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,12 +46,25 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	assertError := func(t *testing.T, err, expected error) {
+		t.Helper()
+		switch expected := expected.(type) {
+		case *tmpl.Error:
+			testlib.RequireTemplateError(t, err)
+		case errNoArchivesFound:
+			var actual errNoArchivesFound
+			require.ErrorAs(t, err, &actual)
+			require.Equal(t, expected, actual)
+		default:
+			require.ErrorIs(t, err, expected)
+		}
+	}
 	for _, tt := range []struct {
-		name                 string
-		expectRunErrorIs     error
-		expectPublishErrorIs error
-		expectPath           string
-		winget               config.Winget
+		name               string
+		expectRunError     error
+		expectPublishError error
+		expectPath         string
+		winget             config.Winget
 	}{
 		{
 			name:       "minimal",
@@ -68,8 +82,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "mixed-formats",
-			expectRunErrorIs: errMixedFormats,
+			name:           "mixed-formats",
+			expectRunError: errMixedFormats,
 			winget: config.Winget{
 				Name:             "mixed",
 				Publisher:        "Foo",
@@ -210,7 +224,7 @@ func TestRunPipe(t *testing.T) {
 		},
 		{
 			name: "no-archives",
-			expectRunErrorIs: errNoArchivesFound{
+			expectRunError: errNoArchivesFound{
 				goamd64: "v2",
 				ids:     []string{"nopenopenope"},
 			},
@@ -228,14 +242,14 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "too-many-archives",
-			expectRunErrorIs: errMultipleArchives,
+			name:           "too-many-archives",
+			expectRunError: errMultipleArchives,
 			winget: config.Winget{
 				Name:             "min",
 				Publisher:        "Foo",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
-				IDs:              []string{},
+				IDs:              []string{"foo", "zaz"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -257,8 +271,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-repo-name",
-			expectRunErrorIs: errNoRepoName,
+			name:           "no-repo-name",
+			expectRunError: errNoRepoName,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -270,8 +284,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-license",
-			expectRunErrorIs: errNoLicense,
+			name:           "no-license",
+			expectRunError: errNoLicense,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -283,8 +297,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-short-description",
-			expectRunErrorIs: errNoShortDescription,
+			name:           "no-short-description",
+			expectRunError: errNoShortDescription,
 			winget: config.Winget{
 				Name:      "doesnotmatter",
 				Publisher: "Beckersoft",
@@ -296,8 +310,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "invalid-package-identifier",
-			expectRunErrorIs: errInvalidPackageIdentifier,
+			name:           "invalid-package-identifier",
+			expectRunError: pipe.Skip("winget.package_identifier is invalid: foobar"),
 			winget: config.Winget{
 				Name:              "min",
 				PackageIdentifier: "foobar",
@@ -311,8 +325,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-publisher",
-			expectRunErrorIs: errNoPublisher,
+			name:           "no-publisher",
+			expectRunError: errNoPublisher,
 			winget: config.Winget{
 				Name:             "min",
 				License:          "MIT",
@@ -324,8 +338,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-name-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-name-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "{{ .Nope }}",
 				Publisher:        "Beckersoft",
@@ -338,8 +352,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-releasenotes-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-releasenotes-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				ReleaseNotes:     "{{ .Nope }}",
 				Publisher:        "Beckersoft",
@@ -352,8 +366,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "{{ .Nope }}",
@@ -366,8 +380,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -381,8 +395,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-author-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-author-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -396,8 +410,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-homepage-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-homepage-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -411,8 +425,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-description-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-description-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -426,8 +440,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-short-description-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-short-description-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foobar",
 				Publisher:        "Beckersoft",
@@ -440,8 +454,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-repo-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-repo-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -454,8 +468,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-skip-upload-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-skip-upload-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -469,8 +483,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-release-notes-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-release-notes-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -484,8 +498,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-release-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-release-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -499,8 +513,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-path-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-path-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -514,8 +528,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "bad-commit-msg-tmpl",
-			expectPublishErrorIs: &template.Error{},
+			name:               "bad-commit-msg-tmpl",
+			expectPublishError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:                  "foo",
 				Publisher:             "Beckersoft",
@@ -530,8 +544,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-publisher-support-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-publisher-support-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:                "foo",
 				Publisher:           "Beckersoft",
@@ -545,8 +559,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-copyright-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-copyright-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -560,10 +574,10 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-copyright-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-copyright-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
-				Name:             "{{ .Nope }}",
+				Name:             "foo",
 				Publisher:        "Beckersoft",
 				License:          "MIT",
 				CopyrightURL:     "{{ .Nope }}",
@@ -575,8 +589,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-license-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-license-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -589,8 +603,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-license-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-license-url-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -604,8 +618,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-default-locale-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-default-locale-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -619,8 +633,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "skip-upload",
-			expectPublishErrorIs: errSkipUpload,
+			name:               "skip-upload",
+			expectPublishError: errSkipUpload,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -635,8 +649,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "skip-upload-auto",
-			expectPublishErrorIs: errSkipUploadAuto,
+			name:               "skip-upload-auto",
+			expectPublishError: errSkipUploadAuto,
 			winget: config.Winget{
 				Name:             "doesnotmatter",
 				Publisher:        "Beckersoft",
@@ -675,8 +689,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-dependency-template",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-dependency-template",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",
@@ -812,8 +826,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-field-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-field-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-field-locale",
 				Publisher:        "Beckersoft",
@@ -830,8 +844,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-release-notes-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-release-notes-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-release-notes-locale",
 				Publisher:        "Beckersoft",
@@ -848,8 +862,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-empty",
-			expectRunErrorIs: errAdditionalLocaleEmpty,
+			name:           "additional-locale-empty",
+			expectRunError: errAdditionalLocaleEmpty,
 			winget: config.Winget{
 				Name:             "empty-locale",
 				Publisher:        "Foo",
@@ -866,8 +880,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-duplicate",
-			expectRunErrorIs: errAdditionalLocaleDuplicate,
+			name:           "additional-locale-duplicate",
+			expectRunError: errAdditionalLocaleDuplicate,
 			winget: config.Winget{
 				Name:             "dup-locale",
 				Publisher:        "Foo",
@@ -885,8 +899,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "additional-locale-is-default",
-			expectRunErrorIs: errAdditionalLocaleIsDefault,
+			name:           "additional-locale-is-default",
+			expectRunError: errAdditionalLocaleIsDefault,
 			winget: config.Winget{
 				Name:             "default-clash",
 				Publisher:        "Foo",
@@ -904,8 +918,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-additional-locale-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-additional-locale-tmpl",
+			expectRunError: &tmpl.Error{},
 			winget: config.Winget{
 				Name:             "bad-tmpl-locale",
 				Publisher:        "Beckersoft",
@@ -974,14 +988,17 @@ func TestRunPipe(t *testing.T) {
 
 			goarch = "386"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
+			binaryPath := filepath.Join(folder, "bar.exe")
+			require.NoError(t, os.WriteFile(binaryPath, []byte("binary"), 0o644))
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "bar.exe",
-				Path:   "doesnt-matter",
+				Path:   binaryPath,
 				Goos:   goos,
 				Goarch: goarch,
 				Type:   artifact.UploadableBinary,
 				Extra: map[string]any{
-					artifact.ExtraID: "bar",
+					artifact.ExtraID:     "bar",
+					artifact.ExtraBinary: "bar",
 				},
 			})
 			createFakeArtifact("bar", goos, goarch, "v1", "", nil)
@@ -1005,10 +1022,9 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, pipe.Default(ctx))
 
 			// run
-			if tt.expectRunErrorIs != nil {
+			if tt.expectRunError != nil {
 				err := pipe.runAll(ctx, client)
-				require.Error(t, err)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				assertError(t, err, tt.expectRunError)
 				return
 			}
 
@@ -1030,10 +1046,9 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			// publish
-			if tt.expectPublishErrorIs != nil {
+			if tt.expectPublishError != nil {
 				err := pipe.publishAll(ctx, client)
-				require.Error(t, err)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				assertError(t, err, tt.expectPublishError)
 				return
 			}
 			require.NoError(t, pipe.publishAll(ctx, client))
@@ -1069,6 +1084,367 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunPipeTemplatesPackageIdentifier(t *testing.T) {
+	for name, packageIdentifier := range map[string]string{
+		"spaced":  "Acme.{{ .ProjectName }}",
+		"compact": "Acme.{{.ProjectName}}",
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "tool",
+					Winget: []config.Winget{{
+						Name:              "tool",
+						Publisher:         "Acme",
+						PackageIdentifier: packageIdentifier,
+						License:           "MIT",
+						ShortDescription:  "tool",
+						IDs:               []string{"tool"},
+						Repository: config.RepoRef{
+							Owner: "foo",
+							Name:  "bar",
+						},
+					}},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+			createFakeWingetArchive(t, ctx, folder, "tool")
+
+			pipe := Pipe{}
+			require.NoError(t, pipe.Default(ctx))
+			require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+			manifests := ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
+				artifact.WingetLocale,
+			)).List()
+			require.Len(t, manifests, 3)
+			for _, manifest := range manifests {
+				require.Contains(t, manifest.Name, "Acme.tool")
+				require.NotContains(t, manifest.Name, "{{")
+				require.Contains(t, filepath.ToSlash(manifest.Path), "manifests/a/Acme/tool/1.2.1/Acme.tool")
+
+				bts, err := os.ReadFile(manifest.Path)
+				require.NoError(t, err)
+				require.Contains(t, string(bts), "PackageIdentifier: Acme.tool")
+				require.NotContains(t, string(bts), "{{")
+			}
+
+			rec := newRecordingWingetClient()
+			require.NoError(t, pipe.publishAll(ctx, rec))
+			require.Len(t, rec.paths, 3)
+			for _, path := range rec.paths {
+				require.Contains(t, path, "manifests/a/Acme/tool/1.2.1/Acme.tool")
+			}
+		})
+	}
+}
+
+func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "bad id",
+			Winget: []config.Winget{{
+				Name:              "tool",
+				Publisher:         "Acme",
+				PackageIdentifier: "Acme.{{ .ProjectName }}",
+				License:           "MIT",
+				ShortDescription:  "tool",
+				IDs:               []string{"tool"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"))
+	createFakeWingetArchive(t, ctx, folder, "tool")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	err := pipe.runAll(ctx, client.NewMock())
+	require.ErrorContains(t, err, "winget.package_identifier is invalid: Acme.bad id")
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
+	)).List())
+}
+
+func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "tool",
+			Winget: []config.Winget{
+				{
+					Name:              "tool",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "acme",
+						Name:  "winget",
+					},
+				},
+				{
+					Name:              "tool",
+					Publisher:         "Other",
+					PackageIdentifier: "Other.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "other",
+						Name:  "winget",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+	createFakeWingetArchive(t, ctx, folder, "tool")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+	rec := newRecordingWingetClient()
+	require.NoError(t, pipe.publishAll(ctx, rec))
+	require.Len(t, rec.paths, 6)
+	for i, path := range rec.paths {
+		switch {
+		case strings.Contains(path, "Acme.Tool"):
+			require.Equal(t, "acme", rec.repos[i].Owner)
+		case strings.Contains(path, "Other.Tool"):
+			require.Equal(t, "other", rec.repos[i].Owner)
+		default:
+			require.Failf(t, "unexpected publish path", "path: %s", path)
+		}
+	}
+}
+
+func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "tool",
+			Winget: []config.Winget{
+				{
+					Name:              "tool",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					SkipUpload:        "true",
+					Repository: config.RepoRef{
+						Owner: "acme",
+						Name:  "winget",
+					},
+				},
+				{
+					Name:              "tool",
+					Publisher:         "Other",
+					PackageIdentifier: "Other.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository: config.RepoRef{
+						Owner: "other",
+						Name:  "winget",
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+	createFakeWingetArchive(t, ctx, folder, "tool")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+	rec := newRecordingWingetClient()
+	require.ErrorContains(t, pipe.publishAll(ctx, rec), "winget.skip_upload is set")
+	require.Len(t, rec.paths, 3)
+	for i, path := range rec.paths {
+		require.Contains(t, path, "Other.Tool")
+		require.Equal(t, "other", rec.repos[i].Owner)
+	}
+}
+
+func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) {
+	type testcase struct {
+		ids       []string
+		prepare   func(t *testing.T, ctx *context.Context, folder string)
+		wantErr   error
+		manifests int
+		publishes int
+	}
+	for name, tt := range map[string]testcase{
+		"duplicate-platform": {
+			ids: []string{"a", "b"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "a")
+				createFakeWingetArchive(t, ctx, folder, "b")
+			},
+			wantErr: errMultipleArchives,
+		},
+		"mixed-format": {
+			ids: []string{"zip", "bin"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "zip")
+				createFakeWingetBinary(t, ctx, folder, "bin", "windows", "386", "foo")
+			},
+			wantErr: errMixedFormats,
+		},
+		"valid": {
+			ids: []string{"zip"},
+			prepare: func(t *testing.T, ctx *context.Context, folder string) {
+				t.Helper()
+
+				createFakeWingetArchive(t, ctx, folder, "zip")
+			},
+			manifests: 3,
+			publishes: 3,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "tool",
+					Winget: []config.Winget{{
+						Name:              "tool",
+						Publisher:         "Acme",
+						PackageIdentifier: "Acme.Tool",
+						License:           "MIT",
+						ShortDescription:  "tool",
+						IDs:               tt.ids,
+						Repository: config.RepoRef{
+							Owner: "foo",
+							Name:  "bar",
+						},
+					}},
+				},
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+			tt.prepare(t, ctx, folder)
+
+			pipe := Pipe{}
+			require.NoError(t, pipe.Default(ctx))
+			err := pipe.runAll(ctx, client.NewMock())
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+
+			manifests := ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
+				artifact.WingetLocale,
+			)).List()
+			require.Len(t, manifests, tt.manifests)
+
+			rec := newRecordingWingetClient()
+			require.NoError(t, pipe.publishAll(ctx, rec))
+			require.Len(t, rec.paths, tt.publishes)
+		})
+	}
+}
+
+type recordingWingetClient struct {
+	*client.Mock
+	repos []client.Repo
+	paths []string
+}
+
+func newRecordingWingetClient() *recordingWingetClient {
+	return &recordingWingetClient{Mock: client.NewMock()}
+}
+
+func (c *recordingWingetClient) CreateFile(ctx *context.Context, author config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
+	c.repos = append(c.repos, repo)
+	c.paths = append(c.paths, path)
+	return c.Mock.CreateFile(ctx, author, repo, content, path, msg)
+}
+
+func createFakeWingetArchive(tb testing.TB, ctx *context.Context, folder, id string) {
+	tb.Helper()
+
+	const (
+		goos    = "windows"
+		goarch  = "amd64"
+		goamd64 = "v1"
+		bin     = "foo.exe"
+	)
+
+	name := id + "_" + goos + "_" + goarch + goamd64 + ".zip"
+	path := filepath.Join(folder, "dist", name)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    name,
+		Path:    path,
+		Goos:    goos,
+		Goarch:  goarch,
+		Goamd64: goamd64,
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        id,
+			artifact.ExtraFormat:    "zip",
+			artifact.ExtraBinaries:  []string{bin},
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+	require.NoError(tb, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(tb, err)
+	require.NoError(tb, f.Close())
+}
+
+func createFakeWingetBinary(tb testing.TB, ctx *context.Context, folder, id, goos, goarch, bin string) {
+	tb.Helper()
+
+	name := id + "_" + goos + "_" + goarch + ".exe"
+	path := filepath.Join(folder, "dist", name)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   name,
+		Path:   path,
+		Goos:   goos,
+		Goarch: goarch,
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     id,
+			artifact.ExtraBinary: bin,
+		},
+	})
+	require.NoError(tb, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(tb, os.WriteFile(path, []byte("binary"), 0o644))
 }
 
 func TestRunNoArtifactsOnInvalidAdditionalLocale(t *testing.T) {

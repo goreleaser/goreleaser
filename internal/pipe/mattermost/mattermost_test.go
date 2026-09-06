@@ -38,6 +38,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
+	t.Setenv("MATTERMOST_WEBHOOK", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Mattermost: config.Mattermost{},

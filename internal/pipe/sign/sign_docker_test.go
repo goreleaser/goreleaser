@@ -77,7 +77,6 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestDockerSignArtifacts(t *testing.T) {
-	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
 	// the cases below are about which artifacts get signed and how the
 	// signature is named, not about cosign. Appending
@@ -310,6 +309,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 	for name, cfg := range v1Cases {
 		t.Run(name, func(t *testing.T) {
+			if name == "no signature file" {
+				testlib.CheckPath(t, "cosign")
+			}
 			testWithArtifacts(t, cfg, []artifact.Artifact{
 				{
 					Name: img1,

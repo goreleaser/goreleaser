@@ -470,17 +470,6 @@ func validateUniqueFlags(details config.BuildDetails) {
 	}
 }
 
-func buildOutput(out []byte) string {
-	var lines []string
-	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
-		if strings.HasPrefix(line, "go: downloading") {
-			continue
-		}
-		lines = append(lines, line)
-	}
-	return strings.Join(lines, "\n")
-}
-
 func artifactType(t Target, buildmode string) artifact.Type {
 	switch buildmode {
 	case "c-archive":

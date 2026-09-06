@@ -54,14 +54,20 @@ func newCheckCmd() *checkCmd {
 				log.WithField("path", path).
 					Info(boldStyle.Render("checking"))
 
+				exit := 0
 				if err := (defaults.Pipe{}).Run(ctx); err != nil {
-					exits = append(exits, 1)
+					exit = 1
 					log.WithError(fmt.Errorf("configuration is invalid: %w", err)).Error(path)
 				}
 
 				if ctx.Deprecated {
-					exits = append(exits, 2)
+					if exit == 0 {
+						exit = 2
+					}
 					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
+				}
+				if exit > 0 {
+					exits = append(exits, exit)
 				}
 			}
 

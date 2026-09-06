@@ -120,6 +120,12 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, name, format string
 	if err := af.Close(); err != nil {
 		return fmt.Errorf("could not close archive file: %w", err)
 	}
+	if err := of.Close(); err != nil {
+		return fmt.Errorf("could not close archive backup: %w", err)
+	}
+	if err := os.Remove(oldPath); err != nil {
+		return fmt.Errorf("could not remove archive backup: %w", err)
+	}
 	return nil
 }
 

@@ -44,29 +44,9 @@ func Copy(source *os.File, target io.Writer) (Archive, error) {
 	w := New(target)
 	for _, zf := range r.File {
 		w.files[zf.Name] = true
-		hdr := zip.FileHeader{
-			Name:               zf.Name,
-			UncompressedSize64: zf.UncompressedSize64,
-			UncompressedSize:   zf.UncompressedSize,
-			CreatorVersion:     zf.CreatorVersion,
-			ExternalAttrs:      zf.ExternalAttrs,
+		if err := w.z.Copy(zf); err != nil {
+			return Archive{}, fmt.Errorf("copying %q to target: %w", zf.Name, err)
 		}
-		ww, err := w.z.CreateHeader(&hdr)
-		if err != nil {
-			return Archive{}, fmt.Errorf("creating %q header in target: %w", zf.Name, err)
-		}
-		if zf.Mode().IsDir() {
-			continue
-		}
-		rr, err := zf.Open()
-		if err != nil {
-			return Archive{}, fmt.Errorf("opening %q from source: %w", zf.Name, err)
-		}
-		defer rr.Close()
-		if _, err = io.Copy(ww, rr); err != nil {
-			return Archive{}, fmt.Errorf("copy from %q source to target: %w", zf.Name, err)
-		}
-		_ = rr.Close()
 	}
 	return w, nil
 }

@@ -113,6 +113,9 @@ command:
 goreleaser release --snapshot --clean
 ```
 
+`--clean` removes files from previous runs in the distribution directory
+(`dist` by default). Use it for each subsequent build or release in this guide.
+
 At this point, you can [customize](/customization/index/) the generated
 `.goreleaser.yaml` or leave it as-is — it's up to you.
 Either way, check `.goreleaser.yaml` into source control.
@@ -132,7 +135,7 @@ is useful for local development:
 ```sh
 GOOS="linux" \
 GOARCH="arm64" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 It will default to your current `GOOS`/`GOARCH`.
@@ -141,7 +144,7 @@ It will default to your current `GOOS`/`GOARCH`.
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
@@ -149,7 +152,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 
 ```sh
 TARGET="linux-arm64" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
@@ -157,7 +160,7 @@ TARGET="linux-arm64" \
 
 ```sh
 TARGET="aarch64-linux" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
@@ -165,7 +168,7 @@ TARGET="aarch64-linux" \
 
 ```sh
 TARGET="bun-linux-arm64" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
@@ -173,23 +176,23 @@ TARGET="bun-linux-arm64" \
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
-  goreleaser build --single-target
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
 {{< tab name="UV" icon="uv" >}}
 
 ```sh
-TARGET="py3-none-any" \
-  goreleaser build --single-target
+TARGET="none-any" \
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
 {{< tab name="Poetry" icon="poetry" >}}
 
 ```sh
-TARGET="py3-none-any" \
-  goreleaser build --single-target
+TARGET="none-any" \
+  goreleaser build --single-target --clean
 ```
 
 {{< /tab >}}
@@ -229,13 +232,13 @@ git push origin v0.1.0
 > publishing based on the latest commit by using the `--snapshot` flag:
 >
 > ```sh
-> goreleaser release --snapshot
+> goreleaser release --snapshot --clean
 > ```
 
 Now you can run GoReleaser at the root of your repository:
 
 ```sh
-goreleaser release
+goreleaser release --clean
 ```
 
 That's all it takes!

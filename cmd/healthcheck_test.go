@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"os"
-	"sync"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,6 +26,12 @@ func TestHealthcheckMissingTool(t *testing.T) {
 	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
 }
 
+func TestHealthcheckBlankSignerIsSkipped(t *testing.T) {
+	cmd := newHealthcheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/blank_tool.yml"})
+	require.NoError(t, cmd.cmd.Execute())
+}
+
 func TestHealthcheckQuier(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--quiet"})
@@ -33,7 +39,7 @@ func TestHealthcheckQuier(t *testing.T) {
 }
 
 func TestCheckPath(t *testing.T) {
-	checked := &sync.Map{}
+	checked := map[string]bool{}
 	require.NoError(t, checkPath(t.Context(), checked, "go"))
 	require.NoError(t, checkPath(t.Context(), checked, "git version"))
 	// `go` rather than `docker`: this case is about a tool that is on PATH but
@@ -42,14 +48,18 @@ func TestCheckPath(t *testing.T) {
 	// nothing. It is also slow to refuse: 5.26s on the windows job.
 	require.Error(t, checkPath(t.Context(), checked, "go something-invalid"))
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
+	require.NoError(t, checkPath(t.Context(), checked, " \t "))
+	require.Error(t, checkPath(t.Context(), checked, `"unterminated`))
+	// shell syntax alone parses to no arguments at all.
+	require.ErrorIs(t, checkPath(t.Context(), checked, "|"), exec.ErrNotFound)
 }
 
 func TestCheckPathChecksEachToolOnce(t *testing.T) {
-	checked := &sync.Map{}
+	checked := map[string]bool{}
 	require.Error(t, checkPath(t.Context(), checked, "some invalid command"))
 	// second call is deduped by the cache, so it reports no error even though
 	// the tool is still missing.
 	require.NoError(t, checkPath(t.Context(), checked, "some invalid command"))
 	// a cache of its own sees the failure again.
-	require.Error(t, checkPath(t.Context(), &sync.Map{}, "some invalid command"))
+	require.Error(t, checkPath(t.Context(), map[string]bool{}, "some invalid command"))
 }

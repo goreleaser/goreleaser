@@ -96,7 +96,7 @@ mcp:
   # Package configurations for different distribution methods.
   packages:
     # Registry type indicating how to download packages.
-    # Valid values: oci, npm, pypi, nuget, mcpb.
+    # Valid values: oci, npm, pypi, nuget.
     - registry_type: npm
 
       # Package identifier - either a package name (for registries) or URL (for direct downloads).
@@ -125,9 +125,19 @@ mcp:
       transport:
         type: stdio
 
-  # Setting this will prevent GoReleaser from actually trying to publish the
-  # server manifest - instead, the manifest file will be stored in the dist
-  # directory only, leaving the responsibility of publishing it to the user.
+    # HTTP transport example
+    - registry_type: npm
+      identifier: "@myorg/myserver-http"
+      transport:
+        type: streamable-http
+
+        # URL for streamable-http or sse transports.
+        #
+        # Required for streamable-http and sse transports.
+        # Templates: allowed. {{< g_inline_version "v2.19-unreleased" >}}
+        url: "https://example.com/myserver/mcp"
+
+  # Set to true to skip MCP publication. No local manifest is written.
   # If set to auto, the manifest will not be published in case there is an
   # indicator for prerelease in the tag e.g. v1.0.0-rc1
   #
@@ -156,7 +166,7 @@ mcp:
 ## How it works
 
 GoReleaser will generate a `server.json` conforming to the
-[MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json).
+[MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json).
 
 Then, it'll sign in using the provided authentication details.
 

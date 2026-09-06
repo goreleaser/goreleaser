@@ -14,8 +14,10 @@ pkgbase = test
 	makedepends = git
 	conflicts = nope
 	provides = test
+	backup = /etc/mypkg.conf
+	backup = /var/share/mypkg
 	
-	source = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz
+	source = test_0.1.3.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz
 	sha256sums = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
 	
 pkgname = test
