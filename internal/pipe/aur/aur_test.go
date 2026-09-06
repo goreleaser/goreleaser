@@ -834,6 +834,47 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
+func TestRunPipeBinaryReleasePackageUsesSourceAlias(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs:        []config.AUR{{}},
+		},
+		testctx.GitHubTokenType,
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+
+	pkgbuild := filepath.Join(folder, "aur", "foo-bin.pkgbuild")
+	runPackageWithSource(t, pkgbuild, "x86_64", "foo-bin_1.2.1_x86_64.binary", "binary payload")
+}
+
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
 	testPublish := func(tb testing.TB, modifier func(ctx *context.Context)) {
@@ -1156,8 +1197,13 @@ func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
 
 func runPackage(tb testing.TB, pkgbuild, carch, sourceDir, payload string) {
 	tb.Helper()
+	runPackageWithSource(tb, pkgbuild, carch, filepath.Join(sourceDir, "foo"), payload)
+}
+
+func runPackageWithSource(tb testing.TB, pkgbuild, carch, sourcePath, payload string) {
+	tb.Helper()
 	workdir := tb.TempDir()
-	source := filepath.Join(workdir, sourceDir, "foo")
+	source := filepath.Join(workdir, sourcePath)
 	require.NoError(tb, os.MkdirAll(filepath.Dir(source), 0o755))
 	require.NoError(tb, os.WriteFile(source, []byte(payload), 0o644))
 

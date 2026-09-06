@@ -229,9 +229,9 @@ func inferPackage(archives []*artifact.Artifact) string {
 func inferPackageForArtifact(art *artifact.Artifact) string {
 	switch art.Type {
 	case artifact.UploadableBinary:
-		name := art.Name
 		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-		return fmt.Sprintf("install -Dm755 %q %q", "./"+name, "${pkgdir}/usr/bin/"+bin)
+		source := fmt.Sprintf("${pkgname}_${pkgver}_%s.%s", toPkgBuildArch(art.Goarch+art.Goarm), art.Format())
+		return fmt.Sprintf("install -Dm755 %q %q", "./"+source, "${pkgdir}/usr/bin/"+bin)
 	case artifact.UploadableArchive:
 		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
