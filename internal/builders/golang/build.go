@@ -309,7 +309,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := base.Exec(ctx, cmd, env, build.Dir, base.WithLogFilter(buildOutput)); err != nil {
 		return err
 	}
-	if err := ensureEllipsisOutputs(mains, allbinaries, options.Ext); err != nil {
+	if err := ensureEllipsisOutputs(allbinaries, options.Ext); err != nil {
 		return err
 	}
 
@@ -334,58 +334,30 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-// ensureEllipsisOutputs renames the files `go build` actually wrote to the
-// paths GoReleaser registered.
+// ensureEllipsisOutputs renames the outputs `go build` named itself.
 //
-// With an ellipsis main, `go build` gets an output directory instead of an
-// output file, and names each output after its package, ignoring the extension
-// GoReleaser derives from the buildmode.
-func ensureEllipsisOutputs(mains map[string]string, binaries []*artifact.Artifact, ext string) error {
-	if mains == nil || ext == "" {
+// With more than one main package, `-o` has to be a directory, and go names
+// each output after its package. That matches the name GoReleaser registered
+// on every target except wasm, where go writes no extension and GoReleaser
+// uses `.wasm`.
+//
+// Builds that resolve to a single main package get an exact `-o` and never
+// need this, which is why the buildmodes that change the extension are not
+// handled here: go requires exactly one main package for `c-archive` and
+// `c-shared`.
+func ensureEllipsisOutputs(binaries []*artifact.Artifact, ext string) error {
+	if ext != ".wasm" {
 		return nil
 	}
 	for _, a := range binaries {
-		_, err := os.Stat(a.Path)
-		if err == nil {
+		if _, err := os.Stat(a.Path); err == nil {
 			continue
 		}
-		if !errors.Is(err, fs.ErrNotExist) {
-			return fmt.Errorf("stat %s: %w", a.Name, err)
-		}
-
-		actual, err := findBuildOutput(a.Path, ext)
-		if err != nil {
-			return err
-		}
-		if err := os.Rename(actual, a.Path); err != nil {
+		if err := os.Rename(strings.TrimSuffix(a.Path, ext), a.Path); err != nil {
 			return fmt.Errorf("rename %s: %w", a.Name, err)
 		}
 	}
 	return nil
-}
-
-// findBuildOutput looks for the file `go build` wrote in place of the expected
-// path, e.g. `foo` for `foo.wasm`, or `foo.a` for `foo.lib`.
-func findBuildOutput(expected, ext string) (string, error) {
-	name := filepath.Base(expected)
-	prefix := strings.TrimSuffix(expected, ext)
-	if _, err := os.Stat(prefix); err == nil {
-		return prefix, nil
-	}
-
-	// only c-archive on Windows gets here: go writes `.a`, we want `.lib`.
-	matches, err := filepath.Glob(prefix + ".*")
-	if err != nil {
-		return "", fmt.Errorf("find build output for %s: %w", name, err)
-	}
-	// the header is generated alongside c-archive/c-shared libraries.
-	candidates := slices.DeleteFunc(matches, func(m string) bool {
-		return filepath.Ext(m) == ".h"
-	})
-	if len(candidates) != 1 {
-		return "", fmt.Errorf("could not find the build output for %s", name)
-	}
-	return candidates[0], nil
 }
 
 func buildEnv(ctx *context.Context, details config.BuildDetails, options api.Options, a *artifact.Artifact) ([]string, []string, error) {
@@ -551,10 +523,18 @@ func buildGoBuildLine(
 		cmd = append(cmd, "-buildmode="+details.Buildmode)
 	}
 
-	if mains == nil {
+	switch {
+	case mains == nil:
 		// NOTE: build.Main will never be empty here
 		cmd = append(cmd, "-o", options.Path, build.Main)
-	} else {
+	case len(mains) == 1:
+		// go names the output itself when -o is a directory, ignoring the
+		// extension we registered. With a single main we can give it the exact
+		// path instead, and the buildmodes that change the extension, e.g.
+		// c-archive, require exactly one main package anyway.
+		cmd = append(cmd, "-o", artifact.Path)
+		cmd = append(cmd, slices.Sorted(maps.Values(mains))...)
+	default:
 		cmd = append(cmd, "-o", filepath.Dir(options.Path))
 		cmd = append(cmd, slices.Sorted(maps.Values(mains))...)
 	}

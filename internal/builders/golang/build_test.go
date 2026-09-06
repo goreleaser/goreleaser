@@ -2158,98 +2158,44 @@ func TestCheckBuildElipsisDropsListIncompatibleFlags(t *testing.T) {
 	require.Len(t, binaries, 1)
 }
 
-func TestFindBuildOutput(t *testing.T) {
+func TestBuildGoBuildLineEllipsisOutput(t *testing.T) {
 	t.Parallel()
 
-	write := func(tb testing.TB, dir string, names ...string) {
+	line := func(tb testing.TB, mains map[string]string, a *artifact.Artifact) []string {
 		tb.Helper()
-		for _, name := range names {
-			require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte("x"), 0o644))
-		}
+		build := config.Build{Main: "./cmd/...", Tool: "go", Command: "build"}
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+		cmd, err := buildGoBuildLine(ctx, build, build.BuildDetails, api.Options{
+			Path:   filepath.Join("dist", "foo_js_wasm", "foo.wasm"),
+			Target: mustParse(tb, "js_wasm"),
+		}, a, mains, nil)
+		require.NoError(tb, err)
+		return cmd
 	}
 
-	t.Run("extensionless output", func(t *testing.T) {
+	// go names the output itself when -o is a directory, so a single main gets
+	// the exact path and never needs renaming afterwards.
+	t.Run("single main gets an exact output path", func(t *testing.T) {
 		t.Parallel()
-		dir := t.TempDir()
-		write(t, dir, "app", "app.h")
-		actual, err := findBuildOutput(filepath.Join(dir, "app.dylib"), ".dylib")
-		require.NoError(t, err)
-		require.Equal(t, filepath.Join(dir, "app"), actual)
+		path := filepath.Join("dist", "foo_js_wasm", "app.wasm")
+		require.Equal(
+			t,
+			[]string{"go", "build", "-o", path, "./cmd/app"},
+			line(t, map[string]string{"app": "./cmd/app"}, &artifact.Artifact{Name: "app.wasm", Path: path}),
+		)
 	})
 
-	t.Run("dotted sibling does not win over the extensionless output", func(t *testing.T) {
+	t.Run("several mains get an output directory", func(t *testing.T) {
 		t.Parallel()
-		dir := t.TempDir()
-		write(t, dir, "app", "app.v2")
-		actual, err := findBuildOutput(filepath.Join(dir, "app.wasm"), ".wasm")
-		require.NoError(t, err)
-		require.Equal(t, filepath.Join(dir, "app"), actual)
-	})
-
-	// go writes `.a` for c-archive on Windows, GoReleaser expects `.lib`.
-	t.Run("differently suffixed output", func(t *testing.T) {
-		t.Parallel()
-		dir := t.TempDir()
-		write(t, dir, "app.a", "app.h")
-		actual, err := findBuildOutput(filepath.Join(dir, "app.lib"), ".lib")
-		require.NoError(t, err)
-		require.Equal(t, filepath.Join(dir, "app.a"), actual)
-	})
-
-	t.Run("no output", func(t *testing.T) {
-		t.Parallel()
-		dir := t.TempDir()
-		write(t, dir, "app.h")
-		_, err := findBuildOutput(filepath.Join(dir, "app.lib"), ".lib")
-		require.ErrorContains(t, err, "could not find the build output for app.lib")
-	})
-
-	t.Run("invalid glob pattern", func(t *testing.T) {
-		t.Parallel()
-		dir := t.TempDir()
-		_, err := findBuildOutput(filepath.Join(dir, "app[.lib"), ".lib")
-		require.ErrorContains(t, err, "find build output for app[.lib")
-	})
-
-	t.Run("ambiguous output", func(t *testing.T) {
-		t.Parallel()
-		dir := t.TempDir()
-		write(t, dir, "app.a", "app.o")
-		_, err := findBuildOutput(filepath.Join(dir, "app.lib"), ".lib")
-		require.ErrorContains(t, err, "could not find the build output for app.lib")
-	})
-}
-
-func TestEnsureEllipsisOutputs(t *testing.T) {
-	t.Parallel()
-
-	t.Run("not an ellipsis build", func(t *testing.T) {
-		t.Parallel()
-		a := &artifact.Artifact{Name: "app.wasm", Path: filepath.Join(t.TempDir(), "app.wasm")}
-		require.NoError(t, ensureEllipsisOutputs(nil, []*artifact.Artifact{a}, ".wasm"))
-	})
-
-	t.Run("no extension", func(t *testing.T) {
-		t.Parallel()
-		a := &artifact.Artifact{Name: "app", Path: filepath.Join(t.TempDir(), "app")}
-		require.NoError(t, ensureEllipsisOutputs(map[string]string{"app": "."}, []*artifact.Artifact{a}, ""))
-	})
-
-	t.Run("renames", func(t *testing.T) {
-		t.Parallel()
-		dir := t.TempDir()
-		require.NoError(t, os.WriteFile(filepath.Join(dir, "app"), []byte("x"), 0o644))
-		a := &artifact.Artifact{Name: "app.wasm", Path: filepath.Join(dir, "app.wasm")}
-		require.NoError(t, ensureEllipsisOutputs(map[string]string{"app": "."}, []*artifact.Artifact{a}, ".wasm"))
-		require.FileExists(t, a.Path)
-		require.NoFileExists(t, filepath.Join(dir, "app"))
-	})
-
-	t.Run("output not found", func(t *testing.T) {
-		t.Parallel()
-		a := &artifact.Artifact{Name: "app.wasm", Path: filepath.Join(t.TempDir(), "app.wasm")}
-		err := ensureEllipsisOutputs(map[string]string{"app": "."}, []*artifact.Artifact{a}, ".wasm")
-		require.ErrorContains(t, err, "could not find the build output for app.wasm")
+		path := filepath.Join("dist", "foo_js_wasm", "app.wasm")
+		require.Equal(
+			t,
+			[]string{"go", "build", "-o", filepath.Join("dist", "foo_js_wasm"), "./cmd/app", "./cmd/other"},
+			line(t, map[string]string{
+				"app":   "./cmd/app",
+				"other": "./cmd/other",
+			}, &artifact.Artifact{Name: "app.wasm", Path: path}),
+		)
 	})
 }
 
