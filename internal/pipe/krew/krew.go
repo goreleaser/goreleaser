@@ -247,8 +247,12 @@ func manifestFor(
 			if len(bins) != 1 {
 				return result, fmt.Errorf("only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
+			bin := path.Join(
+				strings.ReplaceAll(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), "\\", "/"),
+				strings.ReplaceAll(bins[0], "\\", "/"),
+			)
 			result.Spec.Platforms = append(result.Spec.Platforms, Platform{
-				Bin:    bins[0],
+				Bin:    bin,
 				URI:    url,
 				Sha256: sum,
 				Selector: Selector{
