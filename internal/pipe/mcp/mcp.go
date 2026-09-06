@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -18,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/modelcontextprotocol/registry/cmd/publisher/auth"
 	proto "github.com/modelcontextprotocol/registry/cmd/publisher/commands"
@@ -123,13 +126,13 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	for _, pkg := range mcp.Packages {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
-			&pkg.FileSHA256,
 			&pkg.Transport.URL,
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
 		}
-		if pkg.RegistryType == "mcpb" && pkg.FileSHA256 == "" {
-			return fmt.Errorf("mcpb package %q requires file_sha256", pkg.Identifier)
+		fileSHA256, err := mcpbFileSHA256(ctx, pkg)
+		if err != nil {
+			return err
 		}
 		version := ctx.Version
 		if pkg.RegistryType == "oci" {
@@ -139,7 +142,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			RegistryType: pkg.RegistryType,
 			Identifier:   pkg.Identifier,
 			Version:      version,
-			FileSHA256:   pkg.FileSHA256,
+			FileSHA256:   fileSHA256,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
 				URL:  pkg.Transport.URL,
@@ -190,6 +193,58 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 		return nil
 	}, retryx.IsRetriable)
+}
+
+func mcpbFileSHA256(ctx *context.Context, pkg config.MCPPackage) (string, error) {
+	if pkg.RegistryType != "mcpb" {
+		return "", nil
+	}
+	artifactName, err := mcpbArtifactName(pkg.Identifier)
+	if err != nil {
+		return "", err
+	}
+	art, err := findArtifact(ctx, artifactName)
+	if err != nil {
+		return "", fmt.Errorf("mcpb package %q: %w", pkg.Identifier, err)
+	}
+	checksum, err := art.Checksum("sha256")
+	if err != nil {
+		return "", fmt.Errorf("mcpb package %q: %w", pkg.Identifier, err)
+	}
+	return checksum, nil
+}
+
+func mcpbArtifactName(identifier string) (string, error) {
+	u, err := url.Parse(identifier)
+	if err != nil {
+		return "", fmt.Errorf("parse mcpb package identifier: %w", err)
+	}
+	name := path.Base(u.Path)
+	if name == "" || name == "." || name == "/" {
+		return "", fmt.Errorf("mcpb package %q does not identify an artifact file", identifier)
+	}
+	name, err = url.PathUnescape(name)
+	if err != nil {
+		return "", fmt.Errorf("parse mcpb package identifier: %w", err)
+	}
+	return name, nil
+}
+
+func findArtifact(ctx *context.Context, name string) (*artifact.Artifact, error) {
+	var matches []*artifact.Artifact
+	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(artifact.ReleaseUploadableTypes()...)).List() {
+		if art.Name == name {
+			matches = append(matches, art)
+		}
+	}
+	switch len(matches) {
+	case 0:
+		return nil, fmt.Errorf("could not find artifact %q", name)
+	case 1:
+		return matches[0], nil
+	default:
+		return nil, fmt.Errorf("found multiple artifacts named %q", name)
+	}
 }
 
 // cleanSubfolder normalizes the repository subfolder path so it passes the MCP

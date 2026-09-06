@@ -2605,9 +2605,6 @@
 					"identifier": {
 						"type": "string"
 					},
-					"file_sha256": {
-						"type": "string"
-					},
 					"transport": {
 						"$ref": "#/$defs/MCPTransport"
 					}

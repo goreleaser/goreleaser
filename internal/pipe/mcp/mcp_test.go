@@ -2,15 +2,19 @@ package mcp
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"sync/atomic"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -354,7 +358,12 @@ func TestPublishWithTemplates(t *testing.T) {
 }
 
 func TestPublishMCPBPackageFileSHA256(t *testing.T) {
-	const fileSHA256 = "fe333e598595000ae021bd27117db32ec69af6987f507ba7a63c90638ff633ce"
+	artifactPath := filepath.Join(t.TempDir(), "server.mcpb")
+	require.NoError(t, os.WriteFile(artifactPath, []byte("mcpb package"), 0o644))
+	bts, err := os.ReadFile(artifactPath)
+	require.NoError(t, err)
+	sum := sha256.Sum256(bts)
+	fileSHA256 := hex.EncodeToString(sum[:])
 
 	var receivedRequest apiv0.ServerJSON
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -385,7 +394,6 @@ func TestPublishMCPBPackageFileSHA256(t *testing.T) {
 					{
 						RegistryType: "mcpb",
 						Identifier:   "https://github.com/fixture/server/releases/download/{{ .Version }}/server.mcpb",
-						FileSHA256:   "{{ .Env.MCPB_SHA256 }}",
 						Transport: config.MCPTransport{
 							Type: "stdio",
 						},
@@ -403,8 +411,13 @@ func TestPublishMCPBPackageFileSHA256(t *testing.T) {
 				},
 			},
 		},
-	}, testctx.WithEnv(map[string]string{"MCPB_SHA256": fileSHA256}))
+	})
 	ctx.Version = "v1.0.0"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "server.mcpb",
+		Path: artifactPath,
+		Type: artifact.UploadableFile,
+	})
 
 	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
@@ -426,7 +439,7 @@ func TestPublishMCPBPackageFileSHA256(t *testing.T) {
 	require.Empty(t, receivedRequest.Packages[1].FileSHA256)
 }
 
-func TestPublishMCPBPackageRequiresFileSHA256(t *testing.T) {
+func TestPublishMCPBPackageRequiresArtifact(t *testing.T) {
 	var requested bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requested = true
@@ -467,7 +480,7 @@ func TestPublishMCPBPackageRequiresFileSHA256(t *testing.T) {
 	}
 	require.NoError(t, pipe.Default(ctx))
 	err := pipe.Publish(ctx)
-	require.EqualError(t, err, `mcpb package "https://github.com/fixture/server/releases/download/v1.0.0/server.mcpb" requires file_sha256`)
+	require.EqualError(t, err, `mcpb package "https://github.com/fixture/server/releases/download/v1.0.0/server.mcpb": could not find artifact "server.mcpb"`)
 	require.False(t, requested)
 }
 
