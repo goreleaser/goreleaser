@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -36,19 +37,19 @@ func TestParseBaseImage(t *testing.T) {
 		t.Run(file, func(t *testing.T) {
 			content, err := os.ReadFile(filepath.Join("testdata", "dockerfiles", file))
 			require.NoError(t, err)
-			require.Equal(t, want, parseBaseImage(string(content)))
+			require.Equal(t, want, parseBaseImage(string(content), nil))
 		})
 	}
 }
 
 func TestGetBaseImage(t *testing.T) {
 	t.Run("missing file", func(t *testing.T) {
-		_, err := getBaseImage(testctx.Wrap(t.Context()), "nope.Dockerfile")
+		_, err := getBaseImage(testctx.Wrap(t.Context()), "nope.Dockerfile", nil)
 		require.Error(t, err)
 	})
 
 	t.Run("scratch", func(t *testing.T) {
-		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "scratch"))
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "scratch"), nil)
 		require.ErrorIs(t, err, errNoBaseImage)
 		require.Empty(t, img.name)
 		require.Empty(t, img.digest)
@@ -56,14 +57,14 @@ func TestGetBaseImage(t *testing.T) {
 
 	t.Run("digest pinned in FROM", func(t *testing.T) {
 		const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
-		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "pinned-digest"))
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "pinned-digest"), nil)
 		require.NoError(t, err)
 		require.Equal(t, ref, img.name)
 		require.Equal(t, "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1", img.digest)
 	})
 
 	t.Run("digest resolution error returns base", func(t *testing.T) {
-		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"))
+		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"), nil)
 		require.Error(t, err)
 		require.Equal(t, "goreleaser-nonexistent-image:nope", img.name)
 		require.Empty(t, img.digest)
@@ -80,6 +81,10 @@ func TestMakeArgsWithBaseImage(t *testing.T) {
 			Images:     []string{"ghcr.io/foo/bar"},
 			Tags:       []string{"latest"},
 			Platforms:  []string{"linux/amd64"},
+			BuildArgs: map[string]string{
+				"BASE_NAME":   "{{ .BaseImage }}",
+				"BASE_DIGEST": "{{ .BaseImageDigest }}",
+			},
 			Annotations: map[string]string{
 				"org.opencontainers.image.base.name":   "{{.BaseImage}}",
 				"org.opencontainers.image.base.digest": "{{.BaseImageDigest}}",
@@ -90,6 +95,8 @@ func TestMakeArgsWithBaseImage(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, da.args, "org.opencontainers.image.base.name="+ref)
 	require.Contains(t, da.args, "org.opencontainers.image.base.digest="+digest)
+	require.Contains(t, da.args, "BASE_NAME="+ref)
+	require.Contains(t, da.args, "BASE_DIGEST="+digest)
 }
 
 func TestMakeArgsWithBaseImageBuildArgOverride(t *testing.T) {
@@ -99,19 +106,42 @@ func TestMakeArgsWithBaseImageBuildArgOverride(t *testing.T) {
 
 	dir := t.TempDir()
 	dockerfile := filepath.Join(dir, "Dockerfile")
-	require.NoError(t, os.WriteFile(dockerfile, []byte("ARG BASE="+defaultRef+"\nFROM ${BASE}\n"), 0o644))
+	require.NoError(t, os.WriteFile(dockerfile, []byte("ARG BASE="+defaultRef+"\nARG BASE_DIGEST\nFROM ${BASE}\n"), 0o644))
 
 	for name, tt := range map[string]struct {
-		ctx      *context.Context
-		buildArg string
+		ctx        *context.Context
+		key        string
+		buildArg   string
+		wantRef    string
+		wantDigest string
 	}{
 		"literal": {
-			ctx:      testctx.Wrap(t.Context()),
-			buildArg: overrideRef,
+			ctx:        testctx.Wrap(t.Context()),
+			key:        "BASE",
+			buildArg:   overrideRef,
+			wantRef:    overrideRef,
+			wantDigest: overrideDigest,
 		},
 		"templated": {
-			ctx:      testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"BASE": overrideRef})),
-			buildArg: "{{ .Env.BASE }}",
+			ctx:        testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"BASE": overrideRef})),
+			key:        "BASE",
+			buildArg:   "{{ .Env.BASE }}",
+			wantRef:    overrideRef,
+			wantDigest: overrideDigest,
+		},
+		"templated key": {
+			ctx:        testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"KEY": "BASE", "BASE": overrideRef})),
+			key:        "{{ .Env.KEY }}",
+			buildArg:   "{{ .Env.BASE }}",
+			wantRef:    overrideRef,
+			wantDigest: overrideDigest,
+		},
+		"empty override": {
+			ctx:        testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"BASE": ""})),
+			key:        "BASE",
+			buildArg:   "{{ .Env.BASE }}",
+			wantRef:    defaultRef,
+			wantDigest: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -123,7 +153,8 @@ func TestMakeArgsWithBaseImageBuildArgOverride(t *testing.T) {
 					Tags:       []string{"latest"},
 					Platforms:  []string{"linux/amd64"},
 					BuildArgs: map[string]string{
-						"BASE": tt.buildArg,
+						tt.key:        tt.buildArg,
+						"BASE_DIGEST": "{{ .BaseImageDigest }}",
 					},
 					Annotations: map[string]string{
 						"org.opencontainers.image.base.name":   "{{.BaseImage}}",
@@ -133,8 +164,21 @@ func TestMakeArgsWithBaseImageBuildArgOverride(t *testing.T) {
 				nil,
 			)
 			require.NoError(t, err)
-			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+overrideRef)
-			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.digest="+overrideDigest)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+tt.wantRef)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.digest="+tt.wantDigest)
+			require.Contains(t, da.args, "BASE_DIGEST="+tt.wantDigest)
 		})
 	}
+}
+
+func TestMakeArgsDoesNotDiscardBaseImageArgumentError(t *testing.T) {
+	dockerfile := filepath.Join(t.TempDir(), "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("ARG BASE=alpine\nFROM ${BASE}\n"), 0o644))
+	_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		Dockerfile: dockerfile,
+		Images:     []string{"ghcr.io/foo/bar"},
+		Tags:       []string{"latest"},
+		BuildArgs:  map[string]string{"BASE": "{{ .BaseImage }}"},
+	}, nil)
+	testlib.RequireTemplateError(t, err)
 }

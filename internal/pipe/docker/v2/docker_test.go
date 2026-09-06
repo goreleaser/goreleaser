@@ -326,6 +326,16 @@ func TestMakeArgs(t *testing.T) {
 		}, nil)
 		testlib.AssertSkipped(t, err)
 	})
+	t.Run("no images ignores unused build args", func(t *testing.T) {
+		_, err := makeArgs(testctx.Wrap(t.Context(), testctx.Snapshot, testctx.WithEnv(map[string]string{})), config.DockerV2{
+			Dockerfile: filepath.Join("testdata", "dockerfiles", "pinned-digest"),
+			Images:     []string{"{{ if not .IsSnapshot }}ghcr.io/foo/bar{{ end }}"},
+			BuildArgs: map[string]string{
+				"RELEASE_ONLY": "{{ .Env.RELEASE_ONLY }}",
+			},
+		}, nil)
+		testlib.AssertSkipped(t, err)
+	})
 	t.Run("no tags", func(t *testing.T) {
 		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
