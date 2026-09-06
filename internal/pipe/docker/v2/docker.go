@@ -534,6 +534,9 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 		if plat.arm != "" {
 			filters = append(filters, artifact.ByGoarm(plat.arm))
 		}
+		if plat.arm64 != "" {
+			filters = append(filters, byGoarm64(plat.arm64))
+		}
 		platFilters = append(platFilters, artifact.And(filters...))
 	}
 
@@ -595,6 +598,7 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 type platform struct {
 	os, arch string
 	arm      string
+	arm64    string
 }
 
 func parsePlatform(p string) platform {
@@ -606,9 +610,32 @@ func parsePlatform(p string) platform {
 		result.arch = parts[1]
 	}
 	if len(parts) >= 3 {
-		result.arm = strings.TrimPrefix(parts[2], "v")
+		switch result.arch {
+		case "arm":
+			result.arm = strings.TrimPrefix(parts[2], "v")
+		case "arm64":
+			result.arm64 = toGoarm64(parts[2])
+		}
 	}
 	return result
+}
+
+func toGoarm64(variant string) string {
+	variant = strings.TrimPrefix(variant, "v")
+	if variant == "" {
+		return ""
+	}
+	if !strings.Contains(variant, ".") {
+		variant += ".0"
+	}
+	return "v" + variant
+}
+
+func byGoarm64(s string) artifact.Filter {
+	return func(a *artifact.Artifact) bool {
+		return s == a.Goarm64 ||
+			(a.Goarch == "arm64" && a.Goarm64 == "" && s == "v8.0")
+	}
 }
 
 // annotationScopes are the annotation types buildx accepts, optionally

@@ -572,9 +572,10 @@ func TestToPlatform(t *testing.T) {
 
 func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
-		"linux/amd64":  {os: "linux", arch: "amd64"},
-		"linux/arm/v6": {os: "linux", arch: "arm", arm: "6"},
-		"linux":        {os: "linux"},
+		"linux/amd64":    {os: "linux", arch: "amd64"},
+		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
+		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
+		"linux":          {os: "linux"},
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))
@@ -632,6 +633,48 @@ func TestContextArtifacts(t *testing.T) {
 			Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
 		})
 		require.Len(t, arts, 5)
+	})
+
+	t.Run("arm64 variant", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    "mybin",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.0",
+			Type:    artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm64/v8"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 1)
+	})
+
+	t.Run("arm variants", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		for _, goarm := range []string{"5", "6", "7"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  goarm,
+				Type:   artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "id1",
+				},
+			})
+		}
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm/v5", "linux/arm/v6", "linux/arm/v7"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 3)
 	})
 }
 
