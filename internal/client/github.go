@@ -604,7 +604,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.UpdateReleaseRequest, body string) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx)
-	release, err := c.findRelease(ctx, data.GetTagName())
+	release, err := c.findRelease(ctx, data.GetTagName(), data.GetName())
 	if err != nil || release == nil {
 		release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
 			return c.client.Repositories.CreateRelease(
@@ -655,14 +655,14 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.U
 	return c.updateRelease(ctx, release.GetID(), data)
 }
 
-func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
+func (c *githubClient) findRelease(ctx *context.Context, tag, name string) (*github.RepositoryRelease, error) {
 	if !ctx.Config.Release.UseExistingDraft {
 		release, _, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
 			return c.client.Repositories.GetReleaseByTag(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
 				ctx.Config.Release.GitHub.Name,
-				name,
+				tag,
 			)
 		})
 		return release, err
