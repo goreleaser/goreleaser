@@ -1,6 +1,7 @@
 package node
 
 import (
+	"debug/pe"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -102,7 +103,9 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "node")
 
-	target := "darwin-arm64"
+	// Windows binaries are available without a large compressed archive.
+	// Download extraction and Mach-O signing have separate tests.
+	target := "win-x64"
 	createFakeNodeAlias(t, "node-"+target)
 
 	out, err := exec.Command("node", "--version").Output()
@@ -135,8 +138,9 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 
 	options := api.Options{
-		Name: "proj",
-		Path: filepath.Join("dist", "proj_"+target, "proj"),
+		Name: "proj.exe",
+		Path: filepath.Join("dist", "proj_"+target, "proj.exe"),
+		Ext:  ".exe",
 	}
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
@@ -147,6 +151,19 @@ func TestBuild(t *testing.T) {
 	require.Len(t, bins, 1)
 	bin := bins[0]
 	require.Equal(t, filepath.ToSlash(options.Path), bin.Path)
+	require.Equal(t, "windows", bin.Goos)
+	require.Equal(t, "amd64", bin.Goarch)
+
+	executable, err := pe.Open(filepath.FromSlash(bin.Path))
+	require.NoError(t, err)
+	require.Equal(t, uint16(pe.IMAGE_FILE_MACHINE_AMD64), executable.Machine)
+	require.NoError(t, executable.Close())
+
+	if runtime.GOOS == "windows" {
+		out, err := exec.CommandContext(t.Context(), filepath.FromSlash(bin.Path)).Output()
+		require.NoError(t, err)
+		require.Equal(t, "buildsea-ok\n", string(out))
+	}
 
 	fi, err := os.Stat(filepath.FromSlash(bin.Path))
 	require.NoError(t, err)
