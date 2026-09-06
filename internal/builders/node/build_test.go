@@ -1,12 +1,17 @@
 package node
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -150,6 +155,114 @@ func TestBuild(t *testing.T) {
 	require.True(t, modTime.Equal(fi.ModTime()))
 }
 
+func TestBuildUsesPerTargetSEAConfig(t *testing.T) {
+	tmp := t.TempDir()
+	projectDir := filepath.Join(tmp, "project")
+	require.NoError(t, os.Mkdir(projectDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "index.js"), []byte("console.log('ok')\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "package.json"), []byte(`{"engines":{"node":"25.5.0"}}`), 0o644))
+
+	prevDownloadNodeBinary := downloadNodeBinary
+	downloadNodeBinary = func(_ context.Context, _ string, target string, destDir string) (string, error) {
+		targetNode := filepath.Join(destDir, "node-"+target)
+		return targetNode, os.WriteFile(targetNode, []byte(target), 0o755)
+	}
+	t.Cleanup(func() { downloadNodeBinary = prevDownloadNodeBinary })
+
+	var (
+		mu      sync.Mutex
+		ready   int
+		release = make(chan struct{})
+	)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/ready" {
+			http.NotFound(w, r)
+			return
+		}
+		mu.Lock()
+		ready++
+		if ready == 2 {
+			close(release)
+		}
+		mu.Unlock()
+		<-release
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	recordDir := filepath.Join(tmp, "records")
+	require.NoError(t, os.Mkdir(recordDir, 0o755))
+	t.Setenv("NODE_BUILD_HELPER_BARRIER_URL", server.URL+"/ready")
+	t.Setenv("NODE_BUILD_HELPER_RECORD_DIR", recordDir)
+
+	build := config.Build{
+		ID:   "default",
+		Dir:  projectDir,
+		Main: "index.js",
+		Tool: createFakeNodeBuildHelper(t),
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        filepath.Join(tmp, "dist"),
+		ProjectName: "proj",
+	})
+
+	targets := []string{"linux-x64", "linux-arm64"}
+	outputs := map[string]string{}
+	var wg sync.WaitGroup
+	errs := make(chan error, len(targets))
+	for _, target := range targets {
+		target := target
+		outputs[target] = filepath.Join(tmp, "dist", "proj-"+target)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			parsed, err := Default.Parse(target)
+			if err != nil {
+				errs <- err
+				return
+			}
+			errs <- Default.Build(ctx, build, api.Options{
+				Name:   "proj-" + target,
+				Path:   outputs[target],
+				Target: parsed,
+			})
+		}()
+	}
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		require.NoError(t, err)
+	}
+	for _, output := range outputs {
+		require.FileExists(t, output)
+	}
+
+	records, err := os.ReadDir(recordDir)
+	require.NoError(t, err)
+	require.Len(t, records, 2)
+
+	configs := map[string]bool{}
+	executables := map[string]bool{}
+	recordedOutputs := map[string]bool{}
+	for _, record := range records {
+		bts, err := os.ReadFile(filepath.Join(recordDir, record.Name()))
+		require.NoError(t, err)
+		parts := strings.Split(strings.TrimSpace(string(bts)), "\n")
+		require.Len(t, parts, 3)
+		configs[parts[0]] = true
+		executables[parts[1]] = true
+		recordedOutputs[parts[2]] = true
+	}
+
+	require.Len(t, configs, 2)
+	require.Len(t, executables, 2)
+	require.Equal(t, map[string]bool{
+		outputs["linux-x64"]:   true,
+		outputs["linux-arm64"]: true,
+	}, recordedOutputs)
+}
+
 func TestBuildRejectsUnsupportedHostNode(t *testing.T) {
 	testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile("index.js", []byte(`process.stdout.write("nope\n");`), 0o644))
@@ -182,6 +295,80 @@ func createFakeNodeAlias(tb testing.TB, name string) {
 		fmt.Sprintf("#!/bin/sh\nexec %q \"$@\"\n", node),
 		fmt.Sprintf("@echo off\n%q %%*\n", node),
 	)
+}
+
+func createFakeNodeBuildHelper(tb testing.TB) string {
+	tb.Helper()
+	exe, err := os.Executable()
+	require.NoError(tb, err)
+	const name = "node-build-helper"
+	createFakeExecutable(
+		tb, name,
+		fmt.Sprintf("#!/bin/sh\nGO_WANT_NODE_BUILD_HELPER_PROCESS=1 exec %q -test.run=TestNodeBuildHelperProcess -- \"$@\"\n", exe),
+		fmt.Sprintf("@echo off\nset GO_WANT_NODE_BUILD_HELPER_PROCESS=1\n%q -test.run=TestNodeBuildHelperProcess -- %%*\n", exe),
+	)
+	return name
+}
+
+func TestNodeBuildHelperProcess(t *testing.T) {
+	if os.Getenv("GO_WANT_NODE_BUILD_HELPER_PROCESS") != "1" {
+		return
+	}
+	args := os.Args
+	for len(args) > 0 && args[0] != "--" {
+		args = args[1:]
+	}
+	if len(args) > 0 {
+		args = args[1:]
+	}
+
+	switch {
+	case len(args) == 1 && args[0] == "--version":
+		fmt.Println("v25.5.0")
+	case len(args) == 2 && args[0] == "--build-sea":
+		runNodeBuildHelper(args[1])
+	default:
+		_, _ = fmt.Fprintf(os.Stderr, "unexpected node helper args: %q\n", args)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
+func runNodeBuildHelper(cfgPath string) {
+	resp, err := http.Get(os.Getenv("NODE_BUILD_HELPER_BARRIER_URL"))
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "barrier: %v\n", err)
+		os.Exit(1)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		_, _ = fmt.Fprintf(os.Stderr, "barrier status: %s\n", resp.Status)
+		os.Exit(1)
+	}
+
+	bts, err := os.ReadFile(cfgPath)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "read sea config: %v\n", err)
+		os.Exit(1)
+	}
+	var cfg struct {
+		Executable string `json:"executable"`
+		Output     string `json:"output"`
+	}
+	if err := json.Unmarshal(bts, &cfg); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "parse sea config: %v\n", err)
+		os.Exit(1)
+	}
+	if err := os.WriteFile(cfg.Output, []byte(cfg.Executable), 0o755); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "write output: %v\n", err)
+		os.Exit(1)
+	}
+	record := strings.Join([]string{cfgPath, cfg.Executable, cfg.Output}, "\n")
+	recordPath := filepath.Join(os.Getenv("NODE_BUILD_HELPER_RECORD_DIR"), fmt.Sprintf("%d", os.Getpid()))
+	if err := os.WriteFile(recordPath, []byte(record), 0o600); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func createFakeNodeVersion(tb testing.TB, name, version string) {
