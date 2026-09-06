@@ -1,13 +1,27 @@
 package blob
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -267,4 +281,207 @@ func TestSkip(t *testing.T) {
 
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
+	const awsKMSLimit = 4096
+
+	for name, tt := range map[string]struct {
+		size         int
+		wantData     []byte
+		wantRequests int64
+		wantErr      string
+	}{
+		"accepts 4096 bytes": {
+			size:         awsKMSLimit,
+			wantData:     []byte("ciphertext"),
+			wantRequests: 1,
+		},
+		"rejects 4097 bytes before kms": {
+			size:         awsKMSLimit + 1,
+			wantData:     bytes.Repeat([]byte("a"), awsKMSLimit+1),
+			wantRequests: 0,
+			wantErr:      "failed to encrypt with kms: awskms encryption supports files up to 4096 bytes, got 4097 bytes",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var requests atomic.Int64
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.Header().Set("Content-Type", "application/x-amz-json-1.1")
+
+				var input struct {
+					Plaintext []byte `json:"Plaintext"` //nolint:tagliatelle
+				}
+				if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				if len(input.Plaintext) > awsKMSLimit {
+					w.WriteHeader(http.StatusBadRequest)
+					_, _ = fmt.Fprint(w, `{"__type":"ValidationException","message":"plaintext too large"}`)
+					return
+				}
+
+				_, _ = fmt.Fprintf(w, `{"CiphertextBlob":%q,"KeyId":"alias/my-key"}`,
+					base64.StdEncoding.EncodeToString([]byte("ciphertext")))
+			}))
+			t.Cleanup(server.Close)
+
+			file := filepath.Join(t.TempDir(), "artifact")
+			require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte("a"), tt.size), 0o644))
+
+			data, err := getData(testctx.Wrap(t.Context()), config.Blob{
+				KMSKey: "awskms://alias/my-key?region=us-east-1&anonymous=true&hostname_immutable=true&endpoint=" + url.QueryEscape(server.URL),
+			}, file)
+
+			require.Equal(t, tt.wantData, data)
+			require.Equal(t, tt.wantRequests, requests.Load())
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.EqualError(t, err, tt.wantErr)
+		})
+	}
+}
+
+func TestDoUploadDoesNotStartArtifactWorkersWhenExtraFilesFail(t *testing.T) {
+	errExtraFiles := errors.New("extra files failed")
+	uploader := newRecordingUploader()
+	uploader.block = make(chan struct{})
+	defer close(uploader.block)
+
+	replaceBlobUploader(t, uploader)
+	previousFindExtraFiles := findExtraFiles
+	findExtraFiles = func(*context.Context, []config.ExtraFile) (map[string]string, error) {
+		for range 1000 {
+			runtime.Gosched()
+			select {
+			case <-uploader.started:
+				return nil, errors.New("artifact upload started before extra files were resolved")
+			default:
+			}
+		}
+		return nil, errExtraFiles
+	}
+	t.Cleanup(func() { findExtraFiles = previousFindExtraFiles })
+
+	ctx, conf := blobUploadContext(t, []string{"one.txt", "two.txt"}, nil)
+	conf.ExtraFiles = []config.ExtraFile{{Glob: filepath.Join(t.TempDir(), "missing.txt")}}
+
+	err := doUpload(ctx, conf)
+
+	require.ErrorIs(t, err, errExtraFiles)
+	require.Equal(t, int64(1), uploader.opens.Load())
+	require.Equal(t, int64(1), uploader.closes.Load())
+	require.Zero(t, uploader.active.Load())
+	require.False(t, uploader.closedWithActive.Load())
+	require.Empty(t, uploader.uploaded())
+}
+
+func TestDoUploadUploadsArtifactsAndExtraFiles(t *testing.T) {
+	uploader := newRecordingUploader()
+	replaceBlobUploader(t, uploader)
+
+	ctx, conf := blobUploadContext(t, []string{"one.txt", "two.txt"}, []config.ExtraFile{{Glob: "./testdata/file.golden"}})
+
+	require.NoError(t, doUpload(ctx, conf))
+	require.Equal(t, int64(1), uploader.opens.Load())
+	require.Equal(t, int64(1), uploader.closes.Load())
+	require.Zero(t, uploader.active.Load())
+	require.False(t, uploader.closedWithActive.Load())
+	require.ElementsMatch(t, []string{
+		"dist/file.golden",
+		"dist/one.txt",
+		"dist/two.txt",
+	}, uploader.uploaded())
+}
+
+func blobUploadContext(tb testing.TB, names []string, extraFiles []config.ExtraFile) (*context.Context, config.Blob) {
+	tb.Helper()
+
+	dir := tb.TempDir()
+	conf := config.Blob{
+		Provider:   "test",
+		Bucket:     "bucket",
+		Directory:  "dist",
+		ExtraFiles: extraFiles,
+	}
+	ctx := testctx.WrapWithCfg(tb.Context(), config.Project{})
+	for _, name := range names {
+		file := filepath.Join(dir, name)
+		require.NoError(tb, os.WriteFile(file, []byte(name), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableArchive,
+			Name: name,
+			Path: file,
+		})
+	}
+	return ctx, conf
+}
+
+func replaceBlobUploader(tb testing.TB, rec *recordingUploader) {
+	tb.Helper()
+
+	previous := newUploader
+	newUploader = func(config.Blob, string) uploader {
+		return rec
+	}
+	tb.Cleanup(func() { newUploader = previous })
+}
+
+func newRecordingUploader() *recordingUploader {
+	return &recordingUploader{
+		started: make(chan struct{}),
+	}
+}
+
+type recordingUploader struct {
+	opens            atomic.Int64
+	closes           atomic.Int64
+	active           atomic.Int64
+	closedWithActive atomic.Bool
+
+	startOnce sync.Once
+	started   chan struct{}
+	block     chan struct{}
+
+	mu    sync.Mutex
+	files []string
+}
+
+func (u *recordingUploader) Open(*context.Context, string) error {
+	u.opens.Add(1)
+	return nil
+}
+
+func (u *recordingUploader) Upload(_ *context.Context, path string, _ []byte) error {
+	u.active.Add(1)
+	u.startOnce.Do(func() { close(u.started) })
+	if u.block != nil {
+		<-u.block
+	}
+	defer u.active.Add(-1)
+
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	u.files = append(u.files, path)
+	return nil
+}
+
+func (u *recordingUploader) Close() error {
+	u.closes.Add(1)
+	if u.active.Load() > 0 {
+		u.closedWithActive.Store(true)
+	}
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	return nil
+}
+
+func (u *recordingUploader) uploaded() []string {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	return append([]string(nil), u.files...)
 }
