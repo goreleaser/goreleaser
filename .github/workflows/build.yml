@@ -55,11 +55,11 @@ jobs:
           # identical flags apart from -count=1, 331s with the cache on and
           # 129s without.
           - os: ubuntu-latest
-            test-args: TEST_OPTIONS=-count=1
+            test-args: TEST_OPTIONS="-count=1 -v"
           # the race detector is OS-independent and coverage is only uploaded
           # from ubuntu, so skip both on windows to speed up the slowest job.
           - os: windows-latest
-            test-args: RACE=false COVER=false TEST_OPTIONS=-count=1
+            test-args: RACE=false COVER=false TEST_OPTIONS="-count=1 -v"
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
