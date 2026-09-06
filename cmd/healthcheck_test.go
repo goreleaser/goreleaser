@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -68,7 +69,7 @@ func TestCheckPathChecksEachToolOnce(t *testing.T) {
 
 func TestCheckPathLiteralExecutable(t *testing.T) {
 	for _, name := range []string{"signer's-tool", "signer's tool"} {
-		if os.PathSeparator == '\\' {
+		if runtime.GOOS == "windows" {
 			name += ".exe"
 		}
 		path := filepath.Join(t.TempDir(), name)
