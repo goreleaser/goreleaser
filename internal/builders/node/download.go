@@ -34,11 +34,8 @@ func ensureNode(ctx context.Context, dir, target, destDir string) (string, error
 		return "", fmt.Errorf("node: resolve node version: %w", err)
 	}
 
-	return downloadNodeBinary(ctx, version, target, destDir)
+	return downloadHostBinary(ctx, version, target, destDir)
 }
-
-//nolint:gochecknoglobals
-var downloadNodeBinary = downloadHostBinary
 
 // resolveVersion picks a Node.js version from `engines.node` in the
 // project's package.json. Either an exact version (`v25.5.0`,
