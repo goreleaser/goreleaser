@@ -153,7 +153,7 @@ func impliedSnapshot(parent stdctx.Context, snapshot, autoSnapshot bool) bool {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.output != "" && options.singleTarget && (len(options.ids) > 0 || len(ctx.Config.Builds) == 1) {
+	if options.output != "" && options.singleTarget && len(ctx.Config.Builds) == 1 {
 		return append(pipeline.BuildCmdPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildCmdPipeline
@@ -195,6 +195,9 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 			return err
 		}
 	}
+	if options.output != "" && options.singleTarget && len(options.ids) > 0 && len(ctx.Config.Builds) > 1 {
+		return errors.New(outputRequiresSingleBuildError)
+	}
 
 	if skips.Any(ctx, skips.Build...) {
 		log.Warnf(
@@ -227,6 +230,8 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 	return nil
 }
 
+const outputRequiresSingleBuildError = "--output requires a single build"
+
 // withOutputPipe copies the binary from dist to the specified output path.
 type withOutputPipe struct {
 	output string
@@ -240,6 +245,9 @@ func (w withOutputPipe) Run(ctx *context.Context) error {
 	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
 	if len(bins) == 0 {
 		return errors.New("no binary found")
+	}
+	if len(bins) > 1 {
+		return fmt.Errorf("multiple binaries found: %s", outputRequiresSingleBuildError)
 	}
 	path := bins[0].Path
 	out := w.output
