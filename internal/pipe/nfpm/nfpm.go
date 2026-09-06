@@ -644,9 +644,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	path := filepath.Join(ctx.Config.Dist, packageFilename)
 	log.WithField("file", path).Info("creating")
-	w, err := os.Create(path)
+	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
-		return err
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("package file already exists: %s: %w", path, err)
+		}
+		return fmt.Errorf("could not create package file: %w", err)
 	}
 	defer w.Close()
 
