@@ -141,9 +141,8 @@ func TestRunPipe(t *testing.T) {
 						return
 					}
 				}
-			} else {
-				require.ErrorContains(t, err, msg)
 			}
+			require.ErrorContains(t, err, msg)
 		}
 	}
 	shouldNotErr := func(t *testing.T, err error) {
