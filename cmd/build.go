@@ -149,7 +149,11 @@ func impliedSnapshot(parent stdctx.Context, snapshot, autoSnapshot bool) bool {
 	if snapshot || !autoSnapshot {
 		return snapshot
 	}
-	return git.CheckDirty(context.Wrap(parent, config.Project{})) != nil
+	if git.CheckDirty(context.Wrap(parent, config.Project{})) != nil {
+		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
+		return true
+	}
+	return false
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
@@ -168,11 +172,6 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
-
-	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
-		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
-		ctx.Snapshot = true
-	}
 
 	if err := skips.SetBuild(ctx, options.skips...); err != nil {
 		return err
@@ -196,7 +195,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		}
 	}
 	if options.output != "" && options.singleTarget && len(options.ids) > 0 && len(ctx.Config.Builds) > 1 {
-		return errors.New(outputRequiresSingleBuildError)
+		return errOutputSingleBuild
 	}
 
 	if skips.Any(ctx, skips.Build...) {
@@ -230,7 +229,7 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 	return nil
 }
 
-const outputRequiresSingleBuildError = "--output requires a single build"
+var errOutputSingleBuild = errors.New("--output requires a single build")
 
 // withOutputPipe copies the binary from dist to the specified output path.
 type withOutputPipe struct {
@@ -247,7 +246,7 @@ func (w withOutputPipe) Run(ctx *context.Context) error {
 		return errors.New("no binary found")
 	}
 	if len(bins) > 1 {
-		return fmt.Errorf("multiple binaries found: %s", outputRequiresSingleBuildError)
+		return fmt.Errorf("multiple binaries found: %w", errOutputSingleBuild)
 	}
 	path := bins[0].Path
 	out := w.output
