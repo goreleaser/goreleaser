@@ -29,7 +29,7 @@ func (BinaryPipe) Dependencies(ctx *context.Context) []string {
 	for _, s := range ctx.Config.BinarySigns {
 		cmds = append(cmds, s.Cmd)
 	}
-	return cmds
+	return checkableCmds(cmds)
 }
 
 // Default sets the Pipes defaults.
