@@ -39,7 +39,6 @@ require (
 	github.com/goreleaser/quill v0.0.0-20260630015114-8310f3e9a321
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.14.0
-	github.com/jarcoal/httpmock v1.4.2
 	github.com/klauspost/compress v1.19.2
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-mastodon v0.0.13
