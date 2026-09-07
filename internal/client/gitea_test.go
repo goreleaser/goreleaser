@@ -187,13 +187,13 @@ func (s *GiteaReleasesTestSuite) handleString(method, path string, status int, b
 	})
 }
 
-func (s *GiteaReleasesTestSuite) handleJSON(method, path string, status int, body any) {
+func (s *GiteaReleasesTestSuite) handleJSON(method, path string, body any) {
 	s.T().Helper()
 	bts, err := json.Marshal(body)
 	s.Require().NoError(err)
 	s.handle(method, path, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(status)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(bts)
 	})
 }
@@ -285,7 +285,7 @@ func (s *GetExistingReleaseSuite) TestNoRepo() {
 func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	t := s.T()
 	release := gitea.Release{TagName: s.tag}
-	s.handleJSON(http.MethodGet, s.releasesPath, http.StatusOK, []gitea.Release{release})
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{release})
 
 	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.NotNil(t, result)
@@ -364,7 +364,7 @@ func (s *GiteacreateReleaseSuite) TestSuccess() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	s.handleJSON(http.MethodPost, s.releasesPath, http.StatusOK, &expectedRelease)
+	s.handleJSON(http.MethodPost, s.releasesPath, &expectedRelease)
 
 	release, err := s.client.createRelease(s.ctx, s.title, s.description)
 	require.NoError(t, err)
@@ -398,7 +398,7 @@ func (s *GiteaupdateReleaseSuite) TestSuccess() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	s.handleJSON(http.MethodPatch, s.releasePath, http.StatusOK, &expectedRelease)
+	s.handleJSON(http.MethodPatch, s.releasePath, &expectedRelease)
 
 	release, err := s.client.updateRelease(s.ctx, s.title, s.description, s.releaseID)
 	require.NoError(t, err)
@@ -471,7 +471,7 @@ func (s *GiteaCreateReleaseSuite) TestErrorGettingExistingRelease() {
 func (s *GiteaCreateReleaseSuite) TestErrorUpdatingRelease() {
 	t := s.T()
 	expectedRelease := gitea.Release{TagName: s.tag}
-	s.handleJSON(http.MethodGet, s.releasesPath, http.StatusOK, []gitea.Release{expectedRelease})
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{expectedRelease})
 	s.handleString(http.MethodPatch, s.releasePath, http.StatusBadRequest, "")
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
@@ -489,8 +489,8 @@ func (s *GiteaCreateReleaseSuite) TestSuccessUpdatingRelease() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	s.handleJSON(http.MethodGet, s.releasesPath, http.StatusOK, []gitea.Release{expectedRelease})
-	s.handleJSON(http.MethodPatch, s.releasePath, http.StatusOK, &expectedRelease)
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{expectedRelease})
+	s.handleJSON(http.MethodPatch, s.releasePath, &expectedRelease)
 
 	newDescription := "NewDescription"
 	releaseID, err := s.client.CreateRelease(s.ctx, newDescription)
@@ -519,7 +519,7 @@ func (s *GiteaCreateReleaseSuite) TestSuccessCreatingRelease() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	s.handleJSON(http.MethodPost, s.releasesPath, http.StatusOK, &expectedRelease)
+	s.handleJSON(http.MethodPost, s.releasesPath, &expectedRelease)
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
 	require.Equal(t, fmt.Sprint(expectedRelease.ID), releaseID)
@@ -567,7 +567,7 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 
 func (s *GiteaUploadSuite) TestSuccess() {
 	t := s.T()
-	s.handleJSON(http.MethodPost, s.releaseAttachmentsPath, http.StatusOK, &gitea.Attachment{})
+	s.handleJSON(http.MethodPost, s.releaseAttachmentsPath, &gitea.Attachment{})
 
 	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.NoError(t, err)
