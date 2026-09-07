@@ -1090,22 +1090,23 @@ func TestRunPipe(t *testing.T) {
 					folder := t.TempDir()
 					dist := filepath.Join(folder, "dist")
 					require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
-					f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
-					f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
-					f, err = os.Create(filepath.Join(dist, "mybin", "subdir", "subbin"))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
-					f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
+					// Separate image names are not separate images: identical build
+					// contexts export the same image ID, so removing one case's tag
+					// deletes the image another case is still pushing. Give every
+					// case its own contents.
+					write := func(path string) {
+						require.NoError(t, os.WriteFile(
+							filepath.Join(dist, path),
+							[]byte(t.Name()+"/"+path),
+							0o644,
+						))
+					}
+					write(filepath.Join("mybin", "mybin"))
+					write(filepath.Join("mybin", "anotherbin"))
+					write(filepath.Join("mybin", "subdir", "subbin"))
+					write("mynfpm.apk")
 					for _, arch := range []string{"amd64", "386", "arm64"} {
-						f, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
-						require.NoError(t, err)
-						require.NoError(t, f.Close())
+						write(fmt.Sprintf("mybin_%s.apk", arch))
 					}
 
 					ctx := testctx.WrapWithCfg(t.Context(),
@@ -1177,7 +1178,7 @@ func TestRunPipe(t *testing.T) {
 					}
 					require.NoError(t, Pipe{}.Default(ctx))
 					require.NoError(t, ManifestPipe{}.Default(ctx))
-					err = Pipe{}.Run(ctx)
+					err := Pipe{}.Run(ctx)
 					docker.assertError(t, err)
 					if err == nil {
 						docker.pubAssertError(t, Pipe{}.Publish(ctx))
