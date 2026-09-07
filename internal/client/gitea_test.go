@@ -188,6 +188,7 @@ func (s *GiteaReleasesTestSuite) handleString(method, path string, status int, b
 }
 
 func (s *GiteaReleasesTestSuite) handleJSON(method, path string, status int, body any) {
+	s.T().Helper()
 	bts, err := json.Marshal(body)
 	s.Require().NoError(err)
 	s.handle(method, path, func(w http.ResponseWriter, _ *http.Request) {
@@ -306,7 +307,7 @@ func (s *GetExistingReleaseSuite) TestReleaseExistsOnFallbackSecondPage() {
 			releases = []gitea.Release{}
 		}
 		w.Header().Set("Content-Type", "application/json")
-		require.NoError(t, json.NewEncoder(w).Encode(releases))
+		assert.NoError(t, json.NewEncoder(w).Encode(releases))
 	})
 
 	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
