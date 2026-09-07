@@ -567,8 +567,15 @@ func TestSkipOne(t *testing.T) {
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
-	t.Run("regular", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, false) })
-	t.Run("snapshot", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, true) })
+	t.Parallel()
+	t.Run("regular", func(t *testing.T) {
+		t.Parallel()
+		doTestRunPipeConventionalNameTemplate(t, false)
+	})
+	t.Run("snapshot", func(t *testing.T) {
+		t.Parallel()
+		doTestRunPipeConventionalNameTemplate(t, true)
+	})
 }
 
 func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
@@ -1210,9 +1217,7 @@ func TestDebSpecificConfig(t *testing.T) {
 	t.Run("lintian", func(t *testing.T) {
 		ctx := setupContext(t)
 		ctx.Parallelism = 100
-		ctx.Env = map[string]string{
-			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
-		}
+		ctx.Config.NFPMs[0].Deb.Signature = config.NFPMDebSignature{}
 		ctx.Config.NFPMs[0].Deb.Lintian = []string{
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",
@@ -1245,9 +1250,7 @@ func TestDebSpecificConfig(t *testing.T) {
 
 	t.Run("lintian override only", func(t *testing.T) {
 		ctx := setupContext(t)
-		ctx.Env = map[string]string{
-			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
-		}
+		ctx.Config.NFPMs[0].Deb.Signature = config.NFPMDebSignature{}
 		ctx.Config.NFPMs[0].Overrides = map[string]config.NFPMOverridables{
 			"deb": {
 				Deb: config.NFPMDeb{
@@ -1267,9 +1270,7 @@ func TestDebSpecificConfig(t *testing.T) {
 
 	t.Run("lintian override replaces top level", func(t *testing.T) {
 		ctx := setupContext(t)
-		ctx.Env = map[string]string{
-			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
-		}
+		ctx.Config.NFPMs[0].Deb.Signature = config.NFPMDebSignature{}
 		ctx.Config.NFPMs[0].Deb.Lintian = []string{"statically-linked-binary"}
 		ctx.Config.NFPMs[0].Overrides = map[string]config.NFPMOverridables{
 			"deb": {
@@ -1291,9 +1292,7 @@ func TestDebSpecificConfig(t *testing.T) {
 	t.Run("lintian no debs", func(t *testing.T) {
 		ctx := setupContext(t)
 		ctx.Parallelism = 100
-		ctx.Env = map[string]string{
-			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
-		}
+		ctx.Config.NFPMs[0].Deb.Signature = config.NFPMDebSignature{}
 		ctx.Config.NFPMs[0].Deb.Lintian = []string{
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",

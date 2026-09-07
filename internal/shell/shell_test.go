@@ -18,6 +18,8 @@ import (
 )
 
 func TestRunCommand(t *testing.T) {
+	t.Parallel()
+
 	t.Run("simple", func(t *testing.T) {
 		require.NoError(t, shell.Run(
 			testctx.Wrap(t.Context()),
@@ -64,11 +66,13 @@ func TestRunCommand(t *testing.T) {
 	})
 
 	t.Run("cancellation with descendant-held output pipe", func(t *testing.T) {
+		t.Parallel()
 		testlib.SkipIfWindows(t, "uses a unix shell")
 
 		ready := filepath.Join(t.TempDir(), "ready")
 
 		ctx, cancel := context.WithCancel(t.Context())
+		t.Cleanup(cancel)
 		errCh := make(chan error, 1)
 		go func() {
 			errCh <- shell.Run(
@@ -97,6 +101,7 @@ func TestRunCommand(t *testing.T) {
 	})
 
 	t.Run("success with descendant-held output pipe", func(t *testing.T) {
+		t.Parallel()
 		testlib.SkipIfWindows(t, "uses a unix shell")
 
 		errCh := make(chan error, 1)

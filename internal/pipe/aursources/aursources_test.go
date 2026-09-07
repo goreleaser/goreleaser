@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -257,8 +258,11 @@ func TestFullPipe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			url := testlib.GitMakeBareRepository(t)
-			key := testlib.MakeNewSSHKey(t, "")
+			var url, key string
+			if tt.expectedRunError == "" && tt.expectedRunErrorCheck == nil {
+				url = testlib.GitMakeBareRepository(t)
+				key = testlib.MakeNewSSHKey(t, "")
+			}
 
 			folder := t.TempDir()
 			ctx := testctx.WrapWithCfg(
@@ -511,14 +515,11 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	require.True(t, pipe.IsSkip(runAll(ctx, client)), "should partially skip")
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	dir := t.TempDir()
-	_, err = git.Run(t.Context(), "-C", dir, "clone", url, "repo")
+	files, err := git.Run(t.Context(), "-C", url, "ls-tree", "-r", "--name-only", "master")
 	require.NoError(t, err)
-
-	require.FileExists(t, filepath.Join(dir, "repo", "foo", ".SRCINFO"))
-	require.FileExists(t, filepath.Join(dir, "repo", "foo", "PKGBUILD"))
-	require.FileExists(t, filepath.Join(dir, "repo", "bar", ".SRCINFO"))
-	require.FileExists(t, filepath.Join(dir, "repo", "bar", "PKGBUILD"))
+	require.Subset(t, strings.Split(strings.TrimSpace(files), "\n"), []string{
+		"foo/.SRCINFO", "foo/PKGBUILD", "bar/.SRCINFO", "bar/PKGBUILD",
+	})
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {

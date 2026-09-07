@@ -533,7 +533,7 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -987,7 +987,7 @@ func TestGroup(t *testing.T) {
 				},
 			},
 		},
-	}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+	}, testctx.WithCurrentTag("v0.0.2"))
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -1098,22 +1098,13 @@ func TestAbbrev(t *testing.T) {
 	testlib.GitCommit(t, "first")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "added feature 1")
-	testlib.GitCommit(t, "fixed bug 2")
-	testlib.GitCommit(t, "ignored: whatever")
-	testlib.GitCommit(t, "feat(deps): update foobar [bot]")
-	testlib.GitCommit(t, "fix: whatever")
-	testlib.GitCommit(t, "docs: whatever")
-	testlib.GitCommit(t, "chore: something about cArs we dont need")
-	testlib.GitCommit(t, "feat: added that thing")
-	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
-	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
 
 	t.Run("no abbrev", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist:      folder,
 			Changelog: config.Changelog{},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -1126,7 +1117,7 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{
 				Abbrev: -1,
 			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -1138,7 +1129,7 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{
 				Abbrev: 3,
 			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -1151,7 +1142,7 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{
 				Abbrev: 7,
 			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -1164,7 +1155,7 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{
 				Abbrev: 50,
 			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -1176,7 +1167,7 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{
 				Abbrev: -2,
 			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))

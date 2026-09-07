@@ -1,6 +1,7 @@
 package docker
 
 import (
+	stdctx "context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -64,7 +65,9 @@ func TestGetBaseImage(t *testing.T) {
 	})
 
 	t.Run("digest resolution error returns base", func(t *testing.T) {
-		img, err := getBaseImage(testctx.Wrap(t.Context()), filepath.Join("testdata", "dockerfiles", "unknown-image"), nil)
+		ctx, cancel := stdctx.WithCancel(t.Context())
+		cancel()
+		img, err := getBaseImage(testctx.Wrap(ctx), filepath.Join("testdata", "dockerfiles", "unknown-image"), nil)
 		require.Error(t, err)
 		require.Equal(t, "goreleaser-nonexistent-image:nope", img.name)
 		require.Empty(t, img.digest)

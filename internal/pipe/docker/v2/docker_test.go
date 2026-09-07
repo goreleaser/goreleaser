@@ -538,6 +538,9 @@ func TestDisable(t *testing.T) {
 }
 
 func TestDoBuildEnvPrecedence(t *testing.T) {
+	// The helper is synchronous, so keep its race checks but skip the exit sleep.
+	t.Setenv("GORACE", os.Getenv("GORACE")+" atexit_sleep_ms=0")
+
 	for name, tt := range map[string]struct {
 		ambient string
 		project string

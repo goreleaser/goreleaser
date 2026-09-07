@@ -1281,24 +1281,22 @@ func TestGitLabVersionProbeIsBounded(t *testing.T) {
 	t.Setenv("CI_SERVER_VERSION", "")
 
 	var probes atomic.Int64
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		probes.Add(1)
 		http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
 	}))
-	t.Cleanup(srv.Close)
+	t.Cleanup(server.Close)
 
-	// the release retry budget is deliberately huge: if the probe used it,
-	// goreleaser would look wedged for ~25 minutes.
+	// Using the release budget would make the version probe take ~25 minutes.
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		GitLabURLs: config.GitLabURLs{API: server.URL},
 		Retry: config.Retry{
 			Attempts: 10,
 			Delay:    10 * time.Second,
 			MaxDelay: 5 * time.Minute,
 		},
 	})
-
 	start := time.Now()
 	client, err := newGitLab(ctx, "test-token")
 	require.NoError(t, err)

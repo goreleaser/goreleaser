@@ -1,6 +1,9 @@
 package node
 
 import (
+	"debug/elf"
+	"debug/macho"
+	"debug/pe"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -100,61 +103,88 @@ func TestResolveVersionStringRejectsUnsupportedSEARelease(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
+	t.Parallel()
 	testlib.CheckPath(t, "node")
 
-	target := "darwin-arm64"
-	createFakeNodeAlias(t, "node-"+target)
-
-	out, err := exec.Command("node", "--version").Output()
+	out, err := exec.CommandContext(t.Context(), "node", "--version").Output()
 	require.NoError(t, err)
 	hostVersion := strings.TrimSpace(string(out))
 
-	testlib.Mktmp(t)
-	require.NoError(t, os.WriteFile("index.js",
-		[]byte(`process.stdout.write("buildsea-ok\n");`), 0o644))
-	require.NoError(t, os.WriteFile("package.json",
-		[]byte(`{"engines":{"node":"`+hostVersion+`"}}`), 0o644))
-	require.NoError(t, os.WriteFile("sea-config.json",
-		[]byte(`{"disableExperimentalSEAWarning": true}`), 0o644))
+	for _, target := range []string{"darwin-arm64", "linux-x64", "win-x64"} {
+		t.Run(target, func(t *testing.T) {
+			t.Parallel()
+			tool := createFakeNodeAlias(t, "node-"+target)
+			dir := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "index.js"),
+				[]byte(`process.stdout.write("buildsea-ok\n");`), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "package.json"),
+				[]byte(`{"engines":{"node":"`+hostVersion+`"}}`), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "sea-config.json"),
+				[]byte(`{"disableExperimentalSEAWarning": true}`), 0o644))
 
-	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Dist:        "dist",
-		ProjectName: "proj",
-		Builds: []config.Build{
-			{
-				ID:           "default",
-				Dir:          ".",
-				Tool:         "node-{{ .Target }}",
-				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-			},
-		},
-	})
+			modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        filepath.Join(dir, "dist"),
+				ProjectName: "proj",
+				Builds: []config.Build{{
+					ID:           "default",
+					Dir:          dir,
+					Tool:         filepath.Join(filepath.Dir(tool), "node-{{ .Target }}"+filepath.Ext(tool)),
+					ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				}},
+			})
+			build, err := Default.WithDefaults(ctx.Config.Builds[0])
+			require.NoError(t, err)
+			parsed, err := Default.Parse(target)
+			require.NoError(t, err)
+			ext := ""
+			if parsed.(Target).Goos() == "windows" {
+				ext = ".exe"
+			}
+			options := api.Options{
+				Name:   "proj" + ext,
+				Path:   filepath.Join(ctx.Config.Dist, "proj_"+target, "proj"+ext),
+				Ext:    ext,
+				Target: parsed,
+			}
 
-	build, err := Default.WithDefaults(ctx.Config.Builds[0])
-	require.NoError(t, err)
+			require.NoError(t, Default.Build(ctx, build, options))
+			bins := ctx.Artifacts.List()
+			require.Len(t, bins, 1)
+			bin := bins[0]
+			require.Equal(t, filepath.ToSlash(options.Path), bin.Path)
+			require.Equal(t, parsed.(Target).Goos(), bin.Goos)
+			require.Equal(t, parsed.(Target).Goarch(), bin.Goarch)
 
-	options := api.Options{
-		Name: "proj",
-		Path: filepath.Join("dist", "proj_"+target, "proj"),
+			switch bin.Goos {
+			case "darwin":
+				executable, err := macho.Open(options.Path)
+				require.NoError(t, err)
+				require.Equal(t, macho.CpuArm64, executable.Cpu)
+				require.NoError(t, executable.Close())
+			case "linux":
+				executable, err := elf.Open(options.Path)
+				require.NoError(t, err)
+				require.Equal(t, elf.EM_X86_64, executable.Machine)
+				require.NoError(t, executable.Close())
+			case "windows":
+				executable, err := pe.Open(options.Path)
+				require.NoError(t, err)
+				require.Equal(t, uint16(pe.IMAGE_FILE_MACHINE_AMD64), executable.Machine)
+				require.NoError(t, executable.Close())
+			}
+			if bin.Goos == runtime.GOOS && bin.Goarch == runtime.GOARCH {
+				out, err := exec.CommandContext(t.Context(), options.Path).Output()
+				require.NoError(t, err)
+				require.Equal(t, "buildsea-ok\n", string(out))
+			}
+
+			fi, err := os.Stat(options.Path)
+			require.NoError(t, err)
+			require.True(t, modTime.Equal(fi.ModTime()))
+			require.NoFileExists(t, filepath.Join(filepath.Dir(options.Path), "sea-config.json"))
+		})
 	}
-	options.Target, err = Default.Parse(target)
-	require.NoError(t, err)
-
-	require.NoError(t, Default.Build(ctx, build, options))
-
-	bins := ctx.Artifacts.List()
-	require.Len(t, bins, 1)
-	bin := bins[0]
-	require.Equal(t, filepath.ToSlash(options.Path), bin.Path)
-
-	fi, err := os.Stat(filepath.FromSlash(bin.Path))
-	require.NoError(t, err)
-	require.True(t, modTime.Equal(fi.ModTime()))
-
-	// the SEA config lives in a per-target scratch directory: sharing the
-	// output directory made concurrent targets overwrite each other's config.
-	require.NoFileExists(t, filepath.Join(filepath.Dir(options.Path), "sea-config.json"))
 }
 
 // seaTemplate builds the template exactly as Build does, so this test
@@ -248,11 +278,11 @@ func TestBuildRejectsUnsupportedHostNode(t *testing.T) {
 	require.ErrorContains(t, err, ">= v25.5.0")
 }
 
-func createFakeNodeAlias(tb testing.TB, name string) {
+func createFakeNodeAlias(tb testing.TB, name string) string {
 	tb.Helper()
 	node, err := exec.LookPath("node")
 	require.NoError(tb, err)
-	createFakeExecutable(
+	return createFakeExecutable(
 		tb, name,
 		fmt.Sprintf("#!/bin/sh\nexec %q \"$@\"\n", node),
 		fmt.Sprintf("@echo off\n%q %%*\n", node),
@@ -261,20 +291,22 @@ func createFakeNodeAlias(tb testing.TB, name string) {
 
 func createFakeNodeVersion(tb testing.TB, name, version string) {
 	tb.Helper()
-	createFakeExecutable(
+	path := createFakeExecutable(
 		tb, name,
 		fmt.Sprintf("#!/bin/sh\necho %s\n", version),
 		fmt.Sprintf("@echo off\necho %s\n", version),
 	)
+	tb.Setenv("PATH", filepath.Dir(path)+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
-func createFakeExecutable(tb testing.TB, name, unix, windows string) {
+func createFakeExecutable(tb testing.TB, name, unix, windows string) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	if runtime.GOOS == "windows" {
 		name += ".bat"
 		unix = windows
 	}
-	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(unix), 0o755))
-	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	path := filepath.Join(dir, name)
+	require.NoError(tb, os.WriteFile(path, []byte(unix), 0o755))
+	return path
 }

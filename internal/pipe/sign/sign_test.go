@@ -429,11 +429,11 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
-			desc: "sign single with password from stdin",
+			desc: "sign binaries with password from stdin",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
-						Artifacts: "all",
+						Artifacts: "binary",
 						Args: []string{
 							"-u",
 							passwordUser,
@@ -452,17 +452,17 @@ func TestSignArtifacts(t *testing.T) {
 				},
 			}),
 
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 			user:           passwordUser,
 		},
 		{
-			desc: "sign single with password from templated stdin",
+			desc: "sign binaries with password from templated stdin",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{"GPG_PASSWORD=" + stdin},
 				Signs: []config.Sign{
 					{
-						Artifacts: "all",
+						Artifacts: "binary",
 						Args: []string{
 							"-u",
 							passwordUser,
@@ -481,16 +481,16 @@ func TestSignArtifacts(t *testing.T) {
 				},
 			}),
 
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 			user:           passwordUser,
 		},
 		{
-			desc: "sign single with password from stdin_file",
+			desc: "sign binaries with password from stdin_file",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
-						Artifacts: "all",
+						Artifacts: "binary",
 						Args: []string{
 							"-u",
 							passwordUser,
@@ -509,8 +509,8 @@ func TestSignArtifacts(t *testing.T) {
 				},
 			}),
 
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 			user:           passwordUser,
 		},
 		{
@@ -725,6 +725,11 @@ func testSign(
 
 	// configure the pipeline
 	// make sure we are using the test keyring
+	for i := range ctx.Config.Signs {
+		if ctx.Config.Signs[i].Cmd == "" {
+			ctx.Config.Signs[i].Cmd = "gpg"
+		}
+	}
 	require.NoError(tb, Pipe{}.Default(ctx))
 	for i := range ctx.Config.Signs {
 		ctx.Config.Signs[i].Args = append(

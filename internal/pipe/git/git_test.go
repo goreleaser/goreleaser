@@ -122,13 +122,13 @@ func TestAnnotatedTagsWithApostrophes(t *testing.T) {
 }
 
 func TestBranch(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "test-branch-commit")
+	testlib.GitTag(t, "test-branch-tag")
 	for _, branch := range []string{"test-branch", "feature/o'brien"} {
 		t.Run(branch, func(t *testing.T) {
-			testlib.Mktmp(t)
-			testlib.GitInit(t)
-			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-			testlib.GitCommit(t, "test-branch-commit")
-			testlib.GitTag(t, "test-branch-tag")
 			testlib.GitCheckoutBranch(t, branch)
 			ctx := testctx.Wrap(t.Context())
 			require.NoError(t, Pipe{}.Run(ctx))
@@ -262,7 +262,6 @@ func TestTagSortOrder(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "commit1")
 	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.2")
@@ -281,7 +280,6 @@ func TestTagSortOrderPrerelease(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "commit1")
 	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1-rc.2")
@@ -329,6 +327,13 @@ func TestValidState(t *testing.T) {
 }
 
 func TestSnapshotNoTags(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	path := filepath.Join(folder, "foo")
+	require.NoError(t, os.WriteFile(path, []byte("initial"), 0o644))
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "whatever")
 	for _, tt := range []struct {
 		name     string
 		dirty    bool
@@ -345,16 +350,11 @@ func TestSnapshotNoTags(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			folder := testlib.Mktmp(t)
-			testlib.GitInit(t)
-			testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-			path := filepath.Join(folder, "foo")
-			require.NoError(t, os.WriteFile(path, []byte("initial"), 0o644))
-			testlib.GitAdd(t)
-			testlib.GitCommit(t, "whatever")
+			content := "initial"
 			if tt.dirty {
-				require.NoError(t, os.WriteFile(path, []byte("dirty"), 0o644))
+				content = "dirty"
 			}
+			require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
 			ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
 			testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 			require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
@@ -494,7 +494,6 @@ func TestFilterTags(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "middle commit")
 	testlib.GitTag(t, "nightly")
-	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitTag(t, "v0.1.0-dev")

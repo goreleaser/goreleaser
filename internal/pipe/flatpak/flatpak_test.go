@@ -202,6 +202,8 @@ func TestRunPipe(t *testing.T) {
 
 func TestRunPipeQuotesInstallPaths(t *testing.T) {
 	testlib.SkipIfWindows(t, "flatpak build commands are shell commands")
+	// The helpers finish their work before exit; they do not need the race detector's exit sleep.
+	t.Setenv("GORACE", os.Getenv("GORACE")+" atexit_sleep_ms=0")
 
 	for name, binaryName := range map[string]string{
 		"ordinary": "myapp",
@@ -245,6 +247,9 @@ func TestRunPipeQuotesInstallPaths(t *testing.T) {
 }
 
 func TestRunCmdEnvPrecedence(t *testing.T) {
+	// The helper is synchronous, so keep its race checks but skip the exit sleep.
+	t.Setenv("GORACE", os.Getenv("GORACE")+" atexit_sleep_ms=0")
+
 	for name, tt := range map[string]struct {
 		ambient string
 		project string

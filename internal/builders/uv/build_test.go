@@ -127,7 +127,7 @@ func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "uv")
 
 	folder := testlib.Mktmp(t)
-	cmd := exec.CommandContext(t.Context(), "uv", "init", "--name", "proj")
+	cmd := exec.CommandContext(t.Context(), "uv", "init", "--name", "proj", "--vcs", "none")
 	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)

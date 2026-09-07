@@ -4,6 +4,8 @@ import (
 	stdctx "context"
 	"fmt"
 	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -231,6 +233,8 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
+	t.Parallel()
+
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
 	testlib.StartRegistry(t, "ko_registry1", registry1Port)
@@ -268,7 +272,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 		LocalDomain         string
 	}{
 		{
-			// Must be first as others add an SBOM for the same image
 			Name:          "sbom-none",
 			SBOM:          "none",
 			SBOMDirectory: "",
@@ -328,13 +331,14 @@ func TestPublishPipeSuccess(t *testing.T) {
 		},
 	}
 
-	repositories := []string{
-		fmt.Sprintf("%sgoreleasertest/testapp", registry1),
-		fmt.Sprintf("%sgoreleasertest/testapp", registry2),
-	}
-
 	for _, table := range table {
 		t.Run(table.Name, func(t *testing.T) {
+			t.Parallel()
+			// SBOM tags are keyed by digest, so cases need separate repositories.
+			repositories := []string{
+				fmt.Sprintf("%sgoreleasertest/testapp-%s", registry1, table.Name),
+				fmt.Sprintf("%sgoreleasertest/testapp-%s", registry2, table.Name),
+			}
 			if len(table.Tags) == 0 {
 				table.Tags = []string{table.Name}
 			}
@@ -827,10 +831,15 @@ func TestPublishPipeError(t *testing.T) {
 	})
 
 	t.Run("publish fail", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "publishing disabled by test", http.StatusForbidden)
+		}))
+		t.Cleanup(srv.Close)
 		ctx := makeCtx()
+		ctx.Config.Kos[0].Repository = strings.TrimPrefix(srv.URL, "http://")
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `Get "https://fakerepo.invalid:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, "403 Forbidden")
 	})
 }
 

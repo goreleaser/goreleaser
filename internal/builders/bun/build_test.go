@@ -3,7 +3,6 @@ package bun
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -119,8 +118,8 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "bun")
 	folder := testlib.Mktmp(t)
-	_, err := exec.CommandContext(t.Context(), "bun", "init", "--yes").CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(t, os.WriteFile("package.json", []byte(`{"name":"proj","module":"index.ts","type":"module"}`), 0o644))
+	require.NoError(t, os.WriteFile("index.ts", []byte("console.log('fixture');\n"), 0o644))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

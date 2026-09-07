@@ -378,11 +378,13 @@ func TestExecuteSourceRPM(t *testing.T) {
 }
 
 func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
+	t.Parallel()
 	testlib.SkipIfWindows(t, "uses a unix shell")
 
 	ready := filepath.Join(t.TempDir(), "ready")
 
 	ctx, cancel := context.WithCancel(t.Context())
+	t.Cleanup(cancel)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- executeCommand(&command{
@@ -409,6 +411,7 @@ func TestExecuteCommandCancellationWithDescendantHeldOutputPipe(t *testing.T) {
 }
 
 func TestExecuteCommandSucceedsWithDescendantHeldOutputPipe(t *testing.T) {
+	t.Parallel()
 	testlib.SkipIfWindows(t, "uses a unix shell")
 
 	errCh := make(chan error, 1)
