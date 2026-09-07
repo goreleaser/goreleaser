@@ -2,6 +2,7 @@
 package upx
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,15 +20,24 @@ import (
 
 type Pipe struct{}
 
-func (Pipe) String() string                         { return "upx" }
-func (Pipe) Skip(ctx *context.Context) bool         { return len(ctx.Config.UPXs) == 0 }
-func (Pipe) Dependencies(*context.Context) []string { return []string{"upx"} }
+const defaultBinary = "upx"
+
+func (Pipe) String() string                 { return "upx" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UPXs) == 0 }
+
+func (Pipe) Dependencies(ctx *context.Context) []string {
+	var bins []string
+	for _, upx := range ctx.Config.UPXs {
+		bins = append(bins, cmp.Or(upx.Binary, defaultBinary))
+	}
+	return bins
+}
 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.UPXs {
 		upx := &ctx.Config.UPXs[i]
 		if upx.Binary == "" {
-			upx.Binary = "upx"
+			upx.Binary = defaultBinary
 		}
 	}
 	return nil

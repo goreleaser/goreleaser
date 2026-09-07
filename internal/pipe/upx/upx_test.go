@@ -298,3 +298,27 @@ func TestFindBinaries(t *testing.T) {
 		}), 1)
 	})
 }
+
+func TestDependencies(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		UPXs: []config.UPX{
+			{Binary: "my-upx"},
+			{},
+		},
+	})
+
+	// Default has not run here, so the second entry falls back on its own.
+	require.Equal(t, []string{"my-upx", "upx"}, Pipe{}.Dependencies(ctx))
+}
+
+func TestDependenciesAfterDefault(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		UPXs: []config.UPX{
+			{},
+			{Binary: "my-upx"},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, []string{"upx", "my-upx"}, Pipe{}.Dependencies(ctx))
+}
