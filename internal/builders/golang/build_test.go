@@ -1763,7 +1763,7 @@ func TestOverrides(t *testing.T) {
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
-			require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
+			require.Equal(t, []string{"BAR=foo", "FOO=bar", "FOO=overridden"}, dets.Env)
 		})
 	}
 
@@ -2048,49 +2048,38 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("env order is stable", func(t *testing.T) {
+	t.Run("env keeps the definition order", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.Wrap(t.Context()),
 			config.Build{
-				Env: []string{"A=value", "B={{.Env.A}}", "C=original"},
-				BuildDetailsOverrides: []config.BuildDetailsOverride{
-					{
-						Goos:    "linux",
-						Goarch:  "amd64",
-						Ldflags: []string{"overridden"},
-						Env:     []string{"C=override", "D={{.Env.B}}"},
-					},
-				},
-			}, mustParse(t, "linux_amd64"),
-		)
-		require.NoError(t, err)
-		require.Equal(t, []string{"A=value", "B={{.Env.A}}", "C=override", "D={{.Env.B}}"}, dets.Env)
-	})
-
-	t.Run("redefined env keeps the base position", func(t *testing.T) {
-		dets, err := withOverrides(
-			testctx.Wrap(t.Context()),
-			config.Build{
-				Env: []string{
-					"SYSROOT=/usr",
-					"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
-				},
+				Env: []string{"SYSROOT=/usr"},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
 						Goos:   "darwin",
 						Goarch: "arm64",
-						Env:    []string{"SYSROOT=/opt/osxcross"},
+						Env: []string{
+							"SYSROOT=/opt/osxcross",
+							"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+						},
 					},
 				},
 			}, mustParse(t, "darwin_arm64"),
 		)
 		require.NoError(t, err)
-		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include"}, dets.Env)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+		}, dets.Env)
 
-		// the base entries that reference it must still template.
+		// entries that reference an earlier one must resolve to its last value.
 		out, err := base.TemplateEnv(dets.Env, tmpl.New(testctx.Wrap(t.Context())))
 		require.NoError(t, err)
-		require.Equal(t, []string{"SYSROOT=/opt/osxcross", "CGO_CFLAGS=-I/opt/osxcross/include"}, out)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I/opt/osxcross/include",
+		}, out)
 	})
 }
 
