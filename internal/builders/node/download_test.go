@@ -7,12 +7,13 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/nodedist"
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,13 +54,22 @@ func TestDownloadHostBinary(t *testing.T) {
 			}
 			t.Cleanup(func() { nodedist.Releases = previous })
 
-			httpmock.Activate()
-			t.Cleanup(httpmock.DeactivateAndReset)
-			httpmock.RegisterResponder(
-				http.MethodGet,
-				"https://nodejs.org/dist/"+version+"/"+name+".tar.gz",
-				httpmock.NewBytesResponder(http.StatusOK, archive.Bytes()),
-			)
+			var requests atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				if r.Method != http.MethodGet || r.Host != "nodejs.org" || r.URL.Path != "/"+version+"/"+name+".tar.gz" {
+					t.Errorf("unexpected request: %s %s%s", r.Method, r.Host, r.URL.Path)
+					http.NotFound(w, r)
+					return
+				}
+				if _, err := w.Write(archive.Bytes()); err != nil {
+					t.Error(err)
+				}
+			}))
+			t.Cleanup(server.Close)
+			previousTransport := http.DefaultClient.Transport
+			http.DefaultClient.Transport = nodeDistTestTransport{host: server.Listener.Addr().String()}
+			t.Cleanup(func() { http.DefaultClient.Transport = previousTransport })
 
 			dir := t.TempDir()
 			path, err := downloadHostBinary(t.Context(), version, target, dir)
@@ -68,7 +78,18 @@ func TestDownloadHostBinary(t *testing.T) {
 			got, err := os.ReadFile(path)
 			require.NoError(t, err)
 			require.Equal(t, contents, string(got))
-			require.Equal(t, 1, httpmock.GetTotalCallCount())
+			require.Equal(t, int32(1), requests.Load())
 		})
 	}
+}
+
+type nodeDistTestTransport struct {
+	host string
+}
+
+func (t nodeDistTestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req = req.Clone(req.Context())
+	req.URL.Scheme = "http"
+	req.URL.Host = t.host
+	return http.DefaultTransport.RoundTrip(req)
 }
