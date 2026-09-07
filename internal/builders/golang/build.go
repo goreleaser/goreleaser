@@ -452,7 +452,14 @@ func buildGoBuildLine(
 		// NOTE: build.Main will never be empty here
 		cmd = append(cmd, "-o", options.Path, build.Main)
 	} else {
-		cmd = append(cmd, "-o", filepath.Dir(options.Path))
+		output := filepath.Dir(options.Path)
+		if len(mains) == 1 {
+			// go names the output itself when -o is a directory, dropping the
+			// extension registered for the target, e.g. `.wasm`. A single main
+			// can get an exact path instead.
+			output = artifact.Path
+		}
+		cmd = append(cmd, "-o", output)
 		cmd = append(cmd, slices.Sorted(maps.Values(mains))...)
 	}
 	return cmd, nil
