@@ -370,7 +370,11 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				return build.BuildDetails, err
 			}
 
-			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
+			// keep the definition order: entries may reference the ones
+			// defined before them.
+			env := make([]string, 0, len(build.Env)+len(o.Env))
+			env = append(env, build.Env...)
+			dets.Env = append(env, o.Env...)
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}

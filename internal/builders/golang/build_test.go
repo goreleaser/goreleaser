@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -1762,7 +1763,7 @@ func TestOverrides(t *testing.T) {
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
-			require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
+			require.Equal(t, []string{"BAR=foo", "FOO=bar", "FOO=overridden"}, dets.Env)
 		})
 	}
 
@@ -2045,6 +2046,40 @@ func TestOverrides(t *testing.T) {
 			Ldflags: []string{"overridden"},
 			Env:     []string{},
 		}, dets)
+	})
+
+	t.Run("env keeps the definition order", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{"SYSROOT=/usr"},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "darwin",
+						Goarch: "arm64",
+						Env: []string{
+							"SYSROOT=/opt/osxcross",
+							"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+						},
+					},
+				},
+			}, mustParse(t, "darwin_arm64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+		}, dets.Env)
+
+		// entries that reference an earlier one must resolve to its last value.
+		out, err := base.TemplateEnv(dets.Env, tmpl.New(testctx.Wrap(t.Context())))
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I/opt/osxcross/include",
+		}, out)
 	})
 }
 

@@ -24,18 +24,19 @@ func (Pipe) Default(ctx *context.Context) error {
 		return nil
 	}
 
-	for _, candidate := range []string{
-		cargoName(),
-		ctx.Config.Release.GitHub.Name,
-		ctx.Config.Release.GitLab.Name,
-		ctx.Config.Release.Gitea.Name,
-		moduleName(ctx),
-		gitRemote(ctx),
+	for _, candidate := range []func() string{
+		cargoName,
+		func() string { return ctx.Config.Release.GitHub.Name },
+		func() string { return ctx.Config.Release.GitLab.Name },
+		func() string { return ctx.Config.Release.Gitea.Name },
+		func() string { return moduleName(ctx) },
+		func() string { return gitRemote(ctx) },
 	} {
-		if candidate == "" {
+		name := candidate()
+		if name == "" {
 			continue
 		}
-		ctx.Config.ProjectName = candidate
+		ctx.Config.ProjectName = name
 		return nil
 	}
 
