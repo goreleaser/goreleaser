@@ -279,19 +279,6 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	for _, a := range allbinaries {
-		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
-			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
-			if ha := getHeaderArtifactForLibrary(
-				build,
-				options.Target.(Target),
-				fullPathWithoutExt,
-			); ha != nil {
-				ctx.Artifacts.Add(ha)
-			}
-		}
-	}
-
 	t := options.Target.(Target)
 	details, err := withOverrides(ctx, build, t)
 	if err != nil {
@@ -341,6 +328,17 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	for _, a := range allbinaries {
 		if err := base.ChTimes(build, tpl.WithArtifact(a), a); err != nil {
 			return err
+		}
+		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
+			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
+				// the header goes into the archives next to its library, so it
+				// needs the same mod timestamp to stay reproducible.
+				if err := base.ChTimes(build, tpl.WithArtifact(ha), ha); err != nil {
+					return err
+				}
+				ctx.Artifacts.Add(ha)
+			}
 		}
 		if elf.IsDynamicallyLinked(a.Path) {
 			a.Extra[artifact.ExtranDynLink] = true
