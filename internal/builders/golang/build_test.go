@@ -2349,7 +2349,7 @@ func TestBuildCgoLibraryHeaderTimestampFailure(t *testing.T) {
 		Path:   output,
 		Ext:    ext,
 	})
-	header := filepath.ToSlash(strings.TrimSuffix(output, ext) + ".h")
+	header := strings.TrimSuffix(output, ext) + ".h"
 	require.ErrorContains(t, err, "chtimes: "+header+":")
 	require.ErrorContains(t, err, `parsing "invalid": invalid syntax`)
 	require.FileExists(t, header)
