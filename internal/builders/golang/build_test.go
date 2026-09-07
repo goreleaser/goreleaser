@@ -2387,3 +2387,73 @@ func cSharedExt() string {
 		return ".so"
 	}
 }
+
+func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "foo"))
+
+	target := mustParse(t, "js_wasm")
+	build := config.Build{
+		ID:           "foo",
+		Main:         "./cmd/...",
+		Tool:         "go",
+		Command:      "build",
+		ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "foo.wasm",
+		Path:   filepath.Join(folder, "dist", target.Target, "foo.wasm"),
+		Ext:    ".wasm",
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	require.Equal(t, filepath.ToSlash(filepath.Join("dist", target.Target, "foo.wasm")), bins[0].Path)
+	info, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.NotZero(t, info.Size())
+	require.Equal(t, modTime, info.ModTime().UTC())
+}
+
+func TestBuildGoBuildLineEllipsisOutput(t *testing.T) {
+	t.Parallel()
+
+	dir := filepath.Join("dist", "foo_js_wasm")
+	path := filepath.Join(dir, "app.wasm")
+
+	// go names the output itself when -o is a directory, which drops the
+	// registered extension. A single main gets the exact path instead.
+	for name, tt := range map[string]struct {
+		mains map[string]string
+		want  []string
+	}{
+		"single main gets an exact output path": {
+			mains: map[string]string{"app": "./cmd/app"},
+			want:  []string{"go", "build", "-o", path, "./cmd/app"},
+		},
+		"several mains get an output directory": {
+			mains: map[string]string{"app": "./cmd/app", "other": "./cmd/other"},
+			want:  []string{"go", "build", "-o", dir, "./cmd/app", "./cmd/other"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			build := config.Build{Main: "./cmd/...", Tool: "go", Command: "build"}
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			cmd, err := buildGoBuildLine(ctx, build, build.BuildDetails, api.Options{
+				Path:   filepath.Join(dir, "foo.wasm"),
+				Target: mustParse(t, "js_wasm"),
+			}, &artifact.Artifact{Name: "app.wasm", Path: path}, tt.mains, nil)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, cmd)
+		})
+	}
+}
