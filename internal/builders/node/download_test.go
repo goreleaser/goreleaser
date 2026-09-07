@@ -57,7 +57,7 @@ func TestDownloadHostBinary(t *testing.T) {
 			var requests atomic.Int32
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
-				if r.Method != http.MethodGet || r.Host != "nodejs.org" || r.URL.Path != "/"+version+"/"+name+".tar.gz" {
+				if r.Method != http.MethodGet || r.Host != "nodejs.org" || r.URL.Path != "/dist/"+version+"/"+name+".tar.gz" {
 					t.Errorf("unexpected request: %s %s%s", r.Method, r.Host, r.URL.Path)
 					http.NotFound(w, r)
 					return
