@@ -2322,6 +2322,44 @@ func TestBuildCgoLibraryFailureDoesNotRegisterStaleHeader(t *testing.T) {
 	require.Empty(t, ctx.Artifacts.List())
 }
 
+func TestBuildCgoLibraryHeaderTimestampFailure(t *testing.T) {
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeCExportMain(t, folder)
+
+	ext := cArchiveExt()
+	output := filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext)
+	require.NoError(t, os.MkdirAll(filepath.Dir(output), 0o755))
+
+	build := config.Build{
+		ID:           "cexport",
+		Dir:          folder,
+		Main:         ".",
+		Tool:         "go",
+		Command:      "build",
+		Buildmode:    "c-archive",
+		ModTimestamp: `{{ if eq .ArtifactExt ".h" }}invalid{{ else }}1700000000{{ end }}`,
+		Env:          []string{"CGO_ENABLED=1"},
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+
+	err := Default.Build(ctx, build, api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Name:   "cexport" + ext,
+		Path:   output,
+		Ext:    ext,
+	})
+	header := filepath.ToSlash(strings.TrimSuffix(output, ext) + ".h")
+	require.ErrorContains(t, err, "chtimes: "+header+":")
+	require.ErrorContains(t, err, `parsing "invalid": invalid syntax`)
+	require.FileExists(t, header)
+	require.Empty(t, ctx.Artifacts.List())
+
+	info, err := os.Stat(output)
+	require.NoError(t, err)
+	require.Equal(t, time.Unix(1700000000, 0).UTC(), info.ModTime().UTC())
+}
+
 func writeCExportMain(tb testing.TB, folder string) {
 	tb.Helper()
 	require.NoError(tb, os.MkdirAll(folder, 0o755))
