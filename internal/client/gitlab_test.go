@@ -13,7 +13,6 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
-	"testing/synctest"
 	"text/template"
 	"time"
 
@@ -21,7 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -1281,30 +1279,30 @@ func TestGitLabVersionEnv(t *testing.T) {
 
 func TestGitLabVersionProbeIsBounded(t *testing.T) {
 	t.Setenv("CI_SERVER_VERSION", "")
-	synctest.Test(t, func(t *testing.T) {
-		transport := httpmock.NewMockTransport()
-		transport.RegisterResponder(
-			http.MethodGet,
-			"https://gitlab.com/api/v4/version",
-			httpmock.NewStringResponder(http.StatusServiceUnavailable, `{"error":"service unavailable"}`),
-		)
 
-		// Using the release budget would advance the virtual clock by ~25 minutes.
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Retry: config.Retry{
-				Attempts: 10,
-				Delay:    10 * time.Second,
-				MaxDelay: 5 * time.Minute,
-			},
-		})
-		start := time.Now()
-		client, err := newGitLab(ctx, "test-token",
-			gitlab.WithHTTPClient(&http.Client{Transport: transport}))
-		require.NoError(t, err)
-		require.False(t, client.isV17OrLater)
-		require.EqualValues(t, versionRetry.Attempts, transport.GetTotalCallCount())
-		require.Less(t, time.Since(start), 10*time.Second)
+	var probes atomic.Int64
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		probes.Add(1)
+		http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(server.Close)
+
+	// Using the release budget would make the version probe take ~25 minutes.
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: server.URL},
+		Retry: config.Retry{
+			Attempts: 10,
+			Delay:    10 * time.Second,
+			MaxDelay: 5 * time.Minute,
+		},
 	})
+	start := time.Now()
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	require.False(t, client.isV17OrLater)
+	require.EqualValues(t, versionRetry.Attempts, probes.Load())
+	require.Less(t, time.Since(start), 10*time.Second)
 }
 
 func TestGitLabVersionRequestUsesReleaseContext(t *testing.T) {
