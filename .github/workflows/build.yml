@@ -55,11 +55,11 @@ jobs:
           # identical flags apart from -count=1, 331s with the cache on and
           # 129s without.
           - os: ubuntu-latest
-            test-args: TEST_OPTIONS=-count=1
+            test-args: TEST_OPTIONS="-count=1 -v"
           # the race detector is OS-independent and coverage is only uploaded
           # from ubuntu, so skip both on windows to speed up the slowest job.
           - os: windows-latest
-            test-args: RACE=false COVER=false TEST_OPTIONS=-count=1
+            test-args: RACE=false COVER=false TEST_OPTIONS="-count=1 -v"
     runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -89,7 +89,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
         if: matrix.os == 'ubuntu-latest'
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         if: matrix.os == 'ubuntu-latest'
@@ -160,6 +160,8 @@ jobs:
         with:
           node-version: "25"
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: "0.16.0"
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
       - uses: cargo-bins/cargo-binstall@75b4bfae1b2c753a6806bbce6e6cb89b602de33c # v1.22.0
@@ -178,10 +180,25 @@ jobs:
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
           cosign-release: "v3.0.3"
-      - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+      - uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
       - run: task setup
       - run: task build
+      - name: restore-zig-test-cache
+        id: zig-test-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/goreleaser-zig-global-cache
+          key: zig-tests-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/build.yml') }}-${{ github.sha }}
+          restore-keys: |
+            zig-tests-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/build.yml') }}-
       - run: task test ${{ matrix.test-args }}
+      - name: save-zig-test-cache
+        # Never save a cancelled or failed build's partial compiler cache.
+        if: success() && steps.zig-test-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/goreleaser-zig-global-cache
+          key: ${{ steps.zig-test-cache.outputs.cache-primary-key }}
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: matrix.os == 'ubuntu-latest'
         with:

@@ -49,6 +49,34 @@ foo: bar
 
 -->
 
+### homebrew_casks.url.verified
+
+> since v2.18.1
+
+[Homebrew deprecated it](https://github.com/Homebrew/brew/pull/23280), and now
+uses the default URL verification behavior.
+GoReleaser does not write it into the Cask anymore.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - url:
+      verified: github.com/myorg/myrepo
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - {}
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
 ### dockers_v2.retry
 
 > since v2.15.3
@@ -498,10 +526,6 @@ homebrew_casks:
     # Optional: either set it to Casks, or remove it:
     directory: Casks
 
-    # Optional: helps pass `homebrew audit` if homepage is different from download domain:
-    url:
-      verified: github.com/myorg/myrepo
-
     # Optional: if your app/binary isn't signed and notarized, you'll need this:
     hooks:
       post:
@@ -549,7 +573,7 @@ used everywhere else.
 
 ```yaml
 archives:
-  builds: [a, b]
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
@@ -557,13 +581,13 @@ archives:
 
 ```yaml
 archives:
-  ids: [a, b]
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
 {{< /tabs >}}
 
-### snaps.builds
+### snapcrafts.builds {#snapsbuilds}
 
 > since v2.8
 
@@ -574,16 +598,16 @@ used everywhere else.
 {{< tab "Before" >}}
 
 ```yaml
-snaps:
-  builds: [a, b]
+snapcrafts:
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
-snaps:
-  ids: [a, b]
+snapcrafts:
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
@@ -601,7 +625,7 @@ used everywhere else.
 
 ```yaml
 nfpms:
-  builds: [a, b]
+  - builds: [a, b]
 ```
 
 {{< /tab >}}
@@ -609,7 +633,7 @@ nfpms:
 
 ```yaml
 nfpms:
-  ids: [a, b]
+  - ids: [a, b]
 ```
 
 {{< /tab >}}
@@ -1080,8 +1104,8 @@ Replace `bucket` with `repository`.
 ```yaml
 scoops:
   - bucket:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1090,8 +1114,8 @@ scoops:
 ```yaml
 scoops:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1109,8 +1133,8 @@ Replace `index` with `repository`.
 ```yaml
 krews:
   - index:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1119,8 +1143,8 @@ krews:
 ```yaml
 krews:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1138,8 +1162,8 @@ Replace `tap` with `repository`.
 ```yaml
 brews:
   - tap:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}
@@ -1148,8 +1172,8 @@ brews:
 ```yaml
 brews:
   - repository:
-      - name: foo
-        owner: bar
+      name: foo
+      owner: bar
 ```
 
 {{< /tab >}}

@@ -230,6 +230,12 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", f.Source, f.Destination, err)
 		}
 	}
+	buildsInfo := arch.BuildsInfo
+	if len(binaries) > 0 {
+		if err := archivefiles.EvalInfo(template, &buildsInfo); err != nil {
+			return err
+		}
+	}
 	bins := []string{}
 	for _, binary := range binaries {
 		dst := binary.Name
@@ -239,7 +245,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if err := a.Add(config.File{
 			Source:      binary.Path,
 			Destination: dst,
-			Info:        arch.BuildsInfo,
+			Info:        buildsInfo,
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
@@ -365,9 +371,8 @@ func packageFormats(archive config.Archive, platform string) []string {
 // with this pipe specifics.
 func NewEnhancedArchive(a archive.Archive, wrap string) archive.Archive {
 	return EnhancedArchive{
-		a:     a,
-		wrap:  wrap,
-		files: map[string]string{},
+		a:    a,
+		wrap: wrap,
 	}
 }
 
@@ -375,9 +380,8 @@ func NewEnhancedArchive(a archive.Archive, wrap string) archive.Archive {
 // archive.Archive adding wrap directory support, logging and windows
 // backslash fixes.
 type EnhancedArchive struct {
-	a     archive.Archive
-	wrap  string
-	files map[string]string
+	a    archive.Archive
+	wrap string
 }
 
 // Add adds a file.

@@ -139,6 +139,56 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(formulae))
 }
 
+func TestFormulaDescriptionEscapesRubyString(t *testing.T) {
+	for name, tt := range map[string]struct {
+		description string
+		env         []string
+	}{
+		"literal": {
+			description: `Say "hello"`,
+		},
+		"templated": {
+			description: `Say "{{ .Env.WORD }}"`,
+			env:         []string{`WORD=hello`},
+		},
+		"interpolation": {
+			description: `Say "#{hello}"`,
+		},
+		"complex": {
+			description: "It's \"quoted\" \\ path #{value}\nnext line",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Desc = tt.description
+			formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "foo",
+				Env:         tt.env,
+			}), data)
+			require.NoError(t, err)
+			golden.RequireEqualRb(t, []byte(formulae))
+		})
+	}
+}
+
+func TestFormulaDescriptionIsTemplatedOnce(t *testing.T) {
+	for _, description := range []string{
+		`Render {{ "{{example}}" }} templates`,
+		`{{ .Env.DESCRIPTION }}`,
+	} {
+		t.Run(description, func(t *testing.T) {
+			data := defaultTemplateData
+			data.Desc = description
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: []string{"DESCRIPTION=Render {{example}} templates"},
+			})
+			out, err := doBuildFormula(ctx, data)
+			require.NoError(t, err)
+			require.Contains(t, out, "  desc \"Render {{example}} templates\"\n")
+		})
+	}
+}
+
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}

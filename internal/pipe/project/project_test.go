@@ -3,6 +3,7 @@ package project
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -79,6 +80,22 @@ func TestEmptyProjectName_DefaultsToGoModPath(t *testing.T) {
 	require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "init", "github.com/foo/bar").Run())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestEmptyProjectName_GoModPathIgnoresToolchainNotice(t *testing.T) {
+	dir := testlib.Mktmp(t)
+	name := "go"
+	content := "#!/bin/sh\necho \"go: downloading go1.27.0 (linux/arm64)\" >&2\necho demo\n"
+	if testlib.IsWindows() {
+		name = "go.bat"
+		content = "@echo off\r\necho go: downloading go1.27.0 (linux/arm64) 1>&2\r\necho demo\r\n"
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(dir, name), []byte(content), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "demo", ctx.Config.ProjectName)
 }
 
 func TestEmptyProjectName_DefaultsToCargo(t *testing.T) {

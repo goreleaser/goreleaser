@@ -1,6 +1,8 @@
 package krew
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"os"
 	"path"
@@ -14,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -960,6 +963,93 @@ func TestRunMultipleBinaries(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	client := client.NewMock()
 	require.EqualError(t, runAll(ctx, client), `only one binary per archive allowed, got 2 on "bin.tar.gz"`)
+}
+
+func TestRunPipeWrappedArchiveBinMatchesArchiveMember(t *testing.T) {
+	for name, tt := range map[string]struct {
+		wrappedIn string
+		wantBin   string
+	}{
+		"unwrapped": {
+			wantBin: "tool",
+		},
+		"wrapped": {
+			wrappedIn: "bundle",
+			wantBin:   "bundle/tool",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "tool",
+					Krews: []config.Krew{{
+						Name:             "tool",
+						Description:      "Some desc",
+						ShortDescription: "Short desc",
+						IDs:              []string{"tool"},
+						Repository: config.RepoRef{
+							Owner: "test",
+							Name:  "test",
+						},
+					}},
+				},
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"))
+
+			archivePath := filepath.Join(folder, name+".tar.gz")
+			createKrewTestTarGz(t, archivePath, tt.wantBin)
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    name + ".tar.gz",
+				Path:    archivePath,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "tool",
+					artifact.ExtraFormat:    "tar.gz",
+					artifact.ExtraBinaries:  []string{"tool"},
+					artifact.ExtraWrappedIn: tt.wrappedIn,
+				},
+			})
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, runAll(ctx, client.NewMock()))
+
+			bts, err := os.ReadFile(filepath.Join(folder, "krew", "tool.yaml"))
+			require.NoError(t, err)
+			var manifest Manifest
+			require.NoError(t, yaml.Unmarshal(bts, &manifest))
+			require.Len(t, manifest.Spec.Platforms, 1)
+			require.Equal(t, tt.wantBin, manifest.Spec.Platforms[0].Bin)
+			require.Contains(t, testlib.LsArchive(t, archivePath, "tar.gz"), manifest.Spec.Platforms[0].Bin)
+		})
+	}
+}
+
+func createKrewTestTarGz(tb testing.TB, target, member string) {
+	tb.Helper()
+
+	file, err := os.Create(target)
+	require.NoError(tb, err)
+	defer func() { require.NoError(tb, file.Close()) }()
+
+	gzw := gzip.NewWriter(file)
+	defer func() { require.NoError(tb, gzw.Close()) }()
+
+	tw := tar.NewWriter(gzw)
+	defer func() { require.NoError(tb, tw.Close()) }()
+
+	content := []byte("binary")
+	require.NoError(tb, tw.WriteHeader(&tar.Header{
+		Name: member,
+		Mode: 0o755,
+		Size: int64(len(content)),
+	}))
+	_, err = tw.Write(content)
+	require.NoError(tb, err)
 }
 
 func TestDefault(t *testing.T) {

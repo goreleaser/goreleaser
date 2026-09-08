@@ -14,39 +14,39 @@ import (
 )
 
 func TestArchive(t *testing.T) {
-	for _, format := range []string{"tar.gz", "tar", "zip"} {
-		t.Run(format, func(t *testing.T) {
-			tmp := testlib.Mktmp(t)
-			require.NoError(t, os.Mkdir("dist", 0o744))
+	tmp := testlib.Mktmp(t)
+	require.NoError(t, os.Mkdir("dist", 0o744))
 
-			testlib.GitInit(t)
-			require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
-			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
-			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
-			require.NoError(t, os.WriteFile("ملف.go", []byte("محتوى عربي"), 0o655))
-			require.NoError(t, os.WriteFile("🤔.patch", []byte("thinking"), 0o655))
-			require.NoError(t, os.WriteFile(".gitignore", []byte(`
+	testlib.GitInit(t)
+	require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
+	require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
+	require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
+	require.NoError(t, os.WriteFile("ملف.go", []byte("محتوى عربي"), 0o655))
+	require.NoError(t, os.WriteFile("🤔.patch", []byte("thinking"), 0o655))
+	require.NoError(t, os.WriteFile(".gitignore", []byte(`
 added-later.txt
 ignored.txt
 code.txt
 subfolder/
 			`), 0o655))
 
-			require.NoError(t, os.WriteFile(".gitattributes", []byte(`
+	require.NoError(t, os.WriteFile(".gitattributes", []byte(`
 .VERSION export-subst
 			`), 0o655))
-			require.NoError(t, os.WriteFile(".VERSION", []byte("$Format:%d$"), 0o655))
-			testlib.GitAdd(t)
-			testlib.GitCommit(t, "feat: first")
-			testlib.GitTag(t, "v1.0.0")
-			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
-			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
-			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
-			require.NoError(t, os.WriteFile("ملف.txt", []byte("محتوى عربي"), 0o655))
-			require.NoError(t, os.WriteFile("🤝", []byte("it works"), 0o655))
-			require.NoError(t, os.MkdirAll("subfolder", 0o755))
-			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
+	require.NoError(t, os.WriteFile(".VERSION", []byte("$Format:%d$"), 0o655))
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "feat: first")
+	testlib.GitTag(t, "v1.0.0")
+	require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
+	require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
+	require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+	require.NoError(t, os.WriteFile("ملف.txt", []byte("محتوى عربي"), 0o655))
+	require.NoError(t, os.WriteFile("🤝", []byte("it works"), 0o655))
+	require.NoError(t, os.MkdirAll("subfolder", 0o755))
+	require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
+	for _, format := range []string{"tar.gz", "tar", "zip", "tgz"} {
+		t.Run(format, func(t *testing.T) {
 			t.Run("with extra files", func(t *testing.T) {
 				doVerifyTestArchive(
 					t,
@@ -143,6 +143,7 @@ func doVerifyTestArchive(tb testing.TB, ctx *context.Context, tmp, format string
 	stat, err := os.Stat(path)
 	require.NoError(tb, err)
 	require.Greater(tb, stat.Size(), int64(100))
+	require.NoFileExists(tb, path+".bkp")
 
 	require.ElementsMatch(tb, expected, testlib.LsArchive(tb, path, format))
 

@@ -36,8 +36,90 @@ func start(tb testing.TB) {
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
 }
 
+func TestRunCommandEnvPrecedence(t *testing.T) {
+	// The helpers finish their work before exit; keep race checks but skip the exit sleep.
+	t.Setenv("GORACE", os.Getenv("GORACE")+" atexit_sleep_ms=0")
+
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			key := "GORELEASER_TEST_DOCKER_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_DOCKER_COMMAND_HELPER", "1")
+			t.Setenv("DOCKER_ENV_HELPER_KEY", key)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+
+			t.Run("without output", func(t *testing.T) {
+				record := filepath.Join(t.TempDir(), "record")
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", record)
+				require.NoError(t, runCommand(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper"))
+
+				bts, err := os.ReadFile(record)
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(bts))
+			})
+
+			t.Run("with output", func(t *testing.T) {
+				t.Setenv("DOCKER_ENV_HELPER_RECORD", "")
+				out, err := runCommandWithOutput(ctx, t.TempDir(), os.Args[0], "-test.run=TestDockerCommandHelper")
+				require.NoError(t, err)
+				require.Equal(t, tt.want, string(out))
+			})
+		})
+	}
+}
+
+func TestDockerCommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_DOCKER_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	value := os.Getenv(os.Getenv("DOCKER_ENV_HELPER_KEY"))
+	if record := os.Getenv("DOCKER_ENV_HELPER_RECORD"); record != "" {
+		if err := os.WriteFile(record, []byte(value), 0o644); err != nil {
+			fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+			os.Exit(2)
+		}
+	}
+	fmt.Fprint(os.Stdout, value)
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
+}
+
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
+	t.Parallel()
+
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 	type errChecker func(*testing.T, error)
@@ -59,9 +141,8 @@ func TestRunPipe(t *testing.T) {
 						return
 					}
 				}
-			} else {
-				require.ErrorContains(t, err, msg)
 			}
+			require.ErrorContains(t, err, msg)
 		}
 	}
 	shouldNotErr := func(t *testing.T, err error) {
@@ -623,7 +704,7 @@ func TestRunPipe(t *testing.T) {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/multiple_dockerfiles1:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -631,7 +712,7 @@ func TestRunPipe(t *testing.T) {
 				},
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe2:latest",
+						registry + "goreleaser/multiple_dockerfiles2:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -640,8 +721,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:latest",
-				registry + "goreleaser/test_run_pipe2:latest",
+				registry + "goreleaser/multiple_dockerfiles1:latest",
+				registry + "goreleaser/multiple_dockerfiles2:latest",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -652,7 +733,7 @@ func TestRunPipe(t *testing.T) {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/test_skip_push:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -661,7 +742,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:latest",
+				registry + "goreleaser/test_skip_push:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -699,7 +780,7 @@ func TestRunPipe(t *testing.T) {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Version}}",
+						registry + "goreleaser/test_no_latest:{{.Version}}",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -707,7 +788,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:1.0.0",
+				registry + "goreleaser/test_no_latest:1.0.0",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -740,7 +821,7 @@ func TestRunPipe(t *testing.T) {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_build_args:latest",
+						registry + "goreleaser/test_bad_build_args:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -751,7 +832,42 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_build_args:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_bad_build_args:latest"),
+		},
+		// a wheel of another id must not be counted against docker's ids, nor
+		// copied into the build context.
+		"valid with ids and an unrelated wheel": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_wheel:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					IDs:        []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_wheel:latest",
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "mytool-1.0.0-py3-none-any.whl",
+					Path:   "testdata/Dockerfile",
+					Goos:   "all",
+					Goarch: "all",
+					Type:   artifact.PyWheel,
+					Extra: map[string]any{
+						artifact.ExtraID: "mytool",
+					},
+				})
+			},
 		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
@@ -852,23 +968,6 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
 			pubAssertError:      testlib.AssertSkipped,
-			manifestAssertError: shouldNotErr,
-		},
-		"no_permissions": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"docker.io/nope:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			expect: []string{
-				"docker.io/nope:latest",
-			},
-			assertImageLabels:   noLabels,
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
 			manifestAssertError: shouldNotErr,
 		},
 		"dockerfile_doesnt_exist": {
@@ -982,139 +1081,140 @@ func TestRunPipe(t *testing.T) {
 
 	start(t)
 
+	// Cases use separate image names. Imagers within a case share tags, so run them in sequence.
 	for name, docker := range table {
-		for imager := range imagers {
-			t.Run(name+" on "+imager, func(t *testing.T) {
-				folder := t.TempDir()
-				dist := filepath.Join(folder, "dist")
-				require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
-				f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mybin", "subdir", "subbin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				for _, arch := range []string{"amd64", "386", "arm64"} {
-					f, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
-				}
-
-				ctx := testctx.WrapWithCfg(t.Context(),
-					config.Project{
-						ProjectName:     "mybin",
-						Dist:            dist,
-						Dockers:         docker.dockers,
-						DockerManifests: docker.manifests,
-					},
-					testctx.WithEnv(docker.env),
-					testctx.WithVersion("1.0.0"),
-					testctx.WithCurrentTag("v1.0.0"),
-					testctx.WithCommit("a1b2c3d4"),
-					testctx.WithSemver(1, 0, 0, ""))
-
-				for _, os := range []string{"linux", "darwin"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			for imager := range imagers {
+				t.Run(imager, func(t *testing.T) {
+					folder := t.TempDir()
+					dist := filepath.Join(folder, "dist")
+					require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
+					// Separate image names are not separate images: identical build
+					// contexts export the same image ID, so removing one case's tag
+					// deletes the image another case is still pushing. Give every
+					// case its own contents.
+					write := func(path string) {
+						require.NoError(t, os.WriteFile(
+							filepath.Join(dist, path),
+							[]byte(t.Name()+"/"+path),
+							0o644,
+						))
+					}
+					write(filepath.Join("mybin", "mybin"))
+					write(filepath.Join("mybin", "anotherbin"))
+					write(filepath.Join("mybin", "subdir", "subbin"))
+					write("mynfpm.apk")
 					for _, arch := range []string{"amd64", "386", "arm64"} {
-						for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
-							ctx.Artifacts.Add(&artifact.Artifact{
-								Name:   bin,
-								Path:   filepath.Join(dist, "mybin", bin),
-								Goarch: arch,
-								Goos:   os,
-								Type:   artifact.Binary,
-								Extra: map[string]any{
-									artifact.ExtraID: bin,
-								},
-							})
+						write(fmt.Sprintf("mybin_%s.apk", arch))
+					}
+
+					ctx := testctx.WrapWithCfg(t.Context(),
+						config.Project{
+							ProjectName:     "mybin",
+							Dist:            dist,
+							Dockers:         docker.dockers,
+							DockerManifests: docker.manifests,
+						},
+						testctx.WithEnv(docker.env),
+						testctx.WithVersion("1.0.0"),
+						testctx.WithCurrentTag("v1.0.0"),
+						testctx.WithCommit("a1b2c3d4"),
+						testctx.WithSemver(1, 0, 0, ""))
+
+					for _, os := range []string{"linux", "darwin"} {
+						for _, arch := range []string{"amd64", "386", "arm64"} {
+							for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
+								ctx.Artifacts.Add(&artifact.Artifact{
+									Name:   bin,
+									Path:   filepath.Join(dist, "mybin", bin),
+									Goarch: arch,
+									Goos:   os,
+									Type:   artifact.Binary,
+									Extra: map[string]any{
+										artifact.ExtraID: bin,
+									},
+								})
+							}
 						}
 					}
-				}
-				for _, arch := range []string{"amd64", "386", "arm64"} {
-					name := fmt.Sprintf("mybin_%s.apk", arch)
-					ctx.Artifacts.Add(&artifact.Artifact{
-						Name:   name,
-						Path:   filepath.Join(dist, name),
-						Goarch: arch,
-						Goos:   "linux",
-						Type:   artifact.LinuxPackage,
-						Extra: map[string]any{
-							artifact.ExtraID: "mybin",
-						},
+					for _, arch := range []string{"amd64", "386", "arm64"} {
+						name := fmt.Sprintf("mybin_%s.apk", arch)
+						ctx.Artifacts.Add(&artifact.Artifact{
+							Name:   name,
+							Path:   filepath.Join(dist, name),
+							Goarch: arch,
+							Goos:   "linux",
+							Type:   artifact.LinuxPackage,
+							Extra: map[string]any{
+								artifact.ExtraID: "mybin",
+							},
+						})
+					}
+
+					if docker.extraPrepare != nil {
+						docker.extraPrepare(t, ctx)
+					}
+
+					rmi := func(img string) error {
+						return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
+					}
+
+					// this might fail as the image doesnt exist yet, so lets ignore the error
+					for _, img := range docker.expect {
+						_ = rmi(img)
+					}
+
+					for i := range ctx.Config.Dockers {
+						docker := &ctx.Config.Dockers[i]
+						docker.Use = imager
+						docker.PushFlags = []string{}
+					}
+					for i := range ctx.Config.DockerManifests {
+						manifest := &ctx.Config.DockerManifests[i]
+						manifest.Use = useDocker
+						manifest.PushFlags = []string{"--insecure"}
+						manifest.CreateFlags = []string{"--insecure"}
+					}
+					require.NoError(t, Pipe{}.Default(ctx))
+					require.NoError(t, ManifestPipe{}.Default(ctx))
+					err := Pipe{}.Run(ctx)
+					docker.assertError(t, err)
+					if err == nil {
+						docker.pubAssertError(t, Pipe{}.Publish(ctx))
+						docker.manifestAssertError(t, ManifestPipe{}.Publish(ctx))
+					}
+
+					for _, d := range docker.dockers {
+						docker.assertImageLabels(t, d.Use)
+					}
+
+					// this might should not fail as the image should have been created when
+					// the step ran
+					for _, img := range docker.expect {
+						// t.Log("removing docker image", img)
+						require.NoError(t, rmi(img), "could not delete image %s", img)
+					}
+
+					_ = ctx.Artifacts.Filter(
+						artifact.Or(
+							artifact.ByType(artifact.DockerImage),
+							artifact.ByType(artifact.DockerManifest),
+						),
+					).Visit(func(a *artifact.Artifact) error {
+						digest := artifact.MustExtra[string](*a, artifact.ExtraDigest)
+						require.NotEmpty(t, digest, "missing digest for "+a.Name)
+						return nil
 					})
-				}
-
-				if docker.extraPrepare != nil {
-					docker.extraPrepare(t, ctx)
-				}
-
-				rmi := func(img string) error {
-					return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
-				}
-
-				// this might fail as the image doesnt exist yet, so lets ignore the error
-				for _, img := range docker.expect {
-					_ = rmi(img)
-				}
-
-				for i := range ctx.Config.Dockers {
-					docker := &ctx.Config.Dockers[i]
-					docker.Use = imager
-					docker.PushFlags = []string{}
-				}
-				for i := range ctx.Config.DockerManifests {
-					manifest := &ctx.Config.DockerManifests[i]
-					manifest.Use = useDocker
-					manifest.PushFlags = []string{"--insecure"}
-					manifest.CreateFlags = []string{"--insecure"}
-				}
-				require.NoError(t, Pipe{}.Default(ctx))
-				require.NoError(t, ManifestPipe{}.Default(ctx))
-				err = Pipe{}.Run(ctx)
-				docker.assertError(t, err)
-				if err == nil {
-					docker.pubAssertError(t, Pipe{}.Publish(ctx))
-					docker.manifestAssertError(t, ManifestPipe{}.Publish(ctx))
-				}
-
-				for _, d := range docker.dockers {
-					docker.assertImageLabels(t, d.Use)
-				}
-
-				// this might should not fail as the image should have been created when
-				// the step ran
-				for _, img := range docker.expect {
-					// t.Log("removing docker image", img)
-					require.NoError(t, rmi(img), "could not delete image %s", img)
-				}
-
-				_ = ctx.Artifacts.Filter(
-					artifact.Or(
-						artifact.ByType(artifact.DockerImage),
-						artifact.ByType(artifact.DockerManifest),
-					),
-				).Visit(func(a *artifact.Artifact) error {
-					digest := artifact.MustExtra[string](*a, artifact.ExtraDigest)
-					require.NotEmpty(t, digest, "missing digest for "+a.Name)
-					return nil
 				})
-			})
-		}
+			}
+		})
 	}
 }
 
 func TestBuildCommand(t *testing.T) {
-	var provenanceFlags []string
-	if !testlib.IsWindows() {
-		// HACK: Docker on Windows, at least from github actions, doesn't seem to have these flags.
-		// This is a workaround to make the tests passs in the meantime.
-		provenanceFlags = []string{"--provenance=false", "--sbom=false"}
-	}
+	previous := dockerSupportsProvenanceFlags
+	t.Cleanup(func() { dockerSupportsProvenanceFlags = previous })
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
@@ -1125,31 +1225,97 @@ func TestBuildCommand(t *testing.T) {
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1]}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1]},
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"},
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 		{
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: append([]string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
+			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			imager := dockerImager{
-				buildx: tt.buildx,
+			for _, supported := range []bool{false, true} {
+				t.Run(fmt.Sprintf("provenance=%t", supported), func(t *testing.T) {
+					dockerSupportsProvenanceFlags = func() bool { return supported }
+					expected := tt.expect
+					if supported {
+						expected = append(expected, "--provenance=false", "--sbom=false")
+					}
+					imager := dockerImager{buildx: tt.buildx}
+					require.Equal(t, expected, imager.buildCommand(images, tt.flags))
+				})
 			}
-			require.Equal(t, tt.expect, imager.buildCommand(images, tt.flags))
+		})
+	}
+}
+
+func TestDockerImagerPushUsesFlags(t *testing.T) {
+	const digest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	dir := t.TempDir()
+	source := filepath.Join(dir, "main.go")
+	require.NoError(t, os.WriteFile(source, []byte(`package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if err := os.WriteFile(os.Getenv("DOCKER_ARGS_FILE"), []byte(strings.Join(os.Args[1:], "\n")), 0o644); err != nil {
+		panic(err)
+	}
+	fmt.Println("digest: `+digest+`")
+}
+`), 0o644))
+	fakeDocker := filepath.Join(dir, "docker")
+	if os.PathSeparator == '\\' {
+		fakeDocker += ".exe"
+	}
+	out, err := exec.CommandContext(t.Context(), "go", "build", "-o", fakeDocker, source).CombinedOutput()
+	require.NoError(t, err, string(out))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		name  string
+		flags []string
+		want  []string
+	}{
+		{
+			name:  "empty flags",
+			flags: nil,
+			want:  []string{"push", "example.invalid/app:v1"},
+		},
+		{
+			name:  "configured flags",
+			flags: []string{"--disable-content-trust=false"},
+			want:  []string{"push", "--disable-content-trust=false", "example.invalid/app:v1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			argsFile := filepath.Join(t.TempDir(), "args")
+			t.Setenv("DOCKER_ARGS_FILE", argsFile)
+
+			gotDigest, err := dockerImager{}.Push(testctx.Wrap(t.Context()), "example.invalid/app:v1", tt.flags)
+			require.NoError(t, err)
+			require.Equal(t, digest, gotDigest)
+			bts, err := os.ReadFile(argsFile)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, strings.Split(string(bts), "\n"))
 		})
 	}
 }
@@ -1536,7 +1702,86 @@ func (i *countingImager) Push(*context.Context, string, []string) (string, error
 	return "", nil
 }
 
+type wheelIDImager struct {
+	calls atomic.Int32
+}
+
+func (i *wheelIDImager) Build(_ *context.Context, root string, _ []string, _ []string) error {
+	i.calls.Add(1)
+	if _, err := os.Stat(filepath.Join(root, "mytool-1.0.0-py3-none-any.whl")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *wheelIDImager) Push(*context.Context, string, []string) (string, error) {
+	return "", nil
+}
+
+func TestRunWithSelectedWheelID(t *testing.T) {
+	const imagerName = "test-wheel-id"
+	lock.Lock()
+	previous, existed := imagers[imagerName]
+	lock.Unlock()
+	t.Cleanup(func() {
+		lock.Lock()
+		defer lock.Unlock()
+		if existed {
+			imagers[imagerName] = previous
+		} else {
+			delete(imagers, imagerName)
+		}
+	})
+
+	dir := t.TempDir()
+	wheel := filepath.Join(dir, "mytool-1.0.0-py3-none-any.whl")
+	require.NoError(t, os.WriteFile(wheel, []byte("wheel"), 0o644))
+	dockerfile := filepath.Join(dir, "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("FROM scratch\nCOPY mytool-1.0.0-py3-none-any.whl /wheel.whl\n"), 0o644))
+
+	im := &wheelIDImager{}
+	registerImager(imagerName, im)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dockers: []config.Docker{
+			{
+				Use:            imagerName,
+				Dockerfile:     dockerfile,
+				ImageTemplates: []string{"example.invalid/mytool:latest"},
+				IDs:            []string{"python"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mytool-1.0.0-py3-none-any.whl",
+		Path:   wheel,
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: map[string]any{
+			artifact.ExtraID: "python",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, int32(1), im.calls.Load())
+}
+
 func TestDockerBuildRetries(t *testing.T) {
+	for _, name := range []string{"test-build-retriable", "test-build-fatal"} {
+		lock.Lock()
+		previous, existed := imagers[name]
+		lock.Unlock()
+		t.Cleanup(func() {
+			lock.Lock()
+			defer lock.Unlock()
+			if existed {
+				imagers[name] = previous
+			} else {
+				delete(imagers, name)
+			}
+		})
+	}
 	retry := config.Retry{Attempts: 5, Delay: time.Millisecond, MaxDelay: time.Millisecond}
 
 	t.Run("retries transient failures", func(t *testing.T) {

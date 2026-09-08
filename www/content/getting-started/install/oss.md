@@ -188,7 +188,7 @@ Requires Go 1.27.
 
 This script does not install anything.
 It downloads, verifies, and runs GoReleaser, so you can use it in scripts and
-CI pipelines.
+CI pipelines.[^coreutils]
 
 ```bash
 curl -sfL https://goreleaser.com/static/run | VERSION=__VERSION__ bash -s -- check
@@ -300,6 +300,8 @@ environment variable to `nightly`.
 
 Install options with the "Community Owned" badge are maintained by the community
 and might not always be up to date.
+
+[^coreutils]: Requires GNU Coreutils with the unprefixed `sha256sum` command on `PATH`.
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [cosign]: https://github.com/sigstore/cosign

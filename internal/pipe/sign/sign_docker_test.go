@@ -3,6 +3,7 @@ package sign
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -77,7 +79,6 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestDockerSignArtifacts(t *testing.T) {
-	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
 	// the cases below are about which artifacts get signed and how the
 	// signature is named, not about cosign. Appending
@@ -120,7 +121,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Artifacts: "all",
 					Stdin:     &password,
 					Cmd:       "cosign",
-					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}", "--yes"},
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "--use-signing-config=false", "--tlog-upload=false", "${artifact}@${digest}", "--yes"},
 				},
 			},
 		},
@@ -271,7 +272,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 		wd, err := os.Getwd()
 		require.NoError(tb, err)
 		tmp := testlib.Mktmp(tb)
-		require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+		for _, sign := range cfg.Signs {
+			if sign.Cmd == "cosign" || sign.Certificate != "" {
+				require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+				break
+			}
+		}
 		ctx.Config.Dist = "dist"
 		require.NoError(tb, os.Mkdir("dist", 0o755))
 
@@ -281,6 +287,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 		require.NoError(tb, DockerPipe{}.Default(ctx))
 		if err := (DockerPipe{}).Publish(ctx); err != nil {
+			if detailed, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+				tb.Logf("signer output: %s", detailed.Output())
+			}
 			// the signer runs in a shell, so say where its files landed:
 			// "the signer did not write X" is otherwise indistinguishable
 			// from the shell having written X somewhere else.
@@ -310,6 +319,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 	for name, cfg := range v1Cases {
 		t.Run(name, func(t *testing.T) {
+			if name == "no signature file" {
+				testlib.CheckPath(t, "cosign")
+			}
 			testWithArtifacts(t, cfg, []artifact.Artifact{
 				{
 					Name: img1,

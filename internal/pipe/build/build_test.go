@@ -2,6 +2,7 @@ package build
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -176,6 +177,101 @@ func TestRunFullPipe(t *testing.T) {
 	require.FileExists(t, postOS)
 	require.FileExists(t, preOS)
 	require.FileExists(t, filepath.Join(folder, "build1_linux_amd64", "testing"))
+}
+
+func TestRunHookTemplatesDependentEnv(t *testing.T) {
+	testlib.SkipIfWindows(t, "subshells don't work in windows")
+	t.Parallel()
+
+	folder := t.TempDir()
+	out := filepath.Join(folder, "hook-env")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Builder: "fake",
+				Binary:  "testing",
+				Env: []string{
+					"A=value",
+					"B={{.Env.A}}",
+					"BUILD_REF={{.Env.B}}",
+				},
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{{
+						Cmd: fmt.Sprintf(`sh -c 'printf "%%s\n" "$A" "$B" "$BUILD_REF" "$C" "$D" > "$1"' sh %s`, out),
+						Env: []string{
+							"C={{.Env.B}}",
+							"D={{.Env.C}}",
+						},
+					}},
+				},
+				Targets: []string{"linux_amd64"},
+			},
+		},
+	}, testctx.WithCurrentTag("2.4.5"))
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	contents, err := os.ReadFile(out)
+	require.NoError(t, err)
+	require.Equal(t, "value\nvalue\nvalue\nvalue\nvalue\n", string(contents))
+}
+
+func TestRunHookTemplatesDirWithHookEnv(t *testing.T) {
+	testlib.SkipIfWindows(t, "subshells don't work in windows")
+	t.Parallel()
+
+	for name, tt := range map[string]struct {
+		ctxEnv map[string]string
+	}{
+		"hook-only env": {},
+		"hook overrides global env": {
+			ctxEnv: map[string]string{},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			folder := t.TempDir()
+			globalDir := filepath.Join(folder, "global")
+			hookDir := filepath.Join(folder, "hook")
+			require.NoError(t, os.MkdirAll(globalDir, 0o755))
+			require.NoError(t, os.MkdirAll(hookDir, 0o755))
+
+			if tt.ctxEnv != nil {
+				tt.ctxEnv["D"] = globalDir
+			}
+
+			out := filepath.Join(folder, "pwd")
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: folder,
+				Builds: []config.Build{
+					{
+						Builder: "fake",
+						Binary:  "testing",
+						Hooks: config.BuildHookConfig{
+							Pre: []config.Hook{{
+								Cmd: fmt.Sprintf(`sh -c 'pwd > "$1"' sh %s`, out),
+								Dir: "{{.Env.D}}",
+								Env: []string{
+									"D=" + hookDir,
+								},
+							}},
+						},
+						Targets: []string{"linux_amd64"},
+					},
+				},
+			}, testctx.WithCurrentTag("2.4.5"), testctx.WithEnv(tt.ctxEnv))
+
+			require.NoError(t, Pipe{}.Run(ctx))
+			contents, err := os.ReadFile(out)
+			require.NoError(t, err)
+			actual, err := filepath.EvalSymlinks(strings.TrimSpace(string(contents)))
+			require.NoError(t, err)
+			expected, err := filepath.EvalSymlinks(hookDir)
+			require.NoError(t, err)
+			require.Equal(t, expected, actual)
+		})
+	}
 }
 
 func TestRunFullPipeFail(t *testing.T) {

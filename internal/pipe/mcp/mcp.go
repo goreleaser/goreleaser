@@ -54,15 +54,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	// Migrate from deprecated mcp.github to top-level mcp if needed
 	if ctx.Config.MCP.GitHub.Name != "" && ctx.Config.MCP.Name == "" {
 		deprecate.Notice(ctx, "mcp.github")
-		ctx.Config.MCP.Name = ctx.Config.MCP.GitHub.Name
-		ctx.Config.MCP.Title = ctx.Config.MCP.GitHub.Title
-		ctx.Config.MCP.Description = ctx.Config.MCP.GitHub.Description
-		ctx.Config.MCP.Homepage = ctx.Config.MCP.GitHub.Homepage
-		ctx.Config.MCP.Packages = ctx.Config.MCP.GitHub.Packages
-		ctx.Config.MCP.Transports = ctx.Config.MCP.GitHub.Transports
-		ctx.Config.MCP.Disable = ctx.Config.MCP.GitHub.Disable
-		ctx.Config.MCP.Repository = ctx.Config.MCP.GitHub.Repository
-		ctx.Config.MCP.Auth = ctx.Config.MCP.GitHub.Auth
+		ctx.Config.MCP.MCPDetails = ctx.Config.MCP.GitHub
 	}
 
 	ctx.Config.MCP.Auth.Type = cmp.Or(ctx.Config.MCP.Auth.Type, proto.MethodNone)
@@ -142,6 +134,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	for _, pkg := range mcp.Packages {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
+			&pkg.Transport.URL,
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
 		}
@@ -155,6 +148,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			Version:      version,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
+				URL:  pkg.Transport.URL,
 			},
 		})
 	}

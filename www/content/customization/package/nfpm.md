@@ -205,15 +205,11 @@ nfpms:
 
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
+    # Supported source globs are expanded automatically.
     contents:
       # Basic file that applies to all packagers
       - src: path/to/foo
         dst: /usr/bin/foo
-
-        # Expand matching globs into individual files.
-        #
-        # Default: false.
-        expand: false
 
       # This will add all files in some/directory or in subdirectories at the
       # same level under the directory /etc. This means the tree structure in

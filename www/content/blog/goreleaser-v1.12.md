@@ -46,4 +46,4 @@ notes [here][oss-rel] and [here (for Pro)][pro-rel].
 
 [install]: /getting-started/install/
 [oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.12.0
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.12.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.12.0-pro

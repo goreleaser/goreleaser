@@ -185,10 +185,14 @@ func (Pipe) Run(ctx *context.Context) error {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
 
+			filter := artifact.And(filters...)
 			artifacts := ctx.Artifacts.Filter(
 				artifact.Or(
-					artifact.And(filters...),
-					artifact.ByType(artifact.PyWheel),
+					filter,
+					artifact.And(
+						artifact.ByType(artifact.PyWheel),
+						artifact.ByIDs(docker.IDs...),
+					),
 				),
 			)
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {

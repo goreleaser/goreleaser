@@ -108,8 +108,7 @@ func New(ctx *context.Context) *Template {
 		treeState = "dirty"
 	}
 
-	fields := map[string]any{}
-	maps.Copy(fields, map[string]any{
+	fields := Fields{
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,
@@ -145,7 +144,7 @@ func New(ctx *context.Context) *Template {
 		tagContents:     ctx.Git.TagContents,
 		tagBody:         ctx.Git.TagBody,
 		runtimeK:        ctx.Runtime,
-	})
+	}
 
 	return &Template{
 		fields: fields,
@@ -336,7 +335,7 @@ func (t *Template) ApplyAll(sps ...*string) error {
 		s := *sp
 		result, err := t.Apply(s)
 		if err != nil {
-			return newTmplError(s, err)
+			return err
 		}
 		*sp = result
 	}
@@ -368,7 +367,7 @@ func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
 	for _, s := range in {
 		applied, err := t.Apply(s)
 		if err != nil {
-			return nil, newTmplError(s, err)
+			return nil, err
 		}
 		if opt.filtering != nil && !opt.filtering(applied) {
 			continue
@@ -557,7 +556,7 @@ func readFile(path string) string {
 }
 
 func englishJoin(ss []string) string {
-	ss = slices.DeleteFunc(ss, func(s string) bool {
+	ss = slices.DeleteFunc(slices.Clone(ss), func(s string) bool {
 		return strings.TrimSpace(s) == ""
 	})
 	if len(ss) == 0 {

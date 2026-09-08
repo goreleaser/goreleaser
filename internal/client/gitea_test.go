@@ -1,6 +1,7 @@
 package client
 
 import (
+	stdctx "context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -15,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -31,6 +32,34 @@ func (s *GetInstanceURLSuite) TestWithScheme() {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: rootURL + "/api/v1",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, rootURL, result)
+}
+
+func (s *GetInstanceURLSuite) TestWithSubpath() {
+	t := s.T()
+	rootURL := "https://gitea.com/forge"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: rootURL + "/api/v1",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, rootURL, result)
+}
+
+func (s *GetInstanceURLSuite) TestWithSubpathTrailingSlash() {
+	t := s.T()
+	rootURL := "https://gitea.com/forge"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: rootURL + "/api/v1/",
 		},
 	})
 
@@ -128,30 +157,62 @@ func TestGetInstanceURLSuite(t *testing.T) {
 
 type GiteaReleasesTestSuite struct {
 	suite.Suite
-	url          string
+	srv          *httptest.Server
+	handlers     map[string]http.HandlerFunc
 	owner        string
 	repoName     string
 	tag          string
 	client       *giteaClient
-	releasesURL  string
+	releasesPath string
 	title        string
 	description  string
 	ctx          *context.Context
 	commit       string
 	isDraft      bool
 	isPrerelease bool
-	releaseURL   string
+	releasePath  string
 	releaseID    int64
 }
 
+// handle registers a handler for the given method and path. It replaces any
+// previously registered handler for the same pair.
+func (s *GiteaReleasesTestSuite) handle(method, path string, handler http.HandlerFunc) {
+	s.handlers[method+" "+path] = handler
+}
+
+func (s *GiteaReleasesTestSuite) handleString(method, path string, status int, body string) {
+	s.handle(method, path, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(status)
+		fmt.Fprint(w, body)
+	})
+}
+
+func (s *GiteaReleasesTestSuite) handleJSON(method, path string, body any) {
+	s.T().Helper()
+	bts, err := json.Marshal(body)
+	s.Require().NoError(err)
+	s.handle(method, path, func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(bts)
+	})
+}
+
 func (s *GiteaReleasesTestSuite) SetupTest() {
-	httpmock.Activate()
-	s.url = "https://gitea.example.com"
+	s.handlers = map[string]http.HandlerFunc{}
+	s.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		handler, ok := s.handlers[r.Method+" "+r.URL.Path]
+		if !ok {
+			http.Error(w, "unexpected request: "+r.Method+" "+r.URL.Path, http.StatusNotImplemented)
+			return
+		}
+		handler(w, r)
+	}))
 	s.owner = "owner"
 	s.repoName = "repoName"
-	s.releasesURL = fmt.Sprintf(
-		"%v/api/v1/repos/%v/%v/releases",
-		s.url,
+	s.releasesPath = fmt.Sprintf(
+		"/api/v1/repos/%v/%v/releases",
 		s.owner,
 		s.repoName,
 	)
@@ -188,15 +249,15 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	)
 
 	s.releaseID = 666
-	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
-	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
-	newClient, err := gitea.NewClient(s.url)
+	s.releasePath = fmt.Sprintf("%v/%v", s.releasesPath, s.releaseID)
+	s.handleString(http.MethodGet, "/api/v1/version", http.StatusOK, `{"version":"1.12.0"}`)
+	newClient, err := gitea.NewClient(s.srv.URL)
 	s.Require().NoError(err)
 	s.client = &giteaClient{client: newClient}
 }
 
 func (s *GiteaReleasesTestSuite) TearDownTest() {
-	httpmock.DeactivateAndReset()
+	s.srv.Close()
 }
 
 type GetExistingReleaseSuite struct {
@@ -205,7 +266,7 @@ type GetExistingReleaseSuite struct {
 
 func (s *GetExistingReleaseSuite) TestNoReleases() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
+	s.handleString(http.MethodGet, s.releasesPath, http.StatusOK, "[]")
 
 	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
@@ -214,7 +275,7 @@ func (s *GetExistingReleaseSuite) TestNoReleases() {
 
 func (s *GetExistingReleaseSuite) TestNoRepo() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
+	s.handleString(http.MethodGet, s.releasesPath, http.StatusInternalServerError, "")
 
 	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
@@ -224,9 +285,7 @@ func (s *GetExistingReleaseSuite) TestNoRepo() {
 func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	t := s.T()
 	release := gitea.Release{TagName: s.tag}
-	resp, err := httpmock.NewJsonResponder(200, []gitea.Release{release})
-	require.NoError(t, err)
-	httpmock.RegisterResponder("GET", s.releasesURL, resp)
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{release})
 
 	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.NotNil(t, result)
@@ -234,8 +293,62 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 }
 
+func (s *GetExistingReleaseSuite) TestReleaseExistsOnFallbackSecondPage() {
+	t := s.T()
+	release := gitea.Release{TagName: s.tag}
+	s.handle(http.MethodGet, s.releasesPath, func(w http.ResponseWriter, r *http.Request) {
+		var releases []gitea.Release
+		switch r.URL.Query().Get("page") {
+		case "", "1":
+			releases = []gitea.Release{{TagName: "older-tag"}}
+		case "2":
+			releases = []gitea.Release{release}
+		default:
+			releases = []gitea.Release{}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		assert.NoError(t, json.NewEncoder(w).Encode(releases))
+	})
+
+	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.Equal(t, release, *result)
+}
+
 func TestGiteaGetExistingReleaseSuite(t *testing.T) {
 	suite.Run(t, new(GetExistingReleaseSuite))
+}
+
+func TestGiteaGetExistingReleaseByTag(t *testing.T) {
+	listed := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch r.URL.Path {
+		case "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.22.0"}`)
+		case "/api/v1/repos/owner/repo/releases/tags/v1.0.0":
+			fmt.Fprint(w, `{"id":123,"tag_name":"v1.0.0"}`)
+		case "/api/v1/repos/owner/repo/releases":
+			listed = true
+			http.Error(w, "unexpected release list", http.StatusInternalServerError)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	release, err := client.getExistingRelease(ctx, "owner", "repo", "v1.0.0")
+	require.NoError(t, err)
+	require.False(t, listed)
+	require.NotNil(t, release)
+	require.EqualValues(t, 123, release.ID)
 }
 
 type GiteacreateReleaseSuite struct {
@@ -251,9 +364,7 @@ func (s *GiteacreateReleaseSuite) TestSuccess() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	resp, err := httpmock.NewJsonResponder(200, &expectedRelease)
-	require.NoError(t, err)
-	httpmock.RegisterResponder("POST", s.releasesURL, resp)
+	s.handleJSON(http.MethodPost, s.releasesPath, &expectedRelease)
 
 	release, err := s.client.createRelease(s.ctx, s.title, s.description)
 	require.NoError(t, err)
@@ -263,7 +374,7 @@ func (s *GiteacreateReleaseSuite) TestSuccess() {
 
 func (s *GiteacreateReleaseSuite) TestError() {
 	t := s.T()
-	httpmock.RegisterResponder("POST", s.releasesURL, httpmock.NewStringResponder(400, ""))
+	s.handleString(http.MethodPost, s.releasesPath, http.StatusBadRequest, "")
 
 	release, err := s.client.createRelease(s.ctx, s.title, s.description)
 	require.Error(t, err)
@@ -287,9 +398,7 @@ func (s *GiteaupdateReleaseSuite) TestSuccess() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	resp, err := httpmock.NewJsonResponder(200, &expectedRelease)
-	require.NoError(t, err)
-	httpmock.RegisterResponder("PATCH", s.releaseURL, resp)
+	s.handleJSON(http.MethodPatch, s.releasePath, &expectedRelease)
 
 	release, err := s.client.updateRelease(s.ctx, s.title, s.description, s.releaseID)
 	require.NoError(t, err)
@@ -298,7 +407,7 @@ func (s *GiteaupdateReleaseSuite) TestSuccess() {
 
 func (s *GiteaupdateReleaseSuite) TestError() {
 	t := s.T()
-	httpmock.RegisterResponder("PATCH", s.releaseURL, httpmock.NewStringResponder(400, ""))
+	s.handleString(http.MethodPatch, s.releasePath, http.StatusBadRequest, "")
 
 	release, err := s.client.updateRelease(s.ctx, s.title, s.description, s.releaseID)
 	require.Error(t, err)
@@ -307,13 +416,22 @@ func (s *GiteaupdateReleaseSuite) TestError() {
 
 func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
 	t := s.T()
-	fileEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s/contents/%s", s.url, s.owner, s.repoName, "file.txt")
-	projectEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s", s.url, s.owner, s.repoName)
+	filePath := fmt.Sprintf("/api/v1/repos/%s/%s/contents/%s", s.owner, s.repoName, "file.txt")
+	projectPath := fmt.Sprintf("/api/v1/repos/%s/%s", s.owner, s.repoName)
 
-	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
-	httpmock.RegisterResponder("GET", fileEndpoint, httpmock.NewStringResponder(404, ""))
-	httpmock.RegisterResponder("GET", projectEndpoint, httpmock.NewStringResponder(200, ""))
-	httpmock.RegisterResponder("POST", fileEndpoint, httpmock.NewStringResponder(201, "{\n  \"content\": {\n    \"name\": \"test.file\",\n    \"path\": \"test.file\",\n    \"sha\": \"3b18e512dba79e4c8300dd08aeb37f8e728b8dad\",\n    \"type\": \"file\",\n    \"size\": 12,\n    \"encoding\": \"base64\",\n    \"content\": \"aGVsbG8gd29ybGQK\"\n  }\n}"))
+	s.handleString(http.MethodGet, filePath, http.StatusNotFound, "")
+	s.handleString(http.MethodGet, projectPath, http.StatusOK, "")
+	s.handleString(http.MethodPost, filePath, http.StatusCreated, `{
+  "content": {
+    "name": "test.file",
+    "path": "test.file",
+    "sha": "3b18e512dba79e4c8300dd08aeb37f8e728b8dad",
+    "type": "file",
+    "size": 12,
+    "encoding": "base64",
+    "content": "aGVsbG8gd29ybGQK"
+  }
+}`)
 
 	author := config.CommitAuthor{Name: s.owner}
 	repo := Repo{Owner: s.owner, Name: s.repoName}
@@ -343,7 +461,7 @@ func (s *GiteaCreateReleaseSuite) TestTemplateError() {
 
 func (s *GiteaCreateReleaseSuite) TestErrorGettingExistingRelease() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
+	s.handleString(http.MethodGet, s.releasesPath, http.StatusNotFound, "")
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
 	require.Empty(t, releaseID)
@@ -353,10 +471,8 @@ func (s *GiteaCreateReleaseSuite) TestErrorGettingExistingRelease() {
 func (s *GiteaCreateReleaseSuite) TestErrorUpdatingRelease() {
 	t := s.T()
 	expectedRelease := gitea.Release{TagName: s.tag}
-	resp, err := httpmock.NewJsonResponder(200, []gitea.Release{expectedRelease})
-	require.NoError(t, err)
-	httpmock.RegisterResponder("GET", s.releasesURL, resp)
-	httpmock.RegisterResponder("PATCH", s.releaseURL, httpmock.NewStringResponder(400, ""))
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{expectedRelease})
+	s.handleString(http.MethodPatch, s.releasePath, http.StatusBadRequest, "")
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
 	require.Empty(t, releaseID)
@@ -373,12 +489,8 @@ func (s *GiteaCreateReleaseSuite) TestSuccessUpdatingRelease() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	resp, err := httpmock.NewJsonResponder(200, []gitea.Release{expectedRelease})
-	require.NoError(t, err)
-	httpmock.RegisterResponder("GET", s.releasesURL, resp)
-	resp, err = httpmock.NewJsonResponder(200, &expectedRelease)
-	require.NoError(t, err)
-	httpmock.RegisterResponder("PATCH", s.releaseURL, resp)
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{expectedRelease})
+	s.handleJSON(http.MethodPatch, s.releasePath, &expectedRelease)
 
 	newDescription := "NewDescription"
 	releaseID, err := s.client.CreateRelease(s.ctx, newDescription)
@@ -388,8 +500,8 @@ func (s *GiteaCreateReleaseSuite) TestSuccessUpdatingRelease() {
 
 func (s *GiteaCreateReleaseSuite) TestErrorCreatingRelease() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
-	httpmock.RegisterResponder("POST", s.releasesURL, httpmock.NewStringResponder(400, ""))
+	s.handleString(http.MethodGet, s.releasesPath, http.StatusOK, "[]")
+	s.handleString(http.MethodPost, s.releasesPath, http.StatusBadRequest, "")
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
 	require.Empty(t, releaseID)
@@ -398,7 +510,7 @@ func (s *GiteaCreateReleaseSuite) TestErrorCreatingRelease() {
 
 func (s *GiteaCreateReleaseSuite) TestSuccessCreatingRelease() {
 	t := s.T()
-	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
+	s.handleString(http.MethodGet, s.releasesPath, http.StatusOK, "[]")
 	expectedRelease := gitea.Release{
 		ID:           666,
 		TagName:      s.tag,
@@ -407,9 +519,7 @@ func (s *GiteaCreateReleaseSuite) TestSuccessCreatingRelease() {
 		IsDraft:      s.isDraft,
 		IsPrerelease: s.isPrerelease,
 	}
-	resp, err := httpmock.NewJsonResponder(200, &expectedRelease)
-	require.NoError(t, err)
-	httpmock.RegisterResponder("POST", s.releasesURL, resp)
+	s.handleJSON(http.MethodPost, s.releasesPath, &expectedRelease)
 
 	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
 	require.Equal(t, fmt.Sprint(expectedRelease.ID), releaseID)
@@ -422,8 +532,8 @@ func TestGiteaCreateReleaseSuite(t *testing.T) {
 
 type GiteaUploadSuite struct {
 	GiteaReleasesTestSuite
-	artifact              *artifact.Artifact
-	releaseAttachmentsURL string
+	artifact               *artifact.Artifact
+	releaseAttachmentsPath string
 }
 
 func (s *GiteaUploadSuite) SetupTest() {
@@ -434,7 +544,7 @@ func (s *GiteaUploadSuite) SetupTest() {
 	require.NotNil(t, file)
 	_ = file.Close()
 	s.artifact = &artifact.Artifact{Name: "ArtifactName", Path: file.Name()}
-	s.releaseAttachmentsURL = fmt.Sprintf("%v/assets", s.releaseURL)
+	s.releaseAttachmentsPath = fmt.Sprintf("%v/assets", s.releasePath)
 }
 
 func (s *GiteaUploadSuite) TearDownTest() {
@@ -449,7 +559,7 @@ func (s *GiteaUploadSuite) TestErrorParsingReleaseID() {
 
 func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 	t := s.T()
-	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, httpmock.NewStringResponder(400, ""))
+	s.handleString(http.MethodPost, s.releaseAttachmentsPath, http.StatusBadRequest, "")
 
 	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.ErrorContains(t, err, "unknown API error: 400")
@@ -457,12 +567,9 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 
 func (s *GiteaUploadSuite) TestSuccess() {
 	t := s.T()
-	attachment := gitea.Attachment{}
-	resp, err := httpmock.NewJsonResponder(200, &attachment)
-	require.NoError(t, err)
-	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, resp)
+	s.handleJSON(http.MethodPost, s.releaseAttachmentsPath, &gitea.Attachment{})
 
-	err = s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
+	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.NoError(t, err)
 }
 
@@ -764,6 +871,126 @@ func TestGiteaNewGiteaInstanceURLError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: "{{ .NoKeyLikeThat }}"}})
 	_, err := newGitea(ctx, "giteatoken")
 	require.Error(t, err)
+}
+
+func TestGiteaNewGiteaPreservesSubpath(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path != "/forge/api/v1/version" {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusNotFound)
+			return
+		}
+		fmt.Fprint(w, `{"version":"1.22.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL + "/forge/api/v1"},
+	})
+	_, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+}
+
+func TestGiteaVersionRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path != "/api/v1/version" {
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+			return
+		}
+		select {
+		case entered <- struct{}{}:
+		default:
+		}
+		<-releaseResponse
+		fmt.Fprint(w, `{"version":"1.22.0"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := newGitea(ctx, "giteatoken")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for Gitea version request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("Gitea version request did not return after cancellation")
+	}
+	close(releaseResponse)
+}
+
+func TestGiteaChangelogRequestUsesReleaseContext(t *testing.T) {
+	entered := make(chan struct{}, 1)
+	releaseResponse := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch r.URL.Path {
+		case "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.22.0"}`)
+		case "/api/v1/repos/someone/something/compare/v1.0.0...v1.1.0":
+			select {
+			case entered <- struct{}{}:
+			default:
+			}
+			<-releaseResponse
+			fmt.Fprint(w, `{"commits":[]}`)
+		default:
+			http.Error(w, "unexpected "+r.URL.Path, http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	baseCtx, cancel := stdctx.WithCancel(t.Context())
+	ctx := testctx.WrapWithCfg(baseCtx, config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := client.Changelog(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+		done <- err
+	}()
+
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		t.Fatal("timed out waiting for Gitea compare request")
+	}
+
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		close(releaseResponse)
+		<-done
+		t.Fatal("Gitea compare request did not return after cancellation")
+	}
+	close(releaseResponse)
 }
 
 func TestGiteaCreateFileNewFile(t *testing.T) {

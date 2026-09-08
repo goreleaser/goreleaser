@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -1379,8 +1380,7 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestBuildModTimestamp(t *testing.T) {
-	// round to seconds since this will be a unix timestamp
-	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	modTime := time.Date(2023, time.January, 2, 3, 4, 5, 0, time.UTC)
 
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
@@ -1389,15 +1389,8 @@ func TestBuildModTimestamp(t *testing.T) {
 		config.Project{
 			Env: []string{"GO_FLAGS=-v"},
 			Builds: []config.Build{{
-				ID:     "foo",
-				Binary: "bin/foo-{{ .Version }}",
-				Targets: []string{
-					"linux_amd64",
-					"darwin_amd64",
-					"linux_arm_6",
-					"linux_mips_softfloat",
-					"linux_mips64le_softfloat",
-				},
+				ID:           "foo",
+				Binary:       "bin/foo-{{ .Version }}",
 				Env:          []string{"GO111MODULE=off"},
 				Asmflags:     []string{".=", "all="},
 				Gcflags:      []string{"all="},
@@ -1411,27 +1404,19 @@ func TestBuildModTimestamp(t *testing.T) {
 		testctx.WithVersion("5.6.7"))
 
 	build := ctx.Config.Builds[0]
-	for _, target := range build.Targets {
-		bin, terr := tmpl.New(ctx).Apply(build.Binary)
-		require.NoError(t, terr)
+	bin, err := tmpl.New(ctx).Apply(build.Binary)
+	require.NoError(t, err)
+	require.NoError(t, Default.Build(ctx, build, api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Name:   bin,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, bin),
+	}))
 
-		err := Default.Build(ctx, build, api.Options{
-			Target: mustParse(t, runtimeTarget),
-			Name:   bin,
-			Path:   filepath.Join(folder, "dist", target, bin),
-		})
-		require.NoError(t, err)
-	}
-
-	for _, bin := range ctx.Artifacts.List() {
-		if bin.Type != artifact.Binary {
-			continue
-		}
-
-		fi, err := os.Stat(bin.Path)
-		require.NoError(t, err)
-		require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
-	}
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	fi, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.Equal(t, modTime, fi.ModTime().UTC())
 }
 
 func TestBuildGoBuildLine(t *testing.T) {
@@ -1778,7 +1763,7 @@ func TestOverrides(t *testing.T) {
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
-			require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
+			require.Equal(t, []string{"BAR=foo", "FOO=bar", "FOO=overridden"}, dets.Env)
 		})
 	}
 
@@ -2062,6 +2047,40 @@ func TestOverrides(t *testing.T) {
 			Env:     []string{},
 		}, dets)
 	})
+
+	t.Run("env keeps the definition order", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.Wrap(t.Context()),
+			config.Build{
+				Env: []string{"SYSROOT=/usr"},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "darwin",
+						Goarch: "arm64",
+						Env: []string{
+							"SYSROOT=/opt/osxcross",
+							"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+						},
+					},
+				},
+			}, mustParse(t, "darwin_arm64"),
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I{{ .Env.SYSROOT }}/include",
+		}, dets.Env)
+
+		// entries that reference an earlier one must resolve to its last value.
+		out, err := base.TemplateEnv(dets.Env, tmpl.New(testctx.Wrap(t.Context())))
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"SYSROOT=/usr",
+			"SYSROOT=/opt/osxcross",
+			"CGO_CFLAGS=-I/opt/osxcross/include",
+		}, out)
+	})
 }
 
 func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
@@ -2117,25 +2136,6 @@ func TestInvalidGoBinaryTpl(t *testing.T) {
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
 	}))
-}
-
-func TestBuildOutput(t *testing.T) {
-	t.Run("empty", func(t *testing.T) {
-		require.Empty(t, buildOutput([]byte{}))
-	})
-	t.Run("downloading only", func(t *testing.T) {
-		require.Empty(t, buildOutput([]byte(`
-go: downloading github.com/atotto/clipboard v0.1.4
-go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
-		`)))
-	})
-	t.Run("mixed", func(t *testing.T) {
-		require.NotEmpty(t, buildOutput([]byte(`
-go: downloading github.com/atotto/clipboard v0.1.4
-go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
-something something
-		`)))
-	})
 }
 
 func TestArtifactType(t *testing.T) {
@@ -2233,4 +2233,227 @@ func mustParse(tb testing.TB, target string) Target {
 	got, err := Default.Parse(target)
 	require.NoError(tb, err)
 	return got.(Target)
+}
+
+func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
+	for mode, ext := range map[string]string{
+		"c-archive": cArchiveExt(),
+		"c-shared":  cSharedExt(),
+	} {
+		t.Run(mode, func(t *testing.T) {
+			folder := t.TempDir()
+			writeGoMod(t, folder, "github.com/foo/bar")
+			writeCExportMain(t, folder)
+
+			target := mustParse(t, runtimeTarget)
+			build := config.Build{
+				ID:           "cexport",
+				Dir:          folder,
+				Main:         ".",
+				Tool:         "go",
+				Command:      "build",
+				Buildmode:    mode,
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				Env:          []string{"CGO_ENABLED=1"},
+			}
+			options := api.Options{
+				Target: target,
+				Name:   "cexport" + ext,
+				Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
+				Ext:    ext,
+			}
+			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			require.NoError(t, Default.Build(ctx, build, options))
+
+			libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
+			require.Len(t, libraries, 1)
+			require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
+
+			headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
+			require.Len(t, headers, 1)
+			require.Equal(t, filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, "cexport.h")), headers[0].Path)
+			require.Equal(t, "cexport.h", headers[0].Name)
+			require.Equal(t, target.Target, headers[0].Target)
+			require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
+			require.Equal(t, "cexport.h", headers[0].Extra[artifact.ExtraBinary])
+			require.Equal(t, ".h", headers[0].Extra[artifact.ExtraExt])
+
+			// headers go into the archives, so they need the same mod
+			// timestamp the library gets, otherwise archives stop being
+			// reproducible.
+			info, err := os.Stat(headers[0].Path)
+			require.NoError(t, err)
+			require.Equal(t, modTime, info.ModTime().UTC())
+		})
+	}
+}
+
+func TestBuildCgoLibraryFailureDoesNotRegisterStaleHeader(t *testing.T) {
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeCExportMain(t, folder)
+
+	target := mustParse(t, runtimeTarget)
+	output := filepath.Join(folder, "dist", runtimeTarget, "cexport.a")
+	require.NoError(t, os.MkdirAll(filepath.Dir(output), 0o755))
+	require.NoError(t, os.WriteFile(strings.TrimSuffix(output, ".a")+".h", []byte("stale"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{{
+		ID:        "cexport",
+		Dir:       folder,
+		Main:      ".",
+		Tool:      "go",
+		Command:   "build",
+		Buildmode: "c-archive",
+		Flags:     []string{"-flag-that-dont-exists-to-force-failure"},
+	}}})
+
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: target,
+		Name:   "cexport.a",
+		Path:   output,
+		Ext:    ".a",
+	})
+	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	require.Empty(t, ctx.Artifacts.List())
+}
+
+func TestBuildCgoLibraryHeaderTimestampFailure(t *testing.T) {
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeCExportMain(t, folder)
+
+	ext := cArchiveExt()
+	output := filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext)
+	require.NoError(t, os.MkdirAll(filepath.Dir(output), 0o755))
+
+	build := config.Build{
+		ID:           "cexport",
+		Dir:          folder,
+		Main:         ".",
+		Tool:         "go",
+		Command:      "build",
+		Buildmode:    "c-archive",
+		ModTimestamp: `{{ if eq .ArtifactExt ".h" }}invalid{{ else }}1700000000{{ end }}`,
+		Env:          []string{"CGO_ENABLED=1"},
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+
+	err := Default.Build(ctx, build, api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Name:   "cexport" + ext,
+		Path:   output,
+		Ext:    ext,
+	})
+	header := strings.TrimSuffix(output, ext) + ".h"
+	require.ErrorContains(t, err, "chtimes: "+header+":")
+	require.ErrorContains(t, err, `parsing "invalid": invalid syntax`)
+	require.FileExists(t, header)
+	require.Empty(t, ctx.Artifacts.List())
+
+	info, err := os.Stat(output)
+	require.NoError(t, err)
+	require.Equal(t, time.Unix(1700000000, 0).UTC(), info.ModTime().UTC())
+}
+
+func writeCExportMain(tb testing.TB, folder string) {
+	tb.Helper()
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte("package main\n\nimport \"C\"\n\n//export Add\nfunc Add(a, b C.int) C.int {\n\treturn a + b\n}\n\nfunc main() {}\n"),
+		0o644,
+	))
+}
+
+func cArchiveExt() string {
+	if runtime.GOOS == "windows" {
+		return ".lib"
+	}
+	return ".a"
+}
+
+func cSharedExt() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return ".dylib"
+	case "windows":
+		return ".dll"
+	default:
+		return ".so"
+	}
+}
+
+func TestBuildVariadicWasmArtifactsExistWithModTimestamp(t *testing.T) {
+	modTime := time.Date(2023, time.November, 14, 22, 13, 20, 0, time.UTC)
+
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "foo"))
+
+	target := mustParse(t, "js_wasm")
+	build := config.Build{
+		ID:           "foo",
+		Main:         "./cmd/...",
+		Tool:         "go",
+		Command:      "build",
+		ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "foo.wasm",
+		Path:   filepath.Join(folder, "dist", target.Target, "foo.wasm"),
+		Ext:    ".wasm",
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	require.Len(t, bins, 1)
+	require.Equal(t, filepath.ToSlash(filepath.Join("dist", target.Target, "foo.wasm")), bins[0].Path)
+	info, err := os.Stat(bins[0].Path)
+	require.NoError(t, err)
+	require.NotZero(t, info.Size())
+	require.Equal(t, modTime, info.ModTime().UTC())
+}
+
+func TestBuildGoBuildLineEllipsisOutput(t *testing.T) {
+	t.Parallel()
+
+	dir := filepath.Join("dist", "foo_js_wasm")
+	path := filepath.Join(dir, "app.wasm")
+
+	// go names the output itself when -o is a directory, which drops the
+	// registered extension. A single main gets the exact path instead.
+	for name, tt := range map[string]struct {
+		mains map[string]string
+		want  []string
+	}{
+		"single main gets an exact output path": {
+			mains: map[string]string{"app": "./cmd/app"},
+			want:  []string{"go", "build", "-o", path, "./cmd/app"},
+		},
+		"several mains get an output directory": {
+			mains: map[string]string{"app": "./cmd/app", "other": "./cmd/other"},
+			want:  []string{"go", "build", "-o", dir, "./cmd/app", "./cmd/other"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			build := config.Build{Main: "./cmd/...", Tool: "go", Command: "build"}
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+			cmd, err := buildGoBuildLine(ctx, build, build.BuildDetails, api.Options{
+				Path:   filepath.Join(dir, "foo.wasm"),
+				Target: mustParse(t, "js_wasm"),
+			}, &artifact.Artifact{Name: "app.wasm", Path: path}, tt.mains, nil)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, cmd)
+		})
+	}
 }

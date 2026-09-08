@@ -4,7 +4,6 @@ package rust
 import (
 	"errors"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -53,12 +52,36 @@ func (b *Builder) AllowConcurrentBuilds() bool { return false }
 // Prepare implements build.PreparedBuilder.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
 	for _, target := range build.Targets {
-		if clean, ok := stripGlibcVersion(target); ok {
-			target = clean
-		}
-		out, err := exec.CommandContext(ctx, "rustup", "target", "add", target).CombinedOutput()
+		parsed, err := b.Parse(target)
 		if err != nil {
-			return fmt.Errorf("could not add target %s: %w: %s", target, err, string(out))
+			return err
+		}
+		t := parsed.(Target)
+		var ext string
+		switch {
+		case t.Arch == "wasm":
+			ext = ".wasm"
+		case t.Os == "windows":
+			ext = ".exe"
+		}
+		opts, err := base.OptionsForTarget(ctx, build, t, ext)
+		if err != nil {
+			return err
+		}
+		env := ctx.Env.Strings()
+		tpl := tmpl.New(ctx).
+			WithBuildOptions(*opts).
+			WithEnvS(env).
+			WithArtifact(makeArtifact(build, *opts))
+		tenv, err := base.TemplateEnv(build.Env, tpl)
+		if err != nil {
+			return err
+		}
+		env = append(env, tenv...)
+
+		rustTarget := t.clean()
+		if err := base.Exec(ctx, []string{"rustup", "target", "add", rustTarget}, env, build.Dir); err != nil {
+			return fmt.Errorf("could not add target %s: %w", rustTarget, err)
 		}
 	}
 	return nil
@@ -156,25 +179,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		)
 	}
 	t := options.Target.(Target)
-	a := &artifact.Artifact{
-		Type:   artifact.Binary,
-		Path:   options.Path,
-		Name:   options.Name,
-		Goos:   t.Os,
-		Goarch: t.Arch,
-		Goarm:  t.Arm,
-		Target: t.Target,
-		Extra: map[string]any{
-			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			artifact.ExtraExt:     options.Ext,
-			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "rust",
-			keyAbi:                t.Abi,
-		},
-	}
-	if t.Libc != "" {
-		a.Extra[keyLibc] = t.Libc
-	}
+	a := makeArtifact(build, options)
 
 	env := []string{}
 	env = append(env, ctx.Env.Strings()...)
@@ -214,7 +219,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	realPath := filepath.Join(build.Dir, "target", t.clean(), "release", options.Name)
+	realPath := filepath.Join(build.Dir, "target", t.clean(), "release", filepath.Base(options.Name))
 	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err
 	}
@@ -229,6 +234,30 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	ctx.Artifacts.Add(a)
 	return nil
+}
+
+func makeArtifact(build config.Build, options api.Options) *artifact.Artifact {
+	t := options.Target.(Target)
+	a := &artifact.Artifact{
+		Type:   artifact.Binary,
+		Path:   options.Path,
+		Name:   options.Name,
+		Goos:   t.Os,
+		Goarch: t.Arch,
+		Goarm:  t.Arm,
+		Target: t.Target,
+		Extra: map[string]any{
+			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
+			artifact.ExtraExt:     options.Ext,
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "rust",
+			keyAbi:                t.Abi,
+		},
+	}
+	if t.Libc != "" {
+		a.Extra[keyLibc] = t.Libc
+	}
+	return a
 }
 
 func isSettingPackage(flags []string) bool {

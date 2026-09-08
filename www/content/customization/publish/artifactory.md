@@ -54,7 +54,9 @@ Supported variables:
 - `Arm`
 
 > [!NOTE]
-> Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
+> `.Os`, `.Arch`, and `.Arm` come from the selected artifact's metadata in
+> both `binary` and `archive` modes. These fields are empty when the artifact
+> has no corresponding platform metadata.
 
 ### Username
 
@@ -184,8 +186,8 @@ artifactories:
 
     # Upload mode. Valid options are `binary` and `archive`.
     #
-    # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name
-    #   are not supported. In that case these variables are empty.
+    # In either mode, .Os, .Arch, and .Arm come from the selected artifact's
+    #   metadata and are empty when that metadata is absent.
     #
     # If mode is `binary`, you'll need to have the archives section setup with
     #   format "binary" as well.

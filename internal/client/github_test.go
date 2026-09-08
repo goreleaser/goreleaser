@@ -12,10 +12,11 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/google/go-github/v91/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -163,6 +164,55 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 		client.Upload(ctx, "blah", &artifact.Artifact{}),
 		`strconv.ParseInt: parsing "blah": invalid syntax`,
 	)
+}
+
+func TestGitHubSecondaryRateLimitHonorsRetryAfter(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		retryAfter string
+		expected   time.Duration
+	}{
+		{"short delay", "1", time.Second},
+		{"absent header", "", time.Minute},
+		{"longer delay", "90", 90 * time.Second},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				var calls atomic.Int32
+
+				client, _ := githubTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+					switch r.URL.Path {
+					case "/rate_limit":
+						githubRateLimitResponse(w, 5000)
+					case "/repos/owner/repo/compare/v1...v2":
+						if calls.Add(1) == 1 {
+							githubSecondaryRateLimitResponse(w, tt.retryAfter)
+							return
+						}
+						fmt.Fprint(w, `{"commits":[]}`)
+					default:
+						http.Error(w, "unexpected "+r.URL.Path, http.StatusNotImplemented)
+					}
+				})
+
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					Retry: config.Retry{
+						Attempts: 3,
+						Delay:    10 * time.Millisecond,
+						MaxDelay: 5 * time.Minute,
+					},
+				})
+
+				start := time.Now()
+				_, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+				elapsed := time.Since(start)
+
+				require.NoError(t, err)
+				require.Equal(t, int32(2), calls.Load())
+				require.Equal(t, tt.expected, elapsed)
+			})
+		})
+	}
 }
 
 func TestGitHubReleaseURLTemplate(t *testing.T) {
@@ -446,7 +496,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
-			var pr github.NewPullRequest
+			var pr github.CreatePullRequest
 			assert.NoError(t, json.Unmarshal(got, &pr))
 			assert.Equal(t, "main", pr.GetBase())
 			assert.Equal(t, "someoneelse:something:foo", pr.GetHead())
@@ -530,7 +580,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
-			var pr github.NewPullRequest
+			var pr github.CreatePullRequest
 			assert.NoError(t, json.Unmarshal(got, &pr))
 			assert.Equal(t, "main", pr.GetBase())
 			assert.Equal(t, "someone:something:foo", pr.GetHead())
@@ -923,83 +973,73 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 
 func TestGitHubChangelogRetriesOnSecondaryRateLimit(t *testing.T) {
 	t.Parallel()
-	var compareCalls atomic.Int32
-	reset := time.Now().UTC().Add(time.Hour)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		switch r.URL.Path {
-		case "/api/v3/rate_limit":
-			w.WriteHeader(http.StatusOK)
-			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
-			fmt.Fprintf(w, `{"resources":{"core":{"remaining":5000,"reset":%s}}}`, string(resetstr))
-		case "/api/v3/repos/owner/repo/compare/v1...v2":
-			if compareCalls.Add(1) == 1 {
-				// Simulate the argo-cd failure: go-github maps a 403 with this
-				// documentation_url to *AbuseRateLimitError. Retry-After is in
-				// seconds; the SDK then short-circuits any request made before
-				// that window elapses, so MaxDelay below has to exceed it.
-				w.Header().Set("Retry-After", "1")
-				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprint(w, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
-				return
+	synctest.Test(t, func(t *testing.T) {
+		var compareCalls atomic.Int32
+		client, _ := githubTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/rate_limit":
+				githubRateLimitResponse(w, 5000)
+			case "/repos/owner/repo/compare/v1...v2":
+				if compareCalls.Add(1) == 1 {
+					// The SDK caches this one-second secondary rate-limit window.
+					githubSecondaryRateLimitResponse(w, "1")
+					return
+				}
+				fmt.Fprint(w, `{"commits":[]}`)
+			default:
+				http.Error(w, "unexpected "+r.URL.Path, http.StatusNotImplemented)
 			}
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{"commits":[]}`)
-		default:
-			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
-			http.Error(w, "unexpected", http.StatusTeapot)
-		}
-	}))
-	t.Cleanup(srv.Close)
+		}, github.WithMaxSecondaryRateLimitRetryAfterDuration(maxSecondaryRateLimitWait))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Retry: config.Retry{
+				Attempts: 3,
+				Delay:    10 * time.Millisecond,
+				MaxDelay: 2 * time.Second,
+			},
+		})
 
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GitHubURLs: config.GitHubURLs{API: srv.URL},
-		Retry: config.Retry{
-			Attempts: 3,
-			Delay:    10 * time.Millisecond,
-			MaxDelay: 2 * time.Second, // must exceed the 1s Retry-After window
-		},
+		start := time.Now()
+		items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
+		require.NoError(t, err)
+		require.Empty(t, items)
+		require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
+		require.GreaterOrEqual(t, time.Since(start), time.Second)
 	})
-	client, err := newGitHub(ctx, "test-token")
-	require.NoError(t, err)
-
-	items, err := client.Changelog(ctx, Repo{Owner: "owner", Name: "repo"}, "v1", "v2")
-	require.NoError(t, err)
-	require.Empty(t, items)
-	require.Equal(t, int32(2), compareCalls.Load(), "should have retried once after the secondary rate limit")
 }
 
 func TestGitHubCheckRateLimit(t *testing.T) {
 	t.Parallel()
-	now := time.Now().UTC()
-	reset := now.Add(1392 * time.Millisecond)
-	var called atomic.Bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		if r.URL.Path == "/api/v3/rate_limit" {
-			called.Store(true)
-			w.WriteHeader(http.StatusOK)
-			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
-			fmt.Fprintf(w, `{"resources":{"core":{"remaining":98,"reset":%s}}}`, string(resetstr))
-			return
+	synctest.Test(t, func(t *testing.T) {
+		cancellable, cancel := stdctx.WithCancel(t.Context())
+		defer cancel()
+		ctx := testctx.Wrap(cancellable)
+		client, transport := githubTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/rate_limit" {
+				http.Error(w, "unexpected "+r.URL.Path, http.StatusNotImplemented)
+				return
+			}
+			githubRateLimitResponse(w, 98)
+		})
+
+		done := make(chan struct{})
+		go func() {
+			client.checkRateLimit(ctx)
+			close(done)
+		}()
+
+		synctest.Wait()
+		require.Equal(t, int32(1), transport.calls.Load(), "should have checked rate limit")
+		select {
+		case <-done:
+			t.Fatal("rate limit check returned before cancellation")
+		default:
 		}
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
-	}))
-	t.Cleanup(srv.Close)
-
-	short, cancel := stdctx.WithTimeout(t.Context(), 250*time.Millisecond)
-	t.Cleanup(cancel)
-	ctx := testctx.WrapWithCfg(short, config.Project{
-		GitHubURLs: config.GitHubURLs{
-			API: srv.URL,
-		},
+		now := time.Now()
+		cancel()
+		<-done
+		require.ErrorIs(t, ctx.Err(), stdctx.Canceled)
+		require.Equal(t, now, time.Now(), "cancellation should not wait for the rate limit reset")
 	})
-	client, err := newGitHub(ctx, "test-token")
-	require.NoError(t, err)
-
-	client.checkRateLimit(ctx)
-
-	require.True(t, called.Load(), "should have checked rate limit")
 }
 
 func TestGitHubCreateRelease(t *testing.T) {
@@ -1291,6 +1331,64 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+				UseExistingDraft: true,
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test update draft release")
+	require.NoError(t, err)
+	require.Equal(t, "1", release)
+}
+
+func TestGitHubCreateReleaseUseExistingDraftCustomTitle(t *testing.T) {
+	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":1,"name":"Release v1.0.0","tag_name":"v1.0.0","draft":true,"body":"Existing draft release"}]`)
+			return
+		}
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/1" && r.Method == http.MethodPatch {
+			got, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			assert.JSONEq(t, `{"name": "Release v1.0.0", "tag_name": "v1.0.0", "body": "Existing draft release", "draft": true, "prerelease": false}`, string(got))
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 1, "name": "Release v1.0.0"}`)
+			return
+		}
+
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprint(w, `{"message":"release already exists"}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				NameTemplate: "Release {{ .Tag }}",
 				GitHub: config.Repo{
 					Owner: "goreleaser",
 					Name:  "test",
@@ -1815,19 +1913,33 @@ func TestGitHubCloseMilestoneNotFound(t *testing.T) {
 
 func TestGitHubUploadReplaceExisting(t *testing.T) {
 	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			fmt.Fprint(w, `{"message":"already exists"}`)
+			if uploads.Add(1) == 1 {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				fmt.Fprint(w, `{"message":"already exists"}`)
+				return
+			}
+			assetID.Store(789)
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"id":789,"name":"test-file.txt"}`)
 			return
 		}
 		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `[{"id":456,"name":"test-file.txt"}]`)
+			if id := assetID.Load(); id != 0 {
+				fmt.Fprintf(w, `[{"id":%d,"name":"test-file.txt"}]`, id)
+				return
+			}
+			fmt.Fprint(w, `[]`)
 			return
 		}
 		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			assetID.Store(0)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -1850,17 +1962,87 @@ func TestGitHubUploadReplaceExisting(t *testing.T) {
 	fmt.Fprint(f, "test content")
 	require.NoError(t, f.Close())
 	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
-	require.Error(t, err)
+	require.NoError(t, err)
+	require.EqualValues(t, 2, uploads.Load())
+	require.EqualValues(t, 789, assetID.Load())
+}
+
+func TestGitHubUploadReplaceExistingAfterRetry(t *testing.T) {
+	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			switch uploads.Add(1) {
+			case 1:
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprint(w, `{"message":"try again"}`)
+			case 2:
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				fmt.Fprint(w, `{"message":"already exists"}`)
+			default:
+				assetID.Store(789)
+				w.WriteHeader(http.StatusCreated)
+				fmt.Fprint(w, `{"id":789,"name":"test-file.txt"}`)
+			}
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			if id := assetID.Load(); id != 0 {
+				fmt.Fprintf(w, `[{"id":%d,"name":"test-file.txt"}]`, id)
+				return
+			}
+			fmt.Fprint(w, `[]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			assetID.Store(0)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API:    srv.URL,
+			Upload: srv.URL,
+		},
+		Release: config.Release{
+			GitHub:                   config.Repo{Owner: "owner", Name: "name"},
+			ReplaceExistingArtifacts: true,
+		},
+		Retry: config.Retry{Attempts: 2},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.CreateTemp(t.TempDir(), "upload-test")
+	require.NoError(t, err)
+	fmt.Fprint(f, "test content")
+	require.NoError(t, f.Close())
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
+	require.NoError(t, err)
+	require.EqualValues(t, 3, uploads.Load())
+	require.EqualValues(t, 789, assetID.Load())
 }
 
 func TestGitHubUploadNoReplace(t *testing.T) {
 	t.Parallel()
+	var assetID atomic.Int64
+	assetID.Store(456)
+	var uploads atomic.Int64
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			uploads.Add(1)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprint(w, `{"message":"already exists"}`)
 			return
+		}
+		if r.Method == http.MethodDelete {
+			t.Error("delete should not be called when replacement is disabled")
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	})
@@ -1882,6 +2064,8 @@ func TestGitHubUploadNoReplace(t *testing.T) {
 	require.NoError(t, f.Close())
 	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
 	require.Error(t, err)
+	require.EqualValues(t, 1, uploads.Load())
+	require.EqualValues(t, 456, assetID.Load())
 }
 
 func TestHeadString(t *testing.T) {
@@ -2279,9 +2463,14 @@ func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
 
 func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
 	t.Parallel()
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+		http.Error(w, "unexpected request", http.StatusBadRequest)
+	})
 	ctx := testctx.WrapWithCfg(
 		t.Context(),
 		config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
 			Release: config.Release{
 				NameTemplate:    "v1.0.0",
 				TargetCommitish: "{{ .NoKeyLikeThat }}",
@@ -2748,4 +2937,48 @@ func githubTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	}))
 	t.Cleanup(srv.Close)
 	return srv
+}
+
+// githubTestTransport serves requests from the given handler without any
+// network I/O, so tests can run inside a synctest bubble.
+type githubTestTransport struct {
+	handler http.HandlerFunc
+	calls   atomic.Int32
+}
+
+func (t *githubTestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	t.calls.Add(1)
+	rec := httptest.NewRecorder()
+	t.handler(rec, req)
+	resp := rec.Result()
+	resp.Request = req
+	return resp, nil
+}
+
+func githubTestClient(t *testing.T, handler http.HandlerFunc, opts ...github.ClientOptionsFunc) (*githubClient, *githubTestTransport) {
+	t.Helper()
+	transport := &githubTestTransport{handler: handler}
+	api, err := github.NewClient(append(
+		[]github.ClientOptionsFunc{github.WithHTTPClient(&http.Client{Transport: transport})},
+		opts...,
+	)...)
+	require.NoError(t, err)
+	return &githubClient{client: api}, transport
+}
+
+func githubRateLimitResponse(w http.ResponseWriter, remaining int) {
+	fmt.Fprintf(
+		w,
+		`{"resources":{"core":{"remaining":%d,"reset":%d}}}`,
+		remaining,
+		time.Now().Add(time.Hour).Unix(),
+	)
+}
+
+func githubSecondaryRateLimitResponse(w http.ResponseWriter, retryAfter string) {
+	if retryAfter != "" {
+		w.Header().Set("Retry-After", retryAfter)
+	}
+	w.WriteHeader(http.StatusForbidden)
+	fmt.Fprint(w, `{"message":"You have exceeded a secondary rate limit","documentation_url":"https://docs.github.com/rest/overview/rate-limits-for-the-rest-api#about-secondary-rate-limits"}`)
 }

@@ -34,6 +34,24 @@ func TestCopySymlink(t *testing.T) {
 	require.Equal(t, a, filepath.ToSlash(l))
 }
 
+func TestCopyDirectorySymlinkWithTrailingSeparator(t *testing.T) {
+	testlib.SkipIfWindows(t, "trailing slash follows directory symlinks on Unix")
+	t.Parallel()
+	src := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(src, "asset.txt"), []byte("asset"), 0o644))
+	link := filepath.Join(t.TempDir(), "assets")
+	require.NoError(t, os.Symlink(src, link))
+	dst := t.TempDir()
+
+	require.NoError(t, Copy(link+string(os.PathSeparator), dst))
+	data, err := os.ReadFile(filepath.Join(dst, "asset.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "asset", string(data))
+	info, err := os.Lstat(dst)
+	require.NoError(t, err)
+	require.True(t, info.IsDir())
+}
+
 func TestEqualFilesModeChanged(t *testing.T) {
 	testlib.SkipIfWindows(t)
 	tmp := t.TempDir()
@@ -106,6 +124,36 @@ func TestCopyTwoLevelDirectory(t *testing.T) {
 
 	requireEqualFiles(t, filepath.Join(srcDir, testFile), filepath.Join(dstDir, testFile))
 	requireEqualFiles(t, filepath.Join(srcLevel2, testFile), filepath.Join(dstDir, "level2", testFile))
+}
+
+func TestCopyDotRelativeDirectory(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	require.NoError(t, os.MkdirAll(filepath.Join("assets", "css"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join("assets", "index.html"), []byte("index"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join("assets", "css", "style.css"), []byte("style"), 0o644))
+	dstDir := t.TempDir()
+
+	require.NoError(t, Copy("./assets", filepath.Join(dstDir, "assets")))
+
+	requireEqualFiles(t, filepath.Join("assets", "index.html"), filepath.Join(dstDir, "assets", "index.html"))
+	requireEqualFiles(t, filepath.Join("assets", "css", "style.css"), filepath.Join(dstDir, "assets", "css", "style.css"))
+	require.NoFileExists(t, filepath.Join(dstDir, "assets", "assets", "index.html"))
+}
+
+func TestCopyDotDirectory(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	require.NoError(t, os.WriteFile("config.json", []byte("config"), 0o644))
+	require.NoError(t, os.WriteFile(".dockerignore", []byte("dist"), 0o644))
+	dstDir := t.TempDir()
+
+	require.NoError(t, Copy(".", dstDir))
+
+	requireEqualFiles(t, "config.json", filepath.Join(dstDir, "config.json"))
+	requireEqualFiles(t, ".dockerignore", filepath.Join(dstDir, ".dockerignore"))
+	require.NoFileExists(t, filepath.Join(dstDir, "configjson"))
+	require.NoFileExists(t, filepath.Join(dstDir, "dockerignore"))
 }
 
 func requireEqualFiles(tb testing.TB, a, b string) {

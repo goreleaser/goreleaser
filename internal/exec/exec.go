@@ -3,9 +3,12 @@ package exec
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/go-shellwords"
@@ -92,12 +95,9 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 }
 
 func executeCommand(c *command, artifact *artifact.Artifact) error {
-	log.WithField("args", c.Args).
-		WithField("artifact", artifact.Name).
-		Debug("executing command")
-
 	//nolint:gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
+	cmd.WaitDelay = time.Second
 	cmd.Env = []string{}
 	for _, key := range passthroughEnvVars {
 		if value := os.Getenv(key); value != "" {
@@ -110,26 +110,53 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 		cmd.Dir = c.Dir
 	}
 
+	log.WithField("args", redactArgs(c.Args, cmd.Env)).
+		WithField("artifact", artifact.Name).
+		Debug("executing command")
+
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	log := log.WithField("cmd", c.Args[0]).
 		WithField("artifact", artifact.Name)
 
 	log.Info("publishing")
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	if errors.Is(runErr, exec.ErrWaitDelay) && cmd.ProcessState.Success() {
+		log.Warn("command exited successfully but left its output open: output may be incomplete")
+		runErr = nil
+	}
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("publishing failed"),
 			gerrors.WithDetails("cmd", cmd.Args[0]),
 			gerrors.WithOutput(b.String()),
 		)
 	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
+	}
 
 	log.Debug("command finished successfully")
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }
 
 func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifact.Artifact {
@@ -145,6 +172,7 @@ func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifa
 		artifact.SBOM,
 		artifact.PySdist,
 		artifact.PyWheel,
+		artifact.SourceRPM,
 	}
 
 	if publisher.Checksum {
@@ -197,6 +225,9 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 	args, err := shellwords.Parse(cmd)
 	if err != nil {
 		return nil, err
+	}
+	if len(args) == 0 {
+		return nil, fmt.Errorf("publisher %q: command is empty", publisher.Name)
 	}
 
 	env := make([]string, len(publisher.Env))

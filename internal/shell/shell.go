@@ -3,6 +3,7 @@ package shell
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os/exec"
 	"strings"
@@ -25,33 +26,58 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	cmd.WaitDelay = time.Second
 	cmd.Env = env
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	stdout := redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), env)
+	cmd.Stderr = stderr
+	cmd.Stdout = stdout
 
 	if dir != "" {
 		cmd.Dir = dir
 	}
 
-	log.WithField("cmd", command).
+	log.WithField("cmd", redactArgs(command, cmd.Env)).
 		WithField("dir", dir).
 		Debug("running")
 
 	start := time.Now()
 	defer logext.Duration(start, time.Second*5)
 
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	if errors.Is(runErr, exec.ErrWaitDelay) && cmd.ProcessState.Success() {
+		log.WithField("cmd", command[0]).
+			Warn("command exited successfully but left its output open: output may be incomplete")
+		runErr = nil
+	}
+	stderrErr := stderr.Close()
+	stdoutErr := stdout.Close()
+	if runErr != nil {
 		return gerrors.Wrap(
-			err,
+			runErr,
 			gerrors.WithMessage("command failed"),
 			gerrors.WithDetails("cmd", command[0]),
 			gerrors.WithOutput(strings.TrimSpace(b.String())),
 		)
 	}
+	if stderrErr != nil {
+		return stderrErr
+	}
+	if stdoutErr != nil {
+		return stdoutErr
+	}
 
 	return nil
+}
+
+func redactArgs(args, env []string) []string {
+	redacted := make([]string, len(args))
+	for i, arg := range args {
+		redacted[i] = redact.String(arg, env)
+	}
+	return redacted
 }

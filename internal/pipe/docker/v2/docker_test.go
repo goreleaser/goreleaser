@@ -2,9 +2,11 @@ package docker
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -117,6 +119,158 @@ func TestMakeContext(t *testing.T) {
 	})
 }
 
+func TestMakeContextRemovesTemporaryDirOnCopyError(t *testing.T) {
+	for name, setup := range map[string]func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact){
+		"extra file": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+			t.Helper()
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "assets.bin"), []byte(strings.Repeat("a", 8192)), 0o644))
+			return config.DockerV2{
+				ID:         "test",
+				ExtraFiles: []string{"assets.bin", "missing.txt"},
+			}, nil
+		},
+		"artifact": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+			t.Helper()
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin"), []byte("binary"), 0o644))
+			return config.DockerV2{ID: "test"}, []*artifact.Artifact{
+				{
+					Name:   "mybin",
+					Path:   "mybin",
+					Goos:   "linux",
+					Goarch: "amd64",
+				},
+				{
+					Name:   "missing",
+					Path:   "missing",
+					Goos:   "linux",
+					Goarch: "amd64",
+				},
+			}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir, tmp := isolatedDockerContextTemp(t)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+			d, artifacts := setup(t, dir)
+
+			wd, err := makeContext(d, artifacts, "Dockerfile")
+
+			require.Error(t, err)
+			require.Empty(t, wd)
+			require.Empty(t, dockerContextDirs(t, tmp))
+		})
+	}
+}
+
+func TestBuildImageRemovesTemporaryDirOnSuccess(t *testing.T) {
+	dir, tmp := isolatedDockerContextTemp(t)
+	fakeDockerBuildxBuild(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin"), []byte("binary"), 0o644))
+
+	ctx := testctx.Wrap(t.Context())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
+
+	require.NoError(t, buildImage(ctx, config.DockerV2{
+		ID:         "test",
+		Dockerfile: "Dockerfile",
+		Images:     []string{"ghcr.io/foo/bar"},
+		Tags:       []string{"latest"},
+		Platforms:  []string{"linux/amd64"},
+	}, "--load"))
+
+	require.Empty(t, dockerContextDirs(t, tmp))
+}
+
+func TestMakeContextUsesStableAmd64Variant(t *testing.T) {
+	for name, order := range map[string][]string{
+		"v1 then v3": {"v1", "v3"},
+		"v3 then v1": {"v3", "v1"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir, _ := isolatedDockerContextTemp(t)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("FROM scratch\n"), 0o644))
+			for _, goamd64 := range []string{"v1", "v3"} {
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin-"+goamd64), []byte(goamd64), 0o644))
+			}
+
+			ctx := testctx.Wrap(t.Context())
+			for _, goamd64 := range order {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "mybin",
+					Path:    "mybin-" + goamd64,
+					Goos:    "linux",
+					Goarch:  "amd64",
+					Goamd64: goamd64,
+					Type:    artifact.Binary,
+					Extra: artifact.Extras{
+						artifact.ExtraID: "cli",
+					},
+				})
+			}
+
+			d := config.DockerV2{
+				ID:        "test",
+				IDs:       []string{"cli"},
+				Platforms: []string{"linux/amd64"},
+			}
+			wd, err := makeContext(d, contextArtifacts(ctx, d), "Dockerfile")
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = os.RemoveAll(wd)
+			})
+
+			content, err := os.ReadFile(filepath.Join(wd, "linux/amd64/mybin"))
+			require.NoError(t, err)
+			require.Equal(t, "v1", string(content))
+		})
+	}
+}
+
+func isolatedDockerContextTemp(t *testing.T) (string, string) {
+	t.Helper()
+	root := t.TempDir()
+	dir := filepath.Join(root, "work")
+	tmp := filepath.Join(root, "tmp")
+	require.NoError(t, os.MkdirAll(dir, 0o755))
+	require.NoError(t, os.MkdirAll(tmp, 0o755))
+	t.Setenv("TMPDIR", tmp)
+	t.Chdir(dir)
+	return dir, tmp
+}
+
+func dockerContextDirs(t *testing.T, tmp string) []string {
+	t.Helper()
+	entries, err := os.ReadDir(tmp)
+	require.NoError(t, err)
+	var dirs []string
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), "goreleaserdocker") {
+			dirs = append(dirs, entry.Name())
+		}
+	}
+	return dirs
+}
+
+func fakeDockerBuildxBuild(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	name := "docker"
+	script := "#!/bin/sh\nprintf 'sha256:test' > id.txt\n"
+	if testlib.IsWindows() {
+		name = "docker.bat"
+		script = "@echo off\r\necho sha256:test> id.txt\r\n"
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
 func TestPublishExtraArgs(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
 
@@ -169,6 +323,16 @@ func TestMakeArgs(t *testing.T) {
 	t.Run("no images", func(t *testing.T) {
 		_, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
+		}, nil)
+		testlib.AssertSkipped(t, err)
+	})
+	t.Run("no images ignores unused build args", func(t *testing.T) {
+		_, err := makeArgs(testctx.Wrap(t.Context(), testctx.Snapshot, testctx.WithEnv(map[string]string{})), config.DockerV2{
+			Dockerfile: filepath.Join("testdata", "dockerfiles", "pinned-digest"),
+			Images:     []string{"{{ if not .IsSnapshot }}ghcr.io/foo/bar{{ end }}"},
+			BuildArgs: map[string]string{
+				"RELEASE_ONLY": "{{ .Env.RELEASE_ONLY }}",
+			},
 		}, nil)
 		testlib.AssertSkipped(t, err)
 	})
@@ -373,6 +537,93 @@ func TestDisable(t *testing.T) {
 	})
 }
 
+func TestDoBuildEnvPrecedence(t *testing.T) {
+	// The helper is synchronous, so keep its race checks but skip the exit sleep.
+	t.Setenv("GORACE", os.Getenv("GORACE")+" atexit_sleep_ms=0")
+
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			binDir := t.TempDir()
+			writeDockerV2TestCommand(t, binDir)
+			t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			key := "GORELEASER_TEST_DOCKER_V2_ENV_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+			unsetEnv(t, key)
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+			t.Setenv("GO_WANT_DOCKER_V2_COMMAND_HELPER", "1")
+			t.Setenv("DOCKER_V2_ENV_HELPER_KEY", key)
+			record := filepath.Join(t.TempDir(), "record")
+			t.Setenv("DOCKER_V2_ENV_HELPER_RECORD", record)
+
+			cfg := config.Project{}
+			if tt.project != "" {
+				cfg.Env = []string{key + "=" + tt.project}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), cfg)
+			digest, err := doBuild(ctx, config.DockerV2{}, t.TempDir(), []string{"build"})
+			require.NoError(t, err)
+			require.Equal(t, "sha256:test", digest)
+
+			bts, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, string(bts))
+		})
+	}
+}
+
+func writeDockerV2TestCommand(t *testing.T, dir string) {
+	t.Helper()
+	script := fmt.Sprintf("#!/bin/sh\nexec %q -test.run=TestDockerV2CommandHelper -- \"$@\"\n", os.Args[0])
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "docker"), []byte(script), 0o755))
+	if testlib.IsWindows() {
+		script := fmt.Sprintf("@echo off\r\n%q -test.run=TestDockerV2CommandHelper -- %%*\r\n", os.Args[0])
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "docker.bat"), []byte(script), 0o755))
+	}
+}
+
+func TestDockerV2CommandHelper(_ *testing.T) {
+	if os.Getenv("GO_WANT_DOCKER_V2_COMMAND_HELPER") != "1" {
+		return
+	}
+
+	if err := os.WriteFile("id.txt", []byte("sha256:test"), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write id: %v\n", err)
+		os.Exit(2)
+	}
+	value := os.Getenv(os.Getenv("DOCKER_V2_ENV_HELPER_KEY"))
+	if err := os.WriteFile(os.Getenv("DOCKER_V2_ENV_HELPER_RECORD"), []byte(value), 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "write record: %v\n", err)
+		os.Exit(2)
+	}
+	os.Exit(0)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	require.NoError(t, os.Unsetenv(key))
+}
+
 func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {
 	// loopback refuses the connection at once. A missing unix socket makes the
 	// docker CLI on windows think about it for 5.46s.
@@ -393,6 +644,11 @@ func TestToPlatform(t *testing.T) {
 		"linux/amd64": {
 			Goos:   "linux",
 			Goarch: "amd64",
+		},
+		"linux/amd64/v3": {
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v3",
 		},
 		"linux/arm64": {
 			Goos:   "linux",
@@ -464,9 +720,11 @@ func TestToPlatform(t *testing.T) {
 
 func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
-		"linux/amd64":  {os: "linux", arch: "amd64"},
-		"linux/arm/v6": {os: "linux", arch: "arm", arm: "6"},
-		"linux":        {os: "linux"},
+		"linux/amd64":    {os: "linux", arch: "amd64", amd64: "v1"},
+		"linux/amd64/v3": {os: "linux", arch: "amd64", amd64: "v3"},
+		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
+		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
+		"linux":          {os: "linux"},
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))
@@ -501,11 +759,95 @@ func TestContextArtifacts(t *testing.T) {
 		})
 	}
 
+	for _, id := range []string{"id1", "id2"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   id + "-1.0.0-py3-none-any.whl",
+			Goos:   "all",
+			Goarch: "all",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraID: id,
+			},
+		})
+	}
+
 	arts := contextArtifacts(ctx, config.DockerV2{
 		Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
 		IDs:       []string{"id1"},
 	})
-	require.Len(t, arts, 3)
+	require.Len(t, arts, 4)
+
+	t.Run("no ids", func(t *testing.T) {
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
+		})
+		require.Len(t, arts, 5)
+	})
+
+	t.Run("amd64 variant", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		for _, goamd64 := range []string{"v1", "v3"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "mybin",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: goamd64,
+				Type:    artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "id1",
+				},
+			})
+		}
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/amd64/v3"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 1)
+		require.Equal(t, "v3", arts[0].Goamd64)
+	})
+
+	t.Run("arm64 variant", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    "mybin",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.0",
+			Type:    artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm64/v8"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 1)
+	})
+
+	t.Run("arm variants", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		for _, goarm := range []string{"5", "6", "7"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  goarm,
+				Type:   artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "id1",
+				},
+			})
+		}
+
+		arts := contextArtifacts(ctx, config.DockerV2{
+			Platforms: []string{"linux/arm/v5", "linux/arm/v6", "linux/arm/v7"},
+			IDs:       []string{"id1"},
+		})
+		require.Len(t, arts, 3)
+	})
 }
 
 func TestIsRetriableBuild(t *testing.T) {

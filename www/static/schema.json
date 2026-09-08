@@ -2114,9 +2114,6 @@
 					"template": {
 						"type": "string"
 					},
-					"verified": {
-						"type": "string"
-					},
 					"using": {
 						"type": "string"
 					},
@@ -2143,6 +2140,9 @@
 							"type": "string"
 						},
 						"type": "object"
+					},
+					"verified": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2720,8 +2720,7 @@
 							"oci",
 							"npm",
 							"pypi",
-							"nuget",
-							"mcpb"
+							"nuget"
 						]
 					},
 					"identifier": {
@@ -2771,6 +2770,9 @@
 							"streamable-http",
 							"sse"
 						]
+					},
+					"url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4850,7 +4852,8 @@
 							"package",
 							"archive",
 							"binary",
-							"sbom"
+							"sbom",
+							"none"
 						]
 					},
 					"ids": {
@@ -4932,24 +4935,12 @@
 				"type": "object"
 			},
 			"SlackAttachment": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
+				"additionalProperties": true,
+				"type": "object"
 			},
 			"SlackBlock": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
+				"additionalProperties": true,
+				"type": "object"
 			},
 			"Snapcraft": {
 				"properties": {

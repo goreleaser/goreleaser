@@ -3,7 +3,7 @@
 pkgname='mixed-quote-inside-description'
 pkgver=1.0.1
 pkgrel=1
-pkgdesc="Let's go, this is a 'test'"
+pkgdesc='Let'\''s go, this is a "test"'
 url=''
 arch=('aarch64' 'x86_64')
 license=('MIT')

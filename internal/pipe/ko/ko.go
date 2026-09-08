@@ -177,7 +177,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 type buildOptions struct {
 	importPath          string
-	main                string
 	flags               []string
 	env                 []string
 	imageRepos          []string
@@ -205,7 +204,6 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 			o.importPath: {
 				Ldflags: o.ldflags,
 				Flags:   o.flags,
-				Main:    o.main,
 				Env:     o.env,
 			},
 		}),
@@ -359,19 +357,36 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 	}
 
 	src := ref.Name()
-	for i := 1; i < len(opts.imageRepos); i++ {
-		for _, tag := range opts.tags {
-			dst := opts.imageRepos[i] + ":" + tag
-			digest, err := copyImage(src, dst)
-			if err != nil {
-				return err
-			}
-			ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
-			summary.Appendf("Pushed Docker image `%s`", dst)
+	for _, dst := range secondaryDestinations(opts) {
+		digest, err := copyImage(src, dst)
+		if err != nil {
+			return err
 		}
+		ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+		summary.Appendf("Pushed Docker image `%s`", dst)
 	}
 
 	return nil
+}
+
+func secondaryDestinations(opts *buildOptions) []string {
+	var dsts []string
+	importPath := strings.ToLower(strings.TrimPrefix(opts.importPath, build.StrictScheme))
+	for i := 1; i < len(opts.imageRepos); i++ {
+		po := &options.PublishOptions{
+			DockerRepo:          opts.imageRepos[i],
+			Bare:                opts.bare,
+			PreserveImportPaths: opts.preserveImportPaths,
+			BaseImportPaths:     opts.baseImportPaths,
+			Tags:                opts.tags,
+			LocalDomain:         opts.localDomain,
+		}
+		namer := options.MakeNamer(po)
+		for _, tag := range opts.tags {
+			dsts = append(dsts, namer(opts.imageRepos[i], importPath)+":"+tag)
+		}
+	}
+	return dsts
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
@@ -591,6 +606,7 @@ func copyImage(src, dst string) (string, error) {
 }
 
 func makeArtifact(id, name, digest string) *artifact.Artifact {
+	name = digestFreeReference(name)
 	art := &artifact.Artifact{
 		Type:  artifact.DockerManifest,
 		Name:  name,
@@ -604,4 +620,11 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		art.Extra[artifact.ExtraDigest] = digest
 	}
 	return art
+}
+
+func digestFreeReference(ref string) string {
+	if idx := strings.LastIndex(ref, "@"); idx != -1 {
+		return ref[:idx]
+	}
+	return ref
 }

@@ -40,9 +40,11 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installShellFiles makeWrapper unzip ];
 
   installPhase = ''
+    runHook preInstall
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath ([ git ])}
+    runHook postInstall
   '';
 
   meta = {

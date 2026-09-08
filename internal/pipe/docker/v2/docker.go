@@ -287,15 +287,20 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 				Debug("running docker build")
 			cmd := exec.CommandContext(ctx, "docker", arg...)
 			cmd.Dir = wd
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			cmd.Env = append(cmd.Environ(), ctx.Env.Strings()...)
 			var b bytes.Buffer
 			w := gio.Safe(&b)
-			cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-			cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-			if err := cmd.Run(); err != nil {
+			stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			cmd.Stderr = stderr
+			cmd.Stdout = stdout
+			runErr := cmd.Run()
+			stderrErr := stderr.Close()
+			stdoutErr := stdout.Close()
+			if runErr != nil {
 				if isFileNotFoundError(b.String()) {
 					return gerrors.Wrap(
-						err,
+						runErr,
 						gerrors.WithMessage("could not build docker image"),
 						gerrors.WithOutput(b.String()),
 						gerrors.WithDetails(
@@ -305,7 +310,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 					)
 				}
 				return gerrors.Wrap(
-					err,
+					runErr,
 					gerrors.WithMessage("could not build docker image"),
 					gerrors.WithOutput(b.String()),
 					gerrors.WithDetails(
@@ -313,6 +318,12 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 						"id", d.ID,
 					),
 				)
+			}
+			if stderrErr != nil {
+				return stderrErr
+			}
+			if stdoutErr != nil {
+				return stdoutErr
 			}
 			return nil
 		},
@@ -346,10 +357,10 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 		return dockerArgs{}, fmt.Errorf("invalid dockerfile: %w", err)
 	}
 
-	baseImg, err := getBaseImage(ctx, dockerfile)
-	if err != nil && !errors.Is(err, errNoBaseImage) {
+	baseImg, baseErr := getBaseImage(ctx, dockerfile, d.BuildArgs)
+	if baseErr != nil && !errors.Is(baseErr, errNoBaseImage) {
 		log.WithField("dockerfile", d.Dockerfile).
-			WithError(err).
+			WithError(baseErr).
 			Debug("could not resolve base image")
 	}
 
@@ -364,6 +375,9 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 	}
 	if len(images) == 0 {
 		return dockerArgs{}, pipe.Skip("no images")
+	}
+	if _, ok := errors.AsType[tmpl.Error](baseErr); ok {
+		return dockerArgs{}, fmt.Errorf("invalid build args: %w", baseErr)
 	}
 	tags, err := tpl.Slice(d.Tags, tmpl.NonEmpty())
 	if err != nil {
@@ -459,6 +473,12 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary dir: %w", err)
 	}
+	ok := false
+	defer func() {
+		if !ok {
+			_ = os.RemoveAll(tmp)
+		}
+	}()
 
 	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return "", fmt.Errorf("failed to copy dockerfile: %w: %s", err, d.ID)
@@ -500,6 +520,7 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 		}
 	}
 
+	ok = true
 	return tmp, nil
 }
 
@@ -525,6 +546,12 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 		if plat.arm != "" {
 			filters = append(filters, artifact.ByGoarm(plat.arm))
 		}
+		if plat.arm64 != "" {
+			filters = append(filters, byGoarm64(plat.arm64))
+		}
+		if plat.amd64 != "" {
+			filters = append(filters, artifact.ByGoamd64(plat.amd64))
+		}
 		platFilters = append(platFilters, artifact.And(filters...))
 	}
 
@@ -542,7 +569,10 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 	artifacts := ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.And(filters...),
-			artifact.ByType(artifact.PyWheel),
+			artifact.And(
+				artifact.ByType(artifact.PyWheel),
+				artifact.ByIDs(d.IDs...),
+			),
 		),
 	)
 
@@ -564,8 +594,13 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		return "", fmt.Errorf("unsupported OS: %q", a.Goos)
 	}
 	switch a.Goarch {
-	case "amd64", "arm64", "386", "ppc64le", "s390x", "riscv64":
+	case "arm64", "386", "ppc64le", "s390x", "riscv64":
 		parts = append(parts, a.Goarch)
+	case "amd64":
+		parts = append(parts, a.Goarch)
+		if a.Goamd64 != "" && a.Goamd64 != "v1" {
+			parts = append(parts, a.Goamd64)
+		}
 	case "arm":
 		parts = append(parts, a.Goarch)
 		switch a.Goarm {
@@ -583,6 +618,8 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 type platform struct {
 	os, arch string
 	arm      string
+	arm64    string
+	amd64    string
 }
 
 func parsePlatform(p string) platform {
@@ -592,11 +629,47 @@ func parsePlatform(p string) platform {
 	}
 	if len(parts) >= 2 {
 		result.arch = parts[1]
+		if result.arch == "amd64" {
+			result.amd64 = "v1"
+		}
 	}
 	if len(parts) >= 3 {
-		result.arm = strings.TrimPrefix(parts[2], "v")
+		switch result.arch {
+		case "amd64":
+			result.amd64 = toGoamd64(parts[2])
+		case "arm":
+			result.arm = strings.TrimPrefix(parts[2], "v")
+		case "arm64":
+			result.arm64 = toGoarm64(parts[2])
+		}
 	}
 	return result
+}
+
+func toGoamd64(variant string) string {
+	variant = strings.TrimPrefix(variant, "v")
+	if variant == "" {
+		return ""
+	}
+	return "v" + variant
+}
+
+func toGoarm64(variant string) string {
+	variant = strings.TrimPrefix(variant, "v")
+	if variant == "" {
+		return ""
+	}
+	if !strings.Contains(variant, ".") {
+		variant += ".0"
+	}
+	return "v" + variant
+}
+
+func byGoarm64(s string) artifact.Filter {
+	return func(a *artifact.Artifact) bool {
+		return s == a.Goarm64 ||
+			(a.Goarch == "arm64" && a.Goarm64 == "" && s == "v8.0")
+	}
 }
 
 // annotationScopes are the annotation types buildx accepts, optionally

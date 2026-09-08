@@ -4,6 +4,8 @@ import (
 	stdctx "context"
 	"fmt"
 	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -161,6 +163,57 @@ func TestBuildBuildOptionsEmptyMain(t *testing.T) {
 	require.Equal(t, "testapp", opts.importPath)
 }
 
+func TestSecondaryDestinationsUseKoNamer(t *testing.T) {
+	one := &buildOptions{
+		importPath: "example.com/project/cmd/one",
+		imageRepos: []string{
+			"first.invalid/team",
+			"second.invalid/team",
+		},
+		tags: []string{"latest"},
+	}
+	two := &buildOptions{
+		importPath: "example.com/project/cmd/two",
+		imageRepos: []string{
+			"first.invalid/team",
+			"second.invalid/team",
+		},
+		tags: []string{"latest"},
+	}
+
+	require.Len(t, secondaryDestinations(one), 1)
+	require.Len(t, secondaryDestinations(two), 1)
+	require.NotEqual(t, secondaryDestinations(one), secondaryDestinations(two))
+	require.Regexp(t, `^second\.invalid/team/one-[a-f0-9]{32}:latest$`, secondaryDestinations(one)[0])
+	require.Regexp(t, `^second\.invalid/team/two-[a-f0-9]{32}:latest$`, secondaryDestinations(two)[0])
+
+	one.bare = true
+	two.bare = true
+	require.Equal(t, []string{"second.invalid/team:latest"}, secondaryDestinations(one))
+	require.Equal(t, secondaryDestinations(one), secondaryDestinations(two))
+
+	one.imageRepos = one.imageRepos[:1]
+	require.Empty(t, secondaryDestinations(one))
+}
+
+func TestMakeArtifactStoresDigestFreePath(t *testing.T) {
+	const digest = "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
+
+	art := makeArtifact("default", "ghcr.io/acme/app:v1.2.3@"+digest, digest)
+	require.Equal(t, "ghcr.io/acme/app:v1.2.3", art.Name)
+	require.Equal(t, art.Name, art.Path)
+	require.Equal(t, "default", art.Extra[artifact.ExtraID])
+	require.Equal(t, digest, art.Extra[artifact.ExtraDigest])
+
+	signingRef := art.Path + "@" + artifact.ExtraOr(*art, artifact.ExtraDigest, "")
+	require.Equal(t, 1, strings.Count(signingRef, "@sha256:"))
+	_, err := name.ParseReference(signingRef)
+	require.NoError(t, err)
+
+	art = makeArtifact("default", "ghcr.io/acme/app:v1.2.3", digest)
+	require.Equal(t, "ghcr.io/acme/app:v1.2.3", art.Path)
+}
+
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
@@ -180,6 +233,8 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
+	t.Parallel()
+
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
 	testlib.StartRegistry(t, "ko_registry1", registry1Port)
@@ -217,7 +272,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 		LocalDomain         string
 	}{
 		{
-			// Must be first as others add an SBOM for the same image
 			Name:          "sbom-none",
 			SBOM:          "none",
 			SBOMDirectory: "",
@@ -277,13 +331,14 @@ func TestPublishPipeSuccess(t *testing.T) {
 		},
 	}
 
-	repositories := []string{
-		fmt.Sprintf("%sgoreleasertest/testapp", registry1),
-		fmt.Sprintf("%sgoreleasertest/testapp", registry2),
-	}
-
 	for _, table := range table {
 		t.Run(table.Name, func(t *testing.T) {
+			t.Parallel()
+			// SBOM tags are keyed by digest, so cases need separate repositories.
+			repositories := []string{
+				fmt.Sprintf("%sgoreleasertest/testapp-%s", registry1, table.Name),
+				fmt.Sprintf("%sgoreleasertest/testapp-%s", registry2, table.Name),
+			}
 			if len(table.Tags) == 0 {
 				table.Tags = []string{table.Name}
 			}
@@ -776,10 +831,15 @@ func TestPublishPipeError(t *testing.T) {
 	})
 
 	t.Run("publish fail", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "publishing disabled by test", http.StatusForbidden)
+		}))
+		t.Cleanup(srv.Close)
 		ctx := makeCtx()
+		ctx.Config.Kos[0].Repository = strings.TrimPrefix(srv.URL, "http://")
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `Get "https://fakerepo.invalid:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, "403 Forbidden")
 	})
 }
 

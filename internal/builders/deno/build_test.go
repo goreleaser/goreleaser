@@ -3,7 +3,6 @@ package deno
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -80,8 +79,7 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "deno")
 	folder := testlib.Mktmp(t)
-	_, err := exec.CommandContext(t.Context(), "deno", "init").CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(t, os.WriteFile("main.ts", []byte("console.log('fixture');\n"), 0o644))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

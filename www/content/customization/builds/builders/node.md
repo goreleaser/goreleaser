@@ -102,7 +102,7 @@ by the `node` builder:
   directly with a known set of arguments.
 
 The following template variables are available in the per-target build
-context: `.Os`, `.Arch`, `.Goos`, `.Goarch`, `.Target`, `.Name`,
+context: `.Os`, `.Arch`, `.Target`, `.Name`,
 `.Path`, `.Ext`, `.Env.*`.
 Use them in `main`, `env`, and the `hooks` recipes.
 
@@ -124,9 +124,9 @@ GoReleaser-owned fields before invoking `node --build-sea`:
 
 GoReleaser always overwrites `output`, `executable`, `main` — these point at
 internal cache paths, so any user-supplied values are ignored.
-Relative paths under `assets` are anchored at the build directory so
-they keep resolving after GoReleaser moves the merged configuration into a
-scratch directory.
+Relative paths under `assets` are anchored at the build directory, because
+Node resolves them against the working directory of the `node` process
+rather than the location of `sea-config.json`.
 
 When no `sea-config.json` is present, GoReleaser generates the minimum
 config needed to drive `node --build-sea`.

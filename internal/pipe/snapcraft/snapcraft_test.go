@@ -678,6 +678,8 @@ func TestDefaultGradeTmplError(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
+	// Exercise command-error wrapping without starting the real Snapcraft CLI.
+	t.Setenv("PATH", "")
 	ctx := testctx.Wrap(t.Context())
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",

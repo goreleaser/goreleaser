@@ -2,6 +2,7 @@ package git
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -141,6 +142,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
 			Summary:     summary,
+			Dirty:       CheckDirty(ctx) != nil,
 		}, ErrNoTag
 	}
 
@@ -206,7 +208,11 @@ func CheckDirty(ctx *context.Context) error {
 }
 
 func getBranch(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
+	out, err := git.Run(ctx, "rev-parse", "--abbrev-ref", "HEAD", "--quiet")
+	if err != nil {
+		return "", errors.New(strings.TrimSuffix(err.Error(), "\n"))
+	}
+	return strings.TrimRight(out, "\r\n"), nil
 }
 
 // getCommit returns the short hash, full hash and committer date of HEAD.

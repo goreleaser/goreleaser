@@ -194,8 +194,6 @@ homebrew_casks:
       bash: "completions/goreleaser.bash"
       zsh: "completions/goreleaser.zsh"
       fish: "completions/goreleaser.fish"
-    url:
-      verified: github.com/goreleaser/goreleaser/releases/download
 
 nix:
   - name: goreleaser
@@ -224,6 +222,8 @@ winget:
       branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
+        body: |
+          cc/ @caarlos0
         base:
           owner: microsoft
           name: winget-pkgs

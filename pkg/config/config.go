@@ -283,13 +283,15 @@ type HomebrewCaskURL struct {
 	Template string `yaml:"template,omitempty" json:"template,omitempty"`
 
 	// additional url parameters (https://docs.brew.sh/Cask-Cookbook#additional-url-parameters):
-	Verified  string            `yaml:"verified,omitempty" json:"verified,omitempty"`
 	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
 	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
 	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
 	Headers   []string          `yaml:"headers,omitempty" json:"headers,omitempty"` // Homebrew Cask DSL actually requires `header` key, but we use `headers` for consistency with Homebrew Formula config.
 	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
 	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
+
+	// Deprecated: by Homebrew.
+	Verified string `yaml:"verified,omitempty" json:"verified,omitempty" jsonschema:"deprecated=true"`
 }
 
 type HomebrewCaskUninstall struct {
@@ -1052,7 +1054,7 @@ type Sign struct {
 	Cmd         string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Args        []string `yaml:"args,omitempty" json:"args,omitempty"`
 	Signature   string   `yaml:"signature,omitempty" json:"signature,omitempty"`
-	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=all,enum=manifests,enum=images,enum=checksum,enum=source,enum=package,enum=archive,enum=binary,enum=sbom"`
+	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=all,enum=manifests,enum=images,enum=checksum,enum=source,enum=package,enum=archive,enum=binary,enum=sbom,enum=none"`
 	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Stdin       *string  `yaml:"stdin,omitempty" json:"stdin,omitempty"`
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
@@ -1733,13 +1735,14 @@ type MCPAuth struct {
 
 // MCPPackage represents an MCP package configuration.
 type MCPPackage struct {
-	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget,enum=mcpb"`
+	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget"`
 	Identifier   string       `yaml:"identifier" json:"identifier"`
 	Transport    MCPTransport `yaml:"transport" json:"transport"`
 }
 
 type MCPTransport struct {
 	Type string `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=stdio,enum=streamable-http,enum=sse"`
+	URL  string `yaml:"url,omitempty" json:"url,omitempty"`
 }
 
 // Iru publishes artifacts as Custom Apps to iru.com (formerly Kandji).

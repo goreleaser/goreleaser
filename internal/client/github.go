@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v89/github"
+	"github.com/google/go-github/v91/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
@@ -70,7 +70,11 @@ func githubError(err error, resp *github.Response) error {
 	if rle, ok := errors.AsType[*github.RateLimitError](err); ok {
 		he.RetryAfter = max(time.Until(rle.Rate.Reset.Time), time.Second)
 	} else if arle, ok := errors.AsType[*github.AbuseRateLimitError](err); ok {
-		he.RetryAfter = max(*must(arle.RetryAfter), time.Minute)
+		if d := *must(arle.RetryAfter); d > 0 {
+			he.RetryAfter = d
+		} else {
+			he.RetryAfter = time.Minute
+		}
 	}
 	return he
 }
@@ -270,16 +274,13 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 		return ErrNoMilestoneFound{Title: title}
 	}
 
-	closedState := "closed"
-	milestone.State = &closedState
-
 	_, _, err = githubDo(ctx, func() (*github.Milestone, *github.Response, error) {
-		return c.client.Issues.EditMilestone(
+		return c.client.Issues.UpdateMilestone(
 			ctx,
 			repo.Owner,
 			repo.Name,
 			*milestone.Number,
-			milestone,
+			github.UpdateMilestoneRequest{State: new("closed")},
 		)
 	})
 
@@ -345,10 +346,10 @@ func (c *githubClient) OpenPullRequest(
 			ctx,
 			base.Owner,
 			base.Name,
-			&github.NewPullRequest{
+			github.CreatePullRequest{
 				Title: &title,
-				Base:  &base.Branch,
-				Head:  new(headString(base, head)),
+				Base:  base.Branch,
+				Head:  headString(base, head),
 				Body:  new(strings.Join([]string{tpl, prFooter}, "\n")),
 				Draft: &draft,
 			},
@@ -393,8 +394,8 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 			ctx,
 			head.Owner,
 			head.Name,
-			&github.RepoMergeUpstreamRequest{
-				Branch: &branch,
+			github.RepoMergeUpstreamRequest{
+				Branch: branch,
 			},
 		)
 	})
@@ -607,7 +608,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.UpdateReleaseRequest, body string) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx)
-	release, err := c.findRelease(ctx, data.GetTagName())
+	release, err := c.findRelease(ctx, data.GetTagName(), data.GetName())
 	if err != nil || release == nil {
 		release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
 			return c.client.Repositories.CreateRelease(
@@ -658,14 +659,14 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data github.U
 	return c.updateRelease(ctx, release.GetID(), data)
 }
 
-func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
+func (c *githubClient) findRelease(ctx *context.Context, tag, name string) (*github.RepositoryRelease, error) {
 	if !ctx.Config.Release.UseExistingDraft {
 		release, _, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
 			return c.client.Repositories.GetReleaseByTag(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
 				ctx.Config.Release.GitHub.Name,
-				name,
+				tag,
 			)
 		})
 		return release, err
@@ -808,16 +809,21 @@ func (c *githubClient) Upload(
 		}
 		defer file.Close()
 
-		_, resp, err := c.client.Repositories.UploadReleaseAsset(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			githubReleaseID,
-			&github.UploadOptions{
-				Name: artifact.Name,
-			},
-			file,
-		)
+		upload := func() (*github.Response, error) {
+			_, resp, err := c.client.Repositories.UploadReleaseAsset(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				githubReleaseID,
+				&github.UploadOptions{
+					Name: artifact.Name,
+				},
+				file,
+			)
+			return resp, err
+		}
+
+		resp, err := upload()
 		if err == nil {
 			return nil
 		}
@@ -832,12 +838,20 @@ func (c *githubClient) Upload(
 			if !ctx.Config.Release.ReplaceExistingArtifacts {
 				return retryx.Unrecoverable(err)
 			}
-			// if the user allowed to delete assets, we delete it, and return
-			// a retriable error so we try again.
 			if delErr := c.deleteReleaseArtifact(ctx, githubReleaseID, artifact.Name, 1); delErr != nil {
 				return retryx.Unrecoverable(delErr)
 			}
-			return retryx.Retriable(err)
+			if _, err := file.Seek(0, io.SeekStart); err != nil {
+				return retryx.Unrecoverable(fmt.Errorf("could not rewind artifact %q: %w", artifact.Path, err))
+			}
+			resp, err = upload()
+			if err == nil {
+				return nil
+			}
+			githubErrLogger(resp, err).
+				WithField("name", artifact.Name).
+				WithField("release-id", releaseID).
+				Warn("upload failed")
 		}
 		return githubError(err, resp)
 	}, retryx.IsRetriable)

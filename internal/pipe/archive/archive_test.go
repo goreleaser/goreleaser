@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -365,6 +366,168 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 	})
 }
 
+func TestRunPipeBuildsInfoMTime(t *testing.T) {
+	for _, format := range []string{"tar.gz", "zip"} {
+		t.Run(format, func(t *testing.T) {
+			for name, tt := range map[string]struct {
+				mtime   string
+				want    time.Time
+				commit  time.Time
+				noMTime bool
+			}{
+				"configured": {
+					mtime: "2008-01-02T15:04:06Z",
+					want:  time.Date(2008, 1, 2, 15, 4, 6, 0, time.UTC),
+				},
+				"templated": {
+					mtime:  "{{ .CommitDate }}",
+					want:   time.Date(2009, 2, 4, 6, 8, 10, 0, time.UTC),
+					commit: time.Date(2009, 2, 4, 6, 8, 10, 0, time.UTC),
+				},
+				"unset": {
+					want:    time.Date(2020, 3, 4, 5, 6, 8, 0, time.UTC),
+					noMTime: true,
+				},
+			} {
+				t.Run(name, func(t *testing.T) {
+					dist := t.TempDir()
+					binPath := filepath.Join(dist, "linuxamd64", "mybin")
+					require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+					require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+					sourceMTime := time.Date(2020, 3, 4, 5, 6, 8, 0, time.UTC)
+					require.NoError(t, os.Chtimes(binPath, sourceMTime, sourceMTime))
+
+					buildsInfo := config.FileInfo{Mode: 0o755, MTime: tt.mtime}
+					if tt.noMTime {
+						buildsInfo.MTime = ""
+					}
+					ctx := testctx.WrapWithCfg(t.Context(),
+						config.Project{
+							Dist: dist,
+							Archives: []config.Archive{
+								{
+									ID:           "default",
+									IDs:          []string{"default"},
+									NameTemplate: "archive",
+									Formats:      []string{format},
+									Files:        []config.File{{Source: "missing*", Default: true}},
+									BuildsInfo:   buildsInfo,
+								},
+							},
+						},
+						testctx.WithVersion("0.0.1"),
+						testctx.WithCurrentTag("v0.0.1"))
+					if !tt.commit.IsZero() {
+						ctx.Git.CommitDate = tt.commit
+					}
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Goos:    "linux",
+						Goarch:  "amd64",
+						Goamd64: "v1",
+						Name:    "mybin",
+						Path:    binPath,
+						Type:    artifact.Binary,
+						Extra: map[string]any{
+							artifact.ExtraBinary: "mybin",
+							artifact.ExtraID:     "default",
+						},
+					})
+
+					require.NoError(t, Pipe{}.Default(ctx))
+					require.NoError(t, Pipe{}.Run(ctx))
+					got := archiveBinaryModTime(t, filepath.Join(dist, "archive."+format), format, "mybin")
+					require.Equal(t, tt.want.Unix(), got.Unix())
+				})
+			}
+		})
+	}
+}
+
+func TestRunPipeInvalidBuildsInfoMTime(t *testing.T) {
+	dist := t.TempDir()
+	binPath := filepath.Join(dist, "linuxamd64", "mybin")
+	require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		Archives: []config.Archive{
+			{
+				ID:           "default",
+				IDs:          []string{"default"},
+				NameTemplate: "archive",
+				Formats:      []string{"zip"},
+				Files:        []config.File{{Source: "missing*", Default: true}},
+				BuildsInfo: config.FileInfo{
+					MTime: "not-a-date",
+				},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   binPath,
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraID:     "default",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.ErrorContains(t, Pipe{}.Run(ctx), "failed to parse not-a-date")
+}
+
+func TestRunPipeDistinctCPUVariants(t *testing.T) {
+	dist := t.TempDir()
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		binPath := filepath.Join(dist, "linuxarm64"+variant, "mybin")
+		require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+		require.NoError(t, os.WriteFile(binPath, []byte(variant), 0o755))
+	}
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					ID:           "default",
+					IDs:          []string{"default"},
+					NameTemplate: "archive_{{ .Os }}_{{ .Arch }}_{{ .Arm64 }}",
+					Formats:      []string{"tar.gz"},
+					Files:        []config.File{{Source: "missing*", Default: true}},
+				},
+			},
+		},
+		testctx.WithVersion("0.0.1"),
+		testctx.WithCurrentTag("v0.0.1"))
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: variant,
+			Name:    "mybin",
+			Path:    filepath.Join(dist, "linuxarm64"+variant, "mybin"),
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraBinary: "mybin",
+				artifact.ExtraID:     "default",
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 2)
+	for _, variant := range []string{"v8.0", "v9.0"} {
+		path := filepath.Join(dist, "archive_linux_arm64_"+variant+".tar.gz")
+		require.Equal(t, []string{"mybin"}, testlib.LsArchive(t, path, "tar.gz"))
+		require.Equal(t, variant, string(testlib.GetFileFromArchive(t, path, "tar.gz", "mybin")))
+	}
+}
+
 func TestRunPipeNoBinaries(t *testing.T) {
 	t.Parallel()
 	folder := t.TempDir()
@@ -394,6 +557,11 @@ func TestRunPipeNoBinaries(t *testing.T) {
 
 func zipInfo(t *testing.T, path, name string) fs.FileInfo {
 	t.Helper()
+	return zipFile(t, path, name).FileInfo()
+}
+
+func zipFile(t *testing.T, path, name string) *zip.File {
+	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	defer f.Close()
@@ -403,11 +571,23 @@ func zipInfo(t *testing.T, path, name string) fs.FileInfo {
 	require.NoError(t, err)
 	for _, next := range r.File {
 		if next.Name == name {
-			return next.FileInfo()
+			return next
 		}
 	}
 	t.Fatalf("could not find %q in %q", name, path)
 	return nil
+}
+
+func archiveBinaryModTime(t *testing.T, path, format, name string) time.Time {
+	t.Helper()
+	switch format {
+	case "tar.gz":
+		return tarInfo(t, path, name).ModTime
+	case "zip":
+		return zipFile(t, path, name).Modified
+	}
+	t.Fatalf("unsupported format %q", format)
+	return time.Time{}
 }
 
 func tarInfo(t *testing.T, path, name string) *tar.Header {

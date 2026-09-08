@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -8,9 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -25,13 +28,46 @@ func TestNotAGitFolder(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
 }
 
+func TestUnsafeRepository(t *testing.T) {
+	for _, mode := range []string{"release", "snapshot"} {
+		t.Run(mode, func(t *testing.T) {
+			testlib.Mktmp(t)
+			t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
+			t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+			t.Setenv("GIT_CONFIG_COUNT", "0")
+			t.Setenv("GIT_CONFIG_PARAMETERS", "")
+			testlib.GitInit(t)
+			// Exercise Git's ownership check without changing filesystem ownership.
+			t.Setenv("GIT_TEST_ASSUME_DIFFERENT_OWNER", "1")
+
+			var logs bytes.Buffer
+			previousLog := log.Log
+			log.Log = log.New(&logs)
+			t.Cleanup(func() { log.Log = previousLog })
+
+			ctx := testctx.Wrap(t.Context())
+			ctx.Snapshot = mode == "snapshot"
+			err := Pipe{}.Run(ctx)
+			if ctx.Snapshot {
+				testlib.AssertSkipped(t, err)
+				require.Equal(t, fakeInfo, ctx.Git)
+			} else {
+				require.ErrorIs(t, err, ErrNotRepository)
+			}
+			require.Contains(t, logs.String(), "fatal: detected dubious ownership")
+			require.Contains(t, logs.String(), "git config --global --add safe.directory")
+			require.Equal(t, 1, strings.Count(logs.String(), "fatal: detected dubious ownership"), "logs:\n%s", logs.String())
+		})
+	}
+}
+
 func TestSingleCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	// an author date far in the past, while the committer date stays now, so
-	// the CommitDate assertion below fails if getCommit reads %at.
+	// Distinct dates make the assertion fail if getCommit reads %at, not %ct.
 	t.Setenv("GIT_AUTHOR_DATE", "2000-01-01T00:00:00Z")
+	t.Setenv("GIT_COMMITTER_DATE", "2001-01-01T00:00:00Z")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
 	ctx := testctx.Wrap(t.Context())
@@ -54,7 +90,7 @@ func TestSingleCommit(t *testing.T) {
 		"short commit %q is not a prefix of full commit %q",
 		ctx.Git.ShortCommit, ctx.Git.FullCommit,
 	)
-	require.WithinDuration(t, time.Now(), ctx.Git.CommitDate, time.Minute)
+	require.Equal(t, time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC), ctx.Git.CommitDate)
 }
 
 func TestAnnotatedTags(t *testing.T) {
@@ -91,11 +127,18 @@ func TestBranch(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "test-branch-commit")
 	testlib.GitTag(t, "test-branch-tag")
-	testlib.GitCheckoutBranch(t, "test-branch")
-	ctx := testctx.Wrap(t.Context())
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "test-branch", ctx.Git.Branch)
-	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+	for _, branch := range []string{"test-branch", "feature/o'brien"} {
+		t.Run(branch, func(t *testing.T) {
+			testlib.GitCheckoutBranch(t, branch)
+			ctx := testctx.Wrap(t.Context())
+			require.NoError(t, Pipe{}.Run(ctx))
+			require.Equal(t, branch, ctx.Git.Branch)
+			rendered, err := tmpl.New(ctx).Apply("{{ .Branch }}")
+			require.NoError(t, err)
+			require.Equal(t, branch, rendered)
+			require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+		})
+	}
 }
 
 func TestNoRemote(t *testing.T) {
@@ -219,7 +262,6 @@ func TestTagSortOrder(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "commit1")
 	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.2")
@@ -238,7 +280,6 @@ func TestTagSortOrderPrerelease(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "commit1")
 	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1-rc.2")
@@ -286,16 +327,45 @@ func TestValidState(t *testing.T) {
 }
 
 func TestSnapshotNoTags(t *testing.T) {
-	testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	path := filepath.Join(folder, "foo")
+	require.NoError(t, os.WriteFile(path, []byte("initial"), 0o644))
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
-	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
-	require.Empty(t, ctx.Git.PreviousTag)
-	require.NotEmpty(t, ctx.Git.FirstCommit)
+	for _, tt := range []struct {
+		name     string
+		dirty    bool
+		rendered string
+	}{
+		{
+			name:     "clean",
+			rendered: "false/true/clean",
+		},
+		{
+			name:     "dirty",
+			dirty:    true,
+			rendered: "true/false/dirty",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			content := "initial"
+			if tt.dirty {
+				content = "dirty"
+			}
+			require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+			ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
+			testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+			require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+			require.Empty(t, ctx.Git.PreviousTag)
+			require.NotEmpty(t, ctx.Git.FirstCommit)
+			require.Equal(t, tt.dirty, ctx.Git.Dirty)
+			rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+			require.NoError(t, err)
+			require.Equal(t, tt.rendered, rendered)
+		})
+	}
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -309,9 +379,17 @@ func TestSnapshotNoCommits(t *testing.T) {
 
 func TestSnapshotWithoutRepo(t *testing.T) {
 	testlib.Mktmp(t)
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	t.Cleanup(func() { log.Log = previousLog })
+
 	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo, ctx.Git)
+	require.Contains(t, logs.String(), "fatal: not a git repository")
+	require.Equal(t, 1, strings.Count(logs.String(), "git repository check failed"), "logs:\n%s", logs.String())
+	require.Contains(t, logs.String(), "accepting to run without a git repository because this is a snapshot")
 }
 
 func TestSnapshotDirty(t *testing.T) {
@@ -325,6 +403,10 @@ func TestSnapshotDirty(t *testing.T) {
 	ctx := testctx.Wrap(t.Context(), testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.True(t, ctx.Git.Dirty)
+	rendered, err := tmpl.New(ctx).Apply("{{ .IsGitDirty }}/{{ .IsGitClean }}/{{ .GitTreeState }}")
+	require.NoError(t, err)
+	require.Equal(t, "true/false/dirty", rendered)
 }
 
 func TestGitNotInPath(t *testing.T) {
@@ -412,7 +494,6 @@ func TestFilterTags(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "middle commit")
 	testlib.GitTag(t, "nightly")
-	testlib.GitCommit(t, "commit2")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitTag(t, "v0.1.0-dev")

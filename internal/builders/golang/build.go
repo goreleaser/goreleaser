@@ -279,19 +279,6 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	for _, a := range allbinaries {
-		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
-			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
-			if ha := getHeaderArtifactForLibrary(
-				build,
-				options.Target.(Target),
-				fullPathWithoutExt,
-			); ha != nil {
-				ctx.Artifacts.Add(ha)
-			}
-		}
-	}
-
 	t := options.Target.(Target)
 	details, err := withOverrides(ctx, build, t)
 	if err != nil {
@@ -342,6 +329,17 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		if err := base.ChTimes(build, tpl.WithArtifact(a), a); err != nil {
 			return err
 		}
+		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
+			if ha := getHeaderArtifactForLibrary(build, t, fullPathWithoutExt); ha != nil {
+				// the header goes into the archives next to its library, so it
+				// needs the same mod timestamp to stay reproducible.
+				if err := base.ChTimes(build, tpl.WithArtifact(ha), ha); err != nil {
+					return err
+				}
+				ctx.Artifacts.Add(ha)
+			}
+		}
 		if elf.IsDynamicallyLinked(a.Path) {
 			a.Extra[artifact.ExtranDynLink] = true
 		}
@@ -372,7 +370,11 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				return build.BuildDetails, err
 			}
 
-			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
+			// keep the definition order: entries may reference the ones
+			// defined before them.
+			env := make([]string, 0, len(build.Env)+len(o.Env))
+			env = append(env, build.Env...)
+			dets.Env = append(env, o.Env...)
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
@@ -450,7 +452,14 @@ func buildGoBuildLine(
 		// NOTE: build.Main will never be empty here
 		cmd = append(cmd, "-o", options.Path, build.Main)
 	} else {
-		cmd = append(cmd, "-o", filepath.Dir(options.Path))
+		output := filepath.Dir(options.Path)
+		if len(mains) == 1 {
+			// go names the output itself when -o is a directory, dropping the
+			// extension registered for the target, e.g. `.wasm`. A single main
+			// can get an exact path instead.
+			output = artifact.Path
+		}
+		cmd = append(cmd, "-o", output)
 		cmd = append(cmd, slices.Sorted(maps.Values(mains))...)
 	}
 	return cmd, nil
@@ -468,17 +477,6 @@ func validateUniqueFlags(details config.BuildDetails) {
 			log.WithField("flag", flag).WithField("buildmode", details.Buildmode).Warn("buildmode is defined twice")
 		}
 	}
-}
-
-func buildOutput(out []byte) string {
-	var lines []string
-	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
-		if strings.HasPrefix(line, "go: downloading") {
-			continue
-		}
-		lines = append(lines, line)
-	}
-	return strings.Join(lines, "\n")
 }
 
 func artifactType(t Target, buildmode string) artifact.Type {

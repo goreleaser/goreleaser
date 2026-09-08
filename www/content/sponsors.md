@@ -181,8 +181,8 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Jan De Dobbeleer](https://ohmyposh.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Joseph Sirianni](https://github.com/jsirianni?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Kazuma Watanabe](https://sil.hatenablog.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Moti ne tirane](https://www.motijavor.com/shqiperi/tirane/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Horoskopi](https://horoskopishqip.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 

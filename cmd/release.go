@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -100,6 +99,7 @@ func newReleaseCmd() *releaseCmd {
 func releaseProject(parent stdctx.Context, options releaseOpts) error {
 	start := time.Now()
 	log.Infof(boldStyle.Render("starting release"))
+	options.snapshot = impliedSnapshot(parent, options.snapshot, options.autoSnapshot)
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return decorateWithCtxErr(parent, err, "release", after(start))
@@ -145,10 +145,6 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	ctx.Snapshot = options.snapshot
 	ctx.FailFast = options.failFast
 	ctx.Clean = options.clean
-	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
-		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
-		ctx.Snapshot = true
-	}
 
 	if options.draft {
 		ctx.Config.Release.Draft = true

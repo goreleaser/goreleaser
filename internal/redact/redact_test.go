@@ -2,7 +2,9 @@ package redact
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -184,6 +186,50 @@ func TestRedactWriter(t *testing.T) {
 		require.Equal(t, "nothing secret here\n", buf.String())
 	})
 
+	t.Run("redacts secrets split across every write boundary", func(t *testing.T) {
+		t.Parallel()
+		const secret = "key123key123"
+		for i := 1; i < len(secret); i++ {
+			t.Run(fmt.Sprintf("split at %d", i), func(t *testing.T) {
+				t.Parallel()
+				var buf bytes.Buffer
+				w := Writer(&buf, env)
+				n, err := io.WriteString(w, secret[:i])
+				require.NoError(t, err)
+				require.Equal(t, i, n)
+				n, err = io.WriteString(w, secret[i:])
+				require.NoError(t, err)
+				require.Equal(t, len(secret)-i, n)
+				require.Equal(t, "$API_KEY", buf.String())
+			})
+		}
+	})
+
+	t.Run("prefers longer overlapping secrets across writes", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		w := Writer(&buf, []string{
+			"SHORT_TOKEN=redacted-test",
+			"API_KEY=redacted-test-value",
+		})
+		_, err := io.WriteString(w, "redacted-test")
+		require.NoError(t, err)
+		_, err = io.WriteString(w, "-value")
+		require.NoError(t, err)
+		require.Equal(t, "$API_KEY", buf.String())
+	})
+
+	t.Run("flushes incomplete secret prefix on close", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		w := Writer(&buf, env)
+		_, err := io.WriteString(w, "key123")
+		require.NoError(t, err)
+		require.Empty(t, buf.String())
+		require.NoError(t, w.Close())
+		require.Equal(t, "key123", buf.String())
+	})
+
 	t.Run("returns zero bytes on write error", func(t *testing.T) {
 		t.Parallel()
 		w := Writer(&errWriter{err: io.ErrShortWrite}, env)
@@ -211,6 +257,59 @@ func TestRedactString(t *testing.T) {
 	})
 }
 
+func TestWriterMatchesStringAcrossChunks(t *testing.T) {
+	t.Parallel()
+	env := []string{
+		"SHORT_TOKEN=aba",
+		"LONG_TOKEN=abacus",
+		"OTHER_TOKEN=bac",
+		"UNICODE_TOKEN=\xc3\xa9_secret",
+	}
+	for _, input := range []string{
+		"ordinary output\n",
+		"abacus aba bac\n",
+		"prefix abacus and a trailing ab",
+		"aba",
+		"abacus",
+		"\xc3\xa9_secret and \xc3\xa9",
+	} {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			for size := 1; size <= len(input); size++ {
+				var out bytes.Buffer
+				w := Writer(&out, env)
+				for i := 0; i < len(input); i += size {
+					_, err := io.WriteString(w, input[i:min(i+size, len(input))])
+					require.NoError(t, err)
+				}
+				require.NoError(t, w.Close())
+				require.Equal(t, String(input, env), out.String(), "chunk size %d", size)
+			}
+		})
+	}
+}
+
 type errWriter struct{ err error }
 
 func (e *errWriter) Write([]byte) (int, error) { return 0, e.err }
+
+func BenchmarkWriter(b *testing.B) {
+	data := []byte(strings.Repeat("building package example.com/project/internal/component\n", 600))
+	for _, count := range []int{0, 1, 16, 64} {
+		b.Run(fmt.Sprintf("secrets=%d", count), func(b *testing.B) {
+			env := make([]string, count)
+			for i := range env {
+				env[i] = fmt.Sprintf("SERVICE_%d_TOKEN=secret-value-%032d", i, i)
+			}
+			w := Writer(io.Discard, env)
+			b.ReportAllocs()
+			b.SetBytes(int64(len(data)))
+			for b.Loop() {
+				if _, err := w.Write(data); err != nil {
+					b.Fatal(err)
+				}
+			}
+			require.NoError(b, w.Close())
+		})
+	}
+}

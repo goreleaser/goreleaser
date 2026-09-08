@@ -163,12 +163,30 @@ func TestRunCommandError(t *testing.T) {
 	require.Empty(t, ctx.ModulePath)
 }
 
-func TestRunOldGoVersion(t *testing.T) {
+func TestRunToolchainNotice(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
-	content := []byte("#!/bin/sh\necho \"flag provided but not defined: -m\"\nexit 1")
+	content := []byte("#!/bin/sh\necho \"go: downloading go1.27.0 (linux/arm64)\" >&2\necho github.com/foo/bar\n")
 	if testlib.IsWindows() {
 		bin = strings.Replace(bin, ".bin", ".bat", 1)
-		content = []byte("@echo off\r\necho flag provided but not defined: -m\r\nexit /b 1")
+		content = []byte("@echo off\r\necho go: downloading go1.27.0 (linux/arm64) 1>&2\r\necho github.com/foo/bar\r\n")
+	}
+	require.NoError(t, os.WriteFile(bin, content, 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GoMod: config.GoMod{
+			GoBinary: bin,
+		},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "github.com/foo/bar", ctx.ModulePath)
+}
+
+func TestRunOldGoVersion(t *testing.T) {
+	bin := filepath.Join(t.TempDir(), "go.bin")
+	content := []byte("#!/bin/sh\necho \"flag provided but not defined: -m\" >&2\nexit 1")
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\necho flag provided but not defined: -m 1>&2\r\nexit /b 1")
 	}
 	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

@@ -21,7 +21,8 @@ cask "{{ .Name }}" do
   {{- end }}
 
   name "{{ .Name }}"
-  desc "{{ .Description }}"
+  {{- /* Preserve the rendered description as a literal through the final template pass. */}}
+  desc {{ .Description | rubyString | printf "{{ %q }}" }}
   homepage "{{ .Homepage }}"
 
   livecheck do
@@ -36,7 +37,7 @@ cask "{{ .Name }}" do
   {{ depends  . }}
   {{- end }}
 
-  {{ with and (not .HasOnlyBinaryPkgs) .Binaries }}
+  {{ with and (not .HasOnlyBinaryPkgs) (not .HasMixedPackageTypes) .Binaries }}
   {{- range . }}
   binary "{{ . }}"
   {{- end }}

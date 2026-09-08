@@ -24,18 +24,19 @@ func (Pipe) Default(ctx *context.Context) error {
 		return nil
 	}
 
-	for _, candidate := range []string{
-		cargoName(),
-		ctx.Config.Release.GitHub.Name,
-		ctx.Config.Release.GitLab.Name,
-		ctx.Config.Release.Gitea.Name,
-		moduleName(ctx),
-		gitRemote(ctx),
+	for _, candidate := range []func() string{
+		cargoName,
+		func() string { return ctx.Config.Release.GitHub.Name },
+		func() string { return ctx.Config.Release.GitLab.Name },
+		func() string { return ctx.Config.Release.Gitea.Name },
+		func() string { return moduleName(ctx) },
+		func() string { return gitRemote(ctx) },
 	} {
-		if candidate == "" {
+		name := candidate()
+		if name == "" {
 			continue
 		}
-		ctx.Config.ProjectName = candidate
+		ctx.Config.ProjectName = name
 		return nil
 	}
 
@@ -54,12 +55,15 @@ func cargoName() string {
 }
 
 func moduleName(ctx *context.Context) string {
-	bts, err := exec.CommandContext(ctx, "go", "list", "-m").CombinedOutput()
+	// Only stdout: `go` prints diagnostics, e.g. toolchain download notices, to
+	// stderr, and they would otherwise corrupt the module path.
+	bts, err := exec.CommandContext(ctx, "go", "list", "-m").Output()
 	if err != nil {
 		return ""
 	}
 
-	mod := strings.TrimSpace(string(bts))
+	// First line only, as a `go.work` file might list multiple modules.
+	mod, _, _ := strings.Cut(strings.TrimSpace(string(bts)), "\n")
 
 	// this is the default module used when go runs without a go module.
 	// https://pkg.go.dev/cmd/go@master#hdr-Package_lists_and_patterns

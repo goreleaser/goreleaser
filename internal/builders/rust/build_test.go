@@ -3,12 +3,14 @@ package rust
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -86,6 +88,111 @@ func TestCustomGlibc(t *testing.T) {
 	})
 }
 
+func TestPrepareUsesBuildContext(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	target := "aarch64-unknown-linux-gnu.2.17"
+
+	for name, tt := range map[string]struct {
+		projectEnv    []string
+		buildEnv      []string
+		wantToolchain string
+	}{
+		"nested rust-toolchain": {},
+		"project environment": {
+			projectEnv:    []string{"RUSTUP_TOOLCHAIN=1.95.0"},
+			wantToolchain: "1.95.0",
+		},
+		"build environment": {
+			projectEnv:    []string{"TOOLCHAIN=1.95.0"},
+			buildEnv:      []string{"RUSTUP_TOOLCHAIN={{.Env.TOOLCHAIN}}"},
+			wantToolchain: "1.95.0",
+		},
+		"target environment": {
+			buildEnv:      []string{"RUSTUP_TOOLCHAIN={{ .Target }}|{{ .Os }}|{{ .Arch }}|{{ .Abi }}|{{ .Libc }}"},
+			wantToolchain: "aarch64-unknown-linux-gnu.2.17|linux|arm64|gnu|2.17",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv("RUSTUP_TOOLCHAIN", "")
+
+			dir := filepath.Join("nested", name)
+			require.NoError(t, os.MkdirAll(dir, 0o755))
+			require.NoError(t, os.WriteFile("rust-toolchain.toml", []byte("stable\n"), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "rust-toolchain.toml"), []byte("1.95.0\n"), 0o644))
+
+			log := filepath.Join(t.TempDir(), "rustup.log")
+			createFakeRustup(t, log)
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: tt.projectEnv,
+			})
+			err := Default.Prepare(ctx, config.Build{
+				Dir:     dir,
+				Targets: []string{target},
+				Env:     tt.buildEnv,
+			})
+			require.NoError(t, err)
+
+			got, err := os.ReadFile(log)
+			require.NoError(t, err)
+			gotLog := strings.ReplaceAll(string(got), "\r\n", "\n")
+			wantDir := filepath.Join(folder, dir)
+			wantDir, err = filepath.EvalSymlinks(wantDir)
+			require.NoError(t, err)
+			require.Contains(t, gotLog, "cwd="+wantDir+"\n")
+			require.Contains(t, gotLog, "toolchain="+tt.wantToolchain+"\n")
+			require.Contains(t, gotLog, "args=target add aarch64-unknown-linux-gnu\n")
+		})
+	}
+}
+
+func TestPrepareUsesArtifactContext(t *testing.T) {
+	for _, tc := range []struct {
+		target   string
+		arch     string
+		os       string
+		ext      string
+		noUnique string
+	}{
+		{target: "aarch64-unknown-linux-gnu.2.17", arch: "arm64", os: "linux"},
+		{target: "x86_64-pc-windows-gnu", arch: "amd64", os: "windows", ext: ".exe", noUnique: "true"},
+	} {
+		t.Run(tc.target, func(t *testing.T) {
+			log := filepath.Join(t.TempDir(), "rustup.log")
+			createFakeRustup(t, log)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "app",
+				Dist:        t.TempDir(),
+			})
+			build := config.Build{
+				ID:              "app",
+				Dir:             t.TempDir(),
+				Binary:          "bin/app-{{ .Arch }}",
+				Targets:         []string{tc.target},
+				NoUniqueDistDir: tc.noUnique,
+				Env: []string{
+					"RUSTUP_TOOLCHAIN={{ .Target }}|{{ .Os }}|{{ .Arch }}|{{ .Name }}|{{ .Path }}|{{ .Ext }}|{{ .Binary }}|{{ .ArtifactName }}|{{ .ArtifactPath }}",
+				},
+			}
+
+			require.NoError(t, Default.Prepare(ctx, build))
+			got, err := os.ReadFile(log)
+			require.NoError(t, err)
+			name := "bin/app-" + tc.arch + tc.ext
+			dir := ctx.Config.Dist
+			if tc.noUnique == "" {
+				dir = filepath.Join(dir, "app_"+tc.target)
+			}
+			path := filepath.Join(dir, name)
+			expected := strings.Join([]string{
+				tc.target, tc.os, tc.arch, name, path, tc.ext,
+				"app-" + tc.arch, name, path,
+			}, "|")
+			require.Contains(t, strings.ReplaceAll(string(got), "\r\n", "\n"), "toolchain="+expected+"\n")
+		})
+	}
+}
+
 func TestBuildWorkspaceErrorShowsAllMembers(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "Cargo.toml"), []byte(`
@@ -115,25 +222,123 @@ members = ["crate-a", "crate-b", "crate-c"]
 	require.Contains(t, err.Error(), "crate-c")
 }
 
+func TestBuildCopiesCompilerBinaryBasename(t *testing.T) {
+	for name, tt := range map[string]struct {
+		binary string
+	}{
+		"unwrapped": {binary: "app"},
+		"wrapped":   {binary: filepath.Join("bin", "app")},
+	} {
+		t.Run(name, func(t *testing.T) {
+			testlib.Mktmp(t)
+			require.NoError(t, os.WriteFile("Cargo.toml", []byte(`
+[package]
+name = "app"
+version = "0.1.0"
+edition = "2021"
+`), 0o644))
+			createFakeCargoBuild(t, filepath.Join("target", "aarch64-apple-darwin", "release", "app"), "built by cargo")
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "app",
+			})
+			build, err := Default.WithDefaults(config.Build{
+				ID:      "default",
+				Dir:     ".",
+				Targets: []string{"aarch64-apple-darwin"},
+			})
+			require.NoError(t, err)
+
+			target, err := Default.Parse("aarch64-apple-darwin")
+			require.NoError(t, err)
+			options := api.Options{
+				Name:   tt.binary,
+				Path:   filepath.Join("dist", "default_aarch64-apple-darwin", tt.binary),
+				Target: target,
+			}
+			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+			require.NoError(t, Default.Build(ctx, build, options))
+
+			got, err := os.ReadFile(options.Path)
+			require.NoError(t, err)
+			require.Equal(t, "built by cargo", string(got))
+
+			bins := ctx.Artifacts.List()
+			require.Len(t, bins, 1)
+			require.Equal(t, tt.binary, bins[0].Name)
+			require.Equal(t, filepath.ToSlash(options.Path), bins[0].Path)
+			require.Equal(t, "app", bins[0].Extra[artifact.ExtraBinary])
+		})
+	}
+}
+
+func createFakeRustup(tb testing.TB, log string) {
+	tb.Helper()
+	dir := tb.TempDir()
+	name := "rustup"
+	script := fmt.Sprintf(`#!/bin/sh
+{
+	printf 'cwd=%%s\n' "$(pwd)"
+	printf 'toolchain=%%s\n' "$RUSTUP_TOOLCHAIN"
+	printf 'args=%%s\n' "$*"
+} > %q
+`, log)
+	if runtime.GOOS == "windows" {
+		name += ".bat"
+		log = filepath.ToSlash(log)
+		// Expand after parsing so environment values cannot become batch operators.
+		script = fmt.Sprintf(`@echo off
+setlocal EnableDelayedExpansion
+> "%s" echo cwd=!CD!
+>> "%s" echo toolchain=!RUSTUP_TOOLCHAIN!
+>> "%s" echo args=%%*
+`, log, log, log)
+	}
+	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
+func createFakeCargoBuild(tb testing.TB, output, contents string) {
+	tb.Helper()
+	dir := tb.TempDir()
+	name := "cargo"
+	script := fmt.Sprintf(`#!/bin/sh
+mkdir -p %q
+printf '%%s' %q > %q
+`, filepath.ToSlash(filepath.Dir(output)), contents, filepath.ToSlash(output))
+	if runtime.GOOS == "windows" {
+		name += ".bat"
+		output = filepath.Clean(output)
+		outputDir := filepath.Dir(output)
+		script = fmt.Sprintf(
+			"@echo off\r\nif not exist \"%s\" mkdir \"%s\"\r\n> \"%s\" <nul set /p dummy=%s\r\nexit /b 0\r\n",
+			outputDir,
+			outputDir,
+			output,
+			contents,
+		)
+	}
+	require.NoError(tb, os.WriteFile(filepath.Join(dir, name), []byte(script), 0o755))
+	tb.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
+func setupRustProject(t *testing.T) string {
+	t.Helper()
+	folder := t.TempDir()
+	require.NoError(t, gio.Copy("testdata/proj", folder))
+	t.Chdir(folder)
+	// Keep build outputs isolated while sharing the content-addressed global cache.
+	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
+	testlib.SharedZigCache(t)
+	return folder
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 
-	folder := testlib.Mktmp(t)
-	// CI (mlugg/setup-zig) forces a shared zig cache at the repo root, which
-	// gets corrupted when this package and the zig package build in parallel.
-	// Use a per-test cache so they cannot race.
-	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	testlib.SharedZigCache(t)
-	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
-	require.NoError(t, err)
-
-	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
-	require.NoError(t, err)
-	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
-	require.NoError(t, f.Close())
-	require.NoError(t, err)
-
+	folder := setupRustProject(t)
 	target := "aarch64-unknown-linux-gnu.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -205,21 +410,7 @@ func TestBuildArm(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 
-	folder := testlib.Mktmp(t)
-	// CI (mlugg/setup-zig) forces a shared zig cache at the repo root, which
-	// gets corrupted when this package and the zig package build in parallel.
-	// Use a per-test cache so they cannot race.
-	t.Setenv("ZIG_LOCAL_CACHE_DIR", filepath.Join(folder, ".zig-cache"))
-	testlib.SharedZigCache(t)
-	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
-	require.NoError(t, err)
-
-	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
-	require.NoError(t, err)
-	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
-	require.NoError(t, f.Close())
-	require.NoError(t, err)
-
+	folder := setupRustProject(t)
 	target := "armv7-unknown-linux-gnueabihf.2.17"
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

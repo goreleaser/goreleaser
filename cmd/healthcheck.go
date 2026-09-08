@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	"cmp"
 	stdctx "context"
 	"errors"
 	"io"
 	"os/exec"
 	"strings"
-	"sync"
 
 	"charm.land/lipgloss/v2"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -55,7 +56,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 			defer log.ResetPadding()
 
 			var errs []error
-			checked := &sync.Map{}
+			checked := map[string]bool{}
 			for _, hc := range healthcheck.DependencyCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
 					for _, tool := range hc.Dependencies(ctx) {
@@ -104,23 +105,37 @@ func check(name string, err error) error {
 	return err
 }
 
+// warn reports tool as unusable because of reason, and gives err back so the
+// caller can propagate it.
+func warn(tool, reason string, err error) error {
+	st := log.Styles[log.ErrorLevel]
+	log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render(reason))
+	return err
+}
+
 // checkPath reports whether tool is usable. checked dedupes tools listed by
 // more than one pipe within a single healthcheck run.
-func checkPath(ctx stdctx.Context, checked *sync.Map, tool string) error {
-	if _, ok := checked.LoadOrStore(tool, true); ok {
+func checkPath(ctx stdctx.Context, checked map[string]bool, tool string) error {
+	tool = strings.TrimSpace(tool)
+	if tool == "" || checked[tool] {
 		return nil
 	}
-	args := strings.Fields(tool)
-	if _, err := exec.LookPath(args[0]); err != nil {
-		st := log.Styles[log.ErrorLevel]
-		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))
-		return err
+	checked[tool] = true
+	args := []string{tool}
+	if _, err := exec.LookPath(tool); err != nil {
+		// Dependencies can be either literal executable paths or commands.
+		// Parse also returns no arguments for bare shell syntax such as `|`.
+		args, err = shellwords.Parse(tool)
+		if len(args) == 0 {
+			return warn(tool, "is not a valid command", cmp.Or(err, exec.ErrNotFound))
+		}
+		if _, err := exec.LookPath(args[0]); err != nil {
+			return warn(tool, "not present in path", err)
+		}
 	}
 	if len(args) > 1 {
 		if err := exec.CommandContext(ctx, args[0], args[1:]...).Run(); err != nil {
-			st := log.Styles[log.ErrorLevel]
-			log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("command failed"))
-			return err
+			return warn(tool, "command failed", err)
 		}
 	}
 	st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)

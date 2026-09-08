@@ -13,13 +13,12 @@ file at `.github/workflows/release.yml`.
 
 ### Workflow
 
-Below is a simple snippet to use this action in your workflow:
+This workflow creates a release only when you push a tag:
 
 ```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
 
 on:
-  pull_request:
   push:
     # run only against tags
     tags:

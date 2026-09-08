@@ -48,7 +48,8 @@ func TestRootCmdExitCode(t *testing.T) {
 }
 
 func TestRootRelease(t *testing.T) {
-	setup(t)
+	mktmp(t)
+	createGoReleaserYaml(t)
 	mem := &exitMemento{}
 	cmd := newRootCmd(testversion, mem.Exit)
 	cmd.Execute([]string{})
@@ -56,7 +57,8 @@ func TestRootRelease(t *testing.T) {
 }
 
 func TestRootReleaseVerbose(t *testing.T) {
-	setup(t)
+	mktmp(t)
+	createGoReleaserYaml(t)
 	mem := &exitMemento{}
 	cmd := newRootCmd(testversion, mem.Exit)
 	cmd.Execute([]string{"r", "--verbose"})

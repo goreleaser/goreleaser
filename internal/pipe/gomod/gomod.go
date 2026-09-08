@@ -1,6 +1,7 @@
 package gomod
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -48,16 +49,23 @@ func (Pipe) Run(ctx *context.Context) error {
 	if dir := ctx.Config.GoMod.Dir; dir != "" {
 		cmd.Dir = dir
 	}
-	out, err := cmd.CombinedOutput()
-	result := strings.TrimSpace(string(out))
-	if strings.HasPrefix(result, goPreModulesError) {
+	// Keep stdout and stderr apart: `go` prints diagnostics, e.g. toolchain
+	// download notices, to stderr, and they would otherwise corrupt the module
+	// path.
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	result := strings.TrimSpace(stdout.String())
+	errResult := strings.TrimSpace(stderr.String())
+	if strings.HasPrefix(errResult, goPreModulesError) {
 		return pipe.Skip("go version does not support modules")
 	}
-	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
+	if errResult == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
 	}
 	if err != nil {
-		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
+		return fmt.Errorf("failed to get module path: %w: %s", err, errResult)
 	}
 
 	// Splits and use the first line in case a `go.work` file exists with multiple modules.

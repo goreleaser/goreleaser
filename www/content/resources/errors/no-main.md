@@ -39,6 +39,15 @@ For more information, check the [builds documentation](/customization/builds/bui
 
 Run goreleaser in the root of the project.
 
+## If your `main` is an ellipsis path and the package is behind a build tag
+
+Ellipsis discovery uses the host build context, so it can miss packages behind
+build tags or OS constraints. Set `main` to the package path instead, and use one
+build per package.
+
+For details and examples, see
+[Discovery uses the host build context](/customization/builds/builders/go/#discovery-uses-the-host-build-context).
+
 ## If you are building in `plugin`, `c-shared` or `c-archive` build modes
 
 You can set `no_main_check` to `true`:

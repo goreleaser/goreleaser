@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	h "net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
@@ -216,6 +217,7 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 			artifact.Flatpak,
 			artifact.PySdist,
 			artifact.PyWheel,
+			artifact.SourceRPM,
 		)
 	case ModeBinary:
 		types = append(types, artifact.UploadableBinary)
@@ -302,10 +304,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
 	if !upload.CustomArtifactName {
-		if !strings.HasSuffix(targetURL, "/") {
-			targetURL += "/"
-		}
-		targetURL += artifact.Name
+		targetURL = appendArtifactNameToTargetURL(targetURL, artifact.Name)
 	}
 	log.Debugf("generated target url: %s", redact.String(targetURL, ctx.Env.Strings()))
 
@@ -339,6 +338,31 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	}
 
 	return nil
+}
+
+func appendArtifactNameToTargetURL(target, name string) string {
+	u, err := url.Parse(target)
+	if err != nil {
+		// target is unparseable, so http.NewRequest will reject it later with
+		// the same error. Keep the old naive behaviour rather than guess.
+		return appendEscapedName(target, name)
+	}
+
+	path := appendEscapedName(u.EscapedPath(), name)
+	// path is built only from already-escaped parts, so it always unescapes.
+	u.Path, _ = url.PathUnescape(path)
+	u.RawPath = path
+	return u.String()
+}
+
+// appendEscapedName appends name to base. EscapedPath escapes each path
+// segment and keeps "/" as a separator, so an artifact name that contains a
+// directory keeps its structure.
+func appendEscapedName(base, name string) string {
+	if !strings.HasSuffix(base, "/") {
+		base += "/"
+	}
+	return base + (&url.URL{Path: name}).EscapedPath()
 }
 
 // uploadAssetToServer uploads the asset file to target.
