@@ -259,6 +259,11 @@ func getTagContents(ctx *context.Context, tag string) (subject, contents, body s
 	if err != nil {
 		return "", "", "", err
 	}
+	if out == "" {
+		// the tag is not in the local repository, e.g. when
+		// GORELEASER_CURRENT_TAG names a tag that was never fetched.
+		return "", "", "", nil
+	}
 	parts := strings.Split(out, "\x00")
 	if len(parts) != 3 {
 		return "", "", "", fmt.Errorf("unexpected git tag output for %q: %q", tag, out)

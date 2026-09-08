@@ -442,6 +442,22 @@ func TestTagFromCI(t *testing.T) {
 	}
 }
 
+func TestTagFromCINotInRepository(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	t.Setenv("GORELEASER_CURRENT_TAG", "v0.0.2")
+
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Validate))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.TagSubject)
+	require.Empty(t, ctx.Git.TagContents)
+	require.Empty(t, ctx.Git.TagBody)
+}
+
 func TestNoPreviousTag(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
