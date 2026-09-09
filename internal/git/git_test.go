@@ -70,3 +70,22 @@ func TestClean(t *testing.T) {
 		require.Empty(t, out)
 	})
 }
+
+func TestGitColumnUI(t *testing.T) {
+	ctx := t.Context()
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "foo")
+	testlib.GitTag(t, "1.2.3")
+	testlib.GitTag(t, "nightly")
+	_, err := git.Run(ctx, "config", "column.ui", "always")
+	require.NoError(t, err)
+
+	tags, err := git.CleanAllLines(git.Run(ctx, "tag", "--points-at", "HEAD", "--sort", "-version:refname"))
+	require.NoError(t, err)
+	require.ElementsMatch(t, []string{"1.2.3", "nightly"}, tags)
+
+	out, err := git.Run(ctx, "tag", "-l", "--format=%(refname:short)%00%(objecttype)", "1.2.3")
+	require.NoError(t, err)
+	require.Equal(t, "1.2.3\x00commit\n", out)
+}
