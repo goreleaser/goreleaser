@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -119,6 +120,40 @@ func TestAnnotatedTagsWithApostrophes(t *testing.T) {
 	require.Equal(t, "don't break it", ctx.Git.TagSubject)
 	require.Equal(t, "don't break it\n\nit's the user's message", ctx.Git.TagContents)
 	require.Equal(t, "it's the user's message", ctx.Git.TagBody)
+}
+
+func TestAnnotatedTagsWithColumnUI(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitAnnotatedTag(t, "v0.0.1", "first version\n\nlalalla\nlalal\nlah")
+	_, err := git.Run(t.Context(), "config", "column.ui", "always")
+	require.NoError(t, err)
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.Equal(t, "first version", ctx.Git.TagSubject)
+	require.Equal(t, "first version\n\nlalalla\nlalal\nlah", ctx.Git.TagContents)
+	require.Equal(t, "lalalla\nlalal\nlah", ctx.Git.TagBody)
+}
+
+func TestTagSortOrderWithColumnUI(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.2")
+	testlib.GitTag(t, "v0.0.1")
+	_, err := git.Run(t.Context(), "config", "column.ui", "always")
+	require.NoError(t, err)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Git: config.Git{
+			TagSort: "-version:refname",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
 }
 
 func TestBranch(t *testing.T) {
@@ -440,6 +475,38 @@ func TestTagFromCI(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, tc.expected, ctx.Git.CurrentTag)
 	}
+}
+
+func TestTagFromCINotInRepository(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	t.Setenv("GORELEASER_CURRENT_TAG", "v0.0.2")
+
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Validate))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.TagSubject)
+	require.Empty(t, ctx.Git.TagContents)
+	require.Empty(t, ctx.Git.TagBody)
+}
+
+func TestTagFromCINotInRepositoryValidates(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	t.Setenv("GORELEASER_CURRENT_TAG", "v0.0.2")
+
+	ctx := testctx.Wrap(t.Context())
+	err := Pipe{}.Run(ctx)
+	var wrongRef ErrWrongRef
+	require.ErrorAs(t, err, &wrongRef)
+	require.Equal(t, "v0.0.2", wrongRef.tag)
+	require.Equal(t, ctx.Git.Commit, wrongRef.commit)
 }
 
 func TestNoPreviousTag(t *testing.T) {
