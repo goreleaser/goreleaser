@@ -60,8 +60,6 @@ which is different from what other git sorting options might give you.
 
 {{< g_version "v2.12" >}}
 
-{{< g_experimental >}}
-
 {{< g_featpro >}}
 
 Like semver sorting, but smarter: if the current version is not a pre-release,

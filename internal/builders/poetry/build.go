@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -71,14 +70,8 @@ func (Target) String() string {
 	return defaultTarget
 }
 
-var once sync.Once
-
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
-	once.Do(func() {
-		log.Warn("you are using the experimental POETRY builder")
-	})
-
 	if len(build.Targets) == 0 {
 		build.Targets = []string{defaultTarget}
 	}
