@@ -280,8 +280,14 @@ type HomebrewCaskHooks struct {
 }
 
 type HomebrewCaskHook struct {
-	Install   string `yaml:"install,omitempty" json:"install,omitempty"`
-	Uninstall string `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
+	InstallSteps   string `yaml:"install_steps,omitempty" json:"install_steps,omitempty"`
+	UninstallSteps string `yaml:"uninstall_steps,omitempty" json:"uninstall_steps,omitempty"`
+
+	// Deprecated: use [HomebrewCaskHook.InstallSteps] instead.
+	Install string `yaml:"install,omitempty" json:"install,omitempty" jsonschema:"deprecated=true"`
+
+	// Deprecated: use [HomebrewCaskHook.UninstallSteps] instead.
+	Uninstall string `yaml:"uninstall,omitempty" json:"uninstall,omitempty" jsonschema:"deprecated=true"`
 }
 
 type HomebrewCaskConflict struct {

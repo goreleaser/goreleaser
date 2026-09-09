@@ -49,6 +49,138 @@ foo: bar
 
 -->
 
+### homebrew_casks.hooks.pre.install
+
+> since v2.19-unreleased
+
+[Homebrew deprecated the `preflight` stanza](https://github.com/Homebrew/brew/pull/23366)
+in favor of `preflight_steps`.
+
+The new stanza does not accept arbitrary Ruby: it uses Homebrew's declarative
+install steps DSL. You must rewrite the body. `system_command` becomes `run`,
+`if OS.mac?` becomes `on_macos`, and `#{staged_path}` becomes `{{ .StagedPath }}`.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      pre:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      pre:
+        install_steps: |
+          run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/foo"]
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+### homebrew_casks.hooks.post.install
+
+> since v2.19-unreleased
+
+Same as [`homebrew_casks.hooks.pre.install`](#homebrew_caskshookspreinstall), for
+the `postflight` stanza, which becomes `postflight_steps`.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      post:
+        install: |
+          system_command "/usr/bin/open", args: ["#{appdir}/MyApp.app"]
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      post:
+        install_steps: |
+          run "/usr/bin/open", args: ["{{ .AppDir }}/MyApp.app"]
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+### homebrew_casks.hooks.pre.uninstall
+
+> since v2.19-unreleased
+
+Same as [`homebrew_casks.hooks.pre.install`](#homebrew_caskshookspreinstall), for
+the `uninstall_preflight` stanza, which becomes `uninstall_preflight_steps`.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      pre:
+        uninstall: |
+          system_command "/usr/bin/defaults", args: ["delete", "com.example.app"]
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      pre:
+        uninstall_steps: |
+          run "/usr/bin/defaults", args: ["delete", "com.example.app"]
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+### homebrew_casks.hooks.post.uninstall
+
+> since v2.19-unreleased
+
+Same as [`homebrew_casks.hooks.pre.install`](#homebrew_caskshookspreinstall), for
+the `uninstall_postflight` stanza, which becomes `uninstall_postflight_steps`.
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      post:
+        uninstall: |
+          system_command "/usr/bin/rm", args: ["-rf", "~/.myapp"]
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+homebrew_casks:
+  - hooks:
+      post:
+        uninstall_steps: |
+          remove "~/.myapp", recursive: true
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
 ### homebrew_casks.url.verified
 
 > since v2.18.1

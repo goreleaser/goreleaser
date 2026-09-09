@@ -147,6 +147,32 @@ In the nFPM name template field, you can use those extra fields:
 | `.ConventionalExtension` | conventional package extension as provided by nFPM              |
 | `.Format`                | package format                                                  |
 
+## Homebrew Cask extra fields
+
+In the [Homebrew Cask](/customization/publish/homebrew_casks/)
+`hooks.*.install_steps` and `hooks.*.uninstall_steps` options, you can use these
+extra fields {{< g_inline_version "v2.19-unreleased" >}}:
+
+| Key           | Description                                                        |
+| ------------- | ------------------------------------------------------------------ |
+| `.StagedPath` | Homebrew's `staged_path` token: where the cask contents are staged |
+| `.AppDir`     | Homebrew's `appdir` token: where `.app` bundles are installed      |
+
+Homebrew uses the same delimiters as GoReleaser, so these two fields let you
+write its most common tokens without quoting them.
+
+Homebrew has [other tokens](https://docs.brew.sh/Cask-Cookbook), e.g.
+`staged_path`'s siblings `version` and `token`. They have no field, so you must
+quote them, otherwise the build fails with `function "version" not defined`:
+
+```yaml {filename=".goreleaser.yaml"}
+homebrew_casks:
+  - hooks:
+      post:
+        install_steps: |
+          run "/bin/echo", args: ["{{ "{{version}}" }}"]
+```
+
 ## Release body extra fields
 
 In the `release.body` field, you can use these extra fields:
