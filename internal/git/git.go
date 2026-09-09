@@ -24,6 +24,7 @@ func IsRepo(ctx context.Context) bool {
 func RunWithEnv(ctx context.Context, env []string, args ...string) (string, error) {
 	extraArgs := []string{
 		"-c", "log.showSignature=false",
+		"-c", "column.ui=never",
 	}
 	args = append(extraArgs, args...)
 	/* #nosec */
