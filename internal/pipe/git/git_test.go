@@ -458,6 +458,22 @@ func TestTagFromCINotInRepository(t *testing.T) {
 	require.Empty(t, ctx.Git.TagBody)
 }
 
+func TestTagFromCINotInRepositoryValidates(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	t.Setenv("GORELEASER_CURRENT_TAG", "v0.0.2")
+
+	ctx := testctx.Wrap(t.Context())
+	err := Pipe{}.Run(ctx)
+	var wrongRef ErrWrongRef
+	require.ErrorAs(t, err, &wrongRef)
+	require.Equal(t, "v0.0.2", wrongRef.tag)
+	require.Equal(t, ctx.Git.Commit, wrongRef.commit)
+}
+
 func TestNoPreviousTag(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
