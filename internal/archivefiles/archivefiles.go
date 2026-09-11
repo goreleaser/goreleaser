@@ -40,6 +40,12 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			continue
 		}
 
+		dst, err := template.Apply(f.Destination)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Destination, err)
+		}
+		f.Destination = dst
+
 		if err := EvalInfo(template, &f.Info); err != nil {
 			return result, err
 		}
