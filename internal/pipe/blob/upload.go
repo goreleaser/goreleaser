@@ -1,6 +1,7 @@
 package blob
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -198,15 +199,33 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 }
 
 func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {
-	data, err := getData(ctx, conf, dataFile)
+	data, err := openData(ctx, conf, dataFile)
 	if err != nil {
 		return err
 	}
+	defer data.Close()
 
 	if err := up.Upload(ctx, uploadFile, data); err != nil {
 		return handleError(err, bucketURL)
 	}
 	return nil
+}
+
+// openData opens the file to be uploaded.
+// Unencrypted files are streamed, so they are never fully loaded into memory.
+func openData(ctx *context.Context, conf config.Blob, path string) (io.ReadCloser, error) {
+	if conf.KMSKey == "" {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %s: %w", path, err)
+		}
+		return f, nil
+	}
+	data, err := getData(ctx, conf, path)
+	if err != nil {
+		return nil, err
+	}
+	return io.NopCloser(bytes.NewReader(data)), nil
 }
 
 // errorContains check if error contains specific string.
@@ -275,7 +294,7 @@ func validateKMSPlaintextSize(kmsKey string, size int) error {
 type uploader interface {
 	io.Closer
 	Open(ctx *context.Context, url string) error
-	Upload(ctx *context.Context, path string, data []byte) error
+	Upload(ctx *context.Context, path string, data io.Reader) error
 }
 
 // productionUploader actually do upload to.
@@ -304,7 +323,7 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data io.Reader) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	disp, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -324,7 +343,7 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 		return err
 	}
 	defer func() { _ = w.Close() }()
-	if _, err = w.Write(data); err != nil {
+	if _, err = io.Copy(w, data); err != nil {
 		return err
 	}
 	return w.Close()

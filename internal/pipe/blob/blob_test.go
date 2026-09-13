@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -23,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
+	"gocloud.dev/blob/memblob"
 )
 
 func TestDescription(t *testing.T) {
@@ -392,6 +395,98 @@ func TestDoUploadUploadsArtifactsAndExtraFiles(t *testing.T) {
 	}, uploader.uploaded())
 }
 
+func TestProductionUploaderStreamsFileContents(t *testing.T) {
+	dir := t.TempDir()
+	contents := map[string][]byte{
+		"empty.txt":  {},
+		"small.txt":  []byte("small file"),
+		"script.sh":  []byte("#!/bin/sh\necho hello\n"),
+		"large.bin":  bytes.Repeat([]byte("0123456789abcdef"), 1<<16),
+		"uneven.bin": bytes.Repeat([]byte{0, 1, 2, 3, 4, 5, 6}, 100_003),
+	}
+
+	bucket := memblob.OpenBucket(nil)
+	t.Cleanup(func() { require.NoError(t, bucket.Close()) })
+	up := &productionUploader{bucket: bucket}
+	ctx := testctx.Wrap(t.Context())
+
+	for name, content := range contents {
+		file := filepath.Join(dir, name)
+		require.NoError(t, os.WriteFile(file, content, 0o644))
+		require.NoError(t, uploadData(ctx, config.Blob{}, up, file, "dist/"+name, "mem://"))
+	}
+
+	for name, content := range contents {
+		got, err := bucket.ReadAll(t.Context(), "dist/"+name)
+		require.NoError(t, err)
+		require.Equal(t, content, got, name)
+
+		attrs, err := bucket.Attributes(t.Context(), "dist/"+name)
+		require.NoError(t, err)
+		require.Equal(t, http.DetectContentType(content), attrs.ContentType, name)
+	}
+}
+
+func TestUploadDataMissingFile(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "missing.txt")
+	err := uploadData(testctx.Wrap(t.Context()), config.Blob{}, &recordingUploader{}, file, "dist/missing.txt", "mem://")
+	require.ErrorIs(t, err, os.ErrNotExist)
+	require.ErrorContains(t, err, "failed to open file "+file)
+}
+
+func TestPublishDoesNotBufferFilesPerDestination(t *testing.T) {
+	const (
+		fileSize     = 2 << 20
+		files        = 4
+		destinations = 4
+	)
+
+	previous := newUploader
+	newUploader = func(config.Blob, string) uploader { return discardUploader{} }
+	t.Cleanup(func() { newUploader = previous })
+
+	dir := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	ctx.Parallelism = files
+	for i := range files {
+		name := fmt.Sprintf("file%d.bin", i)
+		file := filepath.Join(dir, name)
+		require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte{byte(i)}, fileSize), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableArchive,
+			Name: name,
+			Path: file,
+		})
+	}
+	for i := range destinations {
+		ctx.Config.Blobs = append(ctx.Config.Blobs, config.Blob{
+			Provider:  "test",
+			Bucket:    fmt.Sprintf("bucket%d", i),
+			Directory: "dist",
+		})
+	}
+
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	require.NoError(t, Pipe{}.Publish(ctx))
+	runtime.ReadMemStats(&after)
+
+	// Buffering every file for every destination allocates
+	// files*destinations*fileSize bytes; streaming should not allocate even
+	// a single file's worth.
+	require.Less(t, after.TotalAlloc-before.TotalAlloc, uint64(fileSize))
+}
+
+type discardUploader struct{}
+
+func (discardUploader) Open(*context.Context, string) error { return nil }
+func (discardUploader) Close() error                        { return nil }
+
+func (discardUploader) Upload(_ *context.Context, _ string, data io.Reader) error {
+	_, err := io.Copy(io.Discard, data)
+	return err
+}
+
 func blobUploadContext(tb testing.TB, names []string, extraFiles []config.ExtraFile) (*context.Context, config.Blob) {
 	tb.Helper()
 
@@ -442,7 +537,7 @@ func (u *recordingUploader) Open(*context.Context, string) error {
 	return nil
 }
 
-func (u *recordingUploader) Upload(_ *context.Context, path string, _ []byte) error {
+func (u *recordingUploader) Upload(_ *context.Context, path string, _ io.Reader) error {
 	u.active.Add(1)
 	if u.block != nil {
 		<-u.block
