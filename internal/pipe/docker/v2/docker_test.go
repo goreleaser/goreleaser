@@ -641,19 +641,28 @@ func TestContextDir(t *testing.T) {
 	// values asserted against `docker buildx build --platform=X` with a
 	// Dockerfile echoing $TARGETPLATFORM.
 	for input, expected := range map[string]string{
-		"windows/amd64":  "windows/amd64",
-		"windows/arm64":  "windows/arm64",
-		"linux/amd64":    "linux/amd64",
-		"linux/amd64/v1": "linux/amd64",
-		"linux/amd64/v3": "linux/amd64/v3",
-		"linux/arm64":    "linux/arm64",
-		"linux/arm/v7":   "linux/arm/v7",
-		"linux/arm/v6":   "linux/arm/v6",
-		"linux/arm/v5":   "linux/arm/v5",
-		"linux/386":      "linux/386",
-		"linux/ppc64le":  "linux/ppc64le",
-		"linux/s390x":    "linux/s390x",
-		"linux/riscv64":  "linux/riscv64",
+		"windows/amd64":    "windows/amd64",
+		"windows/arm64":    "windows/arm64",
+		"linux/amd64":      "linux/amd64",
+		"linux/amd64/v1":   "linux/amd64",
+		"linux/amd64/v2":   "linux/amd64/v2",
+		"linux/amd64/v3":   "linux/amd64/v3",
+		"linux/amd64/v4":   "linux/amd64/v4",
+		"linux/arm64":      "linux/arm64",
+		"linux/arm64/v8":   "linux/arm64",
+		"linux/arm64/v8.0": "linux/arm64",
+		"linux/arm64/v8.2": "linux/arm64/v8.2",
+		"linux/arm64/v8.7": "linux/arm64/v8.7",
+		"linux/arm64/v9":   "linux/arm64/v9",
+		"linux/arm64/v9.0": "linux/arm64/v9",
+		"linux/arm64/v9.2": "linux/arm64/v9.2",
+		"linux/arm/v7":     "linux/arm/v7",
+		"linux/arm/v6":     "linux/arm/v6",
+		"linux/arm/v5":     "linux/arm/v5",
+		"linux/386":        "linux/386",
+		"linux/ppc64le":    "linux/ppc64le",
+		"linux/s390x":      "linux/s390x",
+		"linux/riscv64":    "linux/riscv64",
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, expected, parsePlatform(input).contextDir())
@@ -854,6 +863,44 @@ func TestContextArtifactsBarePlatformMatchesAnyAmd64Variant(t *testing.T) {
 			})
 
 			require.Equal(t, []string{"linux/amd64/mybin"}, placements(arts))
+		})
+	}
+}
+
+// An arm64 variant must land in the directory buildx reports as
+// TARGETPLATFORM, which drops a trailing `.0` and the v8 baseline.
+func TestContextArtifactsArm64Variants(t *testing.T) {
+	for _, tt := range []struct {
+		platform, goarm64, want string
+	}{
+		{"linux/arm64", "", "linux/arm64/mybin"},
+		{"linux/arm64", "v8.0", "linux/arm64/mybin"},
+		{"linux/arm64/v8", "v8.0", "linux/arm64/mybin"},
+		{"linux/arm64/v8.0", "v8.0", "linux/arm64/mybin"},
+		{"linux/arm64/v8.2", "v8.2", "linux/arm64/v8.2/mybin"},
+		{"linux/arm64/v9", "v9.0", "linux/arm64/v9/mybin"},
+		{"linux/arm64/v9.0", "v9.0", "linux/arm64/v9/mybin"},
+	} {
+		t.Run(tt.platform+"/"+cmp.Or(tt.goarm64, "unset"), func(t *testing.T) {
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "mybin",
+				Path:    "mybin",
+				Goos:    "linux",
+				Goarch:  "arm64",
+				Goarm64: tt.goarm64,
+				Type:    artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "cli",
+				},
+			})
+
+			arts := contextArtifacts(ctx, config.DockerV2{
+				IDs:       []string{"cli"},
+				Platforms: []string{tt.platform},
+			})
+
+			require.Equal(t, []string{tt.want}, placements(arts))
 		})
 	}
 }

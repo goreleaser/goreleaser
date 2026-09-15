@@ -626,8 +626,9 @@ type platform struct {
 
 // contextDir returns the platform as buildx normalizes it for
 // TARGETPLATFORM, which is the build context directory artifacts for this
-// platform are copied into. buildx drops the baseline variant, so
-// linux/amd64/v1 becomes linux/amd64.
+// platform are copied into. buildx drops the baseline variant and a trailing
+// `.0`, so linux/amd64/v1 becomes linux/amd64 and linux/arm64/v9.0 becomes
+// linux/arm64/v9.
 func (p platform) contextDir() string {
 	parts := []string{p.os, p.arch}
 	switch {
@@ -635,6 +636,10 @@ func (p platform) contextDir() string {
 		parts = append(parts, "v"+p.arm)
 	case p.amd64 != "" && p.amd64 != "v1":
 		parts = append(parts, p.amd64)
+	case p.arm64 != "":
+		if variant := strings.TrimSuffix(p.arm64, ".0"); variant != "v8" {
+			parts = append(parts, variant)
+		}
 	}
 	return path.Join(parts...)
 }
