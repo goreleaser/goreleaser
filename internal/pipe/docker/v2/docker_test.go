@@ -660,6 +660,16 @@ func TestToPlatform(t *testing.T) {
 			Goarch:  "arm64",
 			Goarm64: "v9.0",
 		},
+		"linux/arm64/v8.2": {
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.2",
+		},
+		"linux/arm64/v9.2": {
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v9.2",
+		},
 		"linux/arm/v7": {
 			Goos:   "linux",
 			Goarch: "arm",
@@ -765,6 +775,21 @@ func TestContextPlacement(t *testing.T) {
 			platform: "linux/arm64/v9",
 			bins:     []bin{{goarch: "arm64", goarm64: "v9.0"}},
 			expect:   []string{"linux/arm64/v9/mybin"},
+		},
+		"arm64/v9.0 drops the trailing zero": {
+			platform: "linux/arm64/v9.0",
+			bins:     []bin{{goarch: "arm64", goarm64: "v9.0"}},
+			expect:   []string{"linux/arm64/v9/mybin"},
+		},
+		"arm64/v8.0 drops the baseline": {
+			platform: "linux/arm64/v8.0",
+			bins:     []bin{{goarch: "arm64", goarm64: "v8.0"}},
+			expect:   []string{"linux/arm64/mybin"},
+		},
+		"arm64/v8.2 keeps the minor variant": {
+			platform: "linux/arm64/v8.2",
+			bins:     []bin{{goarch: "arm64", goarm64: "v8.2"}},
+			expect:   []string{"linux/arm64/v8.2/mybin"},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
