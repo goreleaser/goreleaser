@@ -127,7 +127,7 @@ may have some extra fields:
 | `.Ppc64`        | `GOPPC64` {{< g_inline_version "v2.4" >}}                       |
 | `.Riscv64`      | `GORISCV64` {{< g_inline_version "v2.4" >}}                     |
 | `.I386`         | `GO386` {{< g_inline_version "v2.4" >}}                         |
-| `.Abi`          | target ABI, when the builder sets one {{< g_inline_version "v2.19" >}} |
+| `.Abi`          | target ABI, when the builder sets one {{< g_inline_version "v2.19-unreleased" >}} |
 | `.Target`       | the whole target {{< g_inline_version "v2.5" >}}                |
 | `.Binary`       | artifact name (without the extension)                           |
 | `.ArtifactID`   | artifact id {{< g_inline_version "v2.3" >}}{{< g_inline_pro >}} |
