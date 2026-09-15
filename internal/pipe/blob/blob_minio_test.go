@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
-		Repository: "minio/minio",
+		Repository: "quay.io/minio/minio",
 		Tag:        "latest",
 		Env: []string{
 			"MINIO_ROOT_USER=" + minioUser,
