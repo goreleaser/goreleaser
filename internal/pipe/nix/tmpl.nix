@@ -125,7 +125,7 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     {{- with .Description }}
-    description = "{{ . }}";
+    description = {{ . | nixString | printf "{{ %q }}" }};
     {{- end }}
     {{- with .Homepage }}
     homepage = "{{ . }}";

@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -797,6 +798,61 @@ func TestPreparePkgEscapesDescription(t *testing.T) {
 	}, client.NewMock(), fakeHasher{archiveName: "sha"})
 	require.NoError(t, err)
 	require.Contains(t, content, `description = "Say \"hello\" from C:\\tools and \${system}";`)
+}
+
+// The whole rendered derivation goes through the template engine once more,
+// so a description that renders to text containing `{{` must survive that
+// pass as a literal instead of being evaluated again.
+func TestPreparePkgDescriptionIsTemplatedOnce(t *testing.T) {
+	for _, description := range []string{
+		`Render {{ "{{example}}" }} templates`,
+		`{{ .Env.DESCRIPTION }}`,
+	} {
+		t.Run(description, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+				},
+				testctx.WithEnv(map[string]string{"DESCRIPTION": "Render {{example}} templates"}),
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+			)
+
+			archiveName := "foo_linux_amd64v1.txz"
+			archivePath := filepath.Join(folder, "dist", archiveName)
+			require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+			require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    archiveName,
+				Path:    archivePath,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo",
+					artifact.ExtraFormat:    "txz",
+					artifact.ExtraBinaries:  []string{"foo"},
+					artifact.ExtraWrappedIn: "",
+				},
+			})
+
+			nix := config.Nix{
+				Name:        "foo",
+				IDs:         []string{"foo"},
+				Goamd64:     "v1",
+				Description: description,
+			}
+			require.NoError(t, tmpl.New(ctx).ApplyAll(&nix.Description))
+
+			content, err := preparePkg(ctx, nix, client.NewMock(), fakeHasher{archiveName: "sha"})
+			require.NoError(t, err)
+			require.Contains(t, content, `description = "Render {{example}} templates";`)
+		})
+	}
 }
 
 func TestPreparePkgInstallPhaseRunsHooks(t *testing.T) {
