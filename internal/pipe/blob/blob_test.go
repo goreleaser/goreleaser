@@ -27,6 +27,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob/memblob"
+
+	// register the file:// provider, used to exercise the real blob writer.
+	_ "gocloud.dev/blob/fileblob"
 )
 
 func TestDescription(t *testing.T) {
@@ -466,22 +469,42 @@ func TestUploadDataMissingFile(t *testing.T) {
 	require.ErrorContains(t, err, "failed to open file "+file)
 }
 
-func TestPublishDoesNotBufferFilesPerDestination(t *testing.T) {
+func TestPublishAllocationDoesNotScaleWithFileSize(t *testing.T) {
 	const (
-		fileSize     = 2 << 20
 		files        = 4
 		destinations = 4
+		smallFile    = 1 << 20
+		largeFile    = 4 << 20
 	)
 
-	replaceBlobUploader(t, discardUploader{})
+	small := publishAllocBytes(t, files, destinations, smallFile)
+	large := publishAllocBytes(t, files, destinations, largeFile)
 
-	dir := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	// Buffering every file for every destination grows allocation by
+	// files*destinations*(largeFile-smallFile), ~48MiB here. Streaming copies
+	// through a fixed-size buffer, so growing the files must not move the
+	// total by even one large file's worth.
+	require.Less(t, large, small+uint64(largeFile),
+		"allocation scaled with file size: %d bytes for %dMiB files vs %d bytes for %dMiB files",
+		large, largeFile>>20, small, smallFile>>20)
+}
+
+// publishAllocBytes reports how many bytes Publish allocates while uploading
+// files of the given size to every destination. It uses the file:// provider so
+// the real productionUploader and blob writer run, and nothing is retained by
+// the bucket itself.
+func publishAllocBytes(tb testing.TB, files, destinations, fileSize int) uint64 {
+	tb.Helper()
+
+	dir := tb.TempDir()
+	root := tb.TempDir()
+	ctx := testctx.WrapWithCfg(tb.Context(), config.Project{})
 	ctx.Parallelism = files
+
 	for i := range files {
 		name := fmt.Sprintf("file%d.bin", i)
 		file := filepath.Join(dir, name)
-		require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte{byte(i)}, fileSize), 0o644))
+		require.NoError(tb, os.WriteFile(file, bytes.Repeat([]byte{byte(i)}, fileSize), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type: artifact.UploadableArchive,
 			Name: name,
@@ -489,32 +512,30 @@ func TestPublishDoesNotBufferFilesPerDestination(t *testing.T) {
 		})
 	}
 	for i := range destinations {
+		bucket := filepath.Join(root, fmt.Sprintf("bucket%d", i))
+		require.NoError(tb, os.MkdirAll(bucket, 0o700))
 		ctx.Config.Blobs = append(ctx.Config.Blobs, config.Blob{
-			Provider:  "test",
-			Bucket:    fmt.Sprintf("bucket%d", i),
+			Provider:  "file",
+			Bucket:    bucket,
 			Directory: "dist",
 		})
 	}
 
 	var before, after runtime.MemStats
 	runtime.ReadMemStats(&before)
-	require.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(tb, Pipe{}.Publish(ctx))
 	runtime.ReadMemStats(&after)
+	allocated := after.TotalAlloc - before.TotalAlloc
 
-	// Buffering every file for every destination allocates
-	// files*destinations*fileSize bytes; streaming keeps the whole run under
-	// two files' worth, which still leaves a wide margin over that bug.
-	require.Less(t, after.TotalAlloc-before.TotalAlloc, uint64(2*fileSize))
-}
-
-type discardUploader struct{}
-
-func (discardUploader) Open(*context.Context, string) error { return nil }
-func (discardUploader) Close() error                        { return nil }
-
-func (discardUploader) Upload(_ *context.Context, _ string, data io.Reader) error {
-	_, err := io.Copy(io.Discard, data)
-	return err
+	// guard against measuring a run that uploaded nothing.
+	for i := range files {
+		for j := range destinations {
+			got, err := os.Stat(filepath.Join(root, fmt.Sprintf("bucket%d", j), "dist", fmt.Sprintf("file%d.bin", i)))
+			require.NoError(tb, err)
+			require.EqualValues(tb, fileSize, got.Size())
+		}
+	}
+	return allocated
 }
 
 func blobUploadContext(tb testing.TB, names []string, extraFiles []config.ExtraFile) (*context.Context, config.Blob) {
@@ -540,12 +561,12 @@ func blobUploadContext(tb testing.TB, names []string, extraFiles []config.ExtraF
 	return ctx, conf
 }
 
-func replaceBlobUploader(tb testing.TB, up uploader) {
+func replaceBlobUploader(tb testing.TB, rec *recordingUploader) {
 	tb.Helper()
 
 	previous := newUploader
 	newUploader = func(config.Blob, string) uploader {
-		return up
+		return rec
 	}
 	tb.Cleanup(func() { newUploader = previous })
 }
