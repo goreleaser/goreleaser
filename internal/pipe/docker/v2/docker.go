@@ -14,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -460,7 +461,7 @@ func makeImageList(imgs, tags []string) []string {
 // extra files, returning its path.
 //
 // The caller is responsible for removing the temporary directory.
-func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile string) (string, error) {
+func makeContext(d config.DockerV2, artifacts []contextArtifact, dockerfile string) (string, error) {
 	if len(artifacts) == 0 {
 		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
 	}
@@ -498,24 +499,8 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 	}
 
 	for _, art := range artifacts {
-		// if it's an "all" goos (e.g. python artifact), we make it available
-		// for all platforms being built.
-		if art.Goos == "all" {
-			for _, plat := range d.Platforms {
-				target := filepath.Join(tmp, plat, art.Name)
-				if err := copyArtifact(art.Path, target); err != nil {
-					return "", err
-				}
-			}
-			continue
-		}
-
-		plat, err := toPlatform(art)
-		if err != nil {
-			return "", fmt.Errorf("failed to make dir for artifact: %w", err)
-		}
-		target := filepath.Join(tmp, plat, art.Name)
-		if err := copyArtifact(art.Path, target); err != nil {
+		target := filepath.Join(tmp, art.platform, art.artifact.Name)
+		if err := copyArtifact(art.artifact.Path, target); err != nil {
 			return "", err
 		}
 	}
@@ -535,13 +520,35 @@ func copyArtifact(src, dst string) error {
 	return nil
 }
 
-func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artifact {
-	var platFilters []artifact.Filter
+// contextArtifact pairs an artifact with the build context directory it is
+// copied into. That directory is the requested platform as buildx normalizes
+// it for TARGETPLATFORM, so a Dockerfile can always `COPY $TARGETPLATFORM/`.
+type contextArtifact struct {
+	platform string
+	artifact *artifact.Artifact
+}
+
+func contextArtifacts(ctx *context.Context, d config.DockerV2) []contextArtifact {
+	// artifacts that are not platform specific (e.g. python wheels) are made
+	// available for every platform being built.
+	anyPlatform := ctx.Artifacts.Filter(artifact.And(
+		artifact.ByType(artifact.PyWheel),
+		artifact.ByIDs(d.IDs...),
+	)).List()
+
+	var result []contextArtifact
 	for _, p := range d.Platforms {
 		plat := parsePlatform(p)
 		filters := []artifact.Filter{
 			artifact.ByGoos(plat.os),
 			artifact.ByGoarch(plat.arch),
+			artifact.ByTypes(
+				artifact.Binary,
+				artifact.LinuxPackage,
+				artifact.CArchive,
+				artifact.CShared,
+			),
+			artifact.ByIDs(d.IDs...),
 		}
 		if plat.arm != "" {
 			filters = append(filters, artifact.ByGoarm(plat.arm))
@@ -549,70 +556,65 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 		if plat.arm64 != "" {
 			filters = append(filters, byGoarm64(plat.arm64))
 		}
+		// a platform without an explicit CPU variant accepts any variant: the
+		// build might target only, say, amd64v3, and that binary is still the
+		// one that belongs in the linux/amd64 context.
 		if plat.amd64 != "" {
 			filters = append(filters, artifact.ByGoamd64(plat.amd64))
 		}
-		platFilters = append(platFilters, artifact.And(filters...))
+
+		dir := plat.contextDir()
+		for _, art := range leastSpecificPerName(ctx.Artifacts.Filter(artifact.And(filters...)).List()) {
+			result = append(result, contextArtifact{platform: dir, artifact: art})
+		}
+		for _, art := range anyPlatform {
+			result = append(result, contextArtifact{platform: dir, artifact: art})
+		}
 	}
 
-	filters := []artifact.Filter{
-		artifact.Or(platFilters...),
-		artifact.ByTypes(
-			artifact.Binary,
-			artifact.LinuxPackage,
-			artifact.CArchive,
-			artifact.CShared,
-		),
-		artifact.ByIDs(d.IDs...),
+	return result
+}
+
+// leastSpecificPerName keeps a single artifact per name, preferring the least
+// specific CPU variant. A bare platform such as linux/amd64 matches every
+// goamd64 variant, so this both keeps the most portable binary and makes the
+// choice independent of the order artifacts were added in.
+func leastSpecificPerName(artifacts []*artifact.Artifact) []*artifact.Artifact {
+	sorted := slices.Clone(artifacts)
+	slices.SortStableFunc(sorted, func(a, b *artifact.Artifact) int {
+		return cmp.Compare(variantRank(a), variantRank(b))
+	})
+	var result []*artifact.Artifact
+	seen := map[string]bool{}
+	for _, art := range sorted {
+		if seen[art.Name] {
+			continue
+		}
+		seen[art.Name] = true
+		result = append(result, art)
 	}
+	return result
+}
 
-	artifacts := ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.And(filters...),
-			artifact.And(
-				artifact.ByType(artifact.PyWheel),
-				artifact.ByIDs(d.IDs...),
-			),
-		),
-	)
-
-	return artifacts.List()
+// variantRank returns the major CPU variant of an artifact, e.g. 3 for
+// goamd64 v3. Artifacts without a variant rank first.
+func variantRank(a *artifact.Artifact) int {
+	variant := a.Goamd64
+	if a.Goarch == "arm64" {
+		variant = a.Goarm64
+	}
+	major, _, _ := strings.Cut(strings.TrimPrefix(variant, "v"), ".")
+	rank, err := strconv.Atoi(major)
+	if err != nil {
+		return 0
+	}
+	return rank
 }
 
 func tagSuffix(plat string) string {
 	plat = plat[strings.Index(plat, "/")+1:]
 	plat = strings.ReplaceAll(plat, "/", "")
 	return plat
-}
-
-func toPlatform(a *artifact.Artifact) (string, error) {
-	var parts []string
-	switch a.Goos {
-	case "linux", "windows":
-		parts = append(parts, a.Goos)
-	default:
-		return "", fmt.Errorf("unsupported OS: %q", a.Goos)
-	}
-	switch a.Goarch {
-	case "arm64", "386", "ppc64le", "s390x", "riscv64":
-		parts = append(parts, a.Goarch)
-	case "amd64":
-		parts = append(parts, a.Goarch)
-		if a.Goamd64 != "" && a.Goamd64 != "v1" {
-			parts = append(parts, a.Goamd64)
-		}
-	case "arm":
-		parts = append(parts, a.Goarch)
-		switch a.Goarm {
-		case "5", "6", "7":
-			parts = append(parts, "v"+a.Goarm)
-		default:
-			return "", fmt.Errorf("unsupported arch: arm/v%q", a.Goarm)
-		}
-	default:
-		return "", fmt.Errorf("unsupported arch: %q", a.Goarch)
-	}
-	return path.Join(parts...), nil
 }
 
 type platform struct {
@@ -622,6 +624,21 @@ type platform struct {
 	amd64    string
 }
 
+// contextDir returns the platform as buildx normalizes it for
+// TARGETPLATFORM, which is the build context directory artifacts for this
+// platform are copied into. buildx drops the baseline variant, so
+// linux/amd64/v1 becomes linux/amd64.
+func (p platform) contextDir() string {
+	parts := []string{p.os, p.arch}
+	switch {
+	case p.arm != "":
+		parts = append(parts, "v"+p.arm)
+	case p.amd64 != "" && p.amd64 != "v1":
+		parts = append(parts, p.amd64)
+	}
+	return path.Join(parts...)
+}
+
 func parsePlatform(p string) platform {
 	parts := strings.Split(p, "/")
 	result := platform{
@@ -629,9 +646,6 @@ func parsePlatform(p string) platform {
 	}
 	if len(parts) >= 2 {
 		result.arch = parts[1]
-		if result.arch == "amd64" {
-			result.amd64 = "v1"
-		}
 	}
 	if len(parts) >= 3 {
 		switch result.arch {

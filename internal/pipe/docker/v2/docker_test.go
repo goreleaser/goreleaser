@@ -1,11 +1,14 @@
 package docker
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -93,19 +96,20 @@ func TestMakeContext(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		dir, err := makeContext(config.DockerV2{
 			ExtraFiles: []string{"./testdata/foo.conf"},
-		}, []*artifact.Artifact{
+		}, []contextArtifact{
 			{
-				Name:   "mybin",
-				Path:   "./testdata/mybin",
-				Goos:   "linux",
-				Goarch: "arm",
-				Goarm:  "7",
+				platform: "linux/arm/v7",
+				artifact: &artifact.Artifact{
+					Name: "mybin",
+					Path: "./testdata/mybin",
+				},
 			},
 			{
-				Name:   "mybin",
-				Path:   "./testdata/mybin",
-				Goos:   "linux",
-				Goarch: "amd64",
+				platform: "linux/amd64",
+				artifact: &artifact.Artifact{
+					Name: "mybin",
+					Path: "./testdata/mybin",
+				},
 			},
 		}, "./testdata/Dockerfile")
 		require.NoError(t, err)
@@ -120,8 +124,8 @@ func TestMakeContext(t *testing.T) {
 }
 
 func TestMakeContextRemovesTemporaryDirOnCopyError(t *testing.T) {
-	for name, setup := range map[string]func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact){
-		"extra file": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+	for name, setup := range map[string]func(t *testing.T, dir string) (config.DockerV2, []contextArtifact){
+		"extra file": func(t *testing.T, dir string) (config.DockerV2, []contextArtifact) {
 			t.Helper()
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "assets.bin"), []byte(strings.Repeat("a", 8192)), 0o644))
 			return config.DockerV2{
@@ -129,21 +133,23 @@ func TestMakeContextRemovesTemporaryDirOnCopyError(t *testing.T) {
 				ExtraFiles: []string{"assets.bin", "missing.txt"},
 			}, nil
 		},
-		"artifact": func(t *testing.T, dir string) (config.DockerV2, []*artifact.Artifact) {
+		"artifact": func(t *testing.T, dir string) (config.DockerV2, []contextArtifact) {
 			t.Helper()
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "mybin"), []byte("binary"), 0o644))
-			return config.DockerV2{ID: "test"}, []*artifact.Artifact{
+			return config.DockerV2{ID: "test"}, []contextArtifact{
 				{
-					Name:   "mybin",
-					Path:   "mybin",
-					Goos:   "linux",
-					Goarch: "amd64",
+					platform: "linux/amd64",
+					artifact: &artifact.Artifact{
+						Name: "mybin",
+						Path: "mybin",
+					},
 				},
 				{
-					Name:   "missing",
-					Path:   "missing",
-					Goos:   "linux",
-					Goarch: "amd64",
+					platform: "linux/amd64",
+					artifact: &artifact.Artifact{
+						Name: "missing",
+						Path: "missing",
+					},
 				},
 			}
 		},
@@ -631,96 +637,33 @@ func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {
 	require.False(t, isDockerDaemonAvailable(t.Context()))
 }
 
-func TestToPlatform(t *testing.T) {
-	for expected, art := range map[string]artifact.Artifact{
-		"windows/amd64": {
-			Goos:   "windows",
-			Goarch: "amd64",
-		},
-		"windows/arm64": {
-			Goos:   "windows",
-			Goarch: "arm64",
-		},
-		"linux/amd64": {
-			Goos:   "linux",
-			Goarch: "amd64",
-		},
-		"linux/amd64/v3": {
-			Goos:    "linux",
-			Goarch:  "amd64",
-			Goamd64: "v3",
-		},
-		"linux/arm64": {
-			Goos:   "linux",
-			Goarch: "arm64",
-		},
-		"linux/arm/v7": {
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "7",
-		},
-		"linux/arm/v6": {
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "6",
-		},
-		"linux/arm/v5": {
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "5",
-		},
-		"linux/386": {
-			Goos:   "linux",
-			Goarch: "386",
-		},
-		"linux/ppc64le": {
-			Goos:   "linux",
-			Goarch: "ppc64le",
-		},
-		"linux/s390x": {
-			Goos:   "linux",
-			Goarch: "s390x",
-		},
-		"linux/riscv64": {
-			Goos:   "linux",
-			Goarch: "riscv64",
-		},
+func TestContextDir(t *testing.T) {
+	// values asserted against `docker buildx build --platform=X` with a
+	// Dockerfile echoing $TARGETPLATFORM.
+	for input, expected := range map[string]string{
+		"windows/amd64":  "windows/amd64",
+		"windows/arm64":  "windows/arm64",
+		"linux/amd64":    "linux/amd64",
+		"linux/amd64/v1": "linux/amd64",
+		"linux/amd64/v3": "linux/amd64/v3",
+		"linux/arm64":    "linux/arm64",
+		"linux/arm/v7":   "linux/arm/v7",
+		"linux/arm/v6":   "linux/arm/v6",
+		"linux/arm/v5":   "linux/arm/v5",
+		"linux/386":      "linux/386",
+		"linux/ppc64le":  "linux/ppc64le",
+		"linux/s390x":    "linux/s390x",
+		"linux/riscv64":  "linux/riscv64",
 	} {
-		t.Run(expected, func(t *testing.T) {
-			plat, err := toPlatform(&art)
-			require.NoError(t, err)
-			require.Equal(t, expected, plat)
+		t.Run(input, func(t *testing.T) {
+			require.Equal(t, expected, parsePlatform(input).contextDir())
 		})
 	}
-
-	t.Run("unsupported os", func(t *testing.T) {
-		_, err := toPlatform(&artifact.Artifact{
-			Goos: "nope",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("unsupported arch", func(t *testing.T) {
-		_, err := toPlatform(&artifact.Artifact{
-			Goos:   "linux",
-			Goarch: "nope",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("unsupported arm", func(t *testing.T) {
-		_, err := toPlatform(&artifact.Artifact{
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "4",
-		})
-		require.Error(t, err)
-	})
 }
 
 func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
-		"linux/amd64":    {os: "linux", arch: "amd64", amd64: "v1"},
+		"linux/amd64":    {os: "linux", arch: "amd64"},
 		"linux/amd64/v3": {os: "linux", arch: "amd64", amd64: "v3"},
 		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
 		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
@@ -730,6 +673,17 @@ func TestParsePlatform(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))
 		})
 	}
+}
+
+// placements maps every artifact to the "<context dir>/<name>" path it will
+// be copied to, which is what a Dockerfile's `COPY $TARGETPLATFORM/` sees.
+func placements(arts []contextArtifact) []string {
+	var result []string
+	for _, art := range arts {
+		result = append(result, path.Join(art.platform, art.artifact.Name))
+	}
+	slices.Sort(result)
+	return result
 }
 
 func TestContextArtifacts(t *testing.T) {
@@ -771,17 +725,36 @@ func TestContextArtifacts(t *testing.T) {
 		})
 	}
 
+	plats := []string{"linux/arm/v7", "linux/amd64", "linux/arm64"}
+
 	arts := contextArtifacts(ctx, config.DockerV2{
-		Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
+		Platforms: plats,
 		IDs:       []string{"id1"},
 	})
-	require.Len(t, arts, 4)
+	require.Equal(t, []string{
+		"linux/amd64/id1-1.0.0-py3-none-any.whl",
+		"linux/amd64/mybin",
+		"linux/arm/v7/id1-1.0.0-py3-none-any.whl",
+		"linux/arm/v7/mybin",
+		"linux/arm64/id1-1.0.0-py3-none-any.whl",
+		"linux/arm64/mybin",
+	}, placements(arts))
 
 	t.Run("no ids", func(t *testing.T) {
 		arts := contextArtifacts(ctx, config.DockerV2{
-			Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
+			Platforms: plats,
 		})
-		require.Len(t, arts, 5)
+		require.Equal(t, []string{
+			"linux/amd64/id1-1.0.0-py3-none-any.whl",
+			"linux/amd64/id2-1.0.0-py3-none-any.whl",
+			"linux/amd64/mybin",
+			"linux/arm/v7/id1-1.0.0-py3-none-any.whl",
+			"linux/arm/v7/id2-1.0.0-py3-none-any.whl",
+			"linux/arm/v7/mybin",
+			"linux/arm64/id1-1.0.0-py3-none-any.whl",
+			"linux/arm64/id2-1.0.0-py3-none-any.whl",
+			"linux/arm64/mybin",
+		}, placements(arts))
 	})
 
 	t.Run("amd64 variant", func(t *testing.T) {
@@ -789,6 +762,7 @@ func TestContextArtifacts(t *testing.T) {
 		for _, goamd64 := range []string{"v1", "v3"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "mybin",
+				Path:    "mybin-" + goamd64,
 				Goos:    "linux",
 				Goarch:  "amd64",
 				Goamd64: goamd64,
@@ -804,7 +778,8 @@ func TestContextArtifacts(t *testing.T) {
 			IDs:       []string{"id1"},
 		})
 		require.Len(t, arts, 1)
-		require.Equal(t, "v3", arts[0].Goamd64)
+		require.Equal(t, "v3", arts[0].artifact.Goamd64)
+		require.Equal(t, "linux/amd64/v3", arts[0].platform)
 	})
 
 	t.Run("arm64 variant", func(t *testing.T) {
@@ -824,7 +799,7 @@ func TestContextArtifacts(t *testing.T) {
 			Platforms: []string{"linux/arm64/v8"},
 			IDs:       []string{"id1"},
 		})
-		require.Len(t, arts, 1)
+		require.Equal(t, []string{"linux/arm64/mybin"}, placements(arts))
 	})
 
 	t.Run("arm variants", func(t *testing.T) {
@@ -846,8 +821,41 @@ func TestContextArtifacts(t *testing.T) {
 			Platforms: []string{"linux/arm/v5", "linux/arm/v6", "linux/arm/v7"},
 			IDs:       []string{"id1"},
 		})
-		require.Len(t, arts, 3)
+		require.Equal(t, []string{
+			"linux/arm/v5/mybin",
+			"linux/arm/v6/mybin",
+			"linux/arm/v7/mybin",
+		}, placements(arts))
 	})
+}
+
+// A bare linux/amd64 platform must still pick up binaries built with a
+// non-baseline goamd64, otherwise the build context is empty and the
+// Dockerfile's COPY fails.
+func TestContextArtifactsBarePlatformMatchesAnyAmd64Variant(t *testing.T) {
+	for _, goamd64 := range []string{"", "v1", "v2", "v3", "v4"} {
+		t.Run(cmp.Or(goamd64, "unset"), func(t *testing.T) {
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "mybin",
+				Path:    "mybin",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: goamd64,
+				Type:    artifact.Binary,
+				Extra: artifact.Extras{
+					artifact.ExtraID: "cli",
+				},
+			})
+
+			arts := contextArtifacts(ctx, config.DockerV2{
+				IDs:       []string{"cli"},
+				Platforms: []string{"linux/amd64", "linux/arm64"},
+			})
+
+			require.Equal(t, []string{"linux/amd64/mybin"}, placements(arts))
+		})
+	}
 }
 
 func TestIsRetriableBuild(t *testing.T) {
