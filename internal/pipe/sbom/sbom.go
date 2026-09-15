@@ -33,14 +33,17 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 // Without it two binaries for the same os/arch resolve to the same document
 // name, and the second syft run silently overwrites the first. Each variant
 // is omitted when it is the Go toolchain default, to keep names stable for
-// the common case.
+// the common case. Goarm64 feature suffixes (e.g. "v8.0,lse") keep their
+// features, with the comma replaced, so that they stay distinct without
+// putting a comma in a release asset name.
 const variantSuffix = `{{ with .Arm }}v{{ . }}{{ end }}` +
 	`{{ with .Mips }}_{{ . }}{{ end }}` +
 	`{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}` +
-	`{{ if not (eq .Arm64 "v8.0") }}{{ .Arm64 }}{{ end }}` +
+	`{{ if not (eq .Arm64 "v8.0") }}{{ replace .Arm64 "," "-" }}{{ end }}` +
 	`{{ if not (eq .I386 "sse2") }}{{ .I386 }}{{ end }}` +
 	`{{ if not (eq .Ppc64 "power8") }}{{ .Ppc64 }}{{ end }}` +
-	`{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}`
+	`{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}` +
+	`{{ with .Abi }}_{{ . }}{{ end }}`
 
 // Pipe that catalogs common artifacts as an SBOM.
 type Pipe struct{}

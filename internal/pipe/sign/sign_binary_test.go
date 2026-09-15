@@ -382,16 +382,26 @@ func TestDefaultSignatureNameIsUniquePerVariant(t *testing.T) {
 			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva20u64"},
 			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva22u64"},
 		},
+		"goarm64 features": {
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse,crypto"},
+		},
+		"abi": {
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "gnu"}},
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "musl"}},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			var got []string
 			for _, art := range variants {
 				art.Name = "mybin"
-				name, err := tmpl.New(ctx).WithArtifact(&art).Apply(defaultSignatureName)
+				rendered, err := tmpl.New(ctx).WithArtifact(&art).Apply(defaultSignatureName)
 				require.NoError(t, err)
-				got = append(got, name)
+				require.NotContains(t, rendered, ",", "signature name is not safe to use as a release asset name")
+				got = append(got, rendered)
 			}
-			require.Len(t, slices.Compact(slices.Clone(got)), len(got), "variants share a signature name: %v", got)
+			require.Len(t, slices.Compact(slices.Sorted(slices.Values(got))), len(got), "variants share a signature name: %v", got)
 		})
 	}
 }

@@ -42,6 +42,7 @@ const (
 	KeyMips    = "Mips"
 	KeyPpc64   = "Ppc64"
 	KeyRiscv64 = "Riscv64"
+	KeyAbi     = "Abi"
 )
 
 // general keys.
@@ -206,6 +207,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 		KeyMips:      a.Gomips,
 		KeyPpc64:     a.Goppc64,
 		KeyRiscv64:   a.Goriscv64,
+		KeyAbi:       artifact.ExtraOr(*a, KeyAbi, ""),
 		target:       a.Target,
 		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
 		artifactName: a.Name,
@@ -237,6 +239,7 @@ func buildOptsToFields(opts build.Options) Fields {
 		KeyMips:    "",
 		KeyPpc64:   "",
 		KeyRiscv64: "",
+		KeyAbi:     "",
 	}
 	for k, v := range opts.Target.Fields() {
 		f[k] = v
