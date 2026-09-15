@@ -310,6 +310,16 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	}
 
 	filename := caskNameFor(brew.Name) + ".rb"
+	if previous := brew.Name + ".rb"; previous != filename {
+		// the file name has to match the cask token, which is always
+		// normalized. GoReleaser only creates and updates files, so a
+		// previously published file with the old name would stay behind and
+		// declare the same token.
+		log.Warnf(
+			"cask file renamed from %q to %q to match its token: if %q was published to the tap before, delete it",
+			previous, filename, previous,
+		)
+	}
 	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err

@@ -1,6 +1,7 @@
 package cask
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
@@ -818,6 +820,7 @@ func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
 	for name, tt := range map[string]struct {
 		caskName string
 		token    string
+		wantWarn bool
 	}{
 		"already-normalized": {
 			caskName: "foo-bar",
@@ -826,13 +829,16 @@ func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
 		"spaced": {
 			caskName: "Foo Bar",
 			token:    "foo-bar",
+			wantWarn: true,
 		},
 		"uppercase": {
 			caskName: "Foo",
 			token:    "foo",
+			wantWarn: true,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			logs := captureLogs(t)
 			folder := t.TempDir()
 			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
@@ -889,8 +895,28 @@ func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
 			casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 			require.Len(t, casks, 1)
 			require.Equal(t, filename, casks[0].Name)
+
+			// a renamed cask leaves the previously published file behind in
+			// the tap, still declaring the same token, so the user has to be
+			// told to delete it.
+			if tt.wantWarn {
+				require.Contains(t, logs.String(), "cask file renamed from \""+tt.caskName+".rb\" to \""+filename+"\"")
+			} else {
+				require.NotContains(t, logs.String(), "cask file renamed")
+			}
 		})
 	}
+}
+
+// captureLogs redirects the global logger to a buffer for the duration of the
+// test.
+func captureLogs(t *testing.T) *bytes.Buffer {
+	t.Helper()
+	var b bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&b)
+	t.Cleanup(func() { log.Log = previous })
+	return &b
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
