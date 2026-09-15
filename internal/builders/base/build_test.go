@@ -1,12 +1,14 @@
 package base
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -157,4 +159,67 @@ func TestExec(t *testing.T) {
 
 func TestExecSingleElementCommand(t *testing.T) {
 	require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{"true"}, nil, "."))
+}
+
+func TestExecRedactsSecrets(t *testing.T) {
+	const secret = "ghp_SECURITY_REGRESSION_SENTINEL_123456789"
+	env := []string{"GITHUB_TOKEN=" + secret}
+
+	t.Run("failing command", func(t *testing.T) {
+		err := Exec(testctx.Wrap(t.Context()), []string{
+			"sh", "-c", `printf '%s' "$GITHUB_TOKEN" >&2; exit 1`,
+		}, env, "")
+		require.Error(t, err)
+		require.NotContains(t, err.Error(), secret)
+		require.Contains(t, err.Error(), "$GITHUB_TOKEN")
+	})
+
+	t.Run("successful command", func(t *testing.T) {
+		out := captureLogs(t, func() {
+			require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{
+				"sh", "-c", `printf '%s\n' "$GITHUB_TOKEN"`,
+			}, env, ""))
+		})
+		require.NotContains(t, out, secret)
+		require.Contains(t, out, "$GITHUB_TOKEN")
+	})
+
+	t.Run("secret split across writes", func(t *testing.T) {
+		err := Exec(testctx.Wrap(t.Context()), []string{
+			"sh", "-c", `printf '%s' "${GITHUB_TOKEN%%789}"; sleep 0.2; printf '%s' 789; exit 1`,
+		}, env, "")
+		require.Error(t, err)
+		require.NotContains(t, err.Error(), secret)
+		require.Contains(t, err.Error(), "$GITHUB_TOKEN")
+	})
+
+	t.Run("secret in command line", func(t *testing.T) {
+		out := captureLogs(t, func() {
+			require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{
+				"sh", "-c", "echo hello " + secret,
+			}, env, ""))
+		})
+		require.NotContains(t, out, secret)
+		require.Contains(t, out, "$GITHUB_TOKEN")
+	})
+
+	t.Run("inherited environment", func(t *testing.T) {
+		t.Setenv("GITHUB_TOKEN", secret)
+		err := Exec(testctx.Wrap(t.Context()), []string{
+			"sh", "-c", `printf '%s' "$GITHUB_TOKEN" >&2; exit 1`,
+		}, nil, "")
+		require.Error(t, err)
+		require.NotContains(t, err.Error(), secret)
+		require.Contains(t, err.Error(), "$GITHUB_TOKEN")
+	})
+}
+
+func captureLogs(tb testing.TB, fn func()) string {
+	tb.Helper()
+	var b bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&b)
+	tb.Cleanup(func() { log.Log = previous })
+	fn()
+	return b.String()
 }
