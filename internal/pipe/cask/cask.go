@@ -162,6 +162,16 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 	repo := client.RepoFromRef(brew.Repository)
 
 	gpath := buildCaskPath(brew.Directory, cask.Name)
+	if previous := buildCaskPath(brew.Directory, brew.Name+".rb"); previous != gpath {
+		// the file name has to match the cask token, which is always
+		// normalized. GoReleaser only creates and updates files, so a
+		// previously published file with the old name stays behind, declaring
+		// the same token.
+		log.Warnf(
+			"cask file is %q because it has to match its token: if your tap still has %q from an older release, delete it",
+			gpath, previous,
+		)
+	}
 
 	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
 	if err != nil {
@@ -310,16 +320,6 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	}
 
 	filename := caskNameFor(brew.Name) + ".rb"
-	if previous := brew.Name + ".rb"; previous != filename {
-		// the file name has to match the cask token, which is always
-		// normalized. GoReleaser only creates and updates files, so a
-		// previously published file with the old name would stay behind and
-		// declare the same token.
-		log.Warnf(
-			"cask file renamed from %q to %q to match its token: if %q was published to the tap before, delete it",
-			previous, filename, previous,
-		)
-	}
 	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err

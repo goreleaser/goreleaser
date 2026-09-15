@@ -900,9 +900,9 @@ func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {
 			// the tap, still declaring the same token, so the user has to be
 			// told to delete it.
 			if tt.wantWarn {
-				require.Contains(t, logs.String(), "cask file renamed from \""+tt.caskName+".rb\" to \""+filename+"\"")
+				require.Contains(t, logs.String(), "cask file is \"Casks/"+filename+"\" because it has to match its token: if your tap still has \"Casks/"+tt.caskName+".rb\"")
 			} else {
-				require.NotContains(t, logs.String(), "cask file renamed")
+				require.NotContains(t, logs.String(), "has to match its token")
 			}
 		})
 	}
@@ -1343,6 +1343,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Release:     config.Release{},
 		Casks: []config.HomebrewCask{
 			{
+				// deliberately not normalized: the rename warning must not
+				// fire when there is no publish.
+				Name: "Foo Bar",
 				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
@@ -1373,9 +1376,13 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
+		logs := captureLogs(t)
 		require.NoError(t, runAll(ctx, client))
 		testlib.AssertSkipped(t, publishAll(ctx, client))
 		require.False(t, client.CreatedFile)
+		// the rename warning is about the tap contents, so it must not show
+		// up when nothing is published.
+		require.NotContains(t, logs.String(), "has to match its token")
 	}
 	t.Run("skip upload true", func(t *testing.T) {
 		ctx.Config.Casks[0].SkipUpload = "true"
