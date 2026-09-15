@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -515,8 +516,10 @@ func publishAllocBytes(tb testing.TB, files, destinations, fileSize int) uint64 
 		bucket := filepath.Join(root, fmt.Sprintf("bucket%d", i))
 		require.NoError(tb, os.MkdirAll(bucket, 0o700))
 		ctx.Config.Blobs = append(ctx.Config.Blobs, config.Blob{
-			Provider:  "file",
-			Bucket:    bucket,
+			Provider: "file",
+			// file:// needs a slash-separated absolute path; on Windows
+			// filepath gives D:\..., which is not a valid URL host.
+			Bucket:    "/" + strings.TrimPrefix(filepath.ToSlash(bucket), "/"),
 			Directory: "dist",
 		})
 	}
