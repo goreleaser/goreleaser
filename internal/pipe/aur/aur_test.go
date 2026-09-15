@@ -681,7 +681,7 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 			err := runAll(ctx, client.NewMock())
 			if tt.wantErr {
-				require.EqualError(t, err, "one aur can handle only one archive of each architecture")
+				require.EqualError(t, err, "one aur can handle only one archive of each architecture. Consider using ids in the aurs section")
 				return
 			}
 			require.NoError(t, err)
