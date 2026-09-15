@@ -4,10 +4,12 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -53,6 +55,7 @@ func (e errNoArchivesFound) Error() string {
 const (
 	wingetConfigExtra = "WingetConfig"
 	wingetLocaleExtra = "WingetLocale"
+	wingetIndexExtra  = "WingetIndex"
 )
 
 type Pipe struct{}
@@ -153,10 +156,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	// the index keeps the ID unique even when two entries share a name,
-	// which would otherwise make them publish over each other.
-	artifactID := fmt.Sprintf("%s-%d", winget.Name, index)
-
 	if winget.Publisher == "" {
 		return errNoPublisher
 	}
@@ -247,7 +246,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, Version{
+	if err := createYAML(ctx, winget, index, Version{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		DefaultLocale:     winget.DefaultLocale,
@@ -257,11 +256,11 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, installer, artifact.WingetInstaller, winget.DefaultLocale); err != nil {
+	if err := createYAML(ctx, winget, index, installer, artifact.WingetInstaller, winget.DefaultLocale); err != nil {
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, Locale{
+	if err := createYAML(ctx, winget, index, Locale{
 		PackageIdentifier:   winget.PackageIdentifier,
 		PackageVersion:      ctx.Version,
 		PackageLocale:       winget.DefaultLocale,
@@ -289,7 +288,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	return p.doAdditionalLocales(ctx, winget, artifactID)
+	return p.doAdditionalLocales(ctx, winget, index)
 }
 
 // prepareAdditionalLocales templates and validates every additional locale up
@@ -354,13 +353,13 @@ func (p Pipe) prepareAdditionalLocales(ctx *context.Context, winget config.Winge
 
 // doAdditionalLocales renders the already validated additional locale
 // manifests. It must only be called after prepareAdditionalLocales succeeded.
-func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget, artifactID string) error {
+func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget, index int) error {
 	for _, aloc := range winget.AdditionalLocales {
 		tags := aloc.Tags
 		if len(tags) == 0 {
 			tags = winget.Tags
 		}
-		if err := createYAML(ctx, winget, artifactID, Locale{
+		if err := createYAML(ctx, winget, index, Locale{
 			PackageIdentifier:   winget.PackageIdentifier,
 			PackageVersion:      ctx.Version,
 			PackageLocale:       aloc.Locale,
@@ -393,13 +392,21 @@ func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget, ar
 
 func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, files := range ctx.Artifacts.Filter(artifact.ByTypes(
+	// group by the config index instead of the artifact ID: the ID is
+	// user-facing and repeats when two entries share a name, but each entry
+	// must publish on its own, or they'd publish over each other.
+	groups := map[int][]*artifact.Artifact{}
+	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(
 		artifact.WingetInstaller,
 		artifact.WingetVersion,
 		artifact.WingetDefaultLocale,
 		artifact.WingetLocale,
-	)).GroupByID() {
-		err := doPublish(ctx, cli, files)
+	)).List() {
+		idx := artifact.MustExtra[int](*art, wingetIndexExtra)
+		groups[idx] = append(groups[idx], art)
+	}
+	for _, idx := range slices.Sorted(maps.Keys(groups)) {
+		err := doPublish(ctx, cli, groups[idx])
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue

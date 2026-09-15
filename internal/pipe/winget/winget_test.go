@@ -1239,9 +1239,9 @@ func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
 	}
 }
 
-// Artifact IDs show up in dist/artifacts.json and can be matched with
-// `ids:`, so they have to name the winget they came from. The index only
-// exists to keep two same-named entries apart.
+// Artifact IDs show up in dist/artifacts.json, so they name the winget they
+// came from, exactly as configured. Publish grouping uses the config index
+// instead, so two entries sharing a name still publish separately.
 func TestRunAllArtifactIDs(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
@@ -1275,6 +1275,7 @@ func TestRunAllArtifactIDs(t *testing.T) {
 					ShortDescription:  "tool",
 					IDs:               []string{"tool"},
 					Repository:        config.RepoRef{Owner: "acme", Name: "winget"},
+					AdditionalLocales: []config.WingetLocale{{Locale: "pt-BR"}},
 				},
 			},
 		},
@@ -1287,23 +1288,32 @@ func TestRunAllArtifactIDs(t *testing.T) {
 	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
 
-	ids := map[string]bool{}
+	type group struct {
+		id    string
+		index int
+	}
+	got := map[group]int{}
 	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(
 		artifact.WingetInstaller,
 		artifact.WingetVersion,
 		artifact.WingetDefaultLocale,
 		artifact.WingetLocale,
 	)).List() {
-		ids[artifact.ExtraOr(*art, artifact.ExtraID, "")] = true
+		got[group{
+			id:    artifact.ExtraOr(*art, artifact.ExtraID, ""),
+			index: artifact.MustExtra[int](*art, wingetIndexExtra),
+		}]++
 	}
 
-	// the name is templated before the id is built, and same-named entries
-	// stay distinct.
-	require.Equal(t, map[string]bool{
-		"tool-0":       true,
-		"tool-1":       true,
-		"other-tool-2": true,
-	}, ids)
+	// the name is templated before the ID is set, same-named entries keep the
+	// name users configured, and the index keeps them in separate publish
+	// groups. the additional locale manifest belongs to its parent entry,
+	// hence the fourth artifact on index 2.
+	require.Equal(t, map[group]int{
+		{id: "tool", index: 0}:       3,
+		{id: "tool", index: 1}:       3,
+		{id: "other-tool", index: 2}: 4,
+	}, got)
 }
 
 func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
