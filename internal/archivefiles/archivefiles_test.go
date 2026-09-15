@@ -23,11 +23,22 @@ func TestEval(t *testing.T) {
 	t.Run("invalid glob", func(t *testing.T) {
 		_, err := Eval(tmpl, []config.File{
 			{
-				Source:      "../testdata/**/nope.txt",
+				Source:      "./testdata/[x-]",
 				Destination: "var/foobar/d.txt",
 			},
 		})
-		require.Error(t, err)
+		require.EqualError(t, err, "globbing failed for pattern ./testdata/[x-]: compile glob pattern: unexpected end of input")
+	})
+
+	t.Run("no matches", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/**/nope.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		require.NoError(t, err)
+		require.Empty(t, result)
 	})
 
 	t.Run("templated src", func(t *testing.T) {
