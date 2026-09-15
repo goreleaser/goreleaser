@@ -1239,6 +1239,73 @@ func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
 	}
 }
 
+// Artifact IDs show up in dist/artifacts.json and can be matched with
+// `ids:`, so they have to name the winget they came from. The index only
+// exists to keep two same-named entries apart.
+func TestRunAllArtifactIDs(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "tool",
+			Winget: []config.Winget{
+				{
+					Name:              "{{ .ProjectName }}",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository:        config.RepoRef{Owner: "acme", Name: "winget"},
+				},
+				{
+					Name:              "tool",
+					Publisher:         "Other",
+					PackageIdentifier: "Other.Tool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository:        config.RepoRef{Owner: "other", Name: "winget"},
+				},
+				{
+					Name:              "other-tool",
+					Publisher:         "Acme",
+					PackageIdentifier: "Acme.OtherTool",
+					License:           "MIT",
+					ShortDescription:  "tool",
+					IDs:               []string{"tool"},
+					Repository:        config.RepoRef{Owner: "acme", Name: "winget"},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+	createFakeWingetArchive(t, ctx, folder, "tool")
+
+	pipe := Pipe{}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+
+	ids := map[string]bool{}
+	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
+		artifact.WingetLocale,
+	)).List() {
+		ids[artifact.ExtraOr(*art, artifact.ExtraID, "")] = true
+	}
+
+	// the name is templated before the id is built, and same-named entries
+	// stay distinct.
+	require.Equal(t, map[string]bool{
+		"tool-0":       true,
+		"tool-1":       true,
+		"other-tool-2": true,
+	}, ids)
+}
+
 func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
 	folder := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
