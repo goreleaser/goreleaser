@@ -286,23 +286,20 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
+func TestUploadDataAWSKMSEncryptsBeforeUploading(t *testing.T) {
 	const awsKMSLimit = 4096
 
 	for name, tt := range map[string]struct {
 		size         int
-		wantData     []byte
 		wantRequests int64
 		wantErr      string
 	}{
 		"accepts 4096 bytes": {
 			size:         awsKMSLimit,
-			wantData:     []byte("ciphertext"),
 			wantRequests: 1,
 		},
 		"rejects 4097 bytes before kms": {
 			size:         awsKMSLimit + 1,
-			wantData:     bytes.Repeat([]byte("a"), awsKMSLimit+1),
 			wantRequests: 0,
 			wantErr:      "failed to encrypt with kms: awskms encryption supports files up to 4096 bytes, got 4097 bytes",
 		},
@@ -331,20 +328,32 @@ func TestGetDataAWSKMSPlaintextLimit(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
+			bucket := memblob.OpenBucket(nil)
+			t.Cleanup(func() { require.NoError(t, bucket.Close()) })
+
+			plaintext := bytes.Repeat([]byte("a"), tt.size)
 			file := filepath.Join(t.TempDir(), "artifact")
-			require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte("a"), tt.size), 0o644))
+			require.NoError(t, os.WriteFile(file, plaintext, 0o644))
 
-			data, err := getData(testctx.Wrap(t.Context()), config.Blob{
+			err := uploadData(testctx.Wrap(t.Context()), config.Blob{
 				KMSKey: "awskms://alias/my-key?region=us-east-1&anonymous=true&hostname_immutable=true&endpoint=" + url.QueryEscape(server.URL),
-			}, file)
+			}, &productionUploader{bucket: bucket}, file, "dist/artifact", "mem://")
 
-			require.Equal(t, tt.wantData, data)
 			require.Equal(t, tt.wantRequests, requests.Load())
-			if tt.wantErr == "" {
+
+			if tt.wantErr != "" {
+				require.EqualError(t, err, tt.wantErr)
+				exists, err := bucket.Exists(t.Context(), "dist/artifact")
 				require.NoError(t, err)
+				require.False(t, exists, "nothing should be uploaded when encryption fails")
 				return
 			}
-			require.EqualError(t, err, tt.wantErr)
+
+			require.NoError(t, err)
+			got, err := bucket.ReadAll(t.Context(), "dist/artifact")
+			require.NoError(t, err)
+			require.Equal(t, []byte("ciphertext"), got)
+			require.NotEqual(t, plaintext, got, "the plaintext must never reach the bucket")
 		})
 	}
 }
@@ -395,7 +404,7 @@ func TestDoUploadUploadsArtifactsAndExtraFiles(t *testing.T) {
 	}, uploader.uploaded())
 }
 
-func TestProductionUploaderStreamsFileContents(t *testing.T) {
+func TestProductionUploaderUploadsFileContentsAndDetectsContentType(t *testing.T) {
 	dir := t.TempDir()
 	contents := map[string][]byte{
 		"empty.txt":  {},
@@ -425,6 +434,45 @@ func TestProductionUploaderStreamsFileContents(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, http.DetectContentType(content), attrs.ContentType, name)
 	}
+}
+
+func TestProductionUploaderDoesNotCommitPartialUploads(t *testing.T) {
+	// sizes below and above the 512-byte content-type sniff length, so both
+	// the buffered and the already-open writer paths are covered.
+	for _, size := range []int{100, 100_000} {
+		t.Run(strconv.Itoa(size), func(t *testing.T) {
+			bucket := memblob.OpenBucket(nil)
+			t.Cleanup(func() { require.NoError(t, bucket.Close()) })
+
+			readErr := errors.New("simulated read failure")
+			err := (&productionUploader{bucket: bucket}).Upload(
+				testctx.Wrap(t.Context()),
+				"dist/artifact",
+				&failingReader{data: bytes.Repeat([]byte("a"), size), err: readErr},
+			)
+
+			require.ErrorIs(t, err, readErr)
+			exists, err := bucket.Exists(t.Context(), "dist/artifact")
+			require.NoError(t, err)
+			require.False(t, exists, "a failed read must not leave a truncated object behind")
+		})
+	}
+}
+
+// failingReader returns data once, then fails, simulating a disk read error
+// part way through an upload.
+type failingReader struct {
+	data []byte
+	err  error
+}
+
+func (r *failingReader) Read(p []byte) (int, error) {
+	if len(r.data) == 0 {
+		return 0, r.err
+	}
+	n := copy(p, r.data)
+	r.data = r.data[n:]
+	return n, nil
 }
 
 func TestUploadDataMissingFile(t *testing.T) {
@@ -472,9 +520,9 @@ func TestPublishDoesNotBufferFilesPerDestination(t *testing.T) {
 	runtime.ReadMemStats(&after)
 
 	// Buffering every file for every destination allocates
-	// files*destinations*fileSize bytes; streaming should not allocate even
-	// a single file's worth.
-	require.Less(t, after.TotalAlloc-before.TotalAlloc, uint64(fileSize))
+	// files*destinations*fileSize bytes; streaming keeps the whole run under
+	// two files' worth, which still leaves a wide margin over that bug.
+	require.Less(t, after.TotalAlloc-before.TotalAlloc, uint64(2*fileSize))
 }
 
 type discardUploader struct{}

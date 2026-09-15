@@ -2,6 +2,7 @@ package blob
 
 import (
 	"bytes"
+	stdctx "context"
 	"errors"
 	"fmt"
 	"io"
@@ -259,13 +260,13 @@ func handleError(err error, url string) error {
 	}
 }
 
+// getData reads the whole file and encrypts it with KMS.
+// It is only used when a KMS key is set, as encryption needs the full
+// plaintext; everything else is streamed by openData.
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return data, fmt.Errorf("failed to open file %s: %w", path, err)
-	}
-	if conf.KMSKey == "" {
-		return data, nil
 	}
 	if err := validateKMSPlaintextSize(conf.KMSKey, len(data)); err != nil {
 		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
@@ -338,12 +339,17 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 		BeforeWrite:        u.beforeWrite,
 		CacheControl:       strings.Join(u.cacheControl, ", "),
 	}
-	w, err := u.bucket.NewWriter(ctx, filepath, opts)
+	// the writer commits on Close, even when only part of the data was
+	// written, so a failed copy must cancel the write instead of closing it.
+	wctx, cancel := stdctx.WithCancel(ctx)
+	defer cancel()
+	w, err := u.bucket.NewWriter(wctx, filepath, opts)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = w.Close() }()
-	if _, err = io.Copy(w, data); err != nil {
+	if _, err := io.Copy(w, data); err != nil {
+		cancel()
+		_ = w.Close()
 		return err
 	}
 	return w.Close()
