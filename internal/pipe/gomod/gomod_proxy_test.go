@@ -98,6 +98,36 @@ replace (
 
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
+	t.Run("unparseable go mod", func(t *testing.T) {
+		// modfile.Parse rejects directives it does not know about, and a
+		// newer Go release may add one. That must not abort the release.
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.WriteFile(
+			filepath.Join(dir, "go.mod"),
+			[]byte("module foo\n\ngo 1.25\n\nfuturedirective bar v1\n"),
+			0o644,
+		))
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
 	t.Run("unreadable go mod", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")

@@ -50,7 +50,12 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 		}
 		file, err := modfile.Parse(path, mod, nil)
 		if err != nil {
-			return fmt.Errorf("could not parse %q: %w", path, err)
+			// modfile.Parse rejects any directive it does not know about, and
+			// a newer Go release may well add one. That is not a good enough
+			// reason to abort the release, since this check is only looking
+			// for replace directives.
+			log.WithError(err).Warnf("could not parse %s, skipping the %s check", logext.Keyword(path), logext.Keyword("replace"))
+			continue
 		}
 		for _, replace := range file.Replace {
 			log.Warnf(
