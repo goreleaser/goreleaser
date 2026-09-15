@@ -123,8 +123,6 @@ archives:
       - design/*.png
       - templates/**/*
       # a more complete example, check the globbing deep dive below
-      #
-      # Templates: allowed.
       - src: "*.md"
         dst: docs
 
