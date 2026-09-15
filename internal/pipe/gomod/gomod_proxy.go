@@ -48,23 +48,22 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 			}
 			return fmt.Errorf("could not check %q: %w", path, err)
 		}
-		file, err := modfile.Parse(path, mod, nil)
+		replaces, err := goModReplaces(path, mod)
 		if err != nil {
-			// modfile.Parse rejects any directive it does not know about, and
-			// a newer Go release may well add one. That is not a good enough
-			// reason to abort the release, since this check is only looking
-			// for replace directives.
+			// The file is not a valid go.mod at all. The go command itself
+			// will fail on it with a better message than we could give, so
+			// don't abort the release over this check.
 			log.WithError(err).Warnf("could not parse %s, skipping the %s check", logext.Keyword(path), logext.Keyword("replace"))
 			continue
 		}
-		for _, replace := range file.Replace {
+		for _, replace := range replaces {
 			log.Warnf(
 				"your %[2]s file has %[1]s directive in it, and go mod proxying is enabled - "+
 					"this does not work, and you need to either disable it or remove the %[1]s directive",
 				logext.Keyword("replace"),
 				logext.Keyword("go.mod"),
 			)
-			log.Warnf("the offending line is %s", logext.Keyword(formatReplace(replace)))
+			log.Warnf("the offending line is %s", logext.Keyword(replace))
 			if ctx.Snapshot {
 				// only warn on snapshots
 				break
@@ -101,16 +100,35 @@ func goModPath(ctx *context.Context, build *config.Build) string {
 	}
 }
 
-func formatReplace(replace *modfile.Replace) string {
-	oldPath := replace.Old.Path
-	if replace.Old.Version != "" {
-		oldPath += " " + replace.Old.Version
+// goModReplaces returns the replace directives of the given go.mod, formatted
+// as they appear in the file.
+//
+// It uses [modfile.ParseLax] rather than [modfile.Parse] because the latter
+// rejects any directive it does not know about, and a newer Go release may
+// well add one - that is not a good enough reason to fail a release over a
+// check that only cares about replaces. ParseLax deliberately drops replaces
+// from the parsed file, so they are read from the syntax tree instead.
+func goModReplaces(path string, mod []byte) ([]string, error) {
+	file, err := modfile.ParseLax(path, mod, nil)
+	if err != nil {
+		return nil, err
 	}
-	newPath := replace.New.Path
-	if replace.New.Version != "" {
-		newPath += " " + replace.New.Version
+	var replaces []string
+	for _, stmt := range file.Syntax.Stmt {
+		switch stmt := stmt.(type) {
+		case *modfile.Line:
+			if len(stmt.Token) > 0 && stmt.Token[0] == "replace" {
+				replaces = append(replaces, strings.Join(stmt.Token, " "))
+			}
+		case *modfile.LineBlock:
+			if len(stmt.Token) == 1 && stmt.Token[0] == "replace" {
+				for _, line := range stmt.Line {
+					replaces = append(replaces, "replace "+strings.Join(line.Token, " "))
+				}
+			}
+		}
 	}
-	return strings.TrimSpace(fmt.Sprintf("replace %s => %s", oldPath, newPath))
+	return replaces, nil
 }
 
 // ProxyPipe for gomod proxy.

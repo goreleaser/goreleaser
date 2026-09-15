@@ -98,15 +98,103 @@ replace (
 
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
-	t.Run("unparseable go mod", func(t *testing.T) {
+	t.Run("unknown directive", func(t *testing.T) {
 		// modfile.Parse rejects directives it does not know about, and a
 		// newer Go release may add one. That must not abort the release.
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
 		require.NoError(t, os.WriteFile(
-			filepath.Join(dir, "go.mod"),
+			"go.mod",
 			[]byte("module foo\n\ngo 1.25\n\nfuturedirective bar v1\n"),
-			0o644,
+			0o666,
+		))
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
+	t.Run("replace with unknown directive", func(t *testing.T) {
+		// an unknown directive must not stop the replace check from finding
+		// the replace directive next to it.
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.WriteFile(
+			"go.mod",
+			[]byte("module foo\n\ngo 1.25\n\nfuturedirective bar v1\n\nreplace example.invalid/dependency => ../fork\n"),
+			0o666,
+		))
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("replace block with unknown directive", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.WriteFile(
+			"go.mod",
+			[]byte("module foo\n\ngo 1.25\n\nfuturedirective bar v1\n\nreplace (\n\texample.invalid/dependency => example.invalid/fork v1.0.0\n\texample.invalid/other => ../other\n)\n"),
+			0o666,
+		))
+
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withTestModulePath)
+
+		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
+	})
+	t.Run("unparseable go mod", func(t *testing.T) {
+		// a go.mod that is not valid at all: the go command fails on it with a
+		// better message than this check could give, so it only warns.
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		require.NoError(t, os.WriteFile(
+			"go.mod",
+			[]byte("module foo\n\nreplace (\n"),
+			0o666,
 		))
 
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
