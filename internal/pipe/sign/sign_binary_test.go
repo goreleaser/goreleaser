@@ -3,6 +3,7 @@ package sign
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -350,4 +352,46 @@ func TestBinarySignUniversalBinaryReplaced(t *testing.T) {
 		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List())
 		require.NoFileExists(t, filepath.Join(dist, "universal.sig"))
 	})
+}
+
+// Binaries that differ only by CPU variant must not resolve to the same
+// signature name, or the second signature silently overwrites the first.
+func TestDefaultSignatureNameIsUniquePerVariant(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	}, testctx.WithVersion("1.0.0"))
+
+	for name, variants := range map[string][]artifact.Artifact{
+		"goamd64": {
+			{Goos: "linux", Goarch: "amd64", Goamd64: "v1"},
+			{Goos: "linux", Goarch: "amd64", Goamd64: "v3"},
+		},
+		"goarm64": {
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v8.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
+		},
+		"go386": {
+			{Goos: "linux", Goarch: "386", Go386: "sse2"},
+			{Goos: "linux", Goarch: "386", Go386: "softfloat"},
+		},
+		"goppc64": {
+			{Goos: "linux", Goarch: "ppc64", Goppc64: "power8"},
+			{Goos: "linux", Goarch: "ppc64", Goppc64: "power10"},
+		},
+		"goriscv64": {
+			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva20u64"},
+			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva22u64"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var got []string
+			for _, art := range variants {
+				art.Name = "mybin"
+				name, err := tmpl.New(ctx).WithArtifact(&art).Apply(defaultSignatureName)
+				require.NoError(t, err)
+				got = append(got, name)
+			}
+			require.Len(t, slices.Compact(slices.Clone(got)), len(got), "variants share a signature name: %v", got)
+		})
+	}
 }

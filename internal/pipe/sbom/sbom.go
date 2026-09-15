@@ -29,6 +29,19 @@ import (
 // Environment variables to pass through to exec
 var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH", "LOCALAPPDATA"}
 
+// variantSuffix disambiguates binaries that differ only by CPU variant.
+// Without it two binaries for the same os/arch resolve to the same document
+// name, and the second syft run silently overwrites the first. Each variant
+// is omitted when it is the Go toolchain default, to keep names stable for
+// the common case.
+const variantSuffix = `{{ with .Arm }}v{{ . }}{{ end }}` +
+	`{{ with .Mips }}_{{ . }}{{ end }}` +
+	`{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}` +
+	`{{ if not (eq .Arm64 "v8.0") }}{{ .Arm64 }}{{ end }}` +
+	`{{ if not (eq .I386 "sse2") }}{{ .I386 }}{{ end }}` +
+	`{{ if not (eq .Ppc64 "power8") }}{{ .Ppc64 }}{{ end }}` +
+	`{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}`
+
 // Pipe that catalogs common artifacts as an SBOM.
 type Pipe struct{}
 
@@ -68,7 +81,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if len(cfg.Documents) == 0 {
 		switch cfg.Artifacts {
 		case "binary":
-			cfg.Documents = []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sbom.json`}
+			cfg.Documents = []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}` + variantSuffix + `.sbom.json`}
 		case "any":
 			cfg.Documents = []string{}
 		default:

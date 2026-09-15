@@ -13,7 +13,19 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}` + variantSuffix
+
+// variantSuffix disambiguates binaries that differ only by CPU variant.
+// Without it two binaries for the same os/arch resolve to the same signature
+// name and silently overwrite each other. Each variant is omitted when it is
+// the Go toolchain default, to keep names stable for the common case.
+const variantSuffix = `{{ with .Arm }}v{{ . }}{{ end }}` +
+	`{{ with .Mips }}_{{ . }}{{ end }}` +
+	`{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}` +
+	`{{ if not (eq .Arm64 "v8.0") }}{{ .Arm64 }}{{ end }}` +
+	`{{ if not (eq .I386 "sse2") }}{{ .I386 }}{{ end }}` +
+	`{{ if not (eq .Ppc64 "power8") }}{{ .Ppc64 }}{{ end }}` +
+	`{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}`
 
 // BinaryPipe signs binaries before archiving.
 type BinaryPipe struct{}
