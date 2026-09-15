@@ -2,6 +2,7 @@
 package base
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
@@ -112,12 +114,30 @@ func Exec(ctx context.Context, command []string, env []string, dir string) error
 	cmd.Env = env
 	cmd.Dir = dir
 	log.WithField("cmd", command[0]).Debug("executing")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%w: %s", err, string(out))
+
+	// redact against the environment the child actually gets: a nil cmd.Env
+	// means it inherits the current process environment.
+	cmdEnv := cmd.Environ()
+
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	stdout := redact.Writer(w, cmdEnv)
+	stderr := redact.Writer(w, cmdEnv)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	runErr := cmd.Run()
+	stdoutErr := stdout.Close()
+	stderrErr := stderr.Close()
+	if runErr != nil {
+		return fmt.Errorf("%w: %s", runErr, b.String())
 	}
-	if s := string(out); s != "" {
-		log.WithField("output", s).Info(strings.Join(command, " "))
+	if err := errors.Join(stdoutErr, stderrErr); err != nil {
+		return err
+	}
+	if s := b.String(); s != "" {
+		log.WithField("output", s).
+			Info(redact.String(strings.Join(command, " "), cmdEnv))
 	}
 	return nil
 }
