@@ -108,7 +108,7 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 	// return the skips all at once in the end.
 	skips := pipe.SkipMemento{}
 	for i, winget := range ctx.Config.Winget {
-		err := p.doRun(ctx, winget, cli, fmt.Sprintf("winget-%d", i))
+		err := p.doRun(ctx, winget, cli, i)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -120,7 +120,7 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 	return skips.Evaluate()
 }
 
-func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater, artifactID string) error {
+func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater, index int) error {
 	if winget.Repository.Name == "" {
 		return errNoRepoName
 	}
@@ -152,6 +152,10 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	if err != nil {
 		return err
 	}
+
+	// the index keeps the ID unique even when two entries share a name,
+	// which would otherwise make them publish over each other.
+	artifactID := fmt.Sprintf("%s-%d", winget.Name, index)
 
 	if winget.Publisher == "" {
 		return errNoPublisher
