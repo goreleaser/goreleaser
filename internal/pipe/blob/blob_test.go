@@ -17,6 +17,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"testing/iotest"
 	"testing/synctest"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -331,9 +332,8 @@ func TestUploadDataAWSKMSEncryptsBeforeUploading(t *testing.T) {
 			bucket := memblob.OpenBucket(nil)
 			t.Cleanup(func() { require.NoError(t, bucket.Close()) })
 
-			plaintext := bytes.Repeat([]byte("a"), tt.size)
 			file := filepath.Join(t.TempDir(), "artifact")
-			require.NoError(t, os.WriteFile(file, plaintext, 0o644))
+			require.NoError(t, os.WriteFile(file, bytes.Repeat([]byte("a"), tt.size), 0o644))
 
 			err := uploadData(testctx.Wrap(t.Context()), config.Blob{
 				KMSKey: "awskms://alias/my-key?region=us-east-1&anonymous=true&hostname_immutable=true&endpoint=" + url.QueryEscape(server.URL),
@@ -352,8 +352,7 @@ func TestUploadDataAWSKMSEncryptsBeforeUploading(t *testing.T) {
 			require.NoError(t, err)
 			got, err := bucket.ReadAll(t.Context(), "dist/artifact")
 			require.NoError(t, err)
-			require.Equal(t, []byte("ciphertext"), got)
-			require.NotEqual(t, plaintext, got, "the plaintext must never reach the bucket")
+			require.Equal(t, []byte("ciphertext"), got, "the ciphertext, not the plaintext, must reach the bucket")
 		})
 	}
 }
@@ -423,9 +422,7 @@ func TestProductionUploaderUploadsFileContentsAndDetectsContentType(t *testing.T
 		file := filepath.Join(dir, name)
 		require.NoError(t, os.WriteFile(file, content, 0o644))
 		require.NoError(t, uploadData(ctx, config.Blob{}, up, file, "dist/"+name, "mem://"))
-	}
 
-	for name, content := range contents {
 		got, err := bucket.ReadAll(t.Context(), "dist/"+name)
 		require.NoError(t, err)
 		require.Equal(t, content, got, name)
@@ -448,7 +445,10 @@ func TestProductionUploaderDoesNotCommitPartialUploads(t *testing.T) {
 			err := (&productionUploader{bucket: bucket}).Upload(
 				testctx.Wrap(t.Context()),
 				"dist/artifact",
-				&failingReader{data: bytes.Repeat([]byte("a"), size), err: readErr},
+				io.MultiReader(
+					bytes.NewReader(bytes.Repeat([]byte("a"), size)),
+					iotest.ErrReader(readErr),
+				),
 			)
 
 			require.ErrorIs(t, err, readErr)
@@ -457,22 +457,6 @@ func TestProductionUploaderDoesNotCommitPartialUploads(t *testing.T) {
 			require.False(t, exists, "a failed read must not leave a truncated object behind")
 		})
 	}
-}
-
-// failingReader returns data once, then fails, simulating a disk read error
-// part way through an upload.
-type failingReader struct {
-	data []byte
-	err  error
-}
-
-func (r *failingReader) Read(p []byte) (int, error) {
-	if len(r.data) == 0 {
-		return 0, r.err
-	}
-	n := copy(p, r.data)
-	r.data = r.data[n:]
-	return n, nil
 }
 
 func TestUploadDataMissingFile(t *testing.T) {
@@ -489,9 +473,7 @@ func TestPublishDoesNotBufferFilesPerDestination(t *testing.T) {
 		destinations = 4
 	)
 
-	previous := newUploader
-	newUploader = func(config.Blob, string) uploader { return discardUploader{} }
-	t.Cleanup(func() { newUploader = previous })
+	replaceBlobUploader(t, discardUploader{})
 
 	dir := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
@@ -558,12 +540,12 @@ func blobUploadContext(tb testing.TB, names []string, extraFiles []config.ExtraF
 	return ctx, conf
 }
 
-func replaceBlobUploader(tb testing.TB, rec *recordingUploader) {
+func replaceBlobUploader(tb testing.TB, up uploader) {
 	tb.Helper()
 
 	previous := newUploader
 	newUploader = func(config.Blob, string) uploader {
-		return rec
+		return up
 	}
 	tb.Cleanup(func() { newUploader = previous })
 }
