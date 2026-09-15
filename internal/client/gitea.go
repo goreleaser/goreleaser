@@ -253,12 +253,6 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(ctx *context.Context, owner, repoName, tagName string) (*gitea.Release, error) {
-	// the SDK escapes the tag into a single path segment, and Gitea routes
-	// the tag as a single segment too, so a tag containing a slash can never
-	// be found by name and has to be looked up in the release list.
-	if strings.Contains(tagName, "/") {
-		return c.findReleaseByTag(ctx, owner, repoName, tagName)
-	}
 	release, resp, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
 		return c.client.GetReleaseByTag(owner, repoName, tagName)
 	})
@@ -269,27 +263,6 @@ func (c *giteaClient) getExistingRelease(ctx *context.Context, owner, repoName, 
 		return nil, err
 	}
 	return release, nil
-}
-
-func (c *giteaClient) findReleaseByTag(ctx *context.Context, owner, repoName, tagName string) (*gitea.Release, error) {
-	for page := 1; ; page++ {
-		releases, _, err := giteaDo(ctx, func() ([]*gitea.Release, *gitea.Response, error) {
-			return c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{
-				Page: page,
-			})
-		})
-		if err != nil {
-			return nil, err
-		}
-		if len(releases) == 0 {
-			return nil, nil
-		}
-		for _, release := range releases {
-			if release.TagName == tagName {
-				return release, nil
-			}
-		}
-	}
 }
 
 func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id int64) (*gitea.Release, error) {

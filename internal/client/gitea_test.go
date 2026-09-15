@@ -1,7 +1,6 @@
 package client
 
 import (
-	"cmp"
 	stdctx "context"
 	"encoding/json"
 	"fmt"
@@ -352,31 +351,23 @@ func TestGiteaGetExistingReleaseByTag(t *testing.T) {
 	require.EqualValues(t, 123, release.ID)
 }
 
-// Gitea routes the tag as a single path segment, and Go's stdlib decodes
-// %2F in the path before routing, so a slash tag is never matched by name.
-// It has to be found in the release list instead.
+// Gitea routes on the escaped path and unescapes the path parameter, so the
+// `%2F` the SDK writes for a tag containing a slash still matches the
+// single-segment by-tag route. No release listing is needed.
 func TestGiteaGetExistingReleaseBySlashTag(t *testing.T) {
-	var pages []string
+	listed := false
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		switch r.URL.Path {
+		switch r.URL.EscapedPath() {
 		case "/api/v1/version":
 			fmt.Fprint(w, `{"version":"1.22.0"}`)
+		case "/api/v1/repos/owner/repo/releases/tags/release%2F1.2.3":
+			fmt.Fprint(w, `{"id":123,"tag_name":"release/1.2.3"}`)
 		case "/api/v1/repos/owner/repo/releases":
-			page := cmp.Or(r.URL.Query().Get("page"), "1")
-			pages = append(pages, page)
-			switch page {
-			case "1":
-				fmt.Fprint(w, `[{"id":1,"tag_name":"other/1.0.0"}]`)
-			case "2":
-				fmt.Fprint(w, `[{"id":123,"tag_name":"release/1.2.3"}]`)
-			default:
-				fmt.Fprint(w, `[]`)
-			}
+			listed = true
+			http.Error(w, "unexpected release list", http.StatusInternalServerError)
 		default:
-			// this is what gitea does with the escaped tag: no route matches
-			// `releases/tags/release/1.2.3`.
-			http.Error(w, "unexpected "+r.URL.Path, http.StatusNotFound)
+			http.Error(w, "unexpected "+r.URL.EscapedPath(), http.StatusInternalServerError)
 		}
 	}))
 	t.Cleanup(srv.Close)
@@ -389,34 +380,9 @@ func TestGiteaGetExistingReleaseBySlashTag(t *testing.T) {
 
 	release, err := client.getExistingRelease(ctx, "owner", "repo", "release/1.2.3")
 	require.NoError(t, err)
+	require.False(t, listed)
 	require.NotNil(t, release)
 	require.EqualValues(t, 123, release.ID)
-	require.Equal(t, []string{"1", "2"}, pages)
-}
-
-func TestGiteaGetExistingReleaseBySlashTagNotFound(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		switch r.URL.Path {
-		case "/api/v1/version":
-			fmt.Fprint(w, `{"version":"1.22.0"}`)
-		case "/api/v1/repos/owner/repo/releases":
-			fmt.Fprint(w, `[]`)
-		default:
-			http.Error(w, "unexpected "+r.URL.Path, http.StatusNotFound)
-		}
-	}))
-	t.Cleanup(srv.Close)
-
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		GiteaURLs: config.GiteaURLs{API: srv.URL},
-	})
-	client, err := newGitea(ctx, "giteatoken")
-	require.NoError(t, err)
-
-	release, err := client.getExistingRelease(ctx, "owner", "repo", "release/1.2.3")
-	require.NoError(t, err)
-	require.Nil(t, release)
 }
 
 type GiteacreateReleaseSuite struct {
