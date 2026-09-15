@@ -34,7 +34,7 @@ const (
 
 var (
 	ErrNoArchivesFound          = errors.New("no linux archives found")
-	ErrMultipleArchivesSameArch = errors.New("one aur can handle only one archive of each architecture")
+	ErrMultipleArchivesSameArch = errors.New("one aur can handle only one archive of each architecture. Consider using ids in the aurs section")
 )
 
 // Pipe for arch linux's AUR pkgbuild.
