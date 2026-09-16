@@ -1182,190 +1182,65 @@ func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
 	)).List())
 }
 
-func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
-	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
+func TestRunAllDuplicateNames(t *testing.T) {
+	newCtx := func(t *testing.T, names ...string) *context.Context {
+		t.Helper()
+		folder := t.TempDir()
+		cfg := config.Project{
 			Dist:        folder,
 			ProjectName: "tool",
-			Winget: []config.Winget{
-				{
-					Name:              "tool",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "acme",
-						Name:  "winget",
-					},
-				},
-				{
-					Name:              "tool",
-					Publisher:         "Other",
-					PackageIdentifier: "Other.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "other",
-						Name:  "winget",
-					},
-				},
-			},
-		},
-		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool")
-
-	pipe := Pipe{}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
-
-	rec := newRecordingWingetClient()
-	require.NoError(t, pipe.publishAll(ctx, rec))
-	require.Len(t, rec.paths, 6)
-	for i, path := range rec.paths {
-		switch {
-		case strings.Contains(path, "Acme.Tool"):
-			require.Equal(t, "acme", rec.repos[i].Owner)
-		case strings.Contains(path, "Other.Tool"):
-			require.Equal(t, "other", rec.repos[i].Owner)
-		default:
-			require.Failf(t, "unexpected publish path", "path: %s", path)
 		}
-	}
-}
-
-// Artifact IDs show up in dist/artifacts.json, so they name the winget they
-// came from, exactly as configured. Publish grouping uses the config index
-// instead, so two entries sharing a name still publish separately.
-func TestRunAllArtifactIDs(t *testing.T) {
-	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
-			Dist:        folder,
-			ProjectName: "tool",
-			Winget: []config.Winget{
-				{
-					Name:              "{{ .ProjectName }}",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository:        config.RepoRef{Owner: "acme", Name: "winget"},
+		for _, name := range names {
+			cfg.Winget = append(cfg.Winget, config.Winget{
+				Name:             name,
+				Publisher:        "Acme",
+				License:          "MIT",
+				ShortDescription: "tool",
+				IDs:              []string{"tool"},
+				Repository: config.RepoRef{
+					Owner: "acme",
+					Name:  "winget",
 				},
-				{
-					Name:              "tool",
-					Publisher:         "Other",
-					PackageIdentifier: "Other.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository:        config.RepoRef{Owner: "other", Name: "winget"},
-				},
-				{
-					Name:              "other-tool",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.OtherTool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository:        config.RepoRef{Owner: "acme", Name: "winget"},
-					AdditionalLocales: []config.WingetLocale{{Locale: "pt-BR"}},
-				},
-			},
-		},
-		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool")
-
-	pipe := Pipe{}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
-
-	type group struct {
-		id    string
-		index int
-	}
-	got := map[group]int{}
-	for _, art := range ctx.Artifacts.Filter(artifact.ByTypes(
-		artifact.WingetInstaller,
-		artifact.WingetVersion,
-		artifact.WingetDefaultLocale,
-		artifact.WingetLocale,
-	)).List() {
-		got[group{
-			id:    artifact.ExtraOr(*art, artifact.ExtraID, ""),
-			index: artifact.MustExtra[int](*art, wingetIndexExtra),
-		}]++
+			})
+		}
+		ctx := testctx.WrapWithCfg(t.Context(), cfg,
+			testctx.WithVersion("1.2.1"),
+			testctx.WithCurrentTag("v1.2.1"),
+			testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+		createFakeWingetArchive(t, ctx, folder, "tool")
+		require.NoError(t, Pipe{}.Default(ctx))
+		return ctx
 	}
 
-	// the name is templated before the ID is set, same-named entries keep the
-	// name users configured, and the index keeps them in separate publish
-	// groups. the additional locale manifest belongs to its parent entry,
-	// hence the fourth artifact on index 2.
-	require.Equal(t, map[group]int{
-		{id: "tool", index: 0}:       3,
-		{id: "tool", index: 1}:       3,
-		{id: "other-tool", index: 2}: 4,
-	}, got)
-}
+	t.Run("duplicate", func(t *testing.T) {
+		ctx := newCtx(t, "tool", "tool")
+		require.ErrorContains(
+			t,
+			Pipe{}.runAll(ctx, client.NewMock()),
+			"found 2 wingets with the ID 'tool', please fix your config",
+		)
+		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.WingetVersion)).List())
+	})
 
-func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
-	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
-			Dist:        folder,
-			ProjectName: "tool",
-			Winget: []config.Winget{
-				{
-					Name:              "tool",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					SkipUpload:        "true",
-					Repository: config.RepoRef{
-						Owner: "acme",
-						Name:  "winget",
-					},
-				},
-				{
-					Name:              "tool",
-					Publisher:         "Other",
-					PackageIdentifier: "Other.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "other",
-						Name:  "winget",
-					},
-				},
-			},
-		},
-		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool")
+	t.Run("duplicate after templating", func(t *testing.T) {
+		ctx := newCtx(t, "{{ .ProjectName }}", "tool")
+		require.ErrorContains(
+			t,
+			Pipe{}.runAll(ctx, client.NewMock()),
+			"found 2 wingets with the ID 'tool', please fix your config",
+		)
+	})
 
-	pipe := Pipe{}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+	t.Run("invalid template", func(t *testing.T) {
+		ctx := newCtx(t, "{{ .Nope }}")
+		testlib.RequireTemplateError(t, Pipe{}.runAll(ctx, client.NewMock()))
+	})
 
-	rec := newRecordingWingetClient()
-	require.ErrorContains(t, pipe.publishAll(ctx, rec), "winget.skip_upload is set")
-	require.Len(t, rec.paths, 3)
-	for i, path := range rec.paths {
-		require.Contains(t, path, "Other.Tool")
-		require.Equal(t, "other", rec.repos[i].Owner)
-	}
+	t.Run("unique", func(t *testing.T) {
+		ctx := newCtx(t, "tool", "other-tool")
+		require.NoError(t, Pipe{}.runAll(ctx, client.NewMock()))
+		require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.WingetVersion)).List(), 2)
+	})
 }
 
 func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) {

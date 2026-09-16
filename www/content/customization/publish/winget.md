@@ -11,7 +11,8 @@ The `winget` section specifies how the **manifests** should be created:
 
 ```yaml {filename=".goreleaser.yaml"}
 winget:
-  - # Name of the recipe
+  - # Name of the recipe.
+    # It is also used as the artifact ID, so it must be unique.
     #
     # Default: the project name.
     # Templates: allowed.
