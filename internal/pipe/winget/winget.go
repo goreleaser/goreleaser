@@ -65,6 +65,7 @@ func (p Pipe) Skip(ctx *context.Context) bool {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	ids := ids.New("wingets")
 	for i := range ctx.Config.Winget {
 		winget := &ctx.Config.Winget[i]
 
@@ -81,9 +82,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		winget.DefaultLocale = cmp.Or(winget.DefaultLocale, defaultLocale)
 		winget.PackageName = cmp.Or(winget.PackageName, winget.Name)
+		// the name is used as the artifact ID, which is also how the manifests
+		// are grouped when publishing.
+		ids.Inc(winget.Name)
 	}
 
-	return nil
+	return ids.Validate()
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
@@ -105,10 +109,6 @@ func (p Pipe) Publish(ctx *context.Context) error {
 }
 
 func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
-	if err := checkNames(ctx); err != nil {
-		return err
-	}
-
 	// even if one of them is skipped, we still go through all of them, and
 	// return the skips all at once in the end.
 	skips := pipe.SkipMemento{}
@@ -123,21 +123,6 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 		}
 	}
 	return skips.Evaluate()
-}
-
-// checkNames verifies that all wingets have a unique name, as the name is used
-// as the artifact ID, which is also how manifests are grouped when publishing.
-func checkNames(ctx *context.Context) error {
-	tp := tmpl.New(ctx)
-	ids := ids.New("wingets")
-	for _, winget := range ctx.Config.Winget {
-		name, err := tp.Apply(winget.Name)
-		if err != nil {
-			return err
-		}
-		ids.Inc(name)
-	}
-	return ids.Validate()
 }
 
 func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater) error {

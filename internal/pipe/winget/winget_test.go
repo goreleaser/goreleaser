@@ -1182,64 +1182,33 @@ func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
 	)).List())
 }
 
-func TestRunAllDuplicateNames(t *testing.T) {
-	newCtx := func(t *testing.T, names ...string) *context.Context {
-		t.Helper()
-		folder := t.TempDir()
-		cfg := config.Project{
-			Dist:        folder,
-			ProjectName: "tool",
-		}
+func TestDefaultDuplicateNames(t *testing.T) {
+	newCtx := func(names ...string) *context.Context {
+		cfg := config.Project{ProjectName: "tool"}
 		for _, name := range names {
-			cfg.Winget = append(cfg.Winget, config.Winget{
-				Name:             name,
-				Publisher:        "Acme",
-				License:          "MIT",
-				ShortDescription: "tool",
-				IDs:              []string{"tool"},
-				Repository: config.RepoRef{
-					Owner: "acme",
-					Name:  "winget",
-				},
-			})
+			cfg.Winget = append(cfg.Winget, config.Winget{Name: name})
 		}
-		ctx := testctx.WrapWithCfg(t.Context(), cfg,
-			testctx.WithVersion("1.2.1"),
-			testctx.WithCurrentTag("v1.2.1"),
-			testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-		createFakeWingetArchive(t, ctx, folder, "tool")
-		require.NoError(t, Pipe{}.Default(ctx))
-		return ctx
+		return testctx.WrapWithCfg(t.Context(), cfg)
 	}
 
 	t.Run("duplicate", func(t *testing.T) {
-		ctx := newCtx(t, "tool", "tool")
 		require.ErrorContains(
 			t,
-			Pipe{}.runAll(ctx, client.NewMock()),
-			"found 2 wingets with the ID 'tool', please fix your config",
-		)
-		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.WingetVersion)).List())
-	})
-
-	t.Run("duplicate after templating", func(t *testing.T) {
-		ctx := newCtx(t, "{{ .ProjectName }}", "tool")
-		require.ErrorContains(
-			t,
-			Pipe{}.runAll(ctx, client.NewMock()),
+			Pipe{}.Default(newCtx("tool", "tool")),
 			"found 2 wingets with the ID 'tool', please fix your config",
 		)
 	})
 
-	t.Run("invalid template", func(t *testing.T) {
-		ctx := newCtx(t, "{{ .Nope }}")
-		testlib.RequireTemplateError(t, Pipe{}.runAll(ctx, client.NewMock()))
+	t.Run("duplicate default name", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("", "")),
+			"found 2 wingets with the ID 'tool', please fix your config",
+		)
 	})
 
 	t.Run("unique", func(t *testing.T) {
-		ctx := newCtx(t, "tool", "other-tool")
-		require.NoError(t, Pipe{}.runAll(ctx, client.NewMock()))
-		require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.WingetVersion)).List(), 2)
+		require.NoError(t, Pipe{}.Default(newCtx("tool", "other-tool")))
 	})
 }
 
@@ -1333,7 +1302,6 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 
 type recordingWingetClient struct {
 	*client.Mock
-	repos []client.Repo
 	paths []string
 }
 
@@ -1342,7 +1310,6 @@ func newRecordingWingetClient() *recordingWingetClient {
 }
 
 func (c *recordingWingetClient) CreateFile(ctx *context.Context, author config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
-	c.repos = append(c.repos, repo)
 	c.paths = append(c.paths, path)
 	return c.Mock.CreateFile(ctx, author, repo, content, path, msg)
 }
