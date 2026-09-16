@@ -341,7 +341,7 @@ func preparePkg(
 		PostInstall:       postInstall,
 		Archives:          map[string]Archive{},
 		SourceRoots:       map[string]string{},
-		Description:       nixString(nix.Description),
+		Description:       nix.Description,
 		Homepage:          nix.Homepage,
 		License:           nix.License,
 		MainProgram:       nix.MainProgram,
@@ -503,6 +503,9 @@ func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *a
 func doBuildPkg(ctx *context.Context, data templateData) (string, error) {
 	t, err := template.
 		New(data.Name).
+		Funcs(template.FuncMap{
+			"nixString": nixString,
+		}).
 		Parse(string(pkgTmpl))
 	if err != nil {
 		return "", err
@@ -623,11 +626,14 @@ func split(s string) []string {
 }
 
 func nixString(s string) string {
-	return strings.NewReplacer(
+	return `"` + strings.NewReplacer(
 		"\\", "\\\\",
 		"\"", "\\\"",
 		"${", "\\${",
-	).Replace(s)
+		"\n", "\\n",
+		"\r", "\\r",
+		"\t", "\\t",
+	).Replace(s) + `"`
 }
 
 func depNames(deps []config.NixDependency) []string {
