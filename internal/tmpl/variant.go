@@ -23,13 +23,8 @@ const (
 // silently lost: overwritten on disk, or dropped when uploading two assets
 // with the same name.
 func variant(v any) (string, error) {
-	var fields Fields
-	switch v := v.(type) {
-	case Fields:
-		fields = v
-	case map[string]any:
-		fields = v
-	default:
+	fields, ok := v.(Fields)
+	if !ok {
 		return "", fmt.Errorf("variant: expected the template context, got %T: use it as '{{ variant . }}'", v)
 	}
 	get := func(key string) string {

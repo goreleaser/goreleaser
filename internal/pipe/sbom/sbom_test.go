@@ -1047,9 +1047,10 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
 }
 
-// Binaries that differ only by CPU variant must not resolve to the same
-// document name: syft would overwrite the first document with the second,
+// The default document name must tell apart binaries that differ only by
+// target variant: syft would overwrite the first document with the second,
 // and two SBOM artifacts with the same name would be uploaded twice.
+// The variants themselves are covered by tmpl.TestVariant.
 func TestDefaultBinaryDocumentIsUniquePerVariant(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
@@ -1059,30 +1060,10 @@ func TestDefaultBinaryDocumentIsUniquePerVariant(t *testing.T) {
 	document := ctx.Config.SBOMs[0].Documents[0]
 
 	for name, variants := range map[string][]artifact.Artifact{
-		"goamd64": {
-			{Goos: "linux", Goarch: "amd64", Goamd64: "v1"},
-			{Goos: "linux", Goarch: "amd64", Goamd64: "v3"},
-		},
 		"goarm64": {
 			{Goos: "linux", Goarch: "arm64", Goarm64: "v8.0"},
 			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
-		},
-		"go386": {
-			{Goos: "linux", Goarch: "386", Go386: "sse2"},
-			{Goos: "linux", Goarch: "386", Go386: "softfloat"},
-		},
-		"goppc64": {
-			{Goos: "linux", Goarch: "ppc64", Goppc64: "power8"},
-			{Goos: "linux", Goarch: "ppc64", Goppc64: "power10"},
-		},
-		"goriscv64": {
-			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva20u64"},
-			{Goos: "linux", Goarch: "riscv64", Goriscv64: "rva22u64"},
-		},
-		"goarm64 features": {
-			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
 			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse"},
-			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse,crypto"},
 		},
 		"abi": {
 			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "gnu"}},
