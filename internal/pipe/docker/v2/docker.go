@@ -598,9 +598,10 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		parts = append(parts, a.Goarch)
 	case "arm64":
 		parts = append(parts, a.Goarch)
-		// buildx drops the baseline v8, but keeps anything above it.
-		if major, _, _ := strings.Cut(a.Goarm64, "."); major != "" && major != "v8" {
-			parts = append(parts, major)
+		// buildx drops a trailing `.0` and the baseline v8, but keeps
+		// anything above it, so v9.0 becomes v9 and v8.2 stays v8.2.
+		if variant := strings.TrimSuffix(a.Goarm64, ".0"); variant != "" && variant != "v8" {
+			parts = append(parts, variant)
 		}
 	case "amd64":
 		parts = append(parts, a.Goarch)
