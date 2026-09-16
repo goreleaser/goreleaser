@@ -613,6 +613,7 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 	type archiveSpec struct {
 		id     string
 		goarch string
+		format string
 	}
 
 	for name, tt := range map[string]struct {
@@ -642,6 +643,21 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 				{id: "bar", goarch: "arm64"},
 			},
 		},
+		"single id, multiple formats": {
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64", format: "tar.gz"},
+				{id: "foo", goarch: "amd64", format: "zip"},
+			},
+			wantErr: true,
+		},
+		"single id, multiple formats, filtered by ids": {
+			ids: []string{"foo"},
+			archive: []archiveSpec{
+				{id: "foo", goarch: "amd64", format: "tar.gz"},
+				{id: "foo", goarch: "amd64", format: "zip"},
+			},
+			wantErr: true,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -659,9 +675,14 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 			)
 
 			for _, archive := range tt.archive {
-				path := filepath.Join(folder, archive.id+".tar.gz")
+				format := archive.format
+				if format == "" {
+					format = "tar.gz"
+				}
+				name := archive.id + "." + format
+				path := filepath.Join(folder, name)
 				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:    archive.id + ".tar.gz",
+					Name:    name,
 					Path:    path,
 					Goos:    "linux",
 					Goarch:  archive.goarch,
@@ -669,7 +690,7 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]any{
 						artifact.ExtraID:       archive.id,
-						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraFormat:   format,
 						artifact.ExtraBinaries: []string{"foo"},
 					},
 				})
@@ -681,7 +702,7 @@ func TestRunPipeRejectsDuplicateArchitectures(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 			err := runAll(ctx, client.NewMock())
 			if tt.wantErr {
-				require.EqualError(t, err, "one aur can handle only one archive of each architecture")
+				require.ErrorIs(t, err, ErrMultipleArchivesSameArch)
 				return
 			}
 			require.NoError(t, err)

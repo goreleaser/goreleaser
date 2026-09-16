@@ -1,6 +1,8 @@
 package blob
 
 import (
+	"bytes"
+	stdctx "context"
 	"errors"
 	"fmt"
 	"io"
@@ -198,15 +200,33 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 }
 
 func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {
-	data, err := getData(ctx, conf, dataFile)
+	data, err := openData(ctx, conf, dataFile)
 	if err != nil {
 		return err
 	}
+	defer data.Close()
 
 	if err := up.Upload(ctx, uploadFile, data); err != nil {
 		return handleError(err, bucketURL)
 	}
 	return nil
+}
+
+// openData opens the file to be uploaded.
+// Unencrypted files are streamed, so they are never fully loaded into memory.
+func openData(ctx *context.Context, conf config.Blob, path string) (io.ReadCloser, error) {
+	if conf.KMSKey == "" {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %s: %w", path, err)
+		}
+		return f, nil
+	}
+	data, err := getData(ctx, conf, path)
+	if err != nil {
+		return nil, err
+	}
+	return io.NopCloser(bytes.NewReader(data)), nil
 }
 
 // errorContains check if error contains specific string.
@@ -240,13 +260,13 @@ func handleError(err error, url string) error {
 	}
 }
 
+// getData reads the whole file and encrypts it with KMS.
+// It is only used when a KMS key is set, as encryption needs the full
+// plaintext; everything else is streamed by openData.
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return data, fmt.Errorf("failed to open file %s: %w", path, err)
-	}
-	if conf.KMSKey == "" {
-		return data, nil
 	}
 	if err := validateKMSPlaintextSize(conf.KMSKey, len(data)); err != nil {
 		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
@@ -275,7 +295,7 @@ func validateKMSPlaintextSize(kmsKey string, size int) error {
 type uploader interface {
 	io.Closer
 	Open(ctx *context.Context, url string) error
-	Upload(ctx *context.Context, path string, data []byte) error
+	Upload(ctx *context.Context, path string, data io.Reader) error
 }
 
 // productionUploader actually do upload to.
@@ -304,7 +324,7 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data io.Reader) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	disp, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -319,12 +339,17 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 		BeforeWrite:        u.beforeWrite,
 		CacheControl:       strings.Join(u.cacheControl, ", "),
 	}
-	w, err := u.bucket.NewWriter(ctx, filepath, opts)
+	// the writer commits on Close, even when only part of the data was
+	// written, so a failed copy must cancel the write instead of closing it.
+	wctx, cancel := stdctx.WithCancel(ctx)
+	defer cancel()
+	w, err := u.bucket.NewWriter(wctx, filepath, opts)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = w.Close() }()
-	if _, err = w.Write(data); err != nil {
+	if _, err := io.Copy(w, data); err != nil {
+		cancel()
+		_ = w.Close()
 		return err
 	}
 	return w.Close()
