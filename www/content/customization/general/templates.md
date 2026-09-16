@@ -205,15 +205,15 @@ On all fields, you have these available functions:
 | `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                                |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
-| `variant .`                       | the target variant suffix of the current artifact {{< g_inline_version "v2.19-unreleased" >}}                                     |
+| `targetVariant .`                 | the target variant suffix of the current artifact {{< g_inline_version "v2.19-unreleased" >}}                                     |
 
-### `variant`
+### `targetVariant`
 
-`variant` renders the suffix that tells apart artifacts that share an OS and
-architecture, but were built for different target variants:
+`targetVariant` renders the suffix that tells apart artifacts that share an OS
+and architecture, but were built for different target variants:
 
 ```
-{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ variant . }}
+{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}
 ```
 
 It takes `GOARM`, `GOMIPS`, `GOAMD64`, `GOARM64`, `GO386`, `GOPPC64`,
@@ -221,6 +221,10 @@ It takes `GOARM`, `GOMIPS`, `GOAMD64`, `GOARM64`, `GO386`, `GOPPC64`,
 toolchain default, so names do not change if you do not use these settings.
 For instance, `goarm64: [v8.0, v9.0]` yields an empty suffix and `v9.0`, while
 a Rust `x86_64-unknown-linux-musl` target yields `_musl`.
+
+It is the variant of the whole target, not only of the architecture: an ABI
+such as `gnu` or `musl` is part of the target, and the arch is the same either
+way.
 
 This is what the default [SBOM](/customization/sbom/) document and
 [binary signature](/customization/sign/binary_sign/) names use. If you build more than

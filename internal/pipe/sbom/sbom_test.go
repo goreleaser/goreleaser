@@ -117,7 +117,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			},
 			artifact: "binary",
 			cmd:      defaultCmd,
-			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ variant . }}.sbom.json`},
+			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}.sbom.json`},
 			args:     defaultArgs,
 		},
 		{
@@ -1050,7 +1050,7 @@ func TestDependencies(t *testing.T) {
 // The default document name must tell apart binaries that differ only by
 // target variant: syft would overwrite the first document with the second,
 // and two SBOM artifacts with the same name would be uploaded twice.
-// The variants themselves are covered by tmpl.TestVariant.
+// The variants themselves are covered by tmpl.TestTargetVariant.
 func TestDefaultBinaryDocumentIsUniquePerVariant(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",

@@ -17,7 +17,7 @@ import (
 // variant. Without the variant the signature files themselves are fine, as
 // they are written to per-target directories, but the artifact name is
 // ambiguous, so only one of them survives as a release asset.
-const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ variant . }}`
+const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}`
 
 // BinaryPipe signs binaries before archiving.
 type BinaryPipe struct{}

@@ -33,7 +33,7 @@ binary_signs:
 
     # Name of the signature file.
     #
-    # Default: '${artifact}_{{ .Os }}_{{ .Arch }}{{ variant . }}'.
+    # Default: '${artifact}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}'.
     # Templates: allowed.
     signature: "${artifact}_sig"
 

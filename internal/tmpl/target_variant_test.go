@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVariant(t *testing.T) {
+func TestTargetVariant(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
 	for name, tc := range map[string]struct {
 		artifact artifact.Artifact
@@ -49,7 +49,7 @@ func TestVariant(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			got, err := New(ctx).WithArtifact(&tc.artifact).Apply("{{ variant . }}")
+			got, err := New(ctx).WithArtifact(&tc.artifact).Apply("{{ targetVariant . }}")
 			require.NoError(t, err)
 			require.Equal(t, tc.expect, got)
 			require.NotContains(t, got, ",")
@@ -59,13 +59,13 @@ func TestVariant(t *testing.T) {
 
 // The variant is meant to be used on names, so it must not error out when
 // applied to a template that has no artifact in scope.
-func TestVariantWithoutArtifact(t *testing.T) {
-	got, err := New(testctx.Wrap(t.Context())).Apply("{{ variant . }}")
+func TestTargetVariantWithoutArtifact(t *testing.T) {
+	got, err := New(testctx.Wrap(t.Context())).Apply("{{ targetVariant . }}")
 	require.NoError(t, err)
 	require.Empty(t, got)
 }
 
-func TestVariantInvalidArgument(t *testing.T) {
-	_, err := New(testctx.Wrap(t.Context())).Apply("{{ variant .Env }}")
-	require.ErrorContains(t, err, "use it as '{{ variant . }}'")
+func TestTargetVariantInvalidArgument(t *testing.T) {
+	_, err := New(testctx.Wrap(t.Context())).Apply("{{ targetVariant .Env }}")
+	require.ErrorContains(t, err, "use it as '{{ targetVariant . }}'")
 }

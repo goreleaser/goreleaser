@@ -356,7 +356,7 @@ func TestBinarySignUniversalBinaryReplaced(t *testing.T) {
 
 // The default signature name must tell apart binaries that differ only by
 // target variant, or only one of them survives as a release asset.
-// The variants themselves are covered by tmpl.TestVariant.
+// The variants themselves are covered by tmpl.TestTargetVariant.
 func TestDefaultSignatureNameIsUniquePerVariant(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
