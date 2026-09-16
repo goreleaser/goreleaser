@@ -594,8 +594,14 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		return "", fmt.Errorf("unsupported OS: %q", a.Goos)
 	}
 	switch a.Goarch {
-	case "arm64", "386", "ppc64le", "s390x", "riscv64":
+	case "386", "ppc64le", "s390x", "riscv64":
 		parts = append(parts, a.Goarch)
+	case "arm64":
+		parts = append(parts, a.Goarch)
+		// buildx drops the baseline v8, but keeps anything above it.
+		if major, _, _ := strings.Cut(a.Goarm64, "."); major != "" && major != "v8" {
+			parts = append(parts, major)
+		}
 	case "amd64":
 		parts = append(parts, a.Goarch)
 		if a.Goamd64 != "" && a.Goamd64 != "v1" {
@@ -629,8 +635,17 @@ func parsePlatform(p string) platform {
 	}
 	if len(parts) >= 2 {
 		result.arch = parts[1]
-		if result.arch == "amd64" {
+		// a platform without an explicit variant means the baseline variant
+		// buildx resolves it to, not "any variant". Shipping a non-baseline
+		// binary under a bare platform would produce an image that claims to
+		// run anywhere and then dies with SIGILL on an older CPU.
+		switch result.arch {
+		case "amd64":
 			result.amd64 = "v1"
+		case "arm":
+			result.arm = "7"
+		case "arm64":
+			result.arm64 = "v8.0"
 		}
 	}
 	if len(parts) >= 3 {

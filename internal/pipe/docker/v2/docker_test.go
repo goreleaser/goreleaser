@@ -3,6 +3,7 @@ package docker
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -654,6 +655,11 @@ func TestToPlatform(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "arm64",
 		},
+		"linux/arm64/v9": {
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v9.0",
+		},
 		"linux/arm/v7": {
 			Goos:   "linux",
 			Goarch: "arm",
@@ -722,12 +728,83 @@ func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
 		"linux/amd64":    {os: "linux", arch: "amd64", amd64: "v1"},
 		"linux/amd64/v3": {os: "linux", arch: "amd64", amd64: "v3"},
+		"linux/arm":      {os: "linux", arch: "arm", arm: "7"},
 		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
+		"linux/arm64":    {os: "linux", arch: "arm64", arm64: "v8.0"},
 		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
 		"linux":          {os: "linux"},
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))
+		})
+	}
+}
+
+// A platform without an explicit CPU variant means the baseline variant, and
+// the artifact has to land in the directory buildx sets as $TARGETPLATFORM for
+// it, so that `COPY $TARGETPLATFORM/` finds it. Only the cases that main gets
+// wrong are listed.
+func TestContextPlacement(t *testing.T) {
+	type bin struct{ goarch, goarm, goarm64 string }
+	for name, tt := range map[string]struct {
+		platform string
+		bins     []bin
+		expect   []string
+	}{
+		"bare arm is v7": {
+			platform: "linux/arm",
+			bins:     []bin{{goarch: "arm", goarm: "6"}, {goarch: "arm", goarm: "7"}},
+			expect:   []string{"linux/arm/v7/mybin"},
+		},
+		"bare arm64 does not take v9": {
+			platform: "linux/arm64",
+			bins:     []bin{{goarch: "arm64", goarm64: "v9.0"}},
+			expect:   nil,
+		},
+		"arm64/v9 keeps the variant": {
+			platform: "linux/arm64/v9",
+			bins:     []bin{{goarch: "arm64", goarm64: "v9.0"}},
+			expect:   []string{"linux/arm64/v9/mybin"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			src := filepath.Join(t.TempDir(), "mybin")
+			require.NoError(t, os.WriteFile(src, []byte("binary"), 0o755))
+
+			ctx := testctx.Wrap(t.Context())
+			for _, b := range tt.bins {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "mybin",
+					Path:    src,
+					Goos:    "linux",
+					Goarch:  b.goarch,
+					Goarm:   b.goarm,
+					Goarm64: b.goarm64,
+					Type:    artifact.Binary,
+					Extra:   artifact.Extras{artifact.ExtraID: "cli"},
+				})
+			}
+
+			d := config.DockerV2{ID: "test", IDs: []string{"cli"}, Platforms: []string{tt.platform}}
+			dir, err := makeContext(d, contextArtifacts(ctx, d), "./testdata/Dockerfile")
+			require.NoError(t, err)
+			t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+			var got []string
+			require.NoError(t, filepath.WalkDir(dir, func(p string, e fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if !e.IsDir() && e.Name() == "mybin" {
+					rel, err := filepath.Rel(dir, p)
+					if err != nil {
+						return err
+					}
+					got = append(got, filepath.ToSlash(rel))
+				}
+				return nil
+			}))
+			require.Equal(t, tt.expect, got)
 		})
 	}
 }
