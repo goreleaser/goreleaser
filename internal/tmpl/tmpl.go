@@ -321,6 +321,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"mustReadFile":   mustReadFile,
 			"englishJoin":    englishJoin,
 			"list":           makeList,
+			"variant":        variant,
 		}).
 		Parse(s)
 	if err != nil {

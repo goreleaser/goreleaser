@@ -205,6 +205,28 @@ On all fields, you have these available functions:
 | `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                                |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
+| `variant .`                       | the target variant suffix of the current artifact {{< g_inline_version "v2.19-unreleased" >}}                                     |
+
+### `variant`
+
+`variant` renders the suffix that tells apart artifacts that share an OS and
+architecture, but were built for different target variants:
+
+```
+{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ variant . }}
+```
+
+It takes `GOARM`, `GOMIPS`, `GOAMD64`, `GOARM64`, `GO386`, `GOPPC64`,
+`GORISCV64`, and the target ABI into account, leaving out anything that is the
+toolchain default, so names do not change if you do not use these settings.
+For instance, `goarm64: [v8.0, v9.0]` yields an empty suffix and `v9.0`, while
+a Rust `x86_64-unknown-linux-musl` target yields `_musl`.
+
+This is what the default [SBOM](/customization/sbom/) document and
+[binary signature](/customization/sign/binary_sign/) names use. If you build more than
+one variant of the same OS and architecture, use it in your own name templates
+as well: without it those artifacts are given the same name, and only one of
+them survives.
 
 ## Functions (Pro)
 

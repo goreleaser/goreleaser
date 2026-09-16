@@ -117,7 +117,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			},
 			artifact: "binary",
 			cmd:      defaultCmd,
-			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}` + variantSuffix + `.sbom.json`},
+			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ variant . }}.sbom.json`},
 			args:     defaultArgs,
 		},
 		{

@@ -13,24 +13,11 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}` + variantSuffix
-
-// variantSuffix disambiguates binaries that differ only by CPU variant.
-// Without it two binaries for the same os/arch resolve to the same signature
-// name: the files themselves land in per-target directories, but the
-// registered artifact name is ambiguous, so only one of them survives as a
-// release asset. Each variant is omitted when it is the Go toolchain default,
-// to keep names stable for the common case. Goarm64 feature suffixes (e.g.
-// "v8.0,lse") keep their features, with the comma replaced, so that they stay
-// distinct without putting a comma in a release asset name.
-const variantSuffix = `{{ with .Arm }}v{{ . }}{{ end }}` +
-	`{{ with .Mips }}_{{ . }}{{ end }}` +
-	`{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}` +
-	`{{ if not (eq .Arm64 "v8.0") }}{{ replace .Arm64 "," "-" }}{{ end }}` +
-	`{{ if not (eq .I386 "sse2") }}{{ .I386 }}{{ end }}` +
-	`{{ if not (eq .Ppc64 "power8") }}{{ .Ppc64 }}{{ end }}` +
-	`{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}` +
-	`{{ with .Abi }}_{{ . }}{{ end }}`
+// defaultSignatureName tells apart binaries that differ only by target
+// variant. Without the variant the signature files themselves are fine, as
+// they are written to per-target directories, but the artifact name is
+// ambiguous, so only one of them survives as a release asset.
+const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ variant . }}`
 
 // BinaryPipe signs binaries before archiving.
 type BinaryPipe struct{}

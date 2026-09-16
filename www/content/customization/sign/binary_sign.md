@@ -33,7 +33,7 @@ binary_signs:
 
     # Name of the signature file.
     #
-    # Default: '${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ if not (eq .Arm64 "v8.0") }}{{ replace .Arm64 "," "-" }}{{ end }}{{ if not (eq .I386 "sse2") }}{{ .I386 }}{{ end }}{{ if not (eq .Ppc64 "power8") }}{{ .Ppc64 }}{{ end }}{{ if not (eq .Riscv64 "rva20u64") }}{{ .Riscv64 }}{{ end }}{{ with .Abi }}_{{ . }}{{ end }}'.
+    # Default: '${artifact}_{{ .Os }}_{{ .Arch }}{{ variant . }}'.
     # Templates: allowed.
     signature: "${artifact}_sig"
 
