@@ -1182,113 +1182,34 @@ func TestRunPipeRejectsInvalidRenderedPackageIdentifier(t *testing.T) {
 	)).List())
 }
 
-func TestPublishSameNameWingetsUseTheirOwnRepositories(t *testing.T) {
-	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
-			Dist:        folder,
-			ProjectName: "tool",
-			Winget: []config.Winget{
-				{
-					Name:              "tool",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "acme",
-						Name:  "winget",
-					},
-				},
-				{
-					Name:              "tool",
-					Publisher:         "Other",
-					PackageIdentifier: "Other.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "other",
-						Name:  "winget",
-					},
-				},
-			},
-		},
-		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool")
-
-	pipe := Pipe{}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
-
-	rec := newRecordingWingetClient()
-	require.NoError(t, pipe.publishAll(ctx, rec))
-	require.Len(t, rec.paths, 6)
-	for i, path := range rec.paths {
-		switch {
-		case strings.Contains(path, "Acme.Tool"):
-			require.Equal(t, "acme", rec.repos[i].Owner)
-		case strings.Contains(path, "Other.Tool"):
-			require.Equal(t, "other", rec.repos[i].Owner)
-		default:
-			require.Failf(t, "unexpected publish path", "path: %s", path)
+func TestDefaultDuplicateNames(t *testing.T) {
+	newCtx := func(names ...string) *context.Context {
+		cfg := config.Project{ProjectName: "tool"}
+		for _, name := range names {
+			cfg.Winget = append(cfg.Winget, config.Winget{Name: name})
 		}
+		return testctx.WrapWithCfg(t.Context(), cfg)
 	}
-}
 
-func TestPublishSameNameWingetsKeepSkipUploadSeparate(t *testing.T) {
-	folder := t.TempDir()
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
-			Dist:        folder,
-			ProjectName: "tool",
-			Winget: []config.Winget{
-				{
-					Name:              "tool",
-					Publisher:         "Acme",
-					PackageIdentifier: "Acme.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					SkipUpload:        "true",
-					Repository: config.RepoRef{
-						Owner: "acme",
-						Name:  "winget",
-					},
-				},
-				{
-					Name:              "tool",
-					Publisher:         "Other",
-					PackageIdentifier: "Other.Tool",
-					License:           "MIT",
-					ShortDescription:  "tool",
-					IDs:               []string{"tool"},
-					Repository: config.RepoRef{
-						Owner: "other",
-						Name:  "winget",
-					},
-				},
-			},
-		},
-		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
-	createFakeWingetArchive(t, ctx, folder, "tool")
+	t.Run("duplicate", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("tool", "tool")),
+			"found 2 wingets with the ID 'tool', please fix your config",
+		)
+	})
 
-	pipe := Pipe{}
-	require.NoError(t, pipe.Default(ctx))
-	require.NoError(t, pipe.runAll(ctx, client.NewMock()))
+	t.Run("duplicate default name", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("", "")),
+			"found 2 wingets with the ID 'tool', please fix your config",
+		)
+	})
 
-	rec := newRecordingWingetClient()
-	require.ErrorContains(t, pipe.publishAll(ctx, rec), "winget.skip_upload is set")
-	require.Len(t, rec.paths, 3)
-	for i, path := range rec.paths {
-		require.Contains(t, path, "Other.Tool")
-		require.Equal(t, "other", rec.repos[i].Owner)
-	}
+	t.Run("unique", func(t *testing.T) {
+		require.NoError(t, Pipe{}.Default(newCtx("tool", "other-tool")))
+	})
 }
 
 func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) {
@@ -1381,7 +1302,6 @@ func TestRunPipeInvalidInstallerSelectionDoesNotRegisterManifests(t *testing.T) 
 
 type recordingWingetClient struct {
 	*client.Mock
-	repos []client.Repo
 	paths []string
 }
 
@@ -1390,7 +1310,6 @@ func newRecordingWingetClient() *recordingWingetClient {
 }
 
 func (c *recordingWingetClient) CreateFile(ctx *context.Context, author config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
-	c.repos = append(c.repos, repo)
 	c.paths = append(c.paths, path)
 	return c.Mock.CreateFile(ctx, author, repo, content, path, msg)
 }
