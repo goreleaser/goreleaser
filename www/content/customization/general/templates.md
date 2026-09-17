@@ -127,6 +127,7 @@ may have some extra fields:
 | `.Ppc64`        | `GOPPC64` {{< g_inline_version "v2.4" >}}                       |
 | `.Riscv64`      | `GORISCV64` {{< g_inline_version "v2.4" >}}                     |
 | `.I386`         | `GO386` {{< g_inline_version "v2.4" >}}                         |
+| `.Abi`          | target ABI, when the builder sets one {{< g_inline_version "v2.19-unreleased" >}} |
 | `.Target`       | the whole target {{< g_inline_version "v2.5" >}}                |
 | `.Binary`       | artifact name (without the extension)                           |
 | `.ArtifactID`   | artifact id {{< g_inline_version "v2.3" >}}{{< g_inline_pro >}} |
@@ -204,6 +205,32 @@ On all fields, you have these available functions:
 | `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                                |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
+| `targetVariant .`                 | the target variant suffix of the current artifact {{< g_inline_version "v2.19-unreleased" >}}                                     |
+
+### `targetVariant`
+
+`targetVariant` renders the suffix that tells apart artifacts that share an OS
+and architecture, but were built for different target variants:
+
+```
+{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}
+```
+
+It takes `GOARM`, `GOMIPS`, `GOAMD64`, `GOARM64`, `GO386`, `GOPPC64`,
+`GORISCV64`, and the target ABI into account, leaving out anything that is the
+toolchain default, so names do not change if you do not use these settings.
+For instance, `goarm64: [v8.0, v9.0]` yields an empty suffix and `v9.0`, while
+a Rust `x86_64-unknown-linux-musl` target yields `_musl`.
+
+It is the variant of the whole target, not only of the architecture: an ABI
+such as `gnu` or `musl` is part of the target, and the arch is the same either
+way.
+
+This is what the default [SBOM](/customization/sbom/) document and
+[binary signature](/customization/sign/binary_sign/) names use. If you build more than
+one variant of the same OS and architecture, use it in your own name templates
+as well: without it those artifacts are given the same name, and only one of
+them survives.
 
 ## Functions (Pro)
 

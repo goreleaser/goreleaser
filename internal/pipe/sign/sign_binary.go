@@ -13,7 +13,11 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+// defaultSignatureName tells apart binaries that differ only by target
+// variant. Without the variant the signature files themselves are fine, as
+// they are written to per-target directories, but the artifact name is
+// ambiguous, so only one of them survives as a release asset.
+const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}`
 
 // BinaryPipe signs binaries before archiving.
 type BinaryPipe struct{}

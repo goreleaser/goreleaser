@@ -117,7 +117,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			},
 			artifact: "binary",
 			cmd:      defaultCmd,
-			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sbom.json`},
+			sboms:    []string{`{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ targetVariant . }}.sbom.json`},
 			args:     defaultArgs,
 		},
 		{
@@ -1045,4 +1045,45 @@ func TestDependencies(t *testing.T) {
 	})
 
 	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
+}
+
+// The default document name must tell apart binaries that differ only by
+// target variant: syft would overwrite the first document with the second,
+// and two SBOM artifacts with the same name would be uploaded twice.
+// The variants themselves are covered by tmpl.TestTargetVariant.
+func TestDefaultBinaryDocumentIsUniquePerVariant(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		SBOMs:       []config.SBOM{{Artifacts: "binary"}},
+	}, testctx.WithVersion("1.0.0"))
+	require.NoError(t, Pipe{}.Default(ctx))
+	document := ctx.Config.SBOMs[0].Documents[0]
+
+	for name, variants := range map[string][]artifact.Artifact{
+		"goarm64": {
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v8.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse"},
+		},
+		"abi": {
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "gnu"}},
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "musl"}},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var got []string
+			for _, art := range variants {
+				art.Name = "mybin"
+				if art.Extra == nil {
+					art.Extra = map[string]any{}
+				}
+				art.Extra[artifact.ExtraBinary] = "mybin"
+				rendered, err := tmpl.New(ctx).WithArtifact(&art).Apply(document)
+				require.NoError(t, err)
+				require.NotContains(t, rendered, ",", "document name is not safe to use as a release asset name")
+				got = append(got, rendered)
+			}
+			require.Len(t, slices.Compact(slices.Sorted(slices.Values(got))), len(got), "variants share a document name: %v", got)
+		})
+	}
 }

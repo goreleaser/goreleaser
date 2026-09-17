@@ -3,6 +3,7 @@ package sign
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -350,4 +352,37 @@ func TestBinarySignUniversalBinaryReplaced(t *testing.T) {
 		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List())
 		require.NoFileExists(t, filepath.Join(dist, "universal.sig"))
 	})
+}
+
+// The default signature name must tell apart binaries that differ only by
+// target variant, or only one of them survives as a release asset.
+// The variants themselves are covered by tmpl.TestTargetVariant.
+func TestDefaultSignatureNameIsUniquePerVariant(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	}, testctx.WithVersion("1.0.0"))
+
+	for name, variants := range map[string][]artifact.Artifact{
+		"goarm64": {
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v8.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0"},
+			{Goos: "linux", Goarch: "arm64", Goarm64: "v9.0,lse"},
+		},
+		"abi": {
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "gnu"}},
+			{Goos: "linux", Goarch: "amd64", Extra: map[string]any{tmpl.KeyAbi: "musl"}},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var got []string
+			for _, art := range variants {
+				art.Name = "mybin"
+				rendered, err := tmpl.New(ctx).WithArtifact(&art).Apply(defaultSignatureName)
+				require.NoError(t, err)
+				require.NotContains(t, rendered, ",", "signature name is not safe to use as a release asset name")
+				got = append(got, rendered)
+			}
+			require.Len(t, slices.Compact(slices.Sorted(slices.Values(got))), len(got), "variants share a signature name: %v", got)
+		})
+	}
 }
