@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
@@ -64,6 +65,7 @@ func (p Pipe) Skip(ctx *context.Context) bool {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	ids := ids.New("wingets")
 	for i := range ctx.Config.Winget {
 		winget := &ctx.Config.Winget[i]
 
@@ -80,9 +82,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		winget.DefaultLocale = cmp.Or(winget.DefaultLocale, defaultLocale)
 		winget.PackageName = cmp.Or(winget.PackageName, winget.Name)
+		// the name is used as the artifact ID, which is also how the manifests
+		// are grouped when publishing.
+		ids.Inc(winget.Name)
 	}
 
-	return nil
+	return ids.Validate()
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
@@ -107,8 +112,8 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 	// even if one of them is skipped, we still go through all of them, and
 	// return the skips all at once in the end.
 	skips := pipe.SkipMemento{}
-	for i, winget := range ctx.Config.Winget {
-		err := p.doRun(ctx, winget, cli, fmt.Sprintf("winget-%d", i))
+	for _, winget := range ctx.Config.Winget {
+		err := p.doRun(ctx, winget, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -120,7 +125,7 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 	return skips.Evaluate()
 }
 
-func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater, artifactID string) error {
+func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater) error {
 	if winget.Repository.Name == "" {
 		return errNoRepoName
 	}
@@ -243,7 +248,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, Version{
+	if err := createYAML(ctx, winget, Version{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		DefaultLocale:     winget.DefaultLocale,
@@ -253,11 +258,11 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, installer, artifact.WingetInstaller, winget.DefaultLocale); err != nil {
+	if err := createYAML(ctx, winget, installer, artifact.WingetInstaller, winget.DefaultLocale); err != nil {
 		return err
 	}
 
-	if err := createYAML(ctx, winget, artifactID, Locale{
+	if err := createYAML(ctx, winget, Locale{
 		PackageIdentifier:   winget.PackageIdentifier,
 		PackageVersion:      ctx.Version,
 		PackageLocale:       winget.DefaultLocale,
@@ -285,7 +290,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	return p.doAdditionalLocales(ctx, winget, artifactID)
+	return p.doAdditionalLocales(ctx, winget)
 }
 
 // prepareAdditionalLocales templates and validates every additional locale up
@@ -350,13 +355,13 @@ func (p Pipe) prepareAdditionalLocales(ctx *context.Context, winget config.Winge
 
 // doAdditionalLocales renders the already validated additional locale
 // manifests. It must only be called after prepareAdditionalLocales succeeded.
-func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget, artifactID string) error {
+func (p Pipe) doAdditionalLocales(ctx *context.Context, winget config.Winget) error {
 	for _, aloc := range winget.AdditionalLocales {
 		tags := aloc.Tags
 		if len(tags) == 0 {
 			tags = winget.Tags
 		}
-		if err := createYAML(ctx, winget, artifactID, Locale{
+		if err := createYAML(ctx, winget, Locale{
 			PackageIdentifier:   winget.PackageIdentifier,
 			PackageVersion:      ctx.Version,
 			PackageLocale:       aloc.Locale,

@@ -61,6 +61,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [KSOC](https://github.com/ksoclabs)
 1. [Ko Build](https://ko.build)
 1. [Koordinator](https://koordinator.sh)
+2. [Kronk]([https://](https://www.kronkai.com/)
 1. [Kubernetes SIGs](https://github.com/kubernetes-sigs)
 1. [Kubernetes](https://kubernetes.io)
 1. [Kubescape](https://github.com/kubescape)
