@@ -60,19 +60,11 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Pre.Install -}}
-  {{ if $.Hooks.UseSteps }}preflight_steps{{ else }}preflight{{ end }} do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ hookStanza "preflight" $.Hooks.UseSteps . | printf "{{ %q }}" }}
   {{- end }}
 
   {{ with .Hooks.Post.Install -}}
-  {{ if $.Hooks.UseSteps }}postflight_steps{{ else }}postflight{{ end }} do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ hookStanza "postflight" $.Hooks.UseSteps . | printf "{{ %q }}" }}
   {{- end }}
 
   {{- /*
@@ -86,19 +78,11 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Pre.Uninstall -}}
-  {{ if $.Hooks.UseSteps }}uninstall_preflight_steps{{ else }}uninstall_preflight{{ end }} do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ hookStanza "uninstall_preflight" $.Hooks.UseSteps . | printf "{{ %q }}" }}
   {{- end }}
 
   {{ with .Hooks.Post.Uninstall -}}
-  {{ if $.Hooks.UseSteps }}uninstall_postflight_steps{{ else }}uninstall_postflight{{ end }} do
-    {{- range (split .) }}
-    {{ . }}
-    {{- end }}
-  end
+  {{ hookStanza "uninstall_postflight" $.Hooks.UseSteps . | printf "{{ %q }}" }}
   {{- end }}
 
   {{ uninstall .Uninstall }}

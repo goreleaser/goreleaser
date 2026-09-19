@@ -55,6 +55,36 @@ func split(s string) []string {
 	return strings
 }
 
+// hookStanza renders a preflight/postflight-style hook block, e.g.:
+//
+//	postflight do
+//	    line one
+//	    line two
+//	  end
+//
+// or, with useSteps, `postflight_steps` instead of `postflight`. The
+// caller is expected to protect the result from GoReleaser's final
+// whole-document template pass (e.g. via `| printf "{{ %q }}"`, same as
+// the `desc` stanza does), so that Homebrew's own `{{ }}` step tokens
+// (`{{staged_path}}`, `{{appdir}}`, etc.) reach the rendered cask file
+// untouched instead of being parsed as GoReleaser template actions.
+func hookStanza(name string, useSteps bool, body string) string {
+	stanza := name
+	if useSteps {
+		stanza += "_steps"
+	}
+	var sb strings.Builder
+	sb.WriteString(stanza)
+	sb.WriteString(" do\n")
+	for _, line := range split(body) {
+		sb.WriteString("    ")
+		sb.WriteString(line)
+		sb.WriteByte('\n')
+	}
+	sb.WriteString("  end")
+	return sb.String()
+}
+
 func dependsString(dependencies []config.HomebrewCaskDependency) string {
 	var casks []string
 	var formulas []string

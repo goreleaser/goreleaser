@@ -222,6 +222,9 @@ homebrew_casks:
       # than arbitrary Ruby, so hook contents above would need to be
       # rewritten to use it, e.g. `run "/usr/bin/defaults", args: [...]`
       # instead of `system_command "/usr/bin/defaults", args: [...]`.
+      # Also, GoReleaser's own hook templating (noted above) is skipped
+      # entirely when this is set, since it would otherwise collide with
+      # Homebrew's own `{{ }}`-delimited step tokens.
       # See: https://docs.brew.sh/Cask-Cookbook#stanza-preflight
       use_steps: false
 
@@ -300,17 +303,16 @@ homebrew_casks:
         # replace foo with the actual binary name
         install: |
           on_macos do
-            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ "{{staged_path}}" }}/foo"]
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{staged_path}}/foo"]
           end
 ```
 
-> [!IMPORTANT]
-> Hook contents are rendered through GoReleaser's own `{{ }}` templates
-> before being written out, and Homebrew's `_steps` DSL uses that same
-> `{{ }}` syntax for its own tokens (`{{staged_path}}`, `{{appdir}}`, etc.),
-> resolved later by Homebrew. Escape any Homebrew token you want to keep
-> literal as `{{ "{{staged_path}}" }}`, as shown above — an unescaped
-> `{{staged_path}}` will fail to parse as a GoReleaser template.
+> [!NOTE]
+> Homebrew's `_steps` DSL uses its own `{{ }}`-delimited tokens
+> (`{{staged_path}}`, `{{appdir}}`, etc.), resolved by Homebrew at install
+> time. Since that would otherwise collide with GoReleaser's own `{{ }}`
+> templates, GoReleaser does not template hook content at all when
+> `use_steps` is set — write it exactly as shown above, with no escaping.
 
 > [!CAUTION]
 > **What happens if I don't follow the steps above?**

@@ -289,13 +289,19 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	}
 	brew.Manpages = manpages
 
-	if err := tmpl.New(ctx).ApplyAll(
-		&brew.Hooks.Pre.Install,
-		&brew.Hooks.Pre.Uninstall,
-		&brew.Hooks.Post.Install,
-		&brew.Hooks.Post.Uninstall,
-	); err != nil {
-		return err
+	// When UseSteps is set, hook content is left untouched: the `_steps`
+	// stanzas use Homebrew's own `{{ }}`-delimited tokens (`{{staged_path}}`,
+	// `{{appdir}}`, etc.), which would otherwise collide with and fail to
+	// parse as GoReleaser's own `{{ }}` templates.
+	if !brew.Hooks.UseSteps {
+		if err := tmpl.New(ctx).ApplyAll(
+			&brew.Hooks.Pre.Install,
+			&brew.Hooks.Pre.Uninstall,
+			&brew.Hooks.Post.Install,
+			&brew.Hooks.Post.Uninstall,
+		); err != nil {
+			return err
+		}
 	}
 
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Repository)
@@ -365,6 +371,7 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		"conflicts":           conflictsString,
 		"depends":             dependsString,
 		"generateCompletions": generateCompletionsString,
+		"hookStanza":          hookStanza,
 		"rubyString": func(v string) (string, error) {
 			return rubyString(ctx, v)
 		},
