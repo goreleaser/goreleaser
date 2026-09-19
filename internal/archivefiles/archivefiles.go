@@ -26,6 +26,10 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
 		}
 
+		if err := template.ApplyAll(&f.Destination); err != nil {
+			return result, err
+		}
+
 		files, err := fileglob.Glob(glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
