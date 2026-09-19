@@ -12,8 +12,8 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.14.0
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/aws/aws-sdk-go-v2 v1.47.0
-	github.com/aws/aws-sdk-go-v2/credentials v1.20.4
-	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.6
+	github.com/aws/aws-sdk-go-v2/credentials v1.20.5
+	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.4.7
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.1
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.12.0
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb
@@ -107,7 +107,7 @@ require (
 	github.com/anchore/go-macholibre v0.0.0-20250826193721-3cd206ca93aa // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20 // indirect
-	github.com/aws/aws-sdk-go-v2/config v1.33.4 // indirect
+	github.com/aws/aws-sdk-go-v2/config v1.33.5 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.21.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.3 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/signin v1.10.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.38.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.50.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.51.0 // indirect
 	github.com/aws/smithy-go v1.28.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
