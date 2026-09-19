@@ -33,6 +33,8 @@
       el.textContent = "unavailable";
       return;
     }
+    var link = el.closest("a[href]");
+    if (link && nightly.url) link.href = nightly.url;
     var date = new Date(nightly.date).toLocaleDateString(undefined, DATE_OPTS);
     el.innerHTML = '';
     var code = document.createElement('code');
