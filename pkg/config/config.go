@@ -277,6 +277,17 @@ type HomebrewCaskUninstall struct {
 type HomebrewCaskHooks struct {
 	Pre  HomebrewCaskHook `yaml:"pre,omitempty" json:"pre,omitempty"`
 	Post HomebrewCaskHook `yaml:"post,omitempty" json:"post,omitempty"`
+
+	// UseSteps renders hooks using Homebrew's `preflight_steps`,
+	// `postflight_steps`, `uninstall_preflight_steps`, and
+	// `uninstall_postflight_steps` stanzas instead of the deprecated
+	// `preflight`, `postflight`, `uninstall_preflight`, and
+	// `uninstall_postflight` block stanzas.
+	//
+	// Note: the `_steps` stanzas use a restricted, declarative DSL rather
+	// than arbitrary Ruby, so hook contents may need to be rewritten.
+	// See: https://docs.brew.sh/Cask-Cookbook#stanza-preflight
+	UseSteps bool `yaml:"use_steps,omitempty" json:"use_steps,omitempty"`
 }
 
 type HomebrewCaskHook struct {

@@ -60,7 +60,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Pre.Install -}}
-  preflight do
+  {{ if $.Hooks.UseSteps }}preflight_steps{{ else }}preflight{{ end }} do
     {{- range (split .) }}
     {{ . }}
     {{- end }}
@@ -68,7 +68,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Post.Install -}}
-  postflight do
+  {{ if $.Hooks.UseSteps }}postflight_steps{{ else }}postflight{{ end }} do
     {{- range (split .) }}
     {{ . }}
     {{- end }}
@@ -86,7 +86,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Pre.Uninstall -}}
-  uninstall_preflight do
+  {{ if $.Hooks.UseSteps }}uninstall_preflight_steps{{ else }}uninstall_preflight{{ end }} do
     {{- range (split .) }}
     {{ . }}
     {{- end }}
@@ -94,7 +94,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Hooks.Post.Uninstall -}}
-  uninstall_postflight do
+  {{ if $.Hooks.UseSteps }}uninstall_postflight_steps{{ else }}uninstall_postflight{{ end }} do
     {{- range (split .) }}
     {{ . }}
     {{- end }}

@@ -213,6 +213,18 @@ homebrew_casks:
         uninstall: |
           system_command "/usr/bin/rm", args: ["-rf", "~/.myapp"]
 
+      # Render hooks using Homebrew's `preflight_steps`/`postflight_steps`/
+      # `uninstall_preflight_steps`/`uninstall_postflight_steps` stanzas
+      # instead of the deprecated `preflight`/`postflight`/
+      # `uninstall_preflight`/`uninstall_postflight` block stanzas.
+      #
+      # Note: the `_steps` stanzas use a restricted, declarative DSL rather
+      # than arbitrary Ruby, so hook contents above would need to be
+      # rewritten to use it, e.g. `run "/usr/bin/defaults", args: [...]`
+      # instead of `system_command "/usr/bin/defaults", args: [...]`.
+      # See: https://docs.brew.sh/Cask-Cookbook#stanza-preflight
+      use_steps: false
+
     # Relative path to a Service that should be moved into the
     # ~/Library/Services folder on installation.
     service: "myapp.service"
@@ -275,6 +287,30 @@ homebrew_casks:
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
           end
 ```
+
+Or, using `use_steps` and the `_steps` stanzas instead of the deprecated
+`preflight`/`postflight` blocks:
+
+```yaml {filename=".goreleaser.yaml"}
+homebrew_casks:
+  - name: foo
+    hooks:
+      use_steps: true
+      post:
+        # replace foo with the actual binary name
+        install: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ "{{staged_path}}" }}/foo"]
+          end
+```
+
+> [!IMPORTANT]
+> Hook contents are rendered through GoReleaser's own `{{ }}` templates
+> before being written out, and Homebrew's `_steps` DSL uses that same
+> `{{ }}` syntax for its own tokens (`{{staged_path}}`, `{{appdir}}`, etc.),
+> resolved later by Homebrew. Escape any Homebrew token you want to keep
+> literal as `{{ "{{staged_path}}" }}`, as shown above — an unescaped
+> `{{staged_path}}` will fail to parse as a GoReleaser template.
 
 > [!CAUTION]
 > **What happens if I don't follow the steps above?**

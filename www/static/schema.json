@@ -1982,6 +1982,9 @@
 					},
 					"post": {
 						"$ref": "#/$defs/HomebrewCaskHook"
+					},
+					"use_steps": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

@@ -187,6 +187,27 @@ end
 	golden.RequireEqualRb(t, []byte(cask))
 }
 
+func TestFullCaskStepsHooks(t *testing.T) {
+	data := defaultTemplateData
+	data.Hooks = config.HomebrewCaskHooks{
+		Pre: config.HomebrewCaskHook{
+			Install:   "pre-install",
+			Uninstall: "pre-uninstall",
+		},
+		Post: config.HomebrewCaskHook{
+			Install:   "post-install",
+			Uninstall: "post-uninstall",
+		},
+		UseSteps: true,
+	}
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	}), data)
+	require.NoError(t, err)
+
+	golden.RequireEqualRb(t, []byte(cask))
+}
+
 func TestFullCaskLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
