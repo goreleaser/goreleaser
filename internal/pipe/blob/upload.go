@@ -85,6 +85,16 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 
 	bucketURL := fmt.Sprintf("%s://%s", provider, bucket)
+	if provider == "file" {
+		// fileblob stages uploads in os.TempDir() under the key's base name
+		// plus a timestamp, and removes that path once the upload is renamed
+		// into place. Clocks coarser than a nanosecond (Windows) make two
+		// destinations uploading the same artifact pick the same staging path,
+		// so one upload deletes the other's file. Staging next to the
+		// destination keeps the paths distinct, and also avoids renaming
+		// across devices.
+		return bucketURL + "?no_tmp_dir=true", nil
+	}
 	if provider != "s3" {
 		return bucketURL, nil
 	}

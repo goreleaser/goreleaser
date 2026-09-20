@@ -195,6 +195,15 @@ func TestURL(t *testing.T) {
 		require.Equal(t, "gs://foo", url)
 	})
 
+	t.Run("file stages next to the destination", func(t *testing.T) {
+		url, err := urlFor(testctx.Wrap(t.Context()), config.Blob{
+			Bucket:   "/tmp/foo",
+			Provider: "file",
+		})
+		require.NoError(t, err)
+		require.Equal(t, "file:///tmp/foo?no_tmp_dir=true", url)
+	})
+
 	t.Run("s3 force path style without endpoint", func(t *testing.T) {
 		for _, forcePathStyle := range []bool{true, false} {
 			t.Run(strconv.FormatBool(forcePathStyle), func(t *testing.T) {
