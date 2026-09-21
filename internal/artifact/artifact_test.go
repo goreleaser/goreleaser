@@ -1199,6 +1199,7 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 		SourceSrcInfo,
 		PkgBuild,
 		SourcePkgBuild,
+		APKBuild,
 		UniversalBinary,
 		DockerImage,
 		Snapcraft,
