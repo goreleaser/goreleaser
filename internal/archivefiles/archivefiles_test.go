@@ -67,6 +67,42 @@ func TestEval(t *testing.T) {
 		testlib.RequireTemplateError(t, err)
 	})
 
+	t.Run("templated dst", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/**/d.txt",
+				Destination: "var/{{ .Env.FOLDER }}/",
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{
+				Source:      "testdata/a/b/c/d.txt",
+				Destination: "var/d/d.txt",
+			},
+		}, result)
+	})
+
+	t.Run("templated dst error", func(t *testing.T) {
+		_, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/**/d.txt",
+				Destination: "var/{{ .Env.NOPE }}/",
+			},
+		})
+		testlib.RequireTemplateError(t, err)
+	})
+
+	t.Run("templated dst error when the glob matches nothing", func(t *testing.T) {
+		_, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/nope/**/*",
+				Destination: "var/{{ .Env.NOPE }}/",
+			},
+		})
+		testlib.RequireTemplateError(t, err)
+	})
+
 	t.Run("templated info", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{
 			{
