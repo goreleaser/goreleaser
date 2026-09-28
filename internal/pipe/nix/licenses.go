@@ -134,7 +134,6 @@ var validLicenses = []string{
 	"gccException31",
 	"geogebra",
 	"generaluser",
-	"gfl",
 	"gfsl",
 	"gnuplot",
 	"gpl1Only",
