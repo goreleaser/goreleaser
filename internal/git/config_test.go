@@ -75,6 +75,9 @@ func TestExtractRepoFromURL(t *testing.T) {
 		"https://something.with.port:8080/goreleaser/goreleaser.git",
 		"https://github.enterprise.com/goreleaser/goreleaser.git",
 		"https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/goreleaser/goreleaser.git",
+		"https://github.com/goreleaser/goreleaser/",
+		"https://github.com/goreleaser/goreleaser.git/",
+		"git@github.com:goreleaser/goreleaser/",
 	} {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
@@ -89,6 +92,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 	for _, url := range []string{
 		"git@custom:group/nested/goreleaser/goreleaser.git",
 		"https://gitlab.mycompany.com/group/nested/goreleaser/goreleaser.git",
+		"https://gitlab.mycompany.com/group/nested/goreleaser/goreleaser/",
 		"https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/group/nested/goreleaser/goreleaser.git",
 	} {
 		t.Run(url, func(t *testing.T) {
