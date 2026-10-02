@@ -52,8 +52,8 @@ func TestMain(m *testing.M) {
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
-		Repository: "quay.io/minio/minio",
-		Tag:        "latest",
+		Repository: "cgr.dev/chainguard/minio",
+		Tag:        "latest@sha256:0f95aa412a12351a95bb43c3b54b66440eb0aa022bb3f3458942678a489e915b",
 		Env: []string{
 			"MINIO_ROOT_USER=" + minioUser,
 			"MINIO_ROOT_PASSWORD=" + minioPwd,
