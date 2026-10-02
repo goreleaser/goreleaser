@@ -147,6 +147,7 @@ These are the companies and individuals that help make GoReleaser happen:
 ### Backers
 
 - [Dharsan Baskar](https://github.com/dharsanb?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [James Blackwell](https://www.linuxguru.net?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Automatio AI](https://automatio.ai/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Bruno P](https://brunopaz.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Calculators](https://calculator.now/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
@@ -174,7 +175,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Carl Tsai](https://github.com/moonape1226?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ethan Li](https://linkedin.com/in/ethanjli?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Recipe.net](https://recipe.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
-- [^.{5}\s.{2}ram.{3}$](https://dives.dev/about?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [^.{5}\s.{2}ram.{3}$](https://daily.dev/umatare5?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Andrew](https://codelumberjack.ai?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Baptiste Canton](https://github.com/batmac?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [David Dymko](https://www.dymko.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)

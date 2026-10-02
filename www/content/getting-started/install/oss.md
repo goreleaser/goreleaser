@@ -7,7 +7,7 @@ description: "Installing the open source GoReleaser distribution."
 
 {{< cards cols="2" >}}
 {{< card link="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" title="Latest stable" subtitle="`__VERSION__`" >}}
-{{< card link="https://github.com/goreleaser/goreleaser/releases/nightly" title="Latest nightly" subtitle="<span data-nightly-tag data-repo='goreleaser/goreleaser'>loading…</span>" >}}
+{{< card link="https://github.com/goreleaser/goreleaser/releases?q=nightly&expanded=true" title="Latest nightly" subtitle="<span data-nightly-tag data-repo='goreleaser/goreleaser'>loading…</span>" >}}
 {{< /cards >}}
 
 See all releases on [GitHub](https://github.com/goreleaser/goreleaser/releases).
@@ -286,7 +286,7 @@ Nightly builds are pre-releases of the current code in the main branch.
 Use them for testing out new features only.
 
 Download the pre-compiled binaries from the
-[nightly release](https://github.com/goreleaser/goreleaser/releases/nightly)
+[nightly release](https://github.com/goreleaser/goreleaser/releases?q=nightly&expanded=true)
 and copy them to the desired location.
 
 [Docker](#docker) images are also available, look for tags with a `-nightly`
