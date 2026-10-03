@@ -114,7 +114,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 		for key, value := range ctx.Config.Announce.Webhook.Headers {
 			log.Debugf("custom header set: %s", key)
-			req.Header.Add(key, value)
+			req.Header.Set(key, value)
 		}
 
 		resp, err := client.Do(req)
