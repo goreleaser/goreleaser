@@ -939,3 +939,33 @@ func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
 	require.NoError(tb, err)
 	return string(out)
 }
+
+func TestDefaultDuplicateNames(t *testing.T) {
+	newCtx := func(names ...string) *context.Context {
+		cfg := config.Project{ProjectName: "tool"}
+		for _, name := range names {
+			cfg.AURSources = append(cfg.AURSources, config.AURSource{Name: name})
+		}
+		return testctx.WrapWithCfg(t.Context(), cfg)
+	}
+
+	t.Run("duplicate", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("tool", "tool")),
+			"found 2 aursources with the ID 'tool', please fix your config",
+		)
+	})
+
+	t.Run("duplicate default name", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("", "")),
+			"found 2 aursources with the ID 'tool', please fix your config",
+		)
+	})
+
+	t.Run("unique", func(t *testing.T) {
+		require.NoError(t, Pipe{}.Default(newCtx("tool", "other-tool")))
+	})
+}
