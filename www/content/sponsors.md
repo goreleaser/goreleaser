@@ -160,6 +160,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Video Downloader](https://orbitdownloader.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [YouTube Transcript](https://transcript.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Alexey Palazhchenko](https://about.me/alexey.palazhchenko?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [Arkadius Jonczek](https://arkadiusjonczek.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ben Lechlitner](https://asphaltbuffet.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Christopher Butler](https://github.com/techsaint?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Eden Zimbelman](https://o526.net?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
@@ -184,7 +185,6 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Kazuma Watanabe](https://sil.hatenablog.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Moti ne tirane](https://www.motijavor.com/shqiperi/tirane/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Horoskopi](https://horoskopishqip.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
 
