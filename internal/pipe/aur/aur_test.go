@@ -527,6 +527,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 			ProjectName: "foo",
 			AURs: []config.AUR{
 				{
+					Name:    "disabled",
 					Disable: "true",
 				},
 				{
@@ -1278,6 +1279,19 @@ func TestDefaultDuplicateNames(t *testing.T) {
 		require.ErrorContains(
 			t,
 			Pipe{}.Default(newCtx("", "")),
+			"found 2 aurs with the ID 'tool-bin', please fix your config",
+		)
+	})
+
+	t.Run("duplicate even if disabled", func(t *testing.T) {
+		cfg := config.Project{ProjectName: "tool"}
+		cfg.AURs = []config.AUR{
+			{Name: "tool", Disable: "true"},
+			{Name: "tool"},
+		}
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(testctx.WrapWithCfg(t.Context(), cfg)),
 			"found 2 aurs with the ID 'tool-bin', please fix your config",
 		)
 	})

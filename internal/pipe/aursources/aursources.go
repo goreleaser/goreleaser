@@ -73,17 +73,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Goamd64 == "" {
 			pkg.Goamd64 = "v1"
 		}
-		// a disabled package is never generated, so it does not take part in the
-		// name check either.
-		disable, err := tmpl.New(ctx).Bool(pkg.Disable)
-		if err != nil {
-			return err
-		}
-		if !disable {
-			// the name is used as the artifact ID, which is also how the PKGBUILDs
-			// are grouped when publishing.
-			ids.Inc(pkg.Name)
-		}
+		// the name is used as the artifact ID, which is also how the PKGBUILDs
+		// are grouped when publishing.
+		ids.Inc(pkg.Name)
 	}
 
 	return ids.Validate()
