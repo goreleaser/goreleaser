@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"cmp"
 	stdctx "context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -332,7 +333,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 		return "", err
 	}
 
-	digest, err := os.ReadFile(filepath.Join(wd, "id.txt"))
+	digest, err := digestFrom(wd)
 	if err != nil {
 		return "", gerrors.Wrap(
 			err,
@@ -340,7 +341,37 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			gerrors.WithDetails("id", d.ID),
 		)
 	}
-	return string(digest), nil
+	return digest, nil
+}
+
+// digestFrom returns the digest of the built image.
+//
+// Pushed images take it from the metadata file, which carries the manifest
+// digest the registry resolves the tag to. The iidfile holds the image config
+// digest, which consumers cannot pull. Loaded images are not in a registry, so
+// they fall back to the iidfile.
+func digestFrom(wd string) (string, error) {
+	bts, err := os.ReadFile(filepath.Join(wd, "metadata.json"))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", err
+	}
+	if err == nil {
+		var meta struct {
+			Digest string `json:"containerimage.digest"`
+		}
+		if err := json.Unmarshal(bts, &meta); err != nil {
+			return "", err
+		}
+		if meta.Digest != "" {
+			return meta.Digest, nil
+		}
+	}
+
+	bts, err = os.ReadFile(filepath.Join(wd, "id.txt"))
+	if err != nil {
+		return "", err
+	}
+	return string(bts), nil
 }
 
 type dockerArgs struct {
@@ -432,6 +463,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) (dock
 	}
 	arg = append(arg, extraArgs...)
 	arg = append(arg, "--iidfile=id.txt")
+	arg = append(arg, "--metadata-file=metadata.json")
 	arg = append(arg, labelFlags...)
 	arg = append(arg, annotationFlags...)
 	arg = append(arg, buildFlags...)

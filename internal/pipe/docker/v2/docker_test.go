@@ -400,6 +400,7 @@ func TestMakeArgs(t *testing.T) {
 				"--push",
 				"--attest=type=sbom",
 				"--iidfile=id.txt",
+				"--metadata-file=metadata.json",
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
 				"--annotation", "index:foo=dockerv2",
