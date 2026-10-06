@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
@@ -42,6 +43,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	ids := ids.New("aursources")
 	for i := range ctx.Config.AURSources {
 		pkg := &ctx.Config.AURSources[i]
 
@@ -71,9 +73,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Goamd64 == "" {
 			pkg.Goamd64 = "v1"
 		}
+		// the name is used as the artifact ID, which is also how the PKGBUILDs
+		// are grouped when publishing.
+		ids.Inc(pkg.Name)
 	}
 
-	return nil
+	return ids.Validate()
 }
 
 func (Pipe) Run(ctx *context.Context) error {
