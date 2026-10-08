@@ -190,6 +190,7 @@ homebrew_casks:
       ...
 
     # Dependencies for the cask.
+    # Each group is sorted by name without regard to case, preserving the original names.
     dependencies:
       - cask: some-cask
       - formula: some-formula

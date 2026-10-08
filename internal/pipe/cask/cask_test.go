@@ -270,6 +270,44 @@ func TestCaskSimple(t *testing.T) {
 	require.NotContains(t, cask, "def caveats")
 }
 
+func TestCaskDependenciesOrder(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	data, err := dataFor(ctx, config.HomebrewCask{
+		Name: "test",
+		Dependencies: []config.HomebrewCaskDependency{
+			{Formula: "kubernetes-cli"},
+			{Cask: "zotero"},
+			{Formula: "Azure/kubelogin/kubelogin"},
+			{Cask: "Example/tap/app"},
+			{Formula: "aws-iam-authenticator"},
+			{Cask: "alacritty"},
+		},
+	}, client.NewMock(), nil)
+	require.NoError(t, err)
+	require.Equal(t, []config.HomebrewCaskDependency{
+		{Cask: "alacritty"},
+		{Formula: "aws-iam-authenticator"},
+		{Formula: "Azure/kubelogin/kubelogin"},
+		{Cask: "Example/tap/app"},
+		{Formula: "kubernetes-cli"},
+		{Cask: "zotero"},
+	}, data.Dependencies)
+
+	cask, err := doBuildCask(ctx, data)
+	require.NoError(t, err)
+	require.Contains(t, cask, `  depends_on cask: [
+      "alacritty",
+      "Example/tap/app",
+      "zotero",
+    ],
+    formula: [
+      "aws-iam-authenticator",
+      "Azure/kubelogin/kubelogin",
+      "kubernetes-cli",
+    ]
+`)
+}
+
 func TestCaskCaveatsWithShellMetacharacters(t *testing.T) {
 	data := defaultTemplateData
 	data.Caveats = "To enable shell integration, add to your shell rc file:\n\n  eval \"$(mytool init zsh)\"   # for zsh\n  eval \"$(mytool init bash)\"  # for bash\n\nRun 'mytool tutorial' to get started!"
