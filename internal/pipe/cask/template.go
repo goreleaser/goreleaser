@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"embed"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -66,8 +67,8 @@ func dependsString(dependencies []config.HomebrewCaskDependency) string {
 			formulas = append(formulas, dependency.Formula)
 		}
 	}
-	sort.Strings(casks)
-	sort.Strings(formulas)
+	slices.SortFunc(casks, compareDependencyNames)
+	slices.SortFunc(formulas, compareDependencyNames)
 
 	var groups []string
 	if len(casks) > 0 {
@@ -77,6 +78,10 @@ func dependsString(dependencies []config.HomebrewCaskDependency) string {
 		groups = append(groups, groupToS("formula", formulas))
 	}
 	return joinGroups("depends_on", groups)
+}
+
+func compareDependencyNames(a, b string) int {
+	return cmp.Compare(strings.ToLower(a), strings.ToLower(b))
 }
 
 func conflictsString(conflicts []config.HomebrewCaskConflict) string {

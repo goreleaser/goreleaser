@@ -427,7 +427,7 @@ func rubyString(ctx *context.Context, v string) (string, error) {
 
 func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewCaskDependency) int {
-		return cmp.Compare(cmp.Or(a.Cask, a.Formula), cmp.Or(b.Cask, b.Formula))
+		return compareDependencyNames(cmp.Or(a.Cask, a.Formula), cmp.Or(b.Cask, b.Formula))
 	})
 	result := templateData{
 		HomebrewCask: cfg,
