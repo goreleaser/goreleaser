@@ -432,7 +432,7 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
-		return cmp.Compare(a.Name, b.Name)
+		return cmp.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),

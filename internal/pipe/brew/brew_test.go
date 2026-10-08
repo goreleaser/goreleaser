@@ -209,6 +209,23 @@ func TestFormulaeSimple(t *testing.T) {
 	require.NotContains(t, formulae, "def caveats")
 }
 
+func TestFormulaDependenciesOrder(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	formulae, err := buildFormula(ctx, config.Homebrew{
+		Name: "test",
+		Dependencies: []config.HomebrewDependency{
+			{Name: "aws-iam-authenticator"},
+			{Name: "Azure/kubelogin/kubelogin"},
+			{Name: "kubernetes-cli"},
+		},
+	}, client.NewMock(), nil)
+	require.NoError(t, err)
+	require.Contains(t, formulae, `  depends_on "aws-iam-authenticator"
+  depends_on "Azure/kubelogin/kubelogin"
+  depends_on "kubernetes-cli"
+`)
+}
+
 func TestSplit(t *testing.T) {
 	parts := split("system \"true\"\nsystem \"#{bin}/foo\", \"-h\"")
 	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo\", \"-h\""}, parts)
