@@ -357,7 +357,7 @@ func digestFrom(wd string) (string, error) {
 	}
 	if err == nil {
 		var meta struct {
-			Digest string `json:"containerimage.digest"`
+			Digest string `json:"containerimage.digest"` //nolint:tagliatelle // Docker Buildx metadata uses this key.
 		}
 		if err := json.Unmarshal(bts, &meta); err != nil {
 			return "", err
