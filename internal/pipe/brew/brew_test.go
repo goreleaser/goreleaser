@@ -226,6 +226,50 @@ func TestFormulaDependenciesOrder(t *testing.T) {
 `)
 }
 
+func TestFormulaDependenciesTypeOrder(t *testing.T) {
+	for name, tt := range map[string]struct {
+		dependencies []config.HomebrewDependency
+		expected     string
+	}{
+		"normal-before-optional": {
+			dependencies: []config.HomebrewDependency{
+				{Name: "aws-iam-authenticator", Type: "optional"},
+				{Name: "Azure/kubelogin/kubelogin"},
+			},
+			expected: `  depends_on "Azure/kubelogin/kubelogin"
+  depends_on "aws-iam-authenticator" => :optional
+`,
+		},
+		"type-precedence": {
+			dependencies: []config.HomebrewDependency{
+				{Name: "aws-iam-authenticator", Type: "optional"},
+				{Name: "git", Type: "recommended"},
+				{Name: "Azure/kubelogin/kubelogin", Version: "1.0", OS: "mac"},
+				{Name: "yq", Type: "test"},
+				{Name: "Zlib", Type: "build"},
+				{Name: "bzip2", Type: "build"},
+			},
+			expected: `  depends_on "bzip2" => :build
+  depends_on "Zlib" => :build
+  depends_on "yq" => :test
+  depends_on "Azure/kubelogin/kubelogin" => "1.0" if OS.mac?
+  depends_on "git" => :recommended
+  depends_on "aws-iam-authenticator" => :optional
+`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+			formulae, err := buildFormula(ctx, config.Homebrew{
+				Name:         "test",
+				Dependencies: tt.dependencies,
+			}, client.NewMock(), nil)
+			require.NoError(t, err)
+			require.Contains(t, formulae, tt.expected)
+		})
+	}
+}
+
 func TestSplit(t *testing.T) {
 	parts := split("system \"true\"\nsystem \"#{bin}/foo\", \"-h\"")
 	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo\", \"-h\""}, parts)

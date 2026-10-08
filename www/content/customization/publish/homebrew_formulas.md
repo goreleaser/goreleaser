@@ -131,7 +131,8 @@ brews:
       ...
 
     # Packages your package depends on.
-    # Sorted by name without regard to case, preserving the original names.
+    # Sorted by type: build, test, normal, recommended, optional.
+    # Within each type, sorted by name without regard to case, preserving the original names.
     dependencies:
       - name: git
         # Allow to specify the OS in which the dependency is required.

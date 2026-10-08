@@ -432,6 +432,9 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
+		if order := cmp.Compare(dependencyTypePriority(a.Type), dependencyTypePriority(b.Type)); order != 0 {
+			return order
+		}
 		return cmp.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 	result := templateData{
@@ -508,6 +511,21 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)
 	return result, nil
+}
+
+func dependencyTypePriority(dependencyType string) int {
+	switch dependencyType {
+	case "build":
+		return 0
+	case "test":
+		return 1
+	case "recommended":
+		return 3
+	case "optional":
+		return 4
+	default:
+		return 2
+	}
 }
 
 func compareByArch(a, b releasePackage) int {
