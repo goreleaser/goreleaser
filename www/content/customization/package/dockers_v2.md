@@ -363,6 +363,11 @@ binaries and packages for each of the defined target platforms.
 You can then `COPY` them into your image (mind the use of `$TARGETPLATFORM`
 above).
 
+When a platform omits a CPU variant, GoReleaser selects the baseline binary.
+For `linux/386`, `linux/ppc64le`, and `linux/riscv64`, these are `sse2`,
+`power8`, and `rva20u64`. To select a different build, include its variant in
+the platform, for example `linux/ppc64le/power9`.
+
 A corollary of it being a temporary directory is that
 **the context does not contain the source files**.
 If you need to add some other file that is in your source directory, you'll
