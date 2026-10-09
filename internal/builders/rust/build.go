@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -117,14 +116,8 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	return t, nil
 }
 
-var once sync.Once
-
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
-	once.Do(func() {
-		log.Warn("you are using the experimental Rust builder")
-	})
-
 	if len(build.Targets) == 0 {
 		build.Targets = defaultTargets()
 	}
