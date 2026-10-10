@@ -2,11 +2,15 @@ package tar
 
 import (
 	"archive/tar"
+	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -211,4 +215,70 @@ func TestCopying(t *testing.T) {
 
 	require.Equal(t, []string{"foo.txt", "ملف.txt"}, testlib.LsArchive(t, f1.Name(), "tar"))
 	require.Equal(t, []string{"foo.txt", "ملف.txt", "executable", "ملف.exe"}, testlib.LsArchive(t, f2.Name(), "tar"))
+}
+
+func TestCopyErrors(t *testing.T) {
+	var source bytes.Buffer
+	tw := tar.NewWriter(&source)
+	const content = "original contents"
+	require.NoError(t, tw.WriteHeader(&tar.Header{
+		Name: "original.txt",
+		Mode: 0o644,
+		Size: int64(len(content)),
+	}))
+	_, err := io.WriteString(tw, content)
+	require.NoError(t, err)
+	require.NoError(t, tw.Close())
+
+	data := source.Bytes()
+	invalidHeader := bytes.Repeat([]byte{'x'}, 512)
+	readErr := errors.New("source read failed")
+	wrappedEOF := fmt.Errorf("source read failed: %w", io.EOF)
+	for _, tt := range []struct {
+		name   string
+		source io.Reader
+		err    error
+	}{
+		{"plain text", bytes.NewReader([]byte("not a tar archive")), io.ErrUnexpectedEOF},
+		{"invalid header", bytes.NewReader(invalidHeader), tar.ErrHeader},
+		{"truncated header", bytes.NewReader(data[:100]), io.ErrUnexpectedEOF},
+		{"read error in padding", io.MultiReader(bytes.NewReader(data[:512+len(content)]), iotest.ErrReader(readErr)), readErr},
+		{"invalid next header", io.MultiReader(bytes.NewReader(data[:1024]), bytes.NewReader(invalidHeader)), tar.ErrHeader},
+		{"truncated next header", bytes.NewReader(data[:1025]), io.ErrUnexpectedEOF},
+		{"read error", iotest.ErrReader(readErr), readErr},
+		{"read error after entry", io.MultiReader(bytes.NewReader(data[:1024]), iotest.ErrReader(readErr)), readErr},
+		{"wrapped EOF", iotest.ErrReader(wrappedEOF), wrappedEOF},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			a, err := Copy(tt.source, io.Discard)
+			require.ErrorIs(t, err, tt.err)
+			require.NoError(t, a.Close())
+		})
+	}
+}
+
+func TestCopyTruncatedBodyReturnsClosableArchive(t *testing.T) {
+	var source bytes.Buffer
+	tw := tar.NewWriter(&source)
+	require.NoError(t, tw.WriteHeader(&tar.Header{Name: "incomplete.txt", Size: 10}))
+
+	a, err := Copy(&source, io.Discard)
+	require.ErrorIs(t, err, io.ErrUnexpectedEOF)
+	require.Error(t, a.Close())
+}
+
+func TestCopyEmptyArchive(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		data []byte
+	}{
+		{"empty input", nil},
+		{"empty tar", make([]byte, 1024)},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			a, err := Copy(bytes.NewReader(tt.data), io.Discard)
+			require.NoError(t, err)
+			require.NoError(t, a.Close())
+		})
+	}
 }

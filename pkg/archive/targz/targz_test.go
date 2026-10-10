@@ -2,6 +2,7 @@ package targz
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"io"
 	"io/fs"
@@ -165,4 +166,27 @@ func TestTarGzFileInfo(t *testing.T) {
 		require.Equal(t, 0, next.Gid)
 	}
 	require.Equal(t, 1, found)
+}
+
+func TestCopyInvalidTar(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		data []byte
+		err  error
+	}{
+		{"plain text", []byte("not a tar archive"), io.ErrUnexpectedEOF},
+		{"invalid header", bytes.Repeat([]byte{'x'}, 512), tar.ErrHeader},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var source bytes.Buffer
+			gw := gzip.NewWriter(&source)
+			_, err := gw.Write(tt.data)
+			require.NoError(t, err)
+			require.NoError(t, gw.Close())
+
+			a, err := Copy(&source, io.Discard)
+			require.ErrorIs(t, err, tt.err)
+			require.NoError(t, a.Close())
+		})
+	}
 }
