@@ -54,8 +54,8 @@ cask "test" do
   manpage "mybin.1.gz"
   manpage "mybin2.1.gz"
   bash_completion "mybin.bash"
-  fish_completion "mybin.fish"
   zsh_completion "mybin.zsh"
+  fish_completion "mybin.fish"
 
   preflight do
     pre-install
