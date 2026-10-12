@@ -26,8 +26,8 @@ cask "wrappedin" do
   binary "wrappedin"
   manpage "man/wrappedin.1"
   bash_completion "completions/wrappedin.bash"
-  fish_completion "completions/wrappedin.fish"
   zsh_completion "completions/wrappedin.zsh"
+  fish_completion "completions/wrappedin.fish"
 
   # No zap stanza required
 end

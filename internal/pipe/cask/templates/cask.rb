@@ -48,11 +48,11 @@ cask "{{ .Name }}" do
   {{- with .Completions.Bash }}
   bash_completion "{{ . }}"
   {{- end }}
-  {{- with .Completions.Fish }}
-  fish_completion "{{ . }}"
-  {{- end }}
   {{- with .Completions.Zsh }}
   zsh_completion "{{ . }}"
+  {{- end }}
+  {{- with .Completions.Fish }}
+  fish_completion "{{ . }}"
   {{- end }}
 
   {{ with .Service -}}
