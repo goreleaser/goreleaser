@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -45,14 +44,8 @@ func (b *Builder) Dependencies() []string {
 	return []string{"bun"}
 }
 
-var once sync.Once
-
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
-	once.Do(func() {
-		log.Warn("you are using the experimental Bun builder")
-	})
-
 	if len(build.Targets) == 0 {
 		build.Targets = defaultTargets()
 	}
