@@ -71,7 +71,7 @@ source="$_source::$_url"
 
 package() {
 {{- if .Package }}
-{{ fixLines .Package 1 }}
+{{ .Package }}
 {{- else }}
 	case "$CARCH" in
 {{- range .ReleasePackages }}

@@ -1,7 +1,6 @@
 package apkbuild
 
 import (
-	"bufio"
 	"bytes"
 	"cmp"
 	"crypto/sha256"
@@ -157,8 +156,9 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 	if err != nil {
 		return err
 	}
-	apk.Package = strings.TrimSpace(pkg)
-	if apk.Package == "" {
+	apk.Package = strings.Trim(pkg, "\r\n")
+	if strings.TrimSpace(apk.Package) == "" {
+		apk.Package = ""
 		log.Warn("guessing package instructions")
 	}
 
@@ -196,35 +196,25 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 }
 
 func selectArtifacts(artifacts []*artifact.Artifact) []*artifact.Artifact {
-	selected := make(map[string]int, len(artifacts))
+	type key struct{ id, arch string }
+	best := make(map[key]*artifact.Artifact, len(artifacts))
+	for _, art := range artifacts {
+		if art.Type != artifact.UploadableArchive {
+			continue
+		}
+		k := key{art.ID(), toAPKArch(art.Goarch, art.Goarm)}
+		if current, ok := best[k]; !ok || formatPriority(art.Format()) < formatPriority(current.Format()) {
+			best[k] = art
+		}
+	}
+
 	result := make([]*artifact.Artifact, 0, len(artifacts))
 	for _, art := range artifacts {
-		arch := toAPKArch(art.Goarch, art.Goarm)
-		index, ok := selected[arch]
-		if !ok {
-			selected[arch] = len(result)
-			result = append(result, art)
+		archive, ok := best[key{art.ID(), toAPKArch(art.Goarch, art.Goarm)}]
+		if ok && (art.Type != artifact.UploadableArchive || art.Format() != archive.Format()) {
 			continue
 		}
-
-		current := result[index]
-		if current.ID() != art.ID() {
-			result = append(result, art)
-			continue
-		}
-		if current.Type != art.Type {
-			if art.Type == artifact.UploadableArchive {
-				result[index] = art
-			}
-			continue
-		}
-		if art.Type != artifact.UploadableArchive || current.Format() == art.Format() {
-			result = append(result, art)
-			continue
-		}
-		if formatPriority(art.Format()) < formatPriority(current.Format()) {
-			result[index] = art
-		}
+		result = append(result, art)
 	}
 	return result
 }
@@ -285,21 +275,7 @@ func applyTemplate(ctx *context.Context, source string, data templateData) (stri
 	if err := tpl.Execute(&out, data); err != nil {
 		return "", err
 	}
-	content, err := tmpl.New(ctx).Apply(out.String())
-	if err != nil {
-		return "", err
-	}
-
-	out.Reset()
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	for scanner.Scan() {
-		_, _ = out.WriteString(strings.TrimRight(scanner.Text(), " "))
-		_ = out.WriteByte('\n')
-	}
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-	return out.String(), nil
+	return tmpl.New(ctx).Apply(out.String())
 }
 
 func fixLines(s string, depth int) string {
@@ -347,79 +323,61 @@ func toAPKArch(goarch, goarm string) string {
 	return ""
 }
 
-func toAPKVersion(version string) string {
+func toAPKVersion(version string) (string, error) {
 	version, metadata, hasMetadata := strings.Cut(version, "+")
 	base, prerelease, hasPrerelease := strings.Cut(version, "-")
 	result := base
 	if hasPrerelease {
-		result += toAPKPrerelease(prerelease)
+		suffix, err := toAPKPrerelease(prerelease)
+		if err != nil {
+			return "", err
+		}
+		result += suffix
 	}
 	if hasMetadata {
 		result += "_p" + toAPKVersionNumber(metadata)
 	}
-	return result
+	return result, nil
 }
 
-func toAPKPrerelease(prerelease string) string {
+func toAPKPrerelease(prerelease string) (string, error) {
 	value := strings.ToLower(prerelease)
-	for _, candidate := range []struct {
-		name   string
-		suffix string
-	}{
-		{name: "preview", suffix: "pre"},
-		{name: "snapshot", suffix: "git"},
-		{name: "alpha", suffix: "alpha"},
-		{name: "beta", suffix: "beta"},
-		{name: "pre", suffix: "pre"},
-		{name: "rc", suffix: "rc"},
-	} {
-		rest, ok := strings.CutPrefix(value, candidate.name)
-		if !ok || rest != "" && rest[0] != '.' && rest[0] != '-' && (rest[0] < '0' || rest[0] > '9') {
-			continue
-		}
+	label := value[:len(value)-len(strings.TrimLeft(value, "abcdefghijklmnopqrstuvwxyz"))]
+	rest := value[len(label):]
 
-		if candidate.name == "snapshot" {
-			return "_git" + toAPKVersionNumber(value)
-		}
-
-		result := "_" + candidate.suffix
-		if candidate.name == "preview" {
-			result += "_p0"
-		}
-		if rest == "" {
-			return result
-		}
-		if rest[0] >= '0' && rest[0] <= '9' {
-			parts := strings.Split(rest, ".")
-			for _, part := range parts {
-				if part == "" || strings.Trim(part, "0123456789") != "" {
-					return result + "_p" + toAPKVersionNumber(rest)
-				}
-			}
-			result += parts[0]
-			if len(parts) > 1 {
-				result += "_p" + strings.Join(parts[1:], "_p")
-			}
-			return result
-		}
-
-		separator := rest[:1]
-		parts := strings.Split(rest[1:], separator)
-		for _, part := range parts {
-			if part == "" || strings.Trim(part, "0123456789") != "" {
-				return result + "_p" + toAPKVersionNumber(rest)
-			}
-		}
-		if separator == "." && candidate.name != "preview" {
-			result += parts[0]
-			parts = parts[1:]
-		}
-		if len(parts) > 0 {
-			result += "_p" + strings.Join(parts, "_p")
-		}
-		return result
+	suffix := "pre"
+	switch label {
+	case "snapshot":
+		return "_git" + toAPKVersionNumber(value), nil
+	case "alpha", "beta", "pre", "rc":
+		suffix = label
 	}
-	return "_pre" + toAPKVersionNumber(value)
+
+	result := "_" + suffix
+	if label == "preview" {
+		result += "_p0"
+	}
+	if rest == "" {
+		return result, nil
+	}
+
+	parts := strings.Split(rest, ".")
+	if rest[0] == '.' || rest[0] == '-' {
+		parts = strings.Split(rest[1:], rest[:1])
+	}
+	if rest[0] == '-' || label == "preview" {
+		parts = append([]string{""}, parts...)
+	}
+	for i, part := range parts {
+		if (i > 0 && part == "") || strings.Trim(part, "0123456789") != "" {
+			return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use numeric identifiers after the label, e.g. %q", prerelease, "rc.1")
+		}
+	}
+	result += parts[0]
+	if len(parts) > 1 {
+		result += "_p" + strings.Join(parts[1:], "_p")
+	}
+	return result, nil
 }
 
 func toAPKVersionNumber(value string) string {
@@ -428,11 +386,15 @@ func toAPKVersionNumber(value string) string {
 }
 
 func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+	version, err := toAPKVersion(ctx.Version)
+	if err != nil {
+		return templateData{}, err
+	}
 	result := templateData{
 		Name:         cfg.Name,
 		Description:  cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      toAPKVersion(ctx.Version),
+		Version:      version,
 		License:      cfg.License,
 		Maintainers:  cfg.Maintainers,
 		Contributors: cfg.Contributors,

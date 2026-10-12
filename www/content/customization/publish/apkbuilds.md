@@ -16,6 +16,12 @@ When an archive ID produces multiple formats for the same architecture,
 GoReleaser deterministically selects the first available format in this order:
 `tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
 
+Prerelease versions are converted to `apk` suffixes that keep their upgrade
+order: `alpha`, `beta`, `pre`, and `rc` map to their `apk` equivalents, and
+any other label maps to `_pre` (e.g. `1.2.3-dev.2` becomes `1.2.3_pre2`).
+Prereleases with non-numeric identifiers after the label, such as
+`1.2.3-dev.abc`, cannot be ordered and fail the pipe.
+
 This integration does not create `.apk` packages. To create those directly,
 use [nFPM][nfpm] instead.
 
@@ -116,6 +122,8 @@ apkbuilds:
     #
     # The $srcdir, $pkgdir, and $_source variables are available.
     # By default, GoReleaser installs the binaries into $pkgdir/usr/bin.
+    # The instructions are emitted verbatim, whitespace included, so
+    # here-documents work as expected.
     package: |-
       install -Dm755 "$srcdir/mybin" "$pkgdir/usr/bin/mybin"
       install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/mybin/LICENSE"

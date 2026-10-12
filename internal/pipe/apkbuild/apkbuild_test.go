@@ -71,10 +71,32 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-rc1":       "1.2.3_rc1",
 		"1.2.3-rc.2":      "1.2.3_rc2",
 		"1.2.3-preview.1": "1.2.3_pre_p0_p1",
+		"1.2.3-preview1":  "1.2.3_pre_p0_p1",
 		"1.2.3-rc-1":      "1.2.3_rc_p1",
+		"1.2.3-dev":       "1.2.3_pre",
+		"1.2.3-dev.1":     "1.2.3_pre1",
+		"1.2.3-dev.10":    "1.2.3_pre10",
+		"1.2.3-nightly.2": "1.2.3_pre2",
+		"1.2.3-1":         "1.2.3_pre1",
 	} {
 		t.Run(input, func(t *testing.T) {
-			require.Equal(t, expected, toAPKVersion(input))
+			got, err := toAPKVersion(input)
+			require.NoError(t, err)
+			require.Equal(t, expected, got)
+		})
+	}
+
+	for _, input := range []string{
+		"1.2.3-dev.abc",
+		"1.2.3-beta.foo",
+		"1.2.3-rc.1-2",
+		"1.2.3-rc-",
+		"1.2.3-dev_1",
+		"1.2.3-0abc",
+	} {
+		t.Run(input+" is rejected", func(t *testing.T) {
+			_, err := toAPKVersion(input)
+			require.ErrorContains(t, err, "cannot be converted to an ordered apk version")
 		})
 	}
 
@@ -84,25 +106,38 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-SNAPSHOT-deadbeef",
 	} {
 		t.Run(version+" is valid", func(t *testing.T) {
-			require.Regexp(t, valid, toAPKVersion(version))
+			got, err := toAPKVersion(version)
+			require.NoError(t, err)
+			require.Regexp(t, valid, got)
 		})
 	}
 
-	require.NotEqual(t, toAPKVersion("1.2.3-beta.1.0"), toAPKVersion("1.2.3-beta.10"))
+	beta1dot0, err := toAPKVersion("1.2.3-beta.1.0")
+	require.NoError(t, err)
+	beta10, err := toAPKVersion("1.2.3-beta.10")
+	require.NoError(t, err)
+	require.NotEqual(t, beta1dot0, beta10)
 	require.LessOrEqual(t, len(toAPKVersionNumber("SNAPSHOT-deadbeef")), 20)
 }
 
 func TestToAPKVersionOrder(t *testing.T) {
 	testlib.CheckPath(t, "apk")
-	versions := []string{
-		"1.2.3-alpha1",
-		"1.2.3-beta1",
-		"1.2.3-rc1",
-		"1.2.3",
+	for _, versions := range [][]string{
+		{"1.2.3-alpha1", "1.2.3-beta1", "1.2.3-rc1", "1.2.3"},
+		{"1.2.3-dev.1", "1.2.3-dev.2", "1.2.3-dev.10", "1.2.3"},
+		{"1.2.3-beta.1", "1.2.3-beta.1.1", "1.2.3-beta.2", "1.2.3"},
+	} {
+		requireAPKVersionOrder(t, versions)
 	}
+}
+
+func requireAPKVersionOrder(t *testing.T, versions []string) {
+	t.Helper()
 	for i := 1; i < len(versions); i++ {
-		older := toAPKVersion(versions[i-1])
-		newer := toAPKVersion(versions[i])
+		older, err := toAPKVersion(versions[i-1])
+		require.NoError(t, err)
+		newer, err := toAPKVersion(versions[i])
+		require.NoError(t, err)
 		output, err := exec.CommandContext(t.Context(), "apk", "version", "--test", older, newer).CombinedOutput()
 		require.NoError(t, err, string(output))
 		require.Equalf(t, "<", strings.TrimSpace(string(output)), "%s should sort before %s", older, newer)
@@ -535,6 +570,94 @@ func TestArchivePreferredOverBinaryForSameID(t *testing.T) {
 	content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
 	require.NoError(t, err)
 	require.Contains(t, string(content), "foo.tar.gz")
+}
+
+func TestArchivePreferredOverAllBinariesForSameID(t *testing.T) {
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	for _, art := range []artifact.Artifact{
+		{
+			Name: "bar_linux_amd64", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+			Extra: map[string]any{artifact.ExtraID: "default", artifact.ExtraFormat: "binary", artifact.ExtraBinary: "bar"},
+		},
+		{
+			Name: "foo_linux_amd64", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+			Extra: map[string]any{artifact.ExtraID: "default", artifact.ExtraFormat: "binary", artifact.ExtraBinary: "foo"},
+		},
+		{
+			Name: "foo_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableArchive,
+			Extra: map[string]any{artifact.ExtraID: "default", artifact.ExtraFormat: "tar.gz", artifact.ExtraBinaries: []string{"bar", "foo"}},
+		},
+	} {
+		addArtifact(t, ctx, art)
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	file := filepath.Join(dist, "apkbuild", "foo.apkbuild")
+	content, err := os.ReadFile(file)
+	require.NoError(t, err)
+	require.Contains(t, string(content), "_url='https://example.com/foo_linux_amd64.tar.gz'")
+	require.NotContains(t, string(content), "https://example.com/foo_linux_amd64'")
+	require.NotContains(t, string(content), "bar_linux_amd64")
+
+	testlib.CheckPath(t, "sh")
+	cmd := exec.CommandContext(t.Context(), "sh", "-c", `. "$1"; install() { printf '%s\n' "$@"; }; package`, "sh", file)
+	cmd.Env = append(os.Environ(), "CARCH=x86_64", "srcdir=/src", "pkgdir=/pkg")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, string(out))
+	require.Equal(t, []string{
+		"-Dm755", "/src/bar", "/pkg/usr/bin/bar",
+		"-Dm755", "/src/foo", "/pkg/usr/bin/foo",
+	}, strings.Split(strings.TrimSpace(string(out)), "\n"))
+}
+
+func TestCustomPackageIsEmittedVerbatim(t *testing.T) {
+	dist := t.TempDir()
+	payload := "[main]\n  indented = true\n\ttabbed = true\n"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		APKBuilds: []config.APKBuild{{
+			Description: "Foo",
+			Homepage:    "https://example.com",
+			License:     "MIT",
+			URLTemplate: "https://example.com/{{ .ArtifactName }}",
+			Package:     "mkdir -p \"$pkgdir\"\ncat > \"$pkgdir/config\" <<EOF\n" + payload + "EOF\n",
+		}},
+	}, testctx.WithVersion("1.0.0"))
+	addArtifact(t, ctx, artifact.Artifact{
+		Name: "foo", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+		Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: "foo"},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	file := filepath.Join(dist, "apkbuild", "foo.apkbuild")
+	content, err := os.ReadFile(file)
+	require.NoError(t, err)
+	require.Contains(t, string(content), "package() {\nmkdir -p \"$pkgdir\"\ncat > \"$pkgdir/config\" <<EOF\n"+payload+"EOF\n}\n")
+
+	testlib.CheckPath(t, "sh")
+	require.NoError(t, exec.CommandContext(t.Context(), "sh", "-n", file).Run())
+
+	pkgdir := t.TempDir()
+	cmd := exec.CommandContext(t.Context(), "sh", "-c", `. "$1"; package`, "sh", file)
+	cmd.Env = append(os.Environ(), "CARCH=x86_64", "srcdir="+t.TempDir(), "pkgdir="+pkgdir)
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, string(out))
+	written, err := os.ReadFile(filepath.Join(pkgdir, "config"))
+	require.NoError(t, err)
+	require.Equal(t, payload, string(written))
 }
 
 func TestConfiguredGoamd64(t *testing.T) {
