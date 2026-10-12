@@ -1,6 +1,7 @@
 package apkbuild
 
 import (
+	"bufio"
 	"bytes"
 	"cmp"
 	"crypto/sha256"
@@ -275,7 +276,21 @@ func applyTemplate(ctx *context.Context, source string, data templateData) (stri
 	if err := tpl.Execute(&out, data); err != nil {
 		return "", err
 	}
-	return tmpl.New(ctx).Apply(out.String())
+	content, err := tmpl.New(ctx).Apply(out.String())
+	if err != nil {
+		return "", err
+	}
+
+	out.Reset()
+	scanner := bufio.NewScanner(strings.NewReader(content))
+	for scanner.Scan() {
+		_, _ = out.WriteString(strings.TrimRight(scanner.Text(), " "))
+		_ = out.WriteByte('\n')
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return out.String(), nil
 }
 
 func fixLines(s string, depth int) string {
