@@ -55,11 +55,11 @@ require (
 	gitlab.com/gitlab-org/api/client-go v1.46.0
 	go.yaml.in/yaml/v3 v3.0.5
 	gocloud.dev v0.46.0
-	golang.org/x/crypto v0.57.0
+	golang.org/x/crypto v0.58.0
 	golang.org/x/mod v0.41.0
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/sync v0.24.0
-	golang.org/x/text v0.42.0
+	golang.org/x/text v0.43.0
 	golang.org/x/tools v0.51.0
 	gopkg.in/mail.v2 v2.3.1
 	lukechampine.com/blake3 v1.4.1
@@ -357,9 +357,9 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.6 // indirect
-	golang.org/x/net v0.59.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/api v0.287.1 // indirect
