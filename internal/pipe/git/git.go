@@ -111,7 +111,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
 
-	if strings.HasPrefix(gitURL, "https://") {
+	if strings.HasPrefix(gitURL, "https://") || strings.HasPrefix(gitURL, "http://") {
 		u, err := url.Parse(gitURL)
 		if err != nil {
 			return context.GitInfo{}, fmt.Errorf("couldn't parse remote URL: %w", err)
