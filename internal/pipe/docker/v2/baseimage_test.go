@@ -34,6 +34,7 @@ func TestParseBaseImage(t *testing.T) {
 		"scratch":                "scratch",
 		"lowercase-from":         "alpine:3.20",
 		"quoted-arg-default":     "alpine:3.20",
+		"arg-references-arg":     "alpine:3.20",
 	} {
 		t.Run(file, func(t *testing.T) {
 			content, err := os.ReadFile(filepath.Join("testdata", "dockerfiles", file))
@@ -184,4 +185,20 @@ func TestMakeArgsDoesNotDiscardBaseImageArgumentError(t *testing.T) {
 		BuildArgs:  map[string]string{"BASE": "{{ .BaseImage }}"},
 	}, nil)
 	testlib.RequireTemplateError(t, err)
+}
+
+func TestMakeArgsWithBaseImageNestedBuildArgOverride(t *testing.T) {
+	const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	dockerfile := filepath.Join(t.TempDir(), "Dockerfile")
+	require.NoError(t, os.WriteFile(dockerfile, []byte("ARG ALPINE_REF=alpine:3.20\nARG BASE=${ALPINE_REF}\nFROM ${BASE}\n"), 0o644))
+	da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+		Dockerfile:  dockerfile,
+		Images:      []string{"ghcr.io/foo/bar"},
+		Tags:        []string{"latest"},
+		Platforms:   []string{"linux/amd64"},
+		BuildArgs:   map[string]string{"ALPINE_REF": ref},
+		Annotations: map[string]string{"org.opencontainers.image.base.name": "{{.BaseImage}}"},
+	}, nil)
+	require.NoError(t, err)
+	require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+ref)
 }
