@@ -120,10 +120,6 @@ jobs:
         run: |
           flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install -y --user --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
-      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: setup-nix-formatters
         # `nix profile add nixpkgs#...` resolves and builds from nixpkgs, which
         # took 18s. Both projects publish static linux binaries, so fetching
