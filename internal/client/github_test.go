@@ -4,6 +4,7 @@ import (
 	stdctx "context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -2026,6 +2027,42 @@ func TestGitHubUploadReplaceExistingAfterRetry(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, 3, uploads.Load())
 	require.EqualValues(t, 789, assetID.Load())
+}
+
+func TestGitHubUploadRepositoryMoved(t *testing.T) {
+	t.Parallel()
+	var uploads atomic.Int64
+	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			uploads.Add(1)
+			w.WriteHeader(http.StatusTemporaryRedirect)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API:    srv.URL,
+			Upload: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "owner", Name: "name"},
+		},
+		Retry: config.Retry{Attempts: 3},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.CreateTemp(t.TempDir(), "upload-test")
+	require.NoError(t, err)
+	fmt.Fprint(f, "test content")
+	require.NoError(t, f.Close())
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt", Path: f.Name()})
+	require.ErrorContains(t, err, "307")
+	require.ErrorContains(t, err, "the repository owner/name may have been renamed or transferred")
+	_, ok := errors.AsType[*github.RedirectionError](err)
+	require.True(t, ok, "redirection error should still be unwrappable")
+	require.EqualValues(t, 1, uploads.Load(), "redirects should not be retried")
 }
 
 func TestGitHubUploadNoReplace(t *testing.T) {

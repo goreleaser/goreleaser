@@ -28,6 +28,9 @@ import (
 const (
 	minioUser     = "minio"
 	minioPwd      = "miniostorage"
+	minioImage    = "cgr.dev/chainguard/minio@sha256:0f95aa412a12351a95bb43c3b54b66440eb0aa022bb3f3458942678a489e915b"
+	minioRepo     = "goreleaser-test-minio"
+	minioTag      = "pinned"
 	containerName = "goreleaserTestMinio"
 )
 
@@ -49,11 +52,21 @@ func TestMain(m *testing.M) {
 
 	pool := testlib.MustDockerPool(log.Default())
 	testlib.MustKillContainer(log.Default(), containerName)
+	requireNoErr(pool.Client.PullImage(docker.PullImageOptions{
+		Repository: minioImage,
+		Context:    stdctx.Background(),
+	}, docker.AuthConfiguration{}))
+	requireNoErr(pool.Client.TagImage(minioImage, docker.TagImageOptions{
+		Repo:    minioRepo,
+		Tag:     minioTag,
+		Force:   true,
+		Context: stdctx.Background(),
+	}))
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
-		Repository: "quay.io/minio/minio",
-		Tag:        "latest",
+		Repository: minioRepo,
+		Tag:        minioTag,
 		Env: []string{
 			"MINIO_ROOT_USER=" + minioUser,
 			"MINIO_ROOT_PASSWORD=" + minioPwd,

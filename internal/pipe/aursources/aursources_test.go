@@ -453,6 +453,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 			ProjectName: "foo",
 			AURSources: []config.AURSource{
 				{
+					Name:    "disabled",
 					Disable: `{{printf "true"}}`,
 				},
 				{
@@ -938,4 +939,47 @@ func sourcePkgDesc(tb testing.TB, pkgbuild string) string {
 	out, err := cmd.Output()
 	require.NoError(tb, err)
 	return string(out)
+}
+
+func TestDefaultDuplicateNames(t *testing.T) {
+	newCtx := func(names ...string) *context.Context {
+		cfg := config.Project{ProjectName: "tool"}
+		for _, name := range names {
+			cfg.AURSources = append(cfg.AURSources, config.AURSource{Name: name})
+		}
+		return testctx.WrapWithCfg(t.Context(), cfg)
+	}
+
+	t.Run("duplicate", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("tool", "tool")),
+			"found 2 aursources with the ID 'tool', please fix your config",
+		)
+	})
+
+	t.Run("duplicate default name", func(t *testing.T) {
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(newCtx("", "")),
+			"found 2 aursources with the ID 'tool', please fix your config",
+		)
+	})
+
+	t.Run("duplicate even if disabled", func(t *testing.T) {
+		cfg := config.Project{ProjectName: "tool"}
+		cfg.AURSources = []config.AURSource{
+			{Name: "tool", Disable: "true"},
+			{Name: "tool"},
+		}
+		require.ErrorContains(
+			t,
+			Pipe{}.Default(testctx.WrapWithCfg(t.Context(), cfg)),
+			"found 2 aursources with the ID 'tool', please fix your config",
+		)
+	})
+
+	t.Run("unique", func(t *testing.T) {
+		require.NoError(t, Pipe{}.Default(newCtx("tool", "other-tool")))
+	})
 }

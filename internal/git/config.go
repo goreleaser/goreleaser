@@ -55,8 +55,8 @@ func extractRelativeRepoFromConfig(ctx context.Context) (result config.Repo, err
 }
 
 func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
-	// removes the .git suffix and any new lines
-	s := strings.TrimSuffix(strings.TrimSpace(rawurl), ".git")
+	// removes any new lines, trailing slashes, and the .git suffix
+	s := strings.TrimSuffix(strings.TrimRight(strings.TrimSpace(rawurl), "/"), ".git")
 
 	// if the URL contains a :, indicating a SSH config,
 	// remove all chars until it, including itself

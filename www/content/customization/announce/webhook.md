@@ -39,11 +39,14 @@ announce:
     # Endpoint to send the webhook to.
     endpoint_url: "https://example.com/webhook"
     # Headers to send with the webhook.
+    # Values set here replace the defaults, including Content-Type, User-Agent,
+    # and the Authorization header set from BASIC_AUTH_HEADER_VALUE or
+    # BEARER_TOKEN_HEADER_VALUE.
     # For example:
     # headers:
     #   Authorization: "Bearer <token>"
     headers:
-      User-Agent: "goreleaser"
+      User-Agent: "my-bot/1.0"
 
     # HTTP status codes to be considered as a successful response.
     #

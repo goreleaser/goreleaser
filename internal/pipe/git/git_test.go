@@ -244,6 +244,18 @@ func TestRemoteURLContainsWithUsernameAndToken(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestRemoteURLHTTPContainsWithUsernameAndToken(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "http://gitlab-ci-token:SyYhsAghYFTvMoxw7GAg@gitlab.private.com/platform/base/poc/kink.git")
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "http://gitlab.private.com/platform/base/poc/kink.git", ctx.Git.URL)
+}
+
 func TestRemoteURLContainsWithUsernameAndTokenWithInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

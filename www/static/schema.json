@@ -2087,6 +2087,12 @@
 			},
 			"HomebrewCaskHook": {
 				"properties": {
+					"install_steps": {
+						"type": "string"
+					},
+					"uninstall_steps": {
+						"type": "string"
+					},
 					"install": {
 						"type": "string"
 					},

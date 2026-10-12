@@ -853,6 +853,17 @@ func (c *githubClient) Upload(
 				WithField("release-id", releaseID).
 				Warn("upload failed")
 		}
+		// GitHub answers uploads for a renamed or transferred repository with
+		// a redirect that cannot be followed with a streamed body, which
+		// otherwise surfaces as a bare "307 location <nil>".
+		if _, ok := errors.AsType[*github.RedirectionError](err); ok {
+			err = fmt.Errorf(
+				"%w: the repository %s/%s may have been renamed or transferred, update your git remote or the release.github settings to point to its current location",
+				err,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+			)
+		}
 		return githubError(err, resp)
 	}, retryx.IsRetriable)
 }

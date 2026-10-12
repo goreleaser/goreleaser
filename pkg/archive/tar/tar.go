@@ -31,11 +31,11 @@ func Copy(source io.Reader, target io.Writer) (Archive, error) {
 	r := tar.NewReader(source)
 	for {
 		header, err := r.Next()
-		if err == io.EOF || header == nil {
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return Archive{}, err
+			return w, err
 		}
 		w.files[header.Name] = true
 		if err := w.tw.WriteHeader(header); err != nil {

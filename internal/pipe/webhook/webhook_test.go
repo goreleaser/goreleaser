@@ -238,6 +238,64 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
+func TestAnnounceHeadersOverrideDefaultsWebhook(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		assert.Equal(t, []string{"my-bot/1.0"}, r.Header.Values("User-Agent"))
+		assert.Equal(t, []string{"application/vnd.custom+json"}, r.Header.Values("Content-Type"))
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "webhook-test",
+		Announce: config.Announce{
+			Webhook: config.Webhook{
+				EndpointURL:     srv.URL,
+				MessageTemplate: "{{ .ProjectName }}",
+				ContentType:     "application/json",
+				Headers: map[string]string{
+					"User-Agent":   "my-bot/1.0",
+					"Content-Type": "application/vnd.custom+json",
+				},
+			},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
+
+func TestAnnounceHeadersOverrideEnvAuthorizationWebhook(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		assert.Equal(t, []string{"Bearer from-config"}, r.Header.Values("Authorization"))
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv("BEARER_TOKEN_HEADER_VALUE", "Bearer from-env")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "webhook-test",
+		Announce: config.Announce{
+			Webhook: config.Webhook{
+				EndpointURL:     srv.URL,
+				MessageTemplate: "{{ .ProjectName }}",
+				Headers: map[string]string{
+					"Authorization": "Bearer from-config",
+				},
+			},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
+
 func TestAnnounceExpectedStatusCodesWebhook(t *testing.T) {
 	responseServer := WebHookServerMockMessage{
 		Response: "Thanks for the announcement!",

@@ -270,6 +270,44 @@ func TestCaskSimple(t *testing.T) {
 	require.NotContains(t, cask, "def caveats")
 }
 
+func TestCaskDependenciesOrder(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+	data, err := dataFor(ctx, config.HomebrewCask{
+		Name: "test",
+		Dependencies: []config.HomebrewCaskDependency{
+			{Formula: "kubernetes-cli"},
+			{Cask: "zotero"},
+			{Formula: "Azure/kubelogin/kubelogin"},
+			{Cask: "Example/tap/app"},
+			{Formula: "aws-iam-authenticator"},
+			{Cask: "alacritty"},
+		},
+	}, client.NewMock(), nil)
+	require.NoError(t, err)
+	require.Equal(t, []config.HomebrewCaskDependency{
+		{Cask: "alacritty"},
+		{Formula: "aws-iam-authenticator"},
+		{Formula: "Azure/kubelogin/kubelogin"},
+		{Cask: "Example/tap/app"},
+		{Formula: "kubernetes-cli"},
+		{Cask: "zotero"},
+	}, data.Dependencies)
+
+	cask, err := doBuildCask(ctx, data)
+	require.NoError(t, err)
+	require.Contains(t, cask, `  depends_on cask: [
+      "alacritty",
+      "Example/tap/app",
+      "zotero",
+    ],
+    formula: [
+      "aws-iam-authenticator",
+      "Azure/kubelogin/kubelogin",
+      "kubernetes-cli",
+    ]
+`)
+}
+
 func TestCaskCaveatsWithShellMetacharacters(t *testing.T) {
 	data := defaultTemplateData
 	data.Caveats = "To enable shell integration, add to your shell rc file:\n\n  eval \"$(mytool init zsh)\"   # for zsh\n  eval \"$(mytool init bash)\"  # for bash\n\nRun 'mytool tutorial' to get started!"
@@ -288,6 +326,40 @@ func TestSplit(t *testing.T) {
 	require.Equal(t, []string{}, parts)
 	parts = split("\n  ")
 	require.Equal(t, []string{}, parts)
+}
+
+func TestFlightString(t *testing.T) {
+	t.Run("steps", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight_steps do\n    run \"/usr/bin/true\"\n  end",
+			flightString("preflight", `run "/usr/bin/true"`, ""),
+		)
+	})
+	t.Run("legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight do\n    system_command \"/usr/bin/true\"\n  end",
+			flightString("preflight", "", `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("steps win over legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight_steps do\n    run \"/usr/bin/true\"\n  end",
+			flightString("preflight", `run "/usr/bin/true"`, `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("blank steps keep legacy", func(t *testing.T) {
+		require.Equal(
+			t,
+			"preflight do\n    system_command \"/usr/bin/true\"\n  end",
+			flightString("preflight", "  \n ", `system_command "/usr/bin/true"`),
+		)
+	})
+	t.Run("empty", func(t *testing.T) {
+		require.Empty(t, flightString("preflight", "", ""))
+	})
 }
 
 func TestCompileManpagesBrokenGlob(t *testing.T) {
@@ -551,6 +623,39 @@ func TestFullPipe(t *testing.T) {
 					Post: config.HomebrewCaskHook{
 						Install:   `system_command "echo", args: ["Post-install {{ .ProjectName }} {{ .Tag }}"]`,
 						Uninstall: `system_command "echo", args: ["Post-uninstall for {{ .ProjectName }}"]`,
+					},
+				}
+			},
+		},
+		"hooks_steps": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
+					Pre: config.HomebrewCaskHook{
+						InstallSteps: "mkdir_p \"{{ .StagedPath }}/etc\"\n" +
+							`write_file "{{ .StagedPath }}/v", "{{ "{{version}}" }}"`,
+						UninstallSteps: `remove "{{ .AppDir }}/{{ .ProjectName }}.app"`,
+					},
+					Post: config.HomebrewCaskHook{
+						InstallSteps: "on_macos do\n" +
+							`  run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/{{ .ProjectName }}"]` +
+							"\nend",
+						UninstallSteps: `remove "~/.config/{{ .ProjectName }}", recursive: true`,
+					},
+				}
+			},
+		},
+		"hooks_steps_win_over_deprecated": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
+					Post: config.HomebrewCaskHook{
+						Install:      `system_command "/usr/bin/true"`,
+						InstallSteps: `run "/usr/bin/true"`,
 					},
 				}
 			},
@@ -1456,6 +1561,16 @@ func TestDefaultDeprecated(t *testing.T) {
 				URL: config.HomebrewCaskURL{
 					Verified: "github.com/foo/bar",
 				},
+				Hooks: config.HomebrewCaskHooks{
+					Pre: config.HomebrewCaskHook{
+						Install:   `system_command "/usr/bin/true"`,
+						Uninstall: `system_command "/usr/bin/true"`,
+					},
+					Post: config.HomebrewCaskHook{
+						Install:   `system_command "/usr/bin/true"`,
+						Uninstall: `system_command "/usr/bin/true"`,
+					},
+				},
 			},
 		},
 	}, testctx.GitHubTokenType)
@@ -1465,6 +1580,10 @@ func TestDefaultDeprecated(t *testing.T) {
 	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
 	require.Equal(t, []string{"man"}, ctx.Config.Casks[0].Manpages)
 	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.url.verified")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.pre.install")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.pre.uninstall")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.post.install")
+	require.Contains(t, ctx.NotifiedDeprecations, "homebrew_casks.hooks.post.uninstall")
 }
 
 func TestGHFolder(t *testing.T) {
