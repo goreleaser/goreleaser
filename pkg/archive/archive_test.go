@@ -76,3 +76,21 @@ func TestArchive(t *testing.T) {
 		require.EqualError(t, err, "invalid archive format: 7z")
 	})
 }
+
+func TestArchiveConfig(t *testing.T) {
+	window := 9
+	cfg := config.Archive{Zstd: config.Zstd{WindowSize: &window}}
+	for _, format := range []string{"tar.zst", "tzst"} {
+		t.Run(format, func(t *testing.T) {
+			_, err := NewWithConfig(io.Discard, format, cfg)
+			require.EqualError(t, err, "invalid zstd window_size 9: must be between 10 and 29 (log2 bytes)")
+		})
+	}
+	for _, format := range []string{"tar.gz", "tgz", "tar", "gz", "tar.xz", "txz", "zip", "xz"} {
+		t.Run(format, func(t *testing.T) {
+			a, err := NewWithConfig(io.Discard, format, cfg)
+			require.NoError(t, err)
+			require.NoError(t, a.Close())
+		})
+	}
+}

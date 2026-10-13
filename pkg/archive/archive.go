@@ -24,6 +24,11 @@ type Archive interface {
 
 // New archive.
 func New(w io.Writer, format string) (Archive, error) {
+	return NewWithConfig(w, format, config.Archive{})
+}
+
+// NewWithConfig creates an archive with the given configuration.
+func NewWithConfig(w io.Writer, format string, cfg config.Archive) (Archive, error) {
 	switch format {
 	case "tar.gz", "tgz":
 		return targz.New(w), nil
@@ -34,7 +39,7 @@ func New(w io.Writer, format string) (Archive, error) {
 	case "tar.xz", "txz":
 		return tarxz.New(w), nil
 	case "tar.zst", "tzst":
-		return tarzst.New(w), nil
+		return tarzst.NewWithConfig(w, cfg.Zstd)
 	case "zip":
 		return zip.New(w), nil
 	case "xz":
