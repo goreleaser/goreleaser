@@ -76,6 +76,8 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-dev":       "1.2.3_pre",
 		"1.2.3-dev.1":     "1.2.3_pre1",
 		"1.2.3-dev.10":    "1.2.3_pre10",
+		"1.2.3-beta.1.1":  "1.2.3_beta1_p1",
+		"1.2.3-beta.2":    "1.2.3_beta2",
 		"1.2.3-nightly.2": "1.2.3_pre2",
 		"1.2.3-1":         "1.2.3_pre1",
 	} {
@@ -121,6 +123,7 @@ func TestToAPKVersion(t *testing.T) {
 }
 
 func TestToAPKVersionOrder(t *testing.T) {
+	testlib.OnlyOnLinux(t, "apk only works on linux")
 	testlib.CheckPath(t, "apk")
 	for _, versions := range [][]string{
 		{"1.2.3-alpha1", "1.2.3-beta1", "1.2.3-rc1", "1.2.3"},
@@ -306,6 +309,7 @@ func TestRunAllArchitectures(t *testing.T) {
 	require.Contains(t, string(content), "\t\tx86_64)\n\t\t\tinstall -Dm755")
 	require.NotContains(t, string(content), "ignored_v3")
 
+	testlib.SkipIfWindows(t, "APKBUILD is a POSIX shell script")
 	testlib.CheckPath(t, "sh")
 	cmd := exec.CommandContext(t.Context(), "sh", "-n", file)
 	require.NoError(t, cmd.Run())
@@ -610,6 +614,7 @@ func TestArchivePreferredOverAllBinariesForSameID(t *testing.T) {
 	require.NotContains(t, string(content), "https://example.com/foo_linux_amd64'")
 	require.NotContains(t, string(content), "bar_linux_amd64")
 
+	testlib.SkipIfWindows(t, "APKBUILD is a POSIX shell script")
 	testlib.CheckPath(t, "sh")
 	cmd := exec.CommandContext(t.Context(), "sh", "-c", `. "$1"; install() { printf '%s\n' "$@"; }; package`, "sh", file)
 	cmd.Env = append(os.Environ(), "CARCH=x86_64", "srcdir=/src", "pkgdir=/pkg")
@@ -647,6 +652,7 @@ func TestCustomPackageIsEmittedVerbatim(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(content), "package() {\nmkdir -p \"$pkgdir\"\ncat > \"$pkgdir/config\" <<EOF\n"+payload+"EOF\n}\n")
 
+	testlib.SkipIfWindows(t, "APKBUILD is a POSIX shell script")
 	testlib.CheckPath(t, "sh")
 	require.NoError(t, exec.CommandContext(t.Context(), "sh", "-n", file).Run())
 
