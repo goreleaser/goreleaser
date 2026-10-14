@@ -1,471 +1,470 @@
-# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
-# vim: set ts=2 sw=2 tw=0 fo=jcroql
+(Sem assunto)
+teo machado<teobaldomachado22@gmail.com>
+Você
+yaml-language-server: $`schema=https://goreleaser.com/static/schema-pro.json
+vim: set ts=2 sw=2 tw=0 fo=jcroql
+
 version: 2
 pro: true
 
 env:
-  - GO111MODULE=on
+• GO111MODULE=on
 
 before:
-  hooks:
-    - go mod tidy
-    - ./scripts/completions_and_manpages.sh
+hooks:
+- go mod tidy
+- ./scripts/completions_and_manpages.sh
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-next"
+version_template: "{{ incpatch .Version }}-next"
 
 gomod:
-  proxy: true
+proxy: true
 
 report_sizes: true
 
 git:
-  ignore_tags:
-    - nightly
-    - "*-nightly"
+ignore_tags:
+- nightly
+- "*-nightly"
 
 metadata:
-  mod_timestamp: "{{ .CommitTimestamp }}"
+mod_timestamp: "{{ .CommitTimestamp }}"
 
 builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - "386"
-      - amd64
-      - arm
-      - arm64
-      - loong64
-      - ppc64
-      - riscv64
-    goarm:
-      - "7"
-    ignore:
-      - goos: windows
-        goarch: arm
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -X main.treeState={{ .IsGitDirty }}
+• env:
+◦ CGO_ENABLED=0
+goos:
+◦ linux
+◦ darwin
+◦ windows
+goarch:
+◦ "386"
+◦ amd64
+◦ arm
+◦ arm64
+◦ loong64
+◦ ppc64
+◦ riscv64
+goarm:
+◦ "7"
+ignore:
+◦ goos: windows
+goarch: arm
+mod_timestamp: "{{ .CommitTimestamp }}"
+flags:
+◦ -trimpath
+ldflags:
+◦ >-
+-s -w
+-X main.version={{.Version}}
+-X main.commit={{.Commit}}
+-X main.date={{.CommitDate}}
+-X main.builtBy=goreleaser
+-X main.treeState={{.IsGitDirty}}
 
 universal_binaries:
-  - replace: false
+• replace: false
 
 notarize:
-  macos:
-    - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
-      sign:
-        certificate: "{{.Env.MACOS_SIGN_P12}}"
-        password: "{{.Env.MACOS_SIGN_PASSWORD}}"
-      notarize:
-        issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
-        key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
-        key: "{{.Env.MACOS_NOTARY_KEY}}"
+macos:
+- enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+sign:
+certificate: "{{.Env.MACOS_SIGN_P12}}"
+password: "{{.Env.MACOS_SIGN_PASSWORD}}"
+notarize:
+issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
+key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
+key: "{{.Env.MACOS_NOTARY_KEY}}"
 
-# temporarely disables until we add better filters for platforms et al, and test more.
-# upx:
-#   - enabled: true
+UPX remains disabled until platform filters and tests are adequate.
+upx:
+- enabled: true
 
 checksum:
-  name_template: "checksums.txt"
+name_template: "checksums.txt"
 
 changelog:
-  sort: asc
-  use: github
-  format: '{{ .SHA }}: {{ .Message }}{{ if and (not .IsNightly) .Logins }} ({{ .Logins | listExclude "^@Copilot$" | englishJoin }}){{ end }}'
-
-  filters:
-    exclude:
-      - "^test:"
-      - "^test\\("
-      - "^chore: update$"
-      - "^chore: docs$"
-      - "^docs: update$"
-      - "^chore: schema$"
-      - "^chore: typo$"
-      - "^chore: auto-update generated files$"
-      - "^chore: update schema$"
-      - "^chore: schema update$"
-      - "^chore\\(deps\\): "
-      - "^(build|ci): "
-      - "^ci\\("
-      - "merge conflict"
-      - "merge conflict"
-      - Merge pull request
-      - Merge remote-tracking branch
-      - Merge branch
-      - go mod tidy
-  groups:
-    - title: "New Features"
-      regexp: '^.*?feat(\(.+\))??!?:.+$'
-      order: 100
-    - title: "Security updates"
-      regexp: '^.*?sec(\(.+\))??!?:.+$'
-      order: 150
-    - title: "Bug fixes"
-      regexp: '^.*?(fix|refactor)(\(.+\))??!?:.+$'
-      order: 200
-    - title: "Documentation updates"
-      regexp: ^.*?docs?(\(.+\))??!?:.+$
-      order: 400
-    - title: Other work
-      order: 9999
+sort: asc
+use: github
+format: '{{ .SHA }}: {{ .Message }}{{ if and (not .IsNightly) .Logins }} ({{ .Logins | listExclude "^@Copilot$" | englishJoin }}){{ end }}' filters: exclude: - "^test:" - "^test\\(" - "^chore: update$"
+- "^chore: docs$" - "^docs: update$"
+- "^chore: schema$" - "^chore: typo$"
+- "^chore: auto-update generated files$" - "^chore: update schema$"
+- "^chore: schema update$" - "^chore\\(deps\\): " - "^(build|ci): " - "^ci\\(" - "merge conflict" - "Merge pull request" - "Merge remote-tracking branch" - "Merge branch" - "go mod tidy" groups: - title: "New Features" regexp: '^.*?feat(\(.+\))??!?:.+$'
+order: 100
+- title: "Security updates"
+regexp: '^.?sec((.+))??!?:.+$' order: 150 - title: "Bug fixes" regexp: '^.*?(fix|refactor)(\(.+\))??!?:.+$'
+order: 200
+- title: "Documentation updates"
+regexp: '^.?docs?((.+))??!?:.+`$'
+order: 400
+- title: "Other work"
+order: 9999
 
 dockers_v2:
-  - images:
-      - "goreleaser/goreleaser"
-      - "ghcr.io/goreleaser/goreleaser"
-    tags:
-      - "v{{ .Version }}"
-      - "{{ if .IsNightly }}nightly{{ end }}"
-      - "{{ if not .IsNightly }}latest{{ end }}"
-    extra_files:
-      - scripts/entrypoint.sh
-    labels:
-      "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      "io.artifacthub.package.logo-url": "https://goreleaser.com/favicon.svg"
-      "io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
-      "io.artifacthub.package.license": "MIT"
-    annotations:
-      "org.opencontainers.image.description": "Release engineering, simplified"
-      "org.opencontainers.image.created": "{{.Date}}"
-      "org.opencontainers.image.name": "{{.ProjectName}}"
-      "org.opencontainers.image.revision": "{{.FullCommit}}"
-      "org.opencontainers.image.version": "{{.Version}}"
-      "org.opencontainers.image.source": "{{.GitURL}}"
-      "org.opencontainers.image.base.name": "{{.BaseImage}}"
-      "org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
+• images:
+◦ "goreleaser/goreleaser"
+◦ "ghcr.io/goreleaser/goreleaser"
+tags:
+◦ "v{{ .Version }}"
+◦ "{{ if .IsNightly }}nightly{{ end }}"
+◦ "{{ if not .IsNightly }}latest{{ end }}"
+extra_files:
+◦ scripts/entrypoint.sh
+labels:
+"io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+"io.artifacthub.package.logo-url": "https://goreleaser.com/favicon.svg"
+"io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
+"io.artifacthub.package.license": "MIT"
+annotations:
+"org.opencontainers.image.description": "Release engineering, simplified"
+"org.opencontainers.image.created": "{{.Date}}"
+"org.opencontainers.image.name": "{{.ProjectName}}"
+"org.opencontainers.image.revision": "{{.FullCommit}}"
+"org.opencontainers.image.version": "{{.Version}}"
+"org.opencontainers.image.source": "{{.GitURL}}"
+"org.opencontainers.image.base.name": "{{.BaseImage}}"
+"org.opencontainers.image.base.digest": "{{.BaseImageDigest}}"
 
 archives:
-  - name_template: >-
-      {{- .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end -}}
-    format_overrides:
-      - goos: windows
-        formats: [zip]
-    builds_info:
-      group: root
-      owner: root
-      mtime: "{{ .CommitDate }}"
-    files:
-      - src: README.md
-        info:
-          owner: root
-          group: root
-          mtime: "{{ .CommitDate }}"
-      - src: LICENSE.md
-        info:
-          owner: root
-          group: root
-          mtime: "{{ .CommitDate }}"
-      - src: completions/*
-        info:
-          owner: root
-          group: root
-          mtime: "{{ .CommitDate }}"
-      - src: manpages/*
-        info:
-          owner: root
-          group: root
-          mtime: "{{ .CommitDate }}"
+• name_template: >-
+{{- .ProjectName }}_
+{{- title .Os }}_
+{{- if eq .Arch "amd64" }}x86_64
+{{- else if eq .Arch "386" }}i386
+{{- else }}{{ .Arch }}{{ end }}
+{ if .Arm }}v{{ .Arm }}{{ end }
+format_overrides:
+◦ goos: windows
+formats:
+▪ zip
+builds_info:
+group: root
+owner: root
+mtime: "{{ .CommitDate }}"
+files:
+◦ src: README.md
+info:
+owner: root
+group: root
+mtime: "{{ .CommitDate }}"
+◦ src: LICENSE.md
+info:
+owner: root
+group: root
+mtime: "{{ .CommitDate }}"
+◦ src: completions/*
+info:
+owner: root
+group: root
+mtime: "{{ .CommitDate }}"
+◦ src: manpages/*
+info:
+owner: root
+group: root
+mtime: "{{ .CommitDate }}"
 
 homebrew_casks:
-  - repository:
-      owner: goreleaser
-      name: homebrew-tap
-      token: "{{ .Env.GH_PAT }}"
-    homepage: https://goreleaser.com
-    description: Release engineering, simplified
-    license: MIT
-    conflicts:
-      - cask: goreleaser-pro
-    manpages:
-      - "manpages/goreleaser.1.gz"
-    completions:
-      bash: "completions/goreleaser.bash"
-      zsh: "completions/goreleaser.zsh"
-      fish: "completions/goreleaser.fish"
+• repository:
+owner: goreleaser
+name: homebrew-tap
+token: "{{ .Env.GH_PAT }}"
+homepage: https://goreleaser.com
+description: "Release engineering, simplified"
+license: MIT
+conflicts:
+◦ cask: goreleaser-pro
+manpages:
+◦ "manpages/goreleaser.1.gz"
+completions:
+bash: "completions/goreleaser.bash"
+zsh: "completions/goreleaser.zsh"
+fish: "completions/goreleaser.fish"
 
 nix:
-  - name: goreleaser
-    repository:
-      owner: goreleaser
-      name: nur
-      token: "{{ .Env.GH_PAT }}"
-    homepage: https://goreleaser.com
-    description: Release engineering, simplified
-    path: pkgs/goreleaser/default.nix
-    license: mit
-    extra_install: |-
-      installManPage ./manpages/goreleaser.1.gz
-      installShellCompletion ./completions/*
+• name: goreleaser
+repository:
+owner: goreleaser
+name: nur
+token: "{{ .Env.GH_PAT }}"
+homepage: https://goreleaser.com
+description: "Release engineering, simplified"
+path: pkgs/goreleaser/default.nix
+license: mit
+extra_install: |-
+installManPage ./manpages/goreleaser.1.gz
+installShellCompletion ./completions/*
 
 winget:
-  - name: goreleaser
-    publisher: goreleaser
-    license: MIT
-    homepage: https://goreleaser.com
-    short_description: Release engineering, simplified
-    repository:
-      owner: goreleaser
-      name: winget-pkgs
-      token: "{{ .Env.GH_PAT }}"
-      branch: "goreleaser-{{.Version}}"
-      pull_request:
-        enabled: true
-        body: |
-          cc/ @caarlos0
-        base:
-          owner: microsoft
-          name: winget-pkgs
-          branch: master
+• name: goreleaser
+publisher: goreleaser
+license: MIT
+homepage: https://goreleaser.com
+short_description: "Release engineering, simplified"
+repository:
+owner: goreleaser
+name: winget-pkgs
+token: "{{ .Env.GH_PAT }}"
+branch: "goreleaser-{{.Version}}"
+pull_request:
+enabled: true
+body: |
+cc/ @caarlos0
+base:
+owner: microsoft
+name: winget-pkgs
+branch: master
 
 aurs:
-  - homepage: https://goreleaser.com
-    description: Release engineering, simplified
-    maintainers:
-      - "Fernandez Ludovic <lfernandez dot dev at gmail dot com>"
-      - "Carlos Alexandro Becker <carlos at becker dot software>"
-    license: MIT
-    private_key: "{{ .Env.AUR_KEY }}"
-    git_url: "ssh://aur@aur.archlinux.org/goreleaser-bin.git"
-    package: |-
-      # bin
-      install -Dm755 "./goreleaser" "${pkgdir}/usr/bin/goreleaser"
+• homepage: https://goreleaser.com
+description: "Release engineering, simplified"
+maintainers:
+◦ "Fernandez Ludovic <lfernandez dot dev at gmail dot com>"
+◦ "Carlos Alexandro Becker <carlos at becker dot software>"
+license: MIT
+private_key: "{{ .Env.AUR_KEY }}"
+git_url: "ssh://aur@aur.archlinux.org/goreleaser-bin.git"
+package: |-
+• Binary
+• install -Dm755 "./goreleaser" "$`{pkgdir}/usr/bin/goreleaser"
 
-      # license
-      install -Dm644 "./LICENSE.md" "${pkgdir}/usr/share/licenses/goreleaser/LICENSE"
+# License
+install -Dm644 "./LICENSE.md" "`${pkgdir}/usr/share/licenses/goreleaser/LICENSE"
 
-      # completions
-      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
-      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
-      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
-      install -Dm644 "./completions/goreleaser.bash" "${pkgdir}/usr/share/bash-completion/completions/goreleaser"
-      install -Dm644 "./completions/goreleaser.zsh" "${pkgdir}/usr/share/zsh/site-functions/_goreleaser"
-      install -Dm644 "./completions/goreleaser.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/goreleaser.fish"
+# Shell completions
+mkdir -p "
 
-      # man pages
-      install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
+{pkgdir}/usr/share/zsh/site-functions/"
+mkdir -p "
+
+{pkgdir}/usr/share/bash-completion/completions/goreleaser"
+install -Dm644 "./completions/goreleaser.zsh" "
+
+{pkgdir}/usr/share/fish/vendor_completions.d/goreleaser.fish"
+
+# Man pages
+install -Dm644 "./manpages/goreleaser.1.gz" "$`{pkgdir}/usr/share/man/man1/goreleaser.1.gz"
 
 scoops:
-  - repository:
-      owner: goreleaser
-      name: scoop-bucket
-      token: "{{ .Env.GH_PAT }}"
-    directory: bucket
-    homepage: https://goreleaser.com
-    description: Release engineering, simplified
-    license: MIT
+• repository:
+owner: goreleaser
+name: scoop-bucket
+token: "{{ .Env.GH_PAT }}"
+directory: bucket
+homepage: https://goreleaser.com
+description: "Release engineering, simplified"
+license: MIT
 
 npms:
-  - name: "@goreleaser/goreleaser"
-    repository: "git+https://github.com/goreleaser/goreleaser.git"
-    bugs: https://github.com/goreleaser/goreleaser/issues
-    description: Release engineering, simplified
-    homepage: https://goreleaser.com
-    license: MIT
-    author: "Carlos Alexandro Becker <carlos@becker.software>"
-    access: public
-    keywords:
-      - release
-      - golang
-      - go
-      - rust
-      - zig
-      - bun
-      - deno
-      - docker
+• name: "@goreleaser/goreleaser"
+repository: "git+https://github.com/goreleaser/goreleaser.git"
+bugs: https://github.com/goreleaser/goreleaser/issues
+description: "Release engineering, simplified"
+homepage: https://goreleaser.com
+license: MIT
+author: "Carlos Alexandro Becker <carlos@becker.software>"
+access: public
+keywords:
+◦ release
+◦ golang
+◦ go
+◦ rust
+◦ zig
+◦ bun
+◦ deno
+◦ docker
 
 nfpms:
-  - file_name_template: '{{ replace .ConventionalFileName "~" "-" }}'
-    id: packages
-    homepage: https://goreleaser.com
-    description: |-
-      Release engineering, simplified.
-      GoReleaser allows you to release easily build, package, publish, and
-      announce to several places.
-    maintainer: Carlos Alexandro Becker <carlos@becker.software>
-    license: MIT
-    vendor: GoReleaser
-    bindir: /usr/bin
-    section: utils
-    mtime: "{{ .CommitDate }}"
-    contents:
-      - src: ./completions/goreleaser.bash
-        dst: /usr/share/bash-completion/completions/goreleaser
-        file_info:
-          mode: 0644
-          mtime: "{{ .CommitDate }}"
-      - src: ./completions/goreleaser.fish
-        dst: /usr/share/fish/vendor_completions.d/goreleaser.fish
-        file_info:
-          mode: 0644
-          mtime: "{{ .CommitDate }}"
-      - src: ./completions/goreleaser.zsh
-        dst: /usr/share/zsh/vendor-completions/_goreleaser
-        file_info:
-          mode: 0644
-          mtime: "{{ .CommitDate }}"
-      - src: ./manpages/goreleaser.1.gz
-        dst: /usr/share/man/man1/goreleaser.1.gz
-        file_info:
-          mode: 0644
-          mtime: "{{ .CommitDate }}"
-      - src: ./LICENSE.md
-        dst: /usr/share/doc/goreleaser/copyright
-        file_info:
-          mode: 0644
-          mtime: "{{ .CommitDate }}"
-    formats:
-      - apk
-      - deb
-      - rpm
-      - archlinux
-    dependencies:
-      - git
-    overrides:
-      deb:
-        suggests:
-          - golang
-          - rustup
-          - zig
-          - deno
-          - bun
-    deb:
-      lintian_overrides:
-        - statically-linked-binary
-        - changelog-file-missing-in-native-package
+• file_name_template: '{{ replace .ConventionalFileName "~" "-" }}'
+id: packages
+homepage: https://goreleaser.com
+description: |-
+Release engineering, simplified.
+GoReleaser allows you to release easily build, package, publish, and
+announce to several places.
+maintainer: "Carlos Alexandro Becker <carlos@becker.software>"
+license: MIT
+vendor: GoReleaser
+bindir: /usr/bin
+section: utils
+mtime: "{{ .CommitDate }}"
+contents:
+◦ src: ./completions/goreleaser.bash
+dst: /usr/share/bash-completion/completions/goreleaser
+file_info:
+mode: 0644
+mtime: "{{ .CommitDate }}"
+◦ src: ./completions/goreleaser.fish
+dst: /usr/share/fish/vendor_completions.d/goreleaser.fish
+file_info:
+mode: 0644
+mtime: "{{ .CommitDate }}"
+◦ src: ./completions/goreleaser.zsh
+dst: /usr/share/zsh/vendor-completions/_goreleaser
+file_info:
+mode: 0644
+mtime: "{{ .CommitDate }}"
+◦ src: ./manpages/goreleaser.1.gz
+dst: /usr/share/man/man1/goreleaser.1.gz
+file_info:
+mode: 0644
+mtime: "{{ .CommitDate }}"
+◦ src: ./LICENSE.md
+dst: /usr/share/doc/goreleaser/copyright
+file_info:
+mode: 0644
+mtime: "{{ .CommitDate }}"
+formats:
+◦ apk
+◦ deb
+◦ rpm
+◦ archlinux
+dependencies:
+◦ git
+overrides:
+deb:
+suggests:
+▪ golang
+▪ rustup
+▪ zig
+▪ deno
+▪ bun
+deb:
+lintian_overrides:
+▪ statically-linked-binary
+▪ changelog-file-missing-in-native-package
 
 snapcrafts:
-  - name_template: "{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-    summary: Release engineering, simplified
-    description: |
-      GoReleaser allows you to release easily build, package, publish, and
-      announce to several places.
-    grade: stable
-    confinement: classic
-    publish: true
-    disable: "{{ if .IsNightly }}true{{ end }}"
+• name_template: "{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+summary: "Release engineering, simplified"
+description: |
+GoReleaser allows you to release easily build, package, publish, and
+announce to several places.
+grade: stable
+confinement: classic
+publish: true
+disable: "{{ if .IsNightly }}true{{ end }}"
 
 flatpak:
-  - app_id: com.goreleaser.GoReleaser
-    runtime: org.freedesktop.Platform
-    runtime_version: "24.08"
-    sdk: org.freedesktop.Sdk
-    finish_args:
-      - --share=network
-      - --filesystem=host
+• app_id: com.goreleaser.GoReleaser
+runtime: org.freedesktop.Platform
+runtime_version: "24.08"
+sdk: org.freedesktop.Sdk
+finish_args:
+◦ --share=network
+◦ --filesystem=host
 
 sboms:
-  - artifacts: archive
+• artifacts: archive
 
 signs:
-  - cmd: cosign
-    signature: "${artifact}.sigstore.json"
-    output: '{{ not (isEnvSet "CI" )}}'
-    artifacts: checksum
-    args:
-      - sign-blob
-      - "--bundle=${signature}"
-      - "${artifact}"
-      - --yes
+• cmd: cosign
+signature: "`${artifact}.sigstore.json"
+output: '{{ not (isEnvSet "CI" )}}'
+artifacts: checksum
+args:
+◦ sign-blob
+◦ "--bundle=$`{signature}"
+◦ "`${artifact}"
+◦ --yes
 
 docker_signs:
-  - cmd: cosign
-    artifacts: manifests
-    output: '{{ not (isEnvSet "CI" )}}'
-    args:
-      - "sign"
-      - "${artifact}@${digest}"
-      - --yes
+• cmd: cosign
+artifacts: manifests
+output: '{{ not (isEnvSet "CI" )}}'
+args:
+◦ sign
+◦ "
+
+{digest}"
+◦ --yes
 
 verify:
-  commands:
-    - cmd: sha256sum
-      args: ["-c", "checksums.txt"]
-    - context: asset
-      if: '{{ eq .ArtifactName "checksums.txt" }}'
-      cmd: cosign
-      args:
-        - verify-blob
-        - "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
-        - "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
-        - "--bundle={{ .artifact }}.sigstore.json"
-        - "{{ .artifact }}"
-    - context: image
-      cmd: cosign
-      args:
-        - verify
-        - "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
-        - "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
-        - "{{ .artifact }}"
+commands:
+# Verifies the published checksum file.
+- cmd: sha256sum
+args:
+- --check
+- checksums.txt
+
+# Verifies the Cosign bundle associated with the checksum artifact.
+- context: asset
+if: '{{ eq .ArtifactName "checksums.txt" }}'
+cmd: cosign
+args:
+- verify-blob
+- "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
+- "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
+- "--bundle={{ .artifact }}.sigstore.json"
+- "{{ .artifact }}"
+
+# Verifies published container image signatures.
+- context: image
+cmd: cosign
+args:
+- verify
+- "--certificate-identity-regexp=^https://github.com/goreleaser/goreleaser/"
+- "--certificate-oidc-issuer=https://token.actions.githubusercontent.com"
+- "{{ .artifact }}"
 
 gemfury:
-  - account: goreleaser
-    disable: "{{ .IsNightly }}"
+• account: goreleaser
+disable: "{{ .IsNightly }}"
 
 milestones:
-  - close: true
+• close: true
 
 nightly:
-  publish_release: true
-  tag_name: "{{ incminor .Tag }}-{{ .ShortCommit }}-nightly"
-  version_template: "{{ incminor .Version }}-{{ .ShortCommit }}-nightly"
+publish_release: true
+tag_name: "{{ incminor .Tag }}-{{ .ShortCommit }}-nightly"
+version_template: "{{ incminor .Version }}-{{ .ShortCommit }}-nightly"
 
 release:
-  name_template: "{{ .Tag }}"
-  prerelease: auto
-  header: |
-    {{ if not .IsNightly }}
-    ## Announcement
+name_template: "{{ .Tag }}"
+prerelease: auto
+header: |
+{{ if not .IsNightly }}
+## Announcement
 
-    Read the official announcement: [Announcing GoReleaser v{{.Major}}.{{.Minor}}](https://goreleaser.com/blog/goreleaser-v{{.Major}}.{{.Minor}}/).
-    {{ end }}
+Read the official announcement: Announcing GoReleaser v{{.Major}}.{{.Minor}}.
+{{ end }}
 
-  footer: |
-    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
+footer: |
+Full Changelog: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
-    {{ if not .IsNightly }}
-    ## Helping out
+{{ if not .IsNightly }}
+## Helping out
 
-    This release is only possible thanks to **all** the support of some **awesome people**!
+This release is only possible thanks to all the support of some awesome people!
 
-    Want to be one of them?
-    You can [sponsor](https://goreleaser.com/sponsors/), get a [Pro License](https://goreleaser.com/pro) or [contribute with code](https://goreleaser.com/contributing).
+Want to be one of them?
+You can sponsor, get a Pro License or contribute with code.
 
-    ## Where to go next?
+## Where to go next?
 
-    * Find examples and commented usage of all options in our [website](https://goreleaser.com/intro/).
-    * Reach out on [Discord](https://discord.gg/RGEBtg8vQ6), [Twitter](https://twitter.com/goreleaser), and [Telegram](https://t.me/goreleasernews)!
+* Find examples and commented usage of all options in our website.
+* Reach out on Discord, Twitter, and Telegram!
 
-    <a href="https://goreleaser.com"><img src="https://raw.githubusercontent.com/goreleaser/artwork/master/opencollective-header.png" with="100%" alt="GoReleaser logo"></a>
-    {{ end }}
+<a href="https://goreleaser.com"><img src="https://raw.githubusercontent.com/goreleaser/artwork/master/opencollective-header.png" width="100%" alt="GoReleaser logo"></a>
+{{ end }}
 
 announce:
-  mastodon:
-    enabled: true
-    message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
-    server: https://fosstodon.org
+mastodon:
+enabled: true
+message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
+server: https://fosstodon.org
 
-  opencollective:
-    enabled: true
-    slug: goreleaser
+opencollective:
+enabled: true
+slug: goreleaser
 
-  discord:
-    enabled: true
-    message_template: "GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
+discord:
+enabled: true
+message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
 
-  telegram:
-    enabled: true
-    chat_id: "@goreleasernews"
-    parse_mode: HTML
-    message_template: 'The all new <a href="{{.ReleaseURL}}">GoReleaser <code>{{.Tag}}</code></a> is out!'
+telegram:
+enabled: true
+chat_id: "@goreleasernews"
+parse_mode: HTML
+message_template: 'The all new <a href="{{.ReleaseURL}}">GoReleaser <code>{{.Tag}}</code></a> is out!' 
