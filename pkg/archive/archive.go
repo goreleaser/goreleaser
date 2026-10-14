@@ -39,7 +39,7 @@ func NewWithConfig(w io.Writer, format string, cfg config.Archive) (Archive, err
 	case "tar.xz", "txz":
 		return tarxz.New(w), nil
 	case "tar.zst", "tzst":
-		return tarzst.NewWithConfig(w, cfg.Zstd)
+		return tarzst.New(w, cfg.Zstd)
 	case "zip":
 		return zip.New(w), nil
 	case "xz":

@@ -17,14 +17,8 @@ type Archive struct {
 	tw   *tar.Archive
 }
 
-// New tar.zst archive.
-func New(target io.Writer) Archive {
-	a, _ := NewWithConfig(target, config.Zstd{})
-	return a
-}
-
-// NewWithConfig creates a tar.zst archive with the given configuration.
-func NewWithConfig(target io.Writer, cfg config.Zstd) (Archive, error) {
+// New creates a tar.zst archive with the given configuration.
+func New(target io.Writer, cfg config.Zstd) (Archive, error) {
 	opts, err := encoderOptions(cfg)
 	if err != nil {
 		return Archive{}, err

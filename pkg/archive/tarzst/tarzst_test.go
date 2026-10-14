@@ -49,7 +49,7 @@ func TestTarZstConfig(t *testing.T) {
 				opts = append(opts, zstd.WithWindowSize(1<<tc.window))
 			}
 			var compressed bytes.Buffer
-			a, err := NewWithConfig(&compressed, cfg)
+			a, err := New(&compressed, cfg)
 			require.NoError(t, err)
 			require.NoError(t, a.Add(config.File{Source: source, Destination: "binary"}))
 			require.NoError(t, a.Close())
@@ -101,7 +101,7 @@ func TestTarZstConfigInvalid(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			require.EqualError(t, Validate(tc.cfg), tc.err)
-			_, err := NewWithConfig(io.Discard, tc.cfg)
+			_, err := New(io.Discard, tc.cfg)
 			require.EqualError(t, err, tc.err)
 		})
 	}
@@ -112,7 +112,8 @@ func TestTarZstFile(t *testing.T) {
 	f, err := os.Create(filepath.Join(tmp, "test.tar.zst"))
 	require.NoError(t, err)
 	defer f.Close()
-	archive := New(f)
+	archive, err := New(f, config.Zstd{})
+	require.NoError(t, err)
 	defer archive.Close()
 
 	require.Error(t, archive.Add(config.File{
@@ -213,7 +214,8 @@ func TestTarZstFileInfo(t *testing.T) {
 	f, err := os.Create(filepath.Join(t.TempDir(), "test.tar.gz"))
 	require.NoError(t, err)
 	defer f.Close()
-	archive := New(f)
+	archive, err := New(f, config.Zstd{})
+	require.NoError(t, err)
 	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{
