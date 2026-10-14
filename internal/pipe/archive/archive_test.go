@@ -57,7 +57,7 @@ func TestRunPipeZstd(t *testing.T) {
 				Zstd:         config.Zstd{Level: "best", WindowSize: &window},
 			}
 			if tc.meta {
-				cfg.Files = []config.File{{Source: source, Destination: "binary"}}
+				cfg.Files = []config.File{{Source: filepath.ToSlash(source), Destination: "binary"}}
 			}
 			if tc.override {
 				cfg.Formats = []string{"zip"}

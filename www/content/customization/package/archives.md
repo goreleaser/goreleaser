@@ -49,7 +49,7 @@ archives:
     # Compression settings for tar.zst and tzst archives.
     # Ignored for other formats.
     #
-    # {{< g_inline_version "v2.19" >}}
+    # {{< g_inline_version "v2.19-unreleased" >}}
     zstd:
       # Valid options: fastest, default, better, best.
       #
