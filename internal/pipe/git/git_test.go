@@ -342,6 +342,29 @@ func TestTagSortOrderPrerelease(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
+func TestTagSortOrderPrereleaseDefaultSuffix(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitCommit(t, "commit3")
+	for _, tag := range []string{
+		"v1.146.0-rc1",
+		"v1.146.0-rc2",
+		"v1.146.0-rc3",
+		"v1.146.0-rc4",
+		"v1.146.0-rc5",
+		"v1.146.0-rc6",
+		"v1.146.0",
+	} {
+		testlib.GitTag(t, tag)
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v1.146.0", ctx.Git.CurrentTag)
+}
+
 func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
