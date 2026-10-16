@@ -924,3 +924,98 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 		})
 	}
 }
+
+func TestUploadReusesHTTPClient(t *testing.T) {
+	var mu sync.Mutex
+	addrs := map[string]struct{}{}
+	attempts := map[string]int{}
+	var total atomic.Int64
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		addrs[r.RemoteAddr] = struct{}{}
+		attempts[r.URL.Path]++
+		n := attempts[r.URL.Path]
+		mu.Unlock()
+		total.Add(1)
+		if r.TLS == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if u, p, ok := r.BasicAuth(); !ok || u != "u1" || p != "s3cr3t" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		if r.URL.Path == "/blah/2.1.0/retry.bin" && n == 1 {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+	})
+	srv := httptest.NewUnstartedServer(mux)
+	srv.StartTLS()
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "blah",
+		Retry:       config.Retry{Attempts: 5},
+	}, testctx.WithVersion("2.1.0"))
+	ctx.Parallelism = 1
+
+	folder := t.TempDir()
+	for _, name := range []string{"a.bin", "b.bin", "retry.bin"} {
+		path := filepath.Join(folder, name)
+		require.NoError(t, os.WriteFile(path, []byte("data-"+name), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableBinary,
+		})
+	}
+
+	upload := config.Upload{
+		Name:         "reuse",
+		Mode:         ModeBinary,
+		Target:       srv.URL + "/{{.ProjectName}}/{{.Version}}/",
+		Username:     "u1",
+		Password:     "s3cr3t",
+		TrustedCerts: cert(srv),
+	}
+	is2xx := func(r *http.Response) error {
+		if r.StatusCode/100 == 2 {
+			return nil
+		}
+		return fmt.Errorf("unexpected http status code: %v", r.StatusCode)
+	}
+	require.NoError(t, Upload(ctx, []config.Upload{upload}, "test", is2xx))
+	require.Equal(t, int64(4), total.Load(), "expected 3 artifacts plus one retry")
+	mu.Lock()
+	defer mu.Unlock()
+	require.Equal(t, 2, attempts["/blah/2.1.0/retry.bin"], "retryable artifact should have been attempted twice")
+	require.Len(t, addrs, 1, "expected a single reused connection, got %v", addrs)
+}
+
+func TestGetHTTPClientIsolation(t *testing.T) {
+	plain, err := getHTTPClient(&config.Upload{})
+	require.NoError(t, err)
+	require.True(t, plain == http.DefaultClient, "plain config should use the default client")
+
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(srv.Close)
+
+	custom1, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
+	require.NoError(t, err)
+	require.True(t, custom1 != http.DefaultClient, "custom TLS config must not use the default client")
+
+	custom2, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
+	require.NoError(t, err)
+	require.True(t, custom1 != custom2, "each client construction should be isolated")
+
+	cc, err := getHTTPClient(&config.Upload{
+		ClientX509Cert: "testcert.pem",
+		ClientX509Key:  "testkey.pem",
+	})
+	require.NoError(t, err)
+	require.True(t, cc != http.DefaultClient, "client cert config must not use the default client")
+}
