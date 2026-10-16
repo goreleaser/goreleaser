@@ -46,6 +46,22 @@ archives:
     format: "zip" # Singular form, single format, deprecated.
     formats: ["zip", "tar.gz"] # Plural form, multiple formats. {{< g_inline_version "v2.6" >}}
 
+    # Compression settings for tar.zst and tzst archives.
+    # Ignored for other formats.
+    #
+    # {{< g_inline_version "v2.19-unreleased" >}}
+    zstd:
+      # Valid options: fastest, default, better, best.
+      #
+      # Default: default.
+      level: best
+
+      # Log2 of the window size in bytes, from 10 to 29.
+      # For example, 27 sets a 128 MiB window.
+      #
+      # Default: determined by the level, at most 8 MiB.
+      window_size: 27
+
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
     #
@@ -276,6 +292,16 @@ have any files matching that glob, only the binary will be added to the
 archive. Any glob that doesn't match any file should work.
 
 For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
+
+## Zstandard compression
+
+The `zstd` settings apply to `tar.zst` and `tzst` archives, including format
+overrides. If you omit them, the compression behavior stays unchanged.
+
+A larger window can improve compression when an archive contains binaries with
+shared code. Higher levels and larger windows use more memory and take more time.
+Windows above 128 MiB (`window_size: 27`) may require an increased memory limit
+when decompressing with the `zstd` command.
 
 ## A note about Gzip/XZ
 

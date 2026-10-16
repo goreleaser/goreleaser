@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarzst"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -75,6 +76,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if archive.ID == "" {
 			archive.ID = "default"
+		}
+		if err := tarzst.Validate(archive.Zstd); err != nil {
+			return fmt.Errorf("archive %q: %w", archive.ID, err)
 		}
 		if len(archive.Builds) > 0 {
 			deprecate.Notice(ctx, "archives.builds")
@@ -170,6 +174,9 @@ func createMeta(ctx *context.Context, arch config.Archive, format string) error 
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) (err error) {
+	if err := tarzst.Validate(arch.Zstd); err != nil {
+		return err
+	}
 	template := tmpl.New(ctx)
 	if len(binaries) > 0 {
 		template = template.WithArtifact(binaries[0])
@@ -207,7 +214,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if err != nil {
 		return err
 	}
-	a, err := archive.New(archiveFile, format)
+	a, err := archive.NewWithConfig(archiveFile, format, arch)
 	if err != nil {
 		return err
 	}

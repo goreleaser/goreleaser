@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/tar"
 	"archive/zip"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -20,11 +21,90 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
+}
+
+func TestRunPipeZstd(t *testing.T) {
+	data, err := os.ReadFile("archive.go")
+	require.NoError(t, err)
+	data = bytes.Repeat(data, 64)
+	source := filepath.Join(t.TempDir(), "binary")
+	require.NoError(t, os.WriteFile(source, data, 0o755))
+
+	for _, tc := range []struct {
+		name     string
+		format   string
+		meta     bool
+		override bool
+	}{
+		{name: "binary", format: "tar.zst"},
+		{name: "format override alias", format: "tzst", override: true},
+		{name: "meta", format: "tar.zst", meta: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			window := 10
+			cfg := config.Archive{
+				ID:           "zstd",
+				NameTemplate: "test",
+				Formats:      []string{tc.format},
+				Files:        []config.File{{Source: "no-matching-files*"}},
+				Meta:         tc.meta,
+				Zstd:         config.Zstd{Level: "best", WindowSize: &window},
+			}
+			if tc.meta {
+				cfg.Files = []config.File{{Source: filepath.ToSlash(source), Destination: "binary"}}
+			}
+			if tc.override {
+				cfg.Formats = []string{"zip"}
+				cfg.FormatOverrides = []config.FormatOverride{
+					{Goos: "linux", Formats: []string{tc.format}},
+				}
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:     t.TempDir(),
+				Archives: []config.Archive{cfg},
+			})
+			if !tc.meta {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "binary",
+					Path:   source,
+					Type:   artifact.Binary,
+					Goos:   "linux",
+					Goarch: "amd64",
+				})
+			}
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			require.Len(t, archives, 1)
+			require.Equal(t, "test."+tc.format, archives[0].Name)
+			compressed, err := os.ReadFile(archives[0].Path)
+			require.NoError(t, err)
+			var frame zstd.Header
+			require.NoError(t, frame.Decode(compressed))
+			require.Equal(t, uint64(1<<window), frame.WindowSize)
+
+			decoder, err := zstd.NewReader(nil)
+			require.NoError(t, err)
+			defer decoder.Close()
+			uncompressed, err := decoder.DecodeAll(compressed, nil)
+			require.NoError(t, err)
+			reader := tar.NewReader(bytes.NewReader(uncompressed))
+			header, err := reader.Next()
+			require.NoError(t, err)
+			require.Equal(t, "binary", header.Name)
+			actual, err := io.ReadAll(reader)
+			require.NoError(t, err)
+			require.Equal(t, data, actual)
+			_, err = reader.Next()
+			require.ErrorIs(t, err, io.EOF)
+		})
+	}
 }
 
 func createFakeBinary(t *testing.T, dist, arch, bin string) {
@@ -1010,6 +1090,73 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
 	require.Equal(t, fs.FileMode(0o755), ctx.Config.Archives[0].BuildsInfo.Mode)
+	require.Empty(t, ctx.Config.Archives[0].Zstd)
+}
+
+func TestDefaultZstd(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		config string
+		err    string
+	}{
+		{name: "unset", config: "{}"},
+		{name: "fastest", config: "{level: fastest}"},
+		{name: "default", config: "{level: default}"},
+		{name: "better", config: "{level: better}"},
+		{name: "best", config: "{level: best, window_size: 27}"},
+		{name: "minimum window", config: "{window_size: 10}"},
+		{name: "maximum window", config: "{window_size: 29}"},
+		{
+			name:   "invalid level",
+			config: "{level: invalid}",
+			err:    `archive "test": invalid zstd level "invalid": must be fastest, default, better, or best`,
+		},
+		{
+			name:   "negative window",
+			config: "{window_size: -1}",
+			err:    `archive "test": invalid zstd window_size -1: must be between 10 and 29 (log2 bytes)`,
+		},
+		{
+			name:   "zero window",
+			config: "{window_size: 0}",
+			err:    `archive "test": invalid zstd window_size 0: must be between 10 and 29 (log2 bytes)`,
+		},
+		{
+			name:   "small window",
+			config: "{window_size: 9}",
+			err:    `archive "test": invalid zstd window_size 9: must be between 10 and 29 (log2 bytes)`,
+		},
+		{
+			name:   "large window",
+			config: "{window_size: 30}",
+			err:    `archive "test": invalid zstd window_size 30: must be between 10 and 29 (log2 bytes)`,
+		},
+		{
+			name:   "window would overflow shift",
+			config: "{window_size: 64}",
+			err:    `archive "test": invalid zstd window_size 64: must be between 10 and 29 (log2 bytes)`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			project, err := config.LoadReader(strings.NewReader(fmt.Sprintf(`
+version: 2
+archives:
+  - id: test
+    formats: [tar.zst]
+    zstd: %s
+`, tc.config)))
+			require.NoError(t, err)
+			ctx := testctx.WrapWithCfg(t.Context(), project)
+			expected := ctx.Config.Archives[0].Zstd
+			err = Pipe{}.Default(ctx)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, expected, ctx.Config.Archives[0].Zstd)
+		})
+	}
 }
 
 func TestDefaultSet(t *testing.T) {
