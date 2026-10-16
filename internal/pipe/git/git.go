@@ -33,6 +33,9 @@ func setDefaults(ctx *context.Context) {
 	if ctx.Config.Git.TagSort == "" {
 		ctx.Config.Git.TagSort = "-version:refname"
 	}
+	if ctx.Config.Git.PrereleaseSuffix == "" {
+		ctx.Config.Git.PrereleaseSuffix = "-"
+	}
 }
 
 // Run the pipe.
