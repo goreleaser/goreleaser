@@ -62,13 +62,24 @@ func getBaseImage(ctx *context.Context, dockerfile string, buildArgs map[string]
 // Other build arguments can depend on the resolved base image and are rendered later.
 func baseImageBuildArgs(ctx *context.Context, content string, args map[string]string) (map[string]string, error) {
 	used := map[string]bool{}
+	markUsed := func(s string) {
+		os.Expand(s, func(name string) string {
+			key, _, _ := strings.Cut(name, ":-")
+			used[key] = true
+			return ""
+		})
+	}
+	seenFrom := false
 	for line := range strings.SplitSeq(continuationRe.ReplaceAllString(content, " "), "\n") {
-		if m := fromRe.FindStringSubmatch(strings.TrimSpace(line)); m != nil {
-			os.Expand(m[1], func(name string) string {
-				key, _, _ := strings.Cut(name, ":-")
-				used[key] = true
-				return ""
-			})
+		line = strings.TrimSpace(line)
+		if m := argRe.FindStringSubmatch(line); m != nil && !seenFrom {
+			// Global ARG defaults can reference other global ARGs.
+			markUsed(m[2])
+			continue
+		}
+		if m := fromRe.FindStringSubmatch(line); m != nil {
+			seenFrom = true
+			markUsed(m[1])
 		}
 	}
 	if len(used) == 0 {
@@ -122,7 +133,8 @@ func parseBaseImage(content string, overrides map[string]string) string {
 
 		if m := argRe.FindStringSubmatch(line); m != nil && base == "" {
 			// Only global ARGs (before any FROM) are usable in FROM lines.
-			args[m[1]] = strings.Trim(m[2], `"'`)
+			// ARG defaults can reference previously declared ARGs.
+			args[m[1]] = substituteArgs(strings.Trim(m[2], `"'`), args)
 			if override := overrides[m[1]]; override != "" {
 				args[m[1]] = override
 			}
