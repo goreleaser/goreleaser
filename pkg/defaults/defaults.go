@@ -5,6 +5,7 @@ package defaults
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/apkbuild"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
@@ -104,6 +105,7 @@ var Defaulters = []Defaulter{
 	upload.Pipe{},
 	aur.Pipe{},
 	aursources.Pipe{},
+	apkbuild.Pipe{},
 	nix.Pipe{},
 	winget.Pipe{},
 	brew.Pipe{},
