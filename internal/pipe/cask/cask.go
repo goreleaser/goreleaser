@@ -516,6 +516,8 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 	result.HasOnlyAmd64MacOsPkg = len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64"
 	result.HasOnlyBinaryPkgs = len(formatCounts) == 1 && formatCounts[artifact.UploadableBinary] > 0
 	result.HasMixedPackageTypes = formatCounts[artifact.UploadableArchive] > 0 && formatCounts[artifact.UploadableBinary] > 0
+	result.SingleMacOSArch = singleArch(result.MacOSPackages)
+	result.SingleLinuxArch = singleArch(result.LinuxPackages)
 
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)
@@ -563,6 +565,16 @@ func archStanzaRank(arch string) int {
 	default:
 		return 3
 	}
+}
+
+// singleArch returns the arch of the single, non-universal package in pkgs,
+// or an empty string when there are none, multiple, or only universal ("all")
+// ones.
+func singleArch(pkgs []releasePackage) string {
+	if len(pkgs) != 1 || pkgs[0].Arch == "all" {
+		return ""
+	}
+	return pkgs[0].Arch
 }
 
 func compareByArch(a, b releasePackage) int {

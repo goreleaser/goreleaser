@@ -3,10 +3,9 @@ cask "foo" do
   version "1.2.1"
 
   on_macos do
-    on_arm do
-      sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
-      url "https://dummyhost/download/v#{version}/foo_darwin_arm64.tar.gz"
-    end
+    depends_on arch: :arm64
+    sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+    url "https://dummyhost/download/v#{version}/foo_darwin_arm64.tar.gz"
   end
 
   name "foo"
@@ -16,6 +15,7 @@ cask "foo" do
   livecheck do
     skip "Auto-generated on release."
   end
+  depends_on :macos
 
   binary "foo"
 

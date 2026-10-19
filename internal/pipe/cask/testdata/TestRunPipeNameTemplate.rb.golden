@@ -3,10 +3,8 @@ cask "foo_is_bar" do
   version "1.0.1"
 
   on_macos do
-    on_intel do
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      url "https://dummyhost/download/v#{version}/bin.tar.gz"
-    end
+    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    url "https://dummyhost/download/v#{version}/bin.tar.gz"
     on_arm do
       def caveats
         <<~EOS
@@ -25,6 +23,7 @@ cask "foo_is_bar" do
   livecheck do
     skip "Auto-generated on release."
   end
+  depends_on :macos
 
   binary "foo"
 

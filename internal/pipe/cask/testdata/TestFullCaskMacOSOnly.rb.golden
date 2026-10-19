@@ -20,6 +20,7 @@ cask "test" do
   livecheck do
     skip "Auto-generated on release."
   end
+  depends_on :macos
 
   binary "mybin"
   manpage "mybin.1.gz"

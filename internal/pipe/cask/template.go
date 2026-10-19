@@ -18,6 +18,8 @@ type templateData struct {
 	Version              string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
+	SingleMacOSArch      string
+	SingleLinuxArch      string
 	HasOnlyAmd64MacOsPkg bool
 	HasOnlyBinaryPkgs    bool
 	HasMixedPackageTypes bool
