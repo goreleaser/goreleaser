@@ -15,6 +15,7 @@ cask "foo" do
   livecheck do
     skip "Auto-generated on release."
   end
+  depends_on :macos
 
   manpage "man/foo.1.gz"
 
