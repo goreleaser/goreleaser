@@ -188,6 +188,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Kazuma Watanabe](https://sil.hatenablog.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [buonanotte immagini](https://buonanotteimmagini.org/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [buongiorno immagini](https://buongiornoimmagine.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Horoskopi](https://horoskopishqip.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
