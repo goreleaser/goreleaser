@@ -30,7 +30,8 @@ packslip:
 
   # IDs of the archives and binaries to describe.
   #
-  # Default: all of them.
+  # Default: all of them. Without a `url_template`, only those the release
+  # uploads (see `release.ids`).
   ids:
     - foo
     - bar
@@ -75,6 +76,13 @@ identity is a verified email address.
   libraries, so they fit both glibc and musl hosts. Linux builds that link
   dynamically (cgo) are recorded as `gnu`, or `musl` when the build target
   says so.
+- Builds for a CPU level other than Go's default, such as `goamd64: v3` or
+  `goarm64: v8.2`, carry that level as the packslip `variant` (`v3`, `v8.2`),
+  so installers pick the default-level build unless asked for another. A
+  `goarm64` option such as `v8.2,lse` becomes `v8.2-lse`, and a `goarm`
+  softfloat build for ARMv6 or ARMv7 has the variant `softfloat`.
+- The source repository, commit, and tag, taken from the git remote of the
+  checkout, which can differ from the repository the release is published to.
 
 The manifest is created after the artifacts are signed and notarized, so it
 describes the final bytes that are uploaded. It is not created in

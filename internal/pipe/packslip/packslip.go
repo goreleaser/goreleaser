@@ -3,7 +3,9 @@
 package packslip
 
 import (
+	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -74,7 +76,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return pipe.ErrSkipPublishEnabled
 	}
 	if cfg.Project == "" {
-		return fmt.Errorf("packslip.project must be set when the release is not on GitHub")
+		return errors.New("packslip.project must be set when the release is not on GitHub")
 	}
 
 	filters := []artifact.Filter{
@@ -83,12 +85,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	if len(cfg.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(cfg.IDs...))
 	}
+	urlTemplate := cfg.URLTemplate
+	if urlTemplate == "" {
+		// the URLs point at the release, so only describe what it uploads.
+		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
+	}
 	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(artifacts) == 0 {
 		return pipe.Skip("no archives or binaries to describe")
 	}
 
-	urlTemplate := cfg.URLTemplate
 	if urlTemplate == "" {
 		cl, err := client.NewReleaseClient(ctx)
 		if err != nil {
@@ -126,9 +132,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		PublishedAt: time.Now().UTC(),
 		Identity:    identity,
 	}
-	if gh := ctx.Config.Release.GitHub; gh.Owner != "" && gh.Name != "" {
+	if repo := sourceRepo(ctx.Git.URL); repo != "" {
 		predicate.Source = &packslip.Source{
-			Repo:   "https://github.com/" + gh.Owner + "/" + gh.Name,
+			Repo:   repo,
 			Commit: ctx.Git.FullCommit,
 			Tag:    ctx.Git.CurrentTag,
 		}
@@ -171,11 +177,12 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 		format = "raw"
 	}
 	out := packslip.Artifact{
-		Name:   a.Name,
-		OS:     a.Goos,
-		Arch:   packslip.ArchFromGo(a.Goarch, a.Goarm),
-		URL:    url,
-		Format: format,
+		Name:    a.Name,
+		OS:      a.Goos,
+		Arch:    packslip.ArchFromGo(a.Goarch, a.Goarm),
+		URL:     url,
+		Format:  format,
+		Variant: cpuVariant(a),
 	}
 	if a.Goos == "linux" {
 		switch {
@@ -193,13 +200,13 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 	case artifact.UploadableBinary:
 		bin := artifact.ExtraOr(*a, artifact.ExtraBinary, "")
 		if bin != "" {
-			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", bin)}
+			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", path.Base(bin))}
 		}
 	default:
 		wrap := artifact.ExtraOr(*a, artifact.ExtraWrappedIn, "")
 		for _, bin := range artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}) {
 			if isBare(format) {
-				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, bin))
+				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, path.Base(bin)))
 				break
 			}
 			out.Bin = append(out.Bin, packslip.NewBin(path.Join(wrap, bin)))
@@ -214,4 +221,69 @@ func isBare(format string) bool {
 		return true
 	}
 	return false
+}
+
+// cpuVariant returns the packslip variant for a build that targets a CPU
+// level other than Go's default, so that builds of the same platform stay
+// distinct. Default-level builds have no variant, so consumers that do not
+// ask for one get the most compatible build.
+func cpuVariant(a *artifact.Artifact) string {
+	level, def := "", ""
+	switch a.Goarch {
+	case "amd64":
+		level, def = a.Goamd64, "v1"
+	case "386":
+		level, def = a.Go386, "sse2"
+	case "arm64":
+		level, def = a.Goarm64, "v8.0"
+	case "mips", "mipsle", "mips64", "mips64le":
+		level, def = a.Gomips, "hardfloat"
+	case "ppc64", "ppc64le":
+		level, def = a.Goppc64, "power8"
+	case "riscv64":
+		level, def = a.Goriscv64, "rva20u64"
+	case "arm":
+		// ArchFromGo keeps the GOARM version; only a float option that is
+		// not the version's default is left to distinguish.
+		version, float, _ := strings.Cut(a.Goarm, ",")
+		if float == "softfloat" && version != "5" {
+			return "softfloat"
+		}
+		return ""
+	}
+	if level == "" || level == def {
+		return ""
+	}
+	// GOARM64 options are comma separated, which a variant cannot contain.
+	return strings.ReplaceAll(level, ",", "-")
+}
+
+// sourceRepo normalizes a git remote URL, such as git@github.com:acme/tool.git,
+// to https://github.com/acme/tool. It returns "" when the URL is not
+// understood.
+func sourceRepo(remote string) string {
+	s := strings.TrimSuffix(strings.TrimRight(strings.TrimSpace(remote), "/"), ".git")
+	var host, repoPath string
+	if strings.Contains(s, "://") {
+		u, err := url.Parse(s)
+		if err != nil {
+			return ""
+		}
+		host, repoPath = u.Hostname(), u.Path
+	} else {
+		// scp-like syntax: [user@]host:owner/name
+		var ok bool
+		host, repoPath, ok = strings.Cut(s, ":")
+		if !ok {
+			return ""
+		}
+		if _, h, ok := strings.Cut(host, "@"); ok {
+			host = h
+		}
+	}
+	repoPath = strings.Trim(repoPath, "/")
+	if host == "" || !strings.Contains(repoPath, "/") {
+		return ""
+	}
+	return "https://" + host + "/" + repoPath
 }
