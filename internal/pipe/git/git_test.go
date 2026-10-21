@@ -342,6 +342,28 @@ func TestTagSortOrderPrerelease(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
+// TestTagSortOrderPrereleaseDefault ensures that, without explicitly setting
+// prerelease_suffix, release tags still sort after their -rcN pre-releases.
+// See https://github.com/goreleaser/goreleaser/issues/7209.
+func TestTagSortOrderPrereleaseDefault(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitCommit(t, "commit3")
+	testlib.GitTag(t, "v0.0.1-rc1")
+	testlib.GitTag(t, "v0.0.1-rc2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Git: config.Git{
+			TagSort: "-version:refname",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+}
+
 func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

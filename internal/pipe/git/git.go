@@ -33,6 +33,12 @@ func setDefaults(ctx *context.Context) {
 	if ctx.Config.Git.TagSort == "" {
 		ctx.Config.Git.TagSort = "-version:refname"
 	}
+	// Default to "-" so that tags like v1.0.0-rc1 sort before v1.0.0, matching
+	// semver's pre-release semantics. Without this, git's versionsort treats
+	// v1.0.0-rc1 as a longer string than v1.0.0 and sorts it after the release.
+	if ctx.Config.Git.PrereleaseSuffix == "" {
+		ctx.Config.Git.PrereleaseSuffix = "-"
+	}
 }
 
 // Run the pipe.
