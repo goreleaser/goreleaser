@@ -669,14 +669,17 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		packageType = artifact.MSIX
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    packageType,
-		Name:    packageFilename,
-		Path:    path,
-		Goos:    artifacts[0].Goos,
-		Goarch:  artifacts[0].Goarch,
-		Goarm:   artifacts[0].Goarm,
-		Gomips:  artifacts[0].Gomips,
-		Goamd64: artifacts[0].Goamd64,
+		Type:      packageType,
+		Name:      packageFilename,
+		Path:      path,
+		Goos:      artifacts[0].Goos,
+		Goarch:    artifacts[0].Goarch,
+		Goarm:     artifacts[0].Goarm,
+		Gomips:    artifacts[0].Gomips,
+		Goamd64:   artifacts[0].Goamd64,
+		Go386:     artifacts[0].Go386,
+		Goppc64:   artifacts[0].Goppc64,
+		Goriscv64: artifacts[0].Goriscv64,
 		Extra: map[string]any{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
