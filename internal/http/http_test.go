@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -994,6 +996,62 @@ func TestUploadReusesHTTPClient(t *testing.T) {
 	defer mu.Unlock()
 	require.Equal(t, 2, attempts["/blah/2.1.0/retry.bin"], "retryable artifact should have been attempted twice")
 	require.Len(t, addrs, 1, "expected a single reused connection, got %v", addrs)
+}
+
+func TestUploadClosesOwnedConnections(t *testing.T) {
+	for _, status := range []int{http.StatusCreated, http.StatusBadRequest} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			states := make(chan http.ConnState, 2)
+			srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if _, err := io.Copy(io.Discard, r.Body); err != nil {
+					t.Error(err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(status)
+			}))
+			srv.Config.ConnState = func(_ net.Conn, state http.ConnState) {
+				if state == http.StateIdle || state == http.StateClosed {
+					states <- state
+				}
+			}
+			srv.StartTLS()
+			t.Cleanup(srv.Close)
+
+			path := filepath.Join(t.TempDir(), "asset.bin")
+			require.NoError(t, os.WriteFile(path, []byte("asset"), 0o644))
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: "asset.bin",
+				Path: path,
+				Type: artifact.UploadableBinary,
+			})
+			err := Upload(ctx, []config.Upload{{
+				Name:         "cleanup",
+				Mode:         ModeBinary,
+				Target:       srv.URL,
+				TrustedCerts: cert(srv),
+			}}, "test", func(r *http.Response) error {
+				if r.StatusCode != http.StatusCreated {
+					return fmt.Errorf("unexpected http status code: %d", r.StatusCode)
+				}
+				return nil
+			})
+			if status == http.StatusCreated {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, "unexpected http status code: 400")
+			}
+			for _, want := range []http.ConnState{http.StateIdle, http.StateClosed} {
+				select {
+				case got := <-states:
+					require.Equal(t, want, got)
+				case <-time.After(5 * time.Second):
+					t.Fatalf("connection did not reach %s after Upload returned", want)
+				}
+			}
+		})
+	}
 }
 
 func TestGetHTTPClientIsolation(t *testing.T) {
