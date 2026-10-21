@@ -392,6 +392,9 @@
 					"formats": {
 						"$ref": "#/$defs/StringArray"
 					},
+					"zstd": {
+						"$ref": "#/$defs/Zstd"
+					},
 					"format_overrides": {
 						"items": {
 							"$ref": "#/$defs/FormatOverride"
@@ -2409,6 +2412,12 @@
 			},
 			"HomebrewCaskHook": {
 				"properties": {
+					"install_steps": {
+						"type": "string"
+					},
+					"uninstall_steps": {
+						"type": "string"
+					},
 					"install": {
 						"type": "string"
 					},
@@ -7004,6 +7013,26 @@
 				"required": [
 					"locale"
 				]
+			},
+			"Zstd": {
+				"properties": {
+					"level": {
+						"type": "string",
+						"enum": [
+							"fastest",
+							"default",
+							"better",
+							"best"
+						]
+					},
+					"window_size": {
+						"type": "integer",
+						"maximum": 29,
+						"minimum": 10
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			}
 		},
 		"description": "goreleaser configuration definition file"

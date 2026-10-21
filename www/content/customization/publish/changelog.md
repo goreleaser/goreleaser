@@ -195,6 +195,7 @@ changelog:
     # Which model to use.
     #
     # Defaults to the provider's default model.
+    # Required for Ollama.
     model: o1-mini
 
     # The prompt to use..
@@ -229,9 +230,17 @@ You can of course set anything you wish makes sense in the `prompt` field.
 Don't forget to give it the current release notes as well, available as
 `{{ .ReleaseNotes }}`.
 
-This is the [default
-prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3ab219/raw/70e3e7f0ba85b02a23692d150e3a0d1752c79d64/prompt.md)
-in case you're interested.
-
 You can test this by using the
 `goreleaser changelog` command.
+
+For Ollama, set `model` to a model available on your server. GoReleaser uses
+Ollama's OpenAI-compatible `/v1/chat/completions` endpoint. Set `OLLAMA_HOST` to
+change the server address; it defaults to `http://127.0.0.1:11434`. An OpenAI API
+key is not required, and OpenAI environment settings are not sent to Ollama.
+
+Anthropic responses may contain thinking blocks. GoReleaser skips those and
+concatenates all text blocks in order.
+
+If the AI returns empty or whitespace-only release notes, or reports that its
+output was truncated, GoReleaser fails instead of writing or publishing those
+notes.
