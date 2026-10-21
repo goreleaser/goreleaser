@@ -99,11 +99,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 
-	token, err := oidcToken(ctx)
+	token, err := packslip.AmbientIDToken(ctx)
 	if err != nil {
 		return err
 	}
-	identity, err := identityFromToken(token)
+	identity, err := packslip.IdentityFromToken(token)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 	out := packslip.Artifact{
 		Name:   a.Name,
 		OS:     a.Goos,
-		Arch:   arch(a),
+		Arch:   packslip.ArchFromGo(a.Goarch, a.Goarm),
 		URL:    url,
 		Format: format,
 	}
@@ -193,15 +193,13 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 	case artifact.UploadableBinary:
 		bin := artifact.ExtraOr(*a, artifact.ExtraBinary, "")
 		if bin != "" {
-			out.Bin = []packslip.Bin{packslip.NamedBin(a.Name, bin)}
+			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", bin)}
 		}
 	default:
 		wrap := artifact.ExtraOr(*a, artifact.ExtraWrappedIn, "")
 		for _, bin := range artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}) {
 			if isBare(format) {
-				// a compressed single executable: the file inside has the
-				// archive's name without its compression suffix.
-				out.Bin = append(out.Bin, packslip.NamedBin(strings.TrimSuffix(a.Name, "."+format), bin))
+				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, bin))
 				break
 			}
 			out.Bin = append(out.Bin, packslip.NewBin(path.Join(wrap, bin)))
@@ -216,40 +214,4 @@ func isBare(format string) bool {
 		return true
 	}
 	return false
-}
-
-// arch translates a GOARCH into packslip's spelling. A universal macOS binary
-// has no architecture.
-func arch(a *artifact.Artifact) string {
-	switch a.Goarch {
-	case "amd64":
-		return "x86_64"
-	case "arm64":
-		return "aarch64"
-	case "386":
-		return "i686"
-	case "arm":
-		return "armv" + cmpOr(a.Goarm, "6")
-	case "ppc64le":
-		return "powerpc64le"
-	case "ppc64":
-		return "powerpc64"
-	case "loong64":
-		return "loongarch64"
-	case "mipsle":
-		return "mipsel"
-	case "mips64le":
-		return "mips64el"
-	case "all":
-		return ""
-	default:
-		return a.Goarch
-	}
-}
-
-func cmpOr(a, b string) string {
-	if a != "" {
-		return a
-	}
-	return b
 }

@@ -56,46 +56,6 @@ func fakeToken(t *testing.T, claims map[string]any) string {
 	return "e30." + base64.RawURLEncoding.EncodeToString(payload) + ".sig"
 }
 
-func TestIdentityFromToken(t *testing.T) {
-	t.Run("github actions", func(t *testing.T) {
-		id, err := identityFromToken(fakeToken(t, map[string]any{
-			"iss":              "https://token.actions.githubusercontent.com",
-			"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
-		}))
-		require.NoError(t, err)
-		require.Equal(t, packslip.Identity{
-			Scheme: "sigstore-oidc",
-			KeyID:  "https://github.com/acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
-			Issuer: "https://token.actions.githubusercontent.com",
-		}, id)
-	})
-	t.Run("verified email", func(t *testing.T) {
-		id, err := identityFromToken(fakeToken(t, map[string]any{
-			"iss": "https://accounts.example.com", "email": "me@example.com", "email_verified": true,
-		}))
-		require.NoError(t, err)
-		require.Equal(t, "me@example.com", id.KeyID)
-	})
-	t.Run("unverified email", func(t *testing.T) {
-		_, err := identityFromToken(fakeToken(t, map[string]any{
-			"iss": "https://accounts.example.com", "email": "me@example.com",
-		}))
-		require.Error(t, err)
-	})
-	t.Run("not a jwt", func(t *testing.T) {
-		_, err := identityFromToken("nope")
-		require.Error(t, err)
-	})
-}
-
-func TestOIDCTokenMissing(t *testing.T) {
-	t.Setenv("SIGSTORE_ID_TOKEN", "")
-	t.Setenv("ACTIONS_ID_TOKEN_REQUEST_URL", "")
-	t.Setenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN", "")
-	_, err := oidcToken(testctx.Wrap(t.Context()))
-	require.ErrorContains(t, err, "id-token: write")
-}
-
 func TestDescribe(t *testing.T) {
 	for name, tt := range map[string]struct {
 		in   artifact.Artifact
