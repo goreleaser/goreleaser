@@ -34,6 +34,7 @@ func TestParseBaseImage(t *testing.T) {
 		"scratch":                "scratch",
 		"lowercase-from":         "alpine:3.20",
 		"quoted-arg-default":     "alpine:3.20",
+		"arg-references-arg":     "alpine:3.20",
 	} {
 		t.Run(file, func(t *testing.T) {
 			content, err := os.ReadFile(filepath.Join("testdata", "dockerfiles", file))
@@ -184,4 +185,61 @@ func TestMakeArgsDoesNotDiscardBaseImageArgumentError(t *testing.T) {
 		BuildArgs:  map[string]string{"BASE": "{{ .BaseImage }}"},
 	}, nil)
 	testlib.RequireTemplateError(t, err)
+}
+
+func TestMakeArgsWithBaseImageNestedBuildArgOverride(t *testing.T) {
+	const ref = "alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	for name, defaults := range map[string]string{
+		"one level":  "ARG ALPINE_REF=alpine:3.20\nARG BASE=${ALPINE_REF}\n",
+		"two levels": "ARG ALPINE_REF=alpine:3.20\nARG INTERMEDIATE=${ALPINE_REF}\nARG BASE=${INTERMEDIATE}\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			dockerfile := filepath.Join(t.TempDir(), "Dockerfile")
+			require.NoError(t, os.WriteFile(dockerfile, []byte(defaults+"FROM ${BASE}\n"), 0o644))
+			da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+				Dockerfile:  dockerfile,
+				Images:      []string{"ghcr.io/foo/bar"},
+				Tags:        []string{"latest"},
+				Platforms:   []string{"linux/amd64"},
+				BuildArgs:   map[string]string{"ALPINE_REF": ref},
+				Annotations: map[string]string{"org.opencontainers.image.base.name": "{{.BaseImage}}"},
+			}, nil)
+			require.NoError(t, err)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+ref)
+		})
+	}
+}
+
+func TestMakeArgsWithBaseImageUnrelatedGlobalArgDefault(t *testing.T) {
+	const digest = "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	const ref = "alpine@" + digest
+
+	for name, from := range map[string]string{
+		"literal base": "FROM " + ref,
+		"arg base":     "ARG BASE=" + ref + "\nFROM ${BASE}",
+	} {
+		t.Run(name, func(t *testing.T) {
+			dockerfile := filepath.Join(t.TempDir(), "Dockerfile")
+			require.NoError(t, os.WriteFile(dockerfile, []byte("ARG BASE_NAME\nARG BASE_DIGEST\nARG METADATA_NAME=${BASE_NAME}\nARG METADATA_DIGEST=${BASE_DIGEST}\n"+from+"\n"), 0o644))
+			da, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
+				Dockerfile: dockerfile,
+				Images:     []string{"ghcr.io/foo/bar"},
+				Tags:       []string{"latest"},
+				Platforms:  []string{"linux/amd64"},
+				BuildArgs: map[string]string{
+					"BASE_NAME":   "{{ .BaseImage }}",
+					"BASE_DIGEST": "{{ .BaseImageDigest }}",
+				},
+				Annotations: map[string]string{
+					"org.opencontainers.image.base.name":   "{{ .BaseImage }}",
+					"org.opencontainers.image.base.digest": "{{ .BaseImageDigest }}",
+				},
+			}, nil)
+			require.NoError(t, err)
+			require.Contains(t, da.args, "BASE_NAME="+ref)
+			require.Contains(t, da.args, "BASE_DIGEST="+digest)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.name="+ref)
+			require.Contains(t, annotationsOf(da.args), "org.opencontainers.image.base.digest="+digest)
+		})
+	}
 }
