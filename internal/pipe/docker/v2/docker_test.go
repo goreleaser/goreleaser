@@ -690,9 +690,19 @@ func TestToPlatform(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "386",
 		},
+		"linux/386/softfloat": {
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "softfloat",
+		},
 		"linux/ppc64le": {
 			Goos:   "linux",
 			Goarch: "ppc64le",
+		},
+		"linux/ppc64le/power9": {
+			Goos:    "linux",
+			Goarch:  "ppc64le",
+			Goppc64: "power9",
 		},
 		"linux/s390x": {
 			Goos:   "linux",
@@ -701,6 +711,11 @@ func TestToPlatform(t *testing.T) {
 		"linux/riscv64": {
 			Goos:   "linux",
 			Goarch: "riscv64",
+		},
+		"linux/riscv64/rva22u64": {
+			Goos:      "linux",
+			Goarch:    "riscv64",
+			Goriscv64: "rva22u64",
 		},
 	} {
 		t.Run(expected, func(t *testing.T) {
@@ -737,13 +752,19 @@ func TestToPlatform(t *testing.T) {
 
 func TestParsePlatform(t *testing.T) {
 	for input, output := range map[string]platform{
-		"linux/amd64":    {os: "linux", arch: "amd64", amd64: "v1"},
-		"linux/amd64/v3": {os: "linux", arch: "amd64", amd64: "v3"},
-		"linux/arm":      {os: "linux", arch: "arm", arm: "7"},
-		"linux/arm/v6":   {os: "linux", arch: "arm", arm: "6"},
-		"linux/arm64":    {os: "linux", arch: "arm64", arm64: "v8.0"},
-		"linux/arm64/v8": {os: "linux", arch: "arm64", arm64: "v8.0"},
-		"linux":          {os: "linux"},
+		"linux/amd64":            {os: "linux", arch: "amd64", amd64: "v1"},
+		"linux/amd64/v3":         {os: "linux", arch: "amd64", amd64: "v3"},
+		"linux/arm":              {os: "linux", arch: "arm", arm: "7"},
+		"linux/arm/v6":           {os: "linux", arch: "arm", arm: "6"},
+		"linux/arm64":            {os: "linux", arch: "arm64", arm64: "v8.0"},
+		"linux/arm64/v8":         {os: "linux", arch: "arm64", arm64: "v8.0"},
+		"linux/386":              {os: "linux", arch: "386", go386: "sse2"},
+		"linux/386/softfloat":    {os: "linux", arch: "386", go386: "softfloat"},
+		"linux/ppc64le":          {os: "linux", arch: "ppc64le", ppc64: "power8"},
+		"linux/ppc64le/power9":   {os: "linux", arch: "ppc64le", ppc64: "power9"},
+		"linux/riscv64":          {os: "linux", arch: "riscv64", riscv64: "rva20u64"},
+		"linux/riscv64/rva22u64": {os: "linux", arch: "riscv64", riscv64: "rva22u64"},
+		"linux":                  {os: "linux"},
 	} {
 		t.Run(input, func(t *testing.T) {
 			require.Equal(t, output, parsePlatform(input))

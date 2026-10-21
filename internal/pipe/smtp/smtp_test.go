@@ -109,7 +109,8 @@ func requireTLSValidationError(t *testing.T, port int, serve func(net.Listener, 
 	require.Error(t, err)
 
 	select {
-	case <-serverErr:
+	case serr := <-serverErr:
+		require.Error(t, serr, "server must reject the client's certificate verification")
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for SMTP TLS handshake")
 	}

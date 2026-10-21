@@ -542,6 +542,36 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact, dockerfile s
 			continue
 		}
 
+		// Buildx keeps explicit variants for these architectures in
+		// TARGETPLATFORM, including an explicit baseline variant. Copy to
+		// each requested path that selects this artifact.
+		if len(d.Platforms) > 0 {
+			switch art.Goarch {
+			case "386", "ppc64le", "riscv64":
+				for _, requested := range d.Platforms {
+					plat := parsePlatform(requested)
+					if plat.os != art.Goos || plat.arch != art.Goarch {
+						continue
+					}
+					var matches bool
+					switch art.Goarch {
+					case "386":
+						matches = artifact.ByGo386(plat.go386)(art)
+					case "ppc64le":
+						matches = artifact.ByGoppc64(plat.ppc64)(art)
+					case "riscv64":
+						matches = artifact.ByGoriscv64(plat.riscv64)(art)
+					}
+					if matches {
+						if err := copyArtifact(art.Path, filepath.Join(tmp, requested, art.Name)); err != nil {
+							return "", err
+						}
+					}
+				}
+				continue
+			}
+		}
+
 		plat, err := toPlatform(art)
 		if err != nil {
 			return "", fmt.Errorf("failed to make dir for artifact: %w", err)
@@ -583,6 +613,15 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 		}
 		if plat.amd64 != "" {
 			filters = append(filters, artifact.ByGoamd64(plat.amd64))
+		}
+		if plat.go386 != "" {
+			filters = append(filters, artifact.ByGo386(plat.go386))
+		}
+		if plat.ppc64 != "" {
+			filters = append(filters, artifact.ByGoppc64(plat.ppc64))
+		}
+		if plat.riscv64 != "" {
+			filters = append(filters, artifact.ByGoriscv64(plat.riscv64))
 		}
 		platFilters = append(platFilters, artifact.And(filters...))
 	}
@@ -626,8 +665,23 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 		return "", fmt.Errorf("unsupported OS: %q", a.Goos)
 	}
 	switch a.Goarch {
-	case "386", "ppc64le", "s390x", "riscv64":
+	case "s390x":
 		parts = append(parts, a.Goarch)
+	case "386":
+		parts = append(parts, a.Goarch)
+		if a.Go386 != "" && a.Go386 != "sse2" {
+			parts = append(parts, a.Go386)
+		}
+	case "ppc64le":
+		parts = append(parts, a.Goarch)
+		if a.Goppc64 != "" && a.Goppc64 != "power8" {
+			parts = append(parts, a.Goppc64)
+		}
+	case "riscv64":
+		parts = append(parts, a.Goarch)
+		if a.Goriscv64 != "" && a.Goriscv64 != "rva20u64" {
+			parts = append(parts, a.Goriscv64)
+		}
 	case "arm64":
 		parts = append(parts, a.Goarch)
 		// buildx drops a trailing `.0` and the baseline v8, but keeps
@@ -659,6 +713,9 @@ type platform struct {
 	arm      string
 	arm64    string
 	amd64    string
+	go386    string
+	ppc64    string
+	riscv64  string
 }
 
 func parsePlatform(p string) platform {
@@ -675,6 +732,12 @@ func parsePlatform(p string) platform {
 		switch result.arch {
 		case "amd64":
 			result.amd64 = "v1"
+		case "386":
+			result.go386 = "sse2"
+		case "ppc64le":
+			result.ppc64 = "power8"
+		case "riscv64":
+			result.riscv64 = "rva20u64"
 		case "arm":
 			result.arm = "7"
 		case "arm64":
@@ -685,6 +748,12 @@ func parsePlatform(p string) platform {
 		switch result.arch {
 		case "amd64":
 			result.amd64 = toGoamd64(parts[2])
+		case "386":
+			result.go386 = parts[2]
+		case "ppc64le":
+			result.ppc64 = parts[2]
+		case "riscv64":
+			result.riscv64 = parts[2]
 		case "arm":
 			result.arm = strings.TrimPrefix(parts[2], "v")
 		case "arm64":

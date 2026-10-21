@@ -337,6 +337,9 @@
 					"formats": {
 						"$ref": "#/$defs/StringArray"
 					},
+					"zstd": {
+						"$ref": "#/$defs/Zstd"
+					},
 					"format_overrides": {
 						"items": {
 							"$ref": "#/$defs/FormatOverride"
@@ -5674,6 +5677,26 @@
 				"required": [
 					"locale"
 				]
+			},
+			"Zstd": {
+				"properties": {
+					"level": {
+						"type": "string",
+						"enum": [
+							"fastest",
+							"default",
+							"better",
+							"best"
+						]
+					},
+					"window_size": {
+						"type": "integer",
+						"maximum": 29,
+						"minimum": 10
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			}
 		},
 		"description": "goreleaser configuration definition file"

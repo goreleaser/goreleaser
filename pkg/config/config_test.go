@@ -34,6 +34,22 @@ nfpms:
 	require.Equal(t, "http://goreleaser.github.io", prop.NFPMs[0].Homepage, "yaml did not load correctly")
 }
 
+func TestArchiveZstdConfig(t *testing.T) {
+	project, err := LoadReader(strings.NewReader(`
+version: 2
+archives:
+  - formats: [tar.zst]
+    zstd:
+      level: best
+      window_size: 27
+`))
+	require.NoError(t, err)
+	require.Len(t, project.Archives, 1)
+	require.Equal(t, "best", project.Archives[0].Zstd.Level)
+	require.NotNil(t, project.Archives[0].Zstd.WindowSize)
+	require.Equal(t, 27, *project.Archives[0].Zstd.WindowSize)
+}
+
 func TestArrayEmptyVsNil(t *testing.T) {
 	conf := `
 builds: []
