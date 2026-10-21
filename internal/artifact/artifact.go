@@ -679,6 +679,30 @@ func ByGoamd64s(s ...string) Filter {
 	return autoOr(s, ByGoamd64)
 }
 
+// ByGo386 filters by GO386, treating missing metadata as the baseline.
+func ByGo386(s string) Filter {
+	return func(a *Artifact) bool {
+		return s == a.Go386 ||
+			(a.Goarch == "386" && a.Go386 == "" && s == "sse2")
+	}
+}
+
+// ByGoppc64 filters by GOPPC64, treating missing metadata as the baseline.
+func ByGoppc64(s string) Filter {
+	return func(a *Artifact) bool {
+		return s == a.Goppc64 ||
+			((a.Goarch == "ppc64" || a.Goarch == "ppc64le") && a.Goppc64 == "" && s == "power8")
+	}
+}
+
+// ByGoriscv64 filters by GORISCV64, treating missing metadata as the baseline.
+func ByGoriscv64(s string) Filter {
+	return func(a *Artifact) bool {
+		return s == a.Goriscv64 ||
+			(a.Goarch == "riscv64" && a.Goriscv64 == "" && s == "rva20u64")
+	}
+}
+
 // ByType is a predefined filter that filters by the given type.
 func ByType(t Type) Filter {
 	return func(a *Artifact) bool {
