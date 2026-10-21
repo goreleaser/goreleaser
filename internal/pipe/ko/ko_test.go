@@ -3,6 +3,7 @@ package ko
 import (
 	"archive/tar"
 	stdctx "context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -479,6 +480,17 @@ func TestPublishPipeSuccess(t *testing.T) {
 				switch table.SBOM {
 				case "spdx", "":
 					require.Equal(t, "text/spdx+json", string(mediaType))
+
+					rc, err := layers[0].Uncompressed()
+					require.NoError(t, err)
+					defer rc.Close()
+					var doc struct {
+						CreationInfo struct {
+							Creators []string `json:"creators"`
+						} `json:"creationInfo"` //nolint:tagliatelle // SPDX field name
+					}
+					require.NoError(t, json.NewDecoder(rc).Decode(&doc))
+					require.Contains(t, doc.CreationInfo.Creators, "Tool: ko "+koVersion())
 				default:
 					require.Fail(t, "unknown SBOM type", table.SBOM)
 				}
@@ -962,3 +974,7 @@ var gocacheOnce = sync.OnceValue(func() string {
 	}
 	return ""
 })
+
+func TestKoVersion(t *testing.T) {
+	require.Regexp(t, `^v\d+\.\d+\.\d+`, koVersion())
+}

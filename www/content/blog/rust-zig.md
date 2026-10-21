@@ -454,7 +454,7 @@ For reference, these are the tools and versions used:
 [unibins-docs]: /customization/builds/universalbinaries/
 [nFPM]: https://nfpm.goreleaser.com
 [nfpm-docs]: /customization/package/nfpm/
-[cosign]: https://github.com/sigstore/cosign.md
+[cosign]: https://github.com/sigstore/cosign
 [sign-docs]: /customization/sign/sign/
 [sbom-docs]: /customization/sbom/
 [brew-docs]: /customization/publish/homebrew_casks/
