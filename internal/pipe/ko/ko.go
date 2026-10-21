@@ -197,15 +197,17 @@ type buildOptions struct {
 	preserveImportPaths bool
 	baseImportPaths     bool
 	localDomain         string
+	linuxCapabilities   []string
 }
 
 func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
 	buildOptions := []build.Option{
 		build.WithConfig(map[string]build.Config{
 			o.importPath: {
-				Ldflags: o.ldflags,
-				Flags:   o.flags,
-				Env:     o.env,
+				Ldflags:           o.ldflags,
+				Flags:             o.flags,
+				Env:               o.env,
+				LinuxCapabilities: o.linuxCapabilities,
 			},
 		}),
 		build.WithPlatforms(o.platforms...),
@@ -460,6 +462,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
+		linuxCapabilities:   cfg.LinuxCapabilities,
 	}
 
 	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
