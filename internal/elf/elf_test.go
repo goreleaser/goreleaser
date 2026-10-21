@@ -21,9 +21,10 @@ func TestIsDynamicallyLinked(t *testing.T) {
 		name   string
 		source string
 		want   bool
+		libc   string
 	}{
-		{"statically linked", staticallyLinked, false},
-		{"dynamically linked", dynamicallyLinked, true},
+		{"statically linked", staticallyLinked, false, ""},
+		{"dynamically linked", dynamicallyLinked, true, "gnu"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -37,7 +38,19 @@ func TestIsDynamicallyLinked(t *testing.T) {
 			require.NoError(t, err, "go build failed: %s", output)
 
 			require.Equal(t, tc.want, IsDynamicallyLinked(binPath))
+			require.Equal(t, tc.libc, Libc(binPath))
 		})
+	}
+}
+
+func TestLibcFromInterpreter(t *testing.T) {
+	for interpreter, want := range map[string]string{
+		"/lib64/ld-linux-x86-64.so.2": "gnu",
+		"/lib/ld-musl-aarch64.so.1":   "musl",
+		"/lib/ld-uClibc.so.0":         "",
+		"":                            "",
+	} {
+		require.Equal(t, want, libcFromInterpreter(interpreter), interpreter)
 	}
 }
 

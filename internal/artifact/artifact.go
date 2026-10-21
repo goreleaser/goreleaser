@@ -259,6 +259,12 @@ const (
 	ExtranDynLink   = "DynamicallyLinked"
 )
 
+const (
+	ExtraABI          = "Abi"
+	ExtraLibc         = "Libc"
+	ExtraSkipChecksum = "SkipChecksum"
+)
+
 // Extras represents the extra fields in an artifact.
 type Extras map[string]any
 

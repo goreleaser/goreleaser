@@ -105,6 +105,7 @@ func TestDescribe(t *testing.T) {
 				Extra: map[string]any{
 					artifact.ExtraFormat: "tar.gz", artifact.ExtraBinaries: []string{"tool"},
 					artifact.ExtranDynLink: true,
+					artifact.ExtraLibc:     "gnu",
 				},
 			},
 			want: packslip.Artifact{
@@ -152,6 +153,28 @@ func TestDescribe(t *testing.T) {
 				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NamedBin("tool", "tool")},
 			},
 		},
+		"tar xz alias": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: "tool_linux_amd64.txz", Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraFormat: "txz", artifact.ExtraBinaries: []string{"tool"}},
+			},
+			want: packslip.Artifact{
+				Name: "tool_linux_amd64.txz", OS: "linux", Arch: "x86_64", Format: "tar.xz",
+				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NewBin("tool")},
+				Requires: &packslip.Requires{Libs: &[]string{}},
+			},
+		},
+		"tar zstd alias": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: "tool_linux_amd64.tzst", Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraFormat: "tzst", artifact.ExtraBinaries: []string{"tool"}},
+			},
+			want: packslip.Artifact{
+				Name: "tool_linux_amd64.tzst", OS: "linux", Arch: "x86_64", Format: "tar.zst",
+				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NewBin("tool")},
+				Requires: &packslip.Requires{Libs: &[]string{}},
+			},
+		},
 		"bare binary in a directory": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableBinary, Name: "app_linux_amd64", Goos: "linux", Goarch: "amd64",
@@ -186,7 +209,8 @@ func TestDescribe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			got := describe(&tt.in, "https://example.com/x")
+			got, err := describe(&tt.in, "https://example.com/x")
+			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 			// every case must also form a valid statement on its own.
 			file := filepath.Join(t.TempDir(), tt.in.Name)
@@ -204,6 +228,49 @@ func TestDescribe(t *testing.T) {
 	}
 }
 
+func TestDescribeLinuxLibc(t *testing.T) {
+	for name, tt := range map[string]struct {
+		in   artifact.Artifact
+		want string
+		err  string
+	}{
+		"static": {
+			in: artifact.Artifact{Goos: "linux", Goarch: "amd64"},
+		},
+		"glibc": {
+			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{
+				artifact.ExtranDynLink: true,
+				artifact.ExtraLibc:     "gnu",
+			}},
+			want: "gnu",
+		},
+		"musl": {
+			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{
+				artifact.ExtranDynLink: true,
+				artifact.ExtraLibc:     "musl",
+			}},
+			want: "musl",
+		},
+		"unknown dynamic": {
+			in:  artifact.Artifact{Goos: "linux", Goarch: "amd64", Name: "tool", Extra: map[string]any{artifact.ExtranDynLink: true}},
+			err: "cannot determine libc",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, err := describe(&tt.in, "https://example.com/x")
+			if tt.err != "" {
+				require.ErrorContains(t, err, tt.err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got.Libc)
+			if tt.want == "" {
+				require.NotNil(t, got.Requires)
+			}
+		})
+	}
+}
+
 func TestCPUVariant(t *testing.T) {
 	for want, a := range map[string]artifact.Artifact{
 		"":          {Goarch: "amd64", Goamd64: "v1"},
@@ -215,10 +282,16 @@ func TestCPUVariant(t *testing.T) {
 	} {
 		require.Equal(t, want, cpuVariant(&a), a)
 	}
-	for _, goarm := range []string{"", "6", "7,hardfloat", "5,softfloat"} {
-		require.Empty(t, cpuVariant(&artifact.Artifact{Goarch: "arm", Goarm: goarm}), goarm)
+	for _, a := range []artifact.Artifact{
+		{Goarch: "arm", Goarm: "6"},
+		{Goarch: "arm", Goarm: "7", Extra: map[string]any{artifact.ExtraABI: "hardfloat"}},
+		{Goarch: "arm", Goarm: "5", Extra: map[string]any{artifact.ExtraABI: "softfloat"}},
+	} {
+		require.Empty(t, cpuVariant(&a), a)
 	}
-	require.Equal(t, "softfloat", cpuVariant(&artifact.Artifact{Goarch: "arm", Goarm: "7,softfloat"}))
+	require.Equal(t, "softfloat", cpuVariant(&artifact.Artifact{
+		Goarch: "arm", Goarm: "7", Extra: map[string]any{artifact.ExtraABI: "softfloat"},
+	}))
 	require.Equal(t, "softfloat", cpuVariant(&artifact.Artifact{Goarch: "mipsle", Gomips: "softfloat"}))
 }
 
@@ -227,7 +300,10 @@ func TestSourceRepo(t *testing.T) {
 		"git@github.com:acme/tool.git":                      "https://github.com/acme/tool",
 		"https://github.com/acme/tool.git":                  "https://github.com/acme/tool",
 		"ssh://git@github.com/acme/tool":                    "https://github.com/acme/tool",
+		"ssh://git@github.com:22/acme/tool":                 "https://github.com/acme/tool",
 		"https://gitlab-ci-token:x@gitlab.com/a/b/tool.git": "https://gitlab.com/a/b/tool",
+		"http://user:pass@forge.example:8443/acme/tool.git": "http://forge.example:8443/acme/tool",
+		"https://forge.example:9443/acme/tool.git":          "https://forge.example:9443/acme/tool",
 		"":            "",
 		"/local/path": "",
 	} {
@@ -235,10 +311,20 @@ func TestSourceRepo(t *testing.T) {
 	}
 }
 
+func TestValidateProjectIdentity(t *testing.T) {
+	identity, err := packslip.IdentityFromToken(fakeToken(t, map[string]any{
+		"iss":              "https://token.actions.githubusercontent.com",
+		"job_workflow_ref": "acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0",
+	}))
+	require.NoError(t, err)
+	require.NoError(t, validateProjectIdentity("github.com/acme/releases/tool", identity))
+	require.ErrorContains(t, validateProjectIdentity("github.com/acme/source", identity), "must match")
+}
+
 func TestRun(t *testing.T) {
 	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
-		"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
+		"job_workflow_ref": "acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0",
 	}))
 	dist := t.TempDir()
 	archive := filepath.Join(dist, "tool_1.0.0_linux_amd64.tar.gz")
@@ -294,7 +380,7 @@ func TestRun(t *testing.T) {
 		Commit: "0123456789abcdef0123456789abcdef01234567",
 		Tag:    "v1.0.0",
 	}, signed.Predicate.Source)
-	require.Equal(t, "https://github.com/acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0", signed.Predicate.Identity.KeyID)
+	require.Equal(t, "https://github.com/acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0", signed.Predicate.Identity.KeyID)
 	require.Len(t, signed.Predicate.Artifacts, 2)
 	byName := map[string]packslip.Artifact{}
 	for _, a := range signed.Predicate.Artifacts {
@@ -309,6 +395,7 @@ func TestRun(t *testing.T) {
 	files := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableFile)).List()
 	require.Len(t, files, 1)
 	require.Equal(t, "packslip.sigstore.json", files[0].Name)
+	require.True(t, artifact.ExtraOr(*files[0], artifact.ExtraSkipChecksum, false))
 	got, err := os.ReadFile(files[0].Path)
 	require.NoError(t, err)
 	require.JSONEq(t, `{"bundle":true}`, string(got))
@@ -333,7 +420,7 @@ func setToken(t *testing.T) {
 	t.Helper()
 	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
-		"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
+		"job_workflow_ref": "acme/tools/.github/workflows/release.yml@refs/tags/v1.0.0",
 	}))
 }
 

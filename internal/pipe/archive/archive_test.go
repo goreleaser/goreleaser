@@ -230,6 +230,7 @@ func TestRunPipe(t *testing.T) {
 				Extra: map[string]any{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
+					artifact.ExtraABI:    "softfloat",
 				},
 			}
 			linuxMipsBuild := &artifact.Artifact{
@@ -320,6 +321,9 @@ func TestRunPipe(t *testing.T) {
 					"foo/bar/foobar/blah.txt",
 				}, artifact.MustExtra[[]string](*arch, artifact.ExtraFiles))
 				require.Empty(t, artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
+				if arch.Goos == "linux" && arch.Goarch == "arm" {
+					require.Equal(t, "softfloat", artifact.ExtraOr(*arch, artifact.ExtraABI, ""))
+				}
 			}
 			require.Len(t, archives, 13)
 			// TODO: should verify the artifact fields here too

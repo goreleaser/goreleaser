@@ -15,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -165,7 +166,8 @@ func (Pipe) Run(ctx *context.Context) error {
 			Name: m.name,
 			Path: file,
 			Extra: map[string]any{
-				artifact.ExtraID: "packslip",
+				artifact.ExtraID:           "packslip",
+				artifact.ExtraSkipChecksum: true,
 			},
 		})
 	}
@@ -208,9 +210,13 @@ func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity
 		if err != nil {
 			return nil, fmt.Errorf("packslips.url_template: %w", err)
 		}
+		described, err := describe(a, url)
+		if err != nil {
+			return nil, err
+		}
 		inputs = append(inputs, packslip.ArtifactInput{
 			Path:     a.Path,
-			Artifact: describe(a, url),
+			Artifact: described,
 		})
 	}
 
@@ -227,6 +233,9 @@ func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity
 			Tag:    ctx.Git.CurrentTag,
 		}
 	}
+	if err := validateProjectIdentity(cfg.Project, identity); err != nil {
+		return nil, err
+	}
 
 	statement, err := packslip.Build(predicate, inputs)
 	if err != nil {
@@ -240,11 +249,12 @@ func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity
 }
 
 // describe maps a GoReleaser artifact to a packslip artifact.
-func describe(a *artifact.Artifact, url string) packslip.Artifact {
+func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 	format := artifact.ExtraOr(*a, artifact.ExtraFormat, "")
 	if format == "binary" {
 		format = "raw"
 	}
+	format = normalizeFormat(format)
 	out := packslip.Artifact{
 		Name:    a.Name,
 		OS:      a.Goos,
@@ -258,10 +268,15 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 		case !artifact.ExtraOr(*a, artifact.ExtranDynLink, false):
 			// statically linked: fits glibc and musl hosts alike.
 			out.Requires = &packslip.Requires{Libs: &[]string{}}
-		case strings.Contains(a.Target, "musl"):
-			out.Libc = "musl"
 		default:
-			out.Libc = "gnu"
+			libc := artifact.ExtraOr(*a, artifact.ExtraLibc, "")
+			if libc == "" && a.Type == artifact.UploadableBinary {
+				libc = elf.Libc(a.Path)
+			}
+			if libc != "gnu" && libc != "musl" {
+				return packslip.Artifact{}, fmt.Errorf("cannot determine libc for dynamically linked Linux artifact %q", a.Name)
+			}
+			out.Libc = libc
 		}
 	}
 
@@ -281,7 +296,20 @@ func describe(a *artifact.Artifact, url string) packslip.Artifact {
 			out.Bin = append(out.Bin, packslip.NewBin(path.Join(wrap, bin)))
 		}
 	}
-	return out
+	return out, nil
+}
+
+// normalizeFormat maps GoReleaser's archive aliases to the Packslip format
+// vocabulary. Artifact names and download URLs intentionally remain untouched.
+func normalizeFormat(format string) string {
+	switch format {
+	case "txz":
+		return "tar.xz"
+	case "tzst":
+		return "tar.zst"
+	default:
+		return format
+	}
 }
 
 func isBare(format string) bool {
@@ -312,10 +340,9 @@ func cpuVariant(a *artifact.Artifact) string {
 	case "riscv64":
 		level, def = a.Goriscv64, "rva20u64"
 	case "arm":
-		// ArchFromGo keeps the GOARM version; only a float option that is
-		// not the version's default is left to distinguish.
-		version, float, _ := strings.Cut(a.Goarm, ",")
-		if float == "softfloat" && version != "5" {
+		// The Go builder stores the float ABI separately from GOARM. ArchFromGo
+		// keeps the GOARM version; only a non-default float option distinguishes.
+		if artifact.ExtraOr(*a, artifact.ExtraABI, "") == "softfloat" && a.Goarm != "5" {
 			return "softfloat"
 		}
 		return ""
@@ -332,13 +359,23 @@ func cpuVariant(a *artifact.Artifact) string {
 // understood.
 func sourceRepo(remote string) string {
 	s := strings.TrimSuffix(strings.TrimRight(strings.TrimSpace(remote), "/"), ".git")
-	var host, repoPath string
+	var scheme, host, repoPath string
 	if strings.Contains(s, "://") {
 		u, err := url.Parse(s)
 		if err != nil {
 			return ""
 		}
-		host, repoPath = u.Hostname(), u.Path
+		repoPath = u.Path
+		switch u.Scheme {
+		case "http", "https":
+			host = u.Host
+			scheme = u.Scheme
+		case "ssh":
+			host = u.Hostname()
+			scheme = "https"
+		default:
+			return ""
+		}
 	} else {
 		// scp-like syntax: [user@]host:owner/name
 		var ok bool
@@ -349,10 +386,38 @@ func sourceRepo(remote string) string {
 		if _, h, ok := strings.Cut(host, "@"); ok {
 			host = h
 		}
+		scheme = "https"
 	}
 	repoPath = strings.Trim(repoPath, "/")
 	if host == "" || !strings.Contains(repoPath, "/") {
 		return ""
 	}
-	return "https://" + host + "/" + repoPath
+	return scheme + "://" + host + "/" + repoPath
+}
+
+// validateProjectIdentity ensures a GitHub Actions keyless certificate is
+// associated with the GitHub repository named by the manifest project. A
+// workflow repository may publish a checkout from another source repository;
+// that checkout remains in predicate.source and is intentionally independent.
+func validateProjectIdentity(project string, identity packslip.Identity) error {
+	repo := githubWorkflowRepo(identity.KeyID)
+	if repo == "" || !strings.HasPrefix(project, "github.com/") {
+		return nil
+	}
+	if project == repo || strings.HasPrefix(project, repo+"/") {
+		return nil
+	}
+	return fmt.Errorf("packslips.project %q must match the GitHub Actions workflow repository %q", project, repo)
+}
+
+func githubWorkflowRepo(keyID string) string {
+	u, err := url.Parse(keyID)
+	if err != nil || u.Scheme != "https" || u.Host != "github.com" {
+		return ""
+	}
+	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+	if len(parts) < 5 || parts[2] != ".github" || parts[3] != "workflows" {
+		return ""
+	}
+	return "github.com/" + parts[0] + "/" + parts[1]
 }
