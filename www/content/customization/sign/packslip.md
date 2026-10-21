@@ -12,47 +12,57 @@ artifact's checksums, platform, and executable paths, so installers such as
 without guessing from file names.
 
 GoReleaser can create and sign that manifest for the archives and binaries it
-produces, and upload it to your release as `packslip.sigstore.json`.
+produces, and upload it to your release as `packslip.sigstore.json`. A
+repository that releases several tools can create one manifest per tool.
 
 ## Usage
 
 The manifest is signed keylessly with [Sigstore](https://www.sigstore.dev/),
 using the OIDC identity of your CI job, so there is no key to manage. It is
-opt-in:
+opt-in: add an entry to `packslips` to create a manifest. For a repository
+that releases one tool, an empty entry is enough:
 
 ```yaml {filename=".goreleaser.yaml"}
-packslip:
-  # Whether to create the manifest.
-  #
-  # Default: false.
-  # Templates: allowed.
-  enabled: true
+packslips:
+  - {}
+```
 
-  # IDs of the archives and binaries to describe.
-  #
-  # Default: all of them. Without a `url_template`, only those the release
-  # uploads (see `release.ids`).
-  ids:
-    - foo
-    - bar
+All the options:
 
-  # Name of the manifest file.
-  #
-  # Default: 'packslip.sigstore.json'.
-  # Templates: allowed.
-  name_template: "packslip.sigstore.json"
+```yaml {filename=".goreleaser.yaml"}
+packslips:
+  - # Whether to skip this manifest.
+    #
+    # Templates: allowed.
+    disable: "{{ .IsNightly }}"
 
-  # The packslip project name, in the form `host/owner/name`.
-  #
-  # Default: 'github.com/<release.github.owner>/<release.github.name>'.
-  # Required when releasing anywhere but GitHub.
-  project: github.com/foo/bar
+    # IDs of the archives and binaries to describe.
+    #
+    # Default: all of them. Without a `url_template`, only those the release
+    # uploads (see `release.ids`).
+    ids:
+      - foo
 
-  # Template for the URL each artifact can be downloaded from.
-  #
-  # Default: the release page of your SCM.
-  # Templates: allowed.
-  url_template: "https://dl.example.com/{{ .Tag }}/{{ .ArtifactName }}"
+    # The packslip project name, in the form `host/owner/name`, with a
+    # subpath for one tool of a monorepo (`github.com/owner/name/tool`).
+    #
+    # Default: 'github.com/<release.github.owner>/<release.github.name>'.
+    # Required when releasing anywhere but GitHub.
+    project: github.com/owner/name/foo
+
+    # Name of the manifest file.
+    #
+    # Default: 'packslip.sigstore.json', or 'packslip.<subpath>.sigstore.json'
+    # for a project under the release repository, with `/` in the subpath
+    # replaced by `-` (`packslip.foo.sigstore.json` here).
+    # Templates: allowed.
+    name_template: "packslip.foo.sigstore.json"
+
+    # Template for the URL each artifact can be downloaded from.
+    #
+    # Default: the release page of your SCM.
+    # Templates: allowed.
+    url_template: "https://dl.example.com/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 
 On GitHub Actions, the job needs the `id-token: write` permission:
@@ -65,6 +75,29 @@ permissions:
 
 Outside of GitHub Actions, set `SIGSTORE_ID_TOKEN` to an OIDC token whose
 identity is a verified email address.
+
+## Monorepos
+
+When one release ships several tools, add an entry per tool, select its
+artifacts with `ids`, and name it with a subpath of the repository. For a
+repository `acme/tools` whose archives have the IDs `foo` and `bar`:
+
+```yaml {filename=".goreleaser.yaml"}
+packslips:
+  - ids: [foo]
+    project: github.com/acme/tools/foo
+  - ids: [bar]
+    project: github.com/acme/tools/cmd/bar
+```
+
+This uploads `packslip.foo.sigstore.json` and `packslip.cmd-bar.sigstore.json`,
+each describing only its tool. Installers pick the manifest by the signed
+project name, not the file name. An entry without `ids` describes every
+archive and binary, so set `ids` on each entry when a release has several
+tools. Two entries cannot have the same project or file name.
+
+When each tool has its own release and configuration file instead, a single
+entry with the tool's `project` is enough.
 
 ## What is described
 
@@ -84,10 +117,10 @@ identity is a verified email address.
 - The source repository, commit, and tag, taken from the git remote of the
   checkout, which can differ from the repository the release is published to.
 
-The manifest is created after the artifacts are signed and notarized, so it
-describes the final bytes that are uploaded. It is not created in
+The manifests are created after the artifacts are signed and notarized, so they
+describe the final bytes that are uploaded. They are not created in
 [snapshot]({{< ref "/customization/publish/snapshots" >}}) mode or when
-publishing is skipped, since signing records the manifest in a public
+publishing is skipped, since signing records each manifest in a public
 transparency log.
 
 You can also skip it with `--skip=packslip`.

@@ -1,4 +1,4 @@
-// Package packslip creates a signed packslip release manifest describing the
+// Package packslip creates signed packslip release manifests describing the
 // release artifacts.
 package packslip
 
@@ -18,33 +18,61 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	packslip "github.com/jdx/packslip/go"
 )
 
-const defaultNameTemplate = "packslip.sigstore.json"
-
-// Pipe that creates the packslip manifest.
+// Pipe that creates the packslip manifests.
 type Pipe struct{}
 
-func (Pipe) String() string { return "creating packslip manifest" }
+func (Pipe) String() string { return "creating packslip manifests" }
 
 func (Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Packslip)
+	return skips.Any(ctx, skips.Packslip) || len(ctx.Config.Packslips) == 0
 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	cfg := &ctx.Config.Packslip
-	if cfg.NameTemplate == "" {
-		cfg.NameTemplate = defaultNameTemplate
-	}
-	if cfg.Project == "" {
-		if gh := ctx.Config.Release.GitHub; gh.Owner != "" && gh.Name != "" {
-			cfg.Project = "github.com/" + gh.Owner + "/" + gh.Name
+	repo := repoProject(ctx)
+	projects := map[string]bool{}
+	for i := range ctx.Config.Packslips {
+		cfg := &ctx.Config.Packslips[i]
+		if cfg.Project == "" {
+			cfg.Project = repo
 		}
+		if cfg.NameTemplate == "" {
+			cfg.NameTemplate = defaultName(repo, cfg.Project)
+		}
+		if cfg.Project == "" {
+			continue
+		}
+		if projects[cfg.Project] {
+			return fmt.Errorf("found multiple packslips with the project '%s', each project needs its own entry", cfg.Project)
+		}
+		projects[cfg.Project] = true
 	}
 	return nil
+}
+
+// repoProject is the packslip project of the GitHub repository the release
+// is published to, or "" when it is not published to GitHub.
+func repoProject(ctx *context.Context) string {
+	if gh := ctx.Config.Release.GitHub; gh.Owner != "" && gh.Name != "" {
+		return "github.com/" + gh.Owner + "/" + gh.Name
+	}
+	return ""
+}
+
+// defaultName is the bundle name the packslip spec gives a project: a
+// monorepo tool github.com/acme/repo/crates/cli is
+// packslip.crates-cli.sigstore.json, and anything else is
+// packslip.sigstore.json.
+func defaultName(repo, project string) string {
+	if sub, ok := strings.CutPrefix(project, repo+"/"); ok && repo != "" {
+		return "packslip." + strings.ReplaceAll(sub, "/", "-") + ".sigstore.json"
+	}
+	return "packslip.sigstore.json"
 }
 
 // signFunc signs a statement keylessly. It is a variable so tests do not need
@@ -57,28 +85,96 @@ var signFunc = func(ctx *context.Context, statement packslip.Statement, token st
 	return packslip.SignKeyless(statement, options)
 }
 
+// manifest is a statement ready to be signed.
+type manifest struct {
+	name      string
+	statement packslip.Statement
+}
+
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	cfg := ctx.Config.Packslip
-	enabled, err := tmpl.New(ctx).Bool(cfg.Enabled)
-	if err != nil {
-		return err
+	var configs []config.Packslip
+	for _, cfg := range ctx.Config.Packslips {
+		disable, err := tmpl.New(ctx).Bool(cfg.Disable)
+		if err != nil {
+			return err
+		}
+		if disable {
+			continue
+		}
+		if cfg.Project == "" {
+			return errors.New("packslips.project must be set when the release is not on GitHub")
+		}
+		configs = append(configs, cfg)
 	}
-	if !enabled {
-		return pipe.Skip("packslip.enabled is not set")
+	if len(configs) == 0 {
+		return pipe.Skip("all packslips are disabled")
 	}
 	if ctx.Snapshot {
 		return pipe.ErrSnapshotEnabled
 	}
 	if skips.Any(ctx, skips.Publish) {
-		// the manifest is signed into a public transparency log, so it is
-		// only created for releases that are actually published.
+		// the manifests are signed into a public transparency log, so they
+		// are only created for releases that are actually published.
 		return pipe.ErrSkipPublishEnabled
 	}
-	if cfg.Project == "" {
-		return errors.New("packslip.project must be set when the release is not on GitHub")
+
+	token, err := packslip.AmbientIDToken(ctx)
+	if err != nil {
+		return err
+	}
+	identity, err := packslip.IdentityFromToken(token)
+	if err != nil {
+		return err
 	}
 
+	// build every statement before signing any, so a bad entry does not
+	// leave the others recorded in the transparency log.
+	var manifests []manifest
+	names := map[string]bool{}
+	for _, cfg := range configs {
+		m, err := build(ctx, cfg, identity)
+		if err != nil {
+			return err
+		}
+		if m == nil {
+			continue
+		}
+		if names[m.name] {
+			return fmt.Errorf("found multiple packslips named '%s', set a distinct name_template for each", m.name)
+		}
+		names[m.name] = true
+		manifests = append(manifests, *m)
+	}
+	if len(manifests) == 0 {
+		return pipe.Skip("no archives or binaries to describe")
+	}
+
+	for _, m := range manifests {
+		log.WithField("file", m.name).Info("signing packslip manifest")
+		bundle, err := signFunc(ctx, m.statement, token)
+		if err != nil {
+			return fmt.Errorf("could not sign packslip manifest %s: %w", m.name, err)
+		}
+		file := filepath.Join(ctx.Config.Dist, m.name)
+		if err := os.WriteFile(file, bundle, 0o644); err != nil {
+			return err
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableFile,
+			Name: m.name,
+			Path: file,
+			Extra: map[string]any{
+				artifact.ExtraID: "packslip",
+			},
+		})
+	}
+	return nil
+}
+
+// build creates the statement for one packslip entry. It returns nil when the
+// entry selects no artifacts.
+func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity) (*manifest, error) {
 	filters := []artifact.Filter{
 		artifact.ByTypes(artifact.UploadableArchive, artifact.UploadableBinary),
 	}
@@ -92,33 +188,25 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(artifacts) == 0 {
-		return pipe.Skip("no archives or binaries to describe")
+		log.WithField("project", cfg.Project).Warn("no archives or binaries to describe")
+		return nil, nil
 	}
 
 	if urlTemplate == "" {
 		cl, err := client.NewReleaseClient(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if urlTemplate, err = cl.ReleaseURLTemplate(ctx); err != nil {
-			return fmt.Errorf("packslip.url_template: %w", err)
+			return nil, fmt.Errorf("packslips.url_template: %w", err)
 		}
-	}
-
-	token, err := packslip.AmbientIDToken(ctx)
-	if err != nil {
-		return err
-	}
-	identity, err := packslip.IdentityFromToken(token)
-	if err != nil {
-		return err
 	}
 
 	inputs := make([]packslip.ArtifactInput, 0, len(artifacts))
 	for _, a := range artifacts {
 		url, err := tmpl.New(ctx).WithArtifact(a).Apply(urlTemplate)
 		if err != nil {
-			return fmt.Errorf("packslip.url_template: %w", err)
+			return nil, fmt.Errorf("packslips.url_template: %w", err)
 		}
 		inputs = append(inputs, packslip.ArtifactInput{
 			Path:     a.Path,
@@ -142,32 +230,13 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	statement, err := packslip.Build(predicate, inputs)
 	if err != nil {
-		return fmt.Errorf("could not build packslip statement: %w", err)
+		return nil, fmt.Errorf("could not build packslip statement for %s: %w", cfg.Project, err)
 	}
-
 	name, err := tmpl.New(ctx).Apply(cfg.NameTemplate)
 	if err != nil {
-		return fmt.Errorf("packslip.name_template: %w", err)
+		return nil, fmt.Errorf("packslips.name_template: %w", err)
 	}
-	log.WithField("file", name).Info("signing packslip manifest")
-	bundle, err := signFunc(ctx, statement, token)
-	if err != nil {
-		return fmt.Errorf("could not sign packslip manifest: %w", err)
-	}
-
-	file := filepath.Join(ctx.Config.Dist, name)
-	if err := os.WriteFile(file, bundle, 0o644); err != nil {
-		return err
-	}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableFile,
-		Name: name,
-		Path: file,
-		Extra: map[string]any{
-			artifact.ExtraID: "packslip",
-		},
-	})
-	return nil
+	return &manifest{name: name, statement: statement}, nil
 }
 
 // describe maps a GoReleaser artifact to a packslip artifact.

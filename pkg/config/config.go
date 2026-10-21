@@ -1217,7 +1217,7 @@ type Checksum struct {
 //
 // Since v2.19.
 type Packslip struct {
-	Enabled      string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Disable      string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	NameTemplate string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Project      string   `yaml:"project,omitempty" json:"project,omitempty"`
@@ -1424,7 +1424,7 @@ type Project struct {
 	Flatpaks          []Flatpak         `yaml:"flatpak,omitempty" json:"flatpak,omitempty"`
 	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
-	Packslip          Packslip          `yaml:"packslip,omitempty" json:"packslip,omitempty"`
+	Packslips         []Packslip        `yaml:"packslips,omitempty" json:"packslips,omitempty"`
 	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
 	DockerDigest      DockerDigest      `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
 	Artifactories     []Upload          `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`

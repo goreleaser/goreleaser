@@ -145,7 +145,7 @@ var Pipeline = append(
 	checksums.Pipe{},
 	// sign artifacts
 	sign.Pipe{},
-	// describe the release in a signed packslip manifest
+	// describe the release in signed packslip manifests
 	packslip.Pipe{},
 	// create arch linux aur pkgbuild
 	aur.Pipe{},

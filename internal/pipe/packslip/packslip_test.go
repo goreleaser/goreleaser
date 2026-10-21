@@ -25,10 +25,26 @@ func TestDescription(t *testing.T) {
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}},
+		Packslips: []config.Packslip{
+			{},
+			{Project: "github.com/acme/tool/crates/cli"},
+			{Project: "tool.example.com"},
+		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "packslip.sigstore.json", ctx.Config.Packslip.NameTemplate)
-	require.Equal(t, "github.com/acme/tool", ctx.Config.Packslip.Project)
+	require.Equal(t, []config.Packslip{
+		{Project: "github.com/acme/tool", NameTemplate: "packslip.sigstore.json"},
+		{Project: "github.com/acme/tool/crates/cli", NameTemplate: "packslip.crates-cli.sigstore.json"},
+		{Project: "tool.example.com", NameTemplate: "packslip.sigstore.json"},
+	}, ctx.Config.Packslips)
+}
+
+func TestDefaultDuplicateProject(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Release:   config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}},
+		Packslips: []config.Packslip{{}, {Project: "github.com/acme/tool"}},
+	})
+	require.ErrorContains(t, Pipe{}.Default(ctx), "multiple packslips with the project 'github.com/acme/tool'")
 }
 
 func TestSkip(t *testing.T) {
@@ -36,16 +52,20 @@ func TestSkip(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Packslip))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
-	t.Run("not enabled", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
+	t.Run("not configured", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
+	})
+	t.Run("disabled", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslips: []config.Packslip{{Disable: "true"}}})
+		require.False(t, Pipe{}.Skip(ctx))
 		require.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
 	})
 	t.Run("snapshot", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslip: config.Packslip{Enabled: "true"}}, testctx.Snapshot)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslips: []config.Packslip{{Project: "example.com/tool"}}}, testctx.Snapshot)
 		require.ErrorIs(t, Pipe{}.Run(ctx), pipe.ErrSnapshotEnabled)
 	})
 	t.Run("skip publish", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslip: config.Packslip{Enabled: "true"}}, testctx.Skip(skips.Publish))
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslips: []config.Packslip{{Project: "example.com/tool"}}}, testctx.Skip(skips.Publish))
 		require.ErrorIs(t, Pipe{}.Run(ctx), pipe.ErrSkipPublishEnabled)
 	})
 }
@@ -230,7 +250,7 @@ func TestRun(t *testing.T) {
 		GitHubURLs: config.GitHubURLs{
 			Download: "https://github.com",
 		},
-		Packslip: config.Packslip{Enabled: "true"},
+		Packslips: []config.Packslip{{}},
 	}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"), testctx.WithCommit("abc123"))
 	ctx.Git.FullCommit = "0123456789abcdef0123456789abcdef01234567"
 	ctx.Git.URL = "git@github.com:acme/source.git"
@@ -295,11 +315,102 @@ func TestRun(t *testing.T) {
 }
 
 func TestRunNoArtifacts(t *testing.T) {
+	setToken(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Dist:     t.TempDir(),
-		Packslip: config.Packslip{Enabled: "true", Project: "example.com/tool"},
+		Dist:      t.TempDir(),
+		Packslips: []config.Packslip{{Project: "example.com/tool", NameTemplate: "packslip.sigstore.json"}},
 	})
 	require.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
+}
+
+func TestRunNoProject(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Packslips: []config.Packslip{{}}})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.ErrorContains(t, Pipe{}.Run(ctx), "packslips.project must be set")
+}
+
+func setToken(t *testing.T) {
+	t.Helper()
+	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
+		"iss":              "https://token.actions.githubusercontent.com",
+		"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
+	}))
+}
+
+// stubSign replaces signFunc for the test and returns the statements it was
+// given, keyed by project.
+func stubSign(t *testing.T) map[string]packslip.Statement {
+	t.Helper()
+	signed := map[string]packslip.Statement{}
+	orig := signFunc
+	t.Cleanup(func() { signFunc = orig })
+	signFunc = func(_ *context.Context, statement packslip.Statement, _ string) ([]byte, error) {
+		signed[statement.Predicate.Project] = statement
+		return []byte(`{}`), nil
+	}
+	return signed
+}
+
+func monorepoCtx(t *testing.T, packslips []config.Packslip) *context.Context {
+	t.Helper()
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:       dist,
+		Release:    config.Release{GitHub: config.Repo{Owner: "acme", Name: "tools"}},
+		GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
+		Packslips:  packslips,
+	}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	for _, tool := range []string{"foo", "bar"} {
+		file := filepath.Join(dist, tool+"_linux_amd64.tar.gz")
+		require.NoError(t, os.WriteFile(file, []byte(tool), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableArchive, Name: filepath.Base(file), Path: file,
+			Goos: "linux", Goarch: "amd64",
+			Extra: map[string]any{
+				artifact.ExtraID:       tool,
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{tool},
+			},
+		})
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	return ctx
+}
+
+func TestRunMonorepo(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+		{IDs: []string{"bar"}, Project: "github.com/acme/tools/cmd/bar"},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	require.Len(t, signed, 2)
+	for project, want := range map[string]string{
+		"github.com/acme/tools/foo":     "foo_linux_amd64.tar.gz",
+		"github.com/acme/tools/cmd/bar": "bar_linux_amd64.tar.gz",
+	} {
+		require.Len(t, signed[project].Predicate.Artifacts, 1, project)
+		require.Equal(t, want, signed[project].Predicate.Artifacts[0].Name)
+	}
+	var names []string
+	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableFile)).List() {
+		names = append(names, a.Name)
+		require.FileExists(t, a.Path)
+	}
+	require.ElementsMatch(t, []string{"packslip.foo.sigstore.json", "packslip.cmd-bar.sigstore.json"}, names)
+}
+
+func TestRunDuplicateName(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: "packslip.sigstore.json"},
+		{IDs: []string{"bar"}, Project: "github.com/acme/tools/bar", NameTemplate: "packslip.sigstore.json"},
+	})
+	require.ErrorContains(t, Pipe{}.Run(ctx), "multiple packslips named 'packslip.sigstore.json'")
+	require.Empty(t, signed, "nothing is signed when an entry is invalid")
 }
 
 func TestRunReleaseIDs(t *testing.T) {
@@ -314,7 +425,7 @@ func TestRunReleaseIDs(t *testing.T) {
 			Dist:       dist,
 			Release:    config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}, IDs: []string{"linux"}},
 			GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
-			Packslip:   cfg,
+			Packslips:  []config.Packslip{cfg},
 		}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 		for _, goos := range []string{"linux", "windows"} {
 			file := filepath.Join(dist, "tool_"+goos+".zip")
@@ -341,13 +452,12 @@ func TestRunReleaseIDs(t *testing.T) {
 	}
 
 	t.Run("release urls", func(t *testing.T) {
-		require.NoError(t, Pipe{}.Run(newCtx(t, config.Packslip{Enabled: "true"})))
+		require.NoError(t, Pipe{}.Run(newCtx(t, config.Packslip{})))
 		require.Len(t, signed.Predicate.Artifacts, 1)
 		require.Equal(t, "tool_linux.zip", signed.Predicate.Artifacts[0].Name)
 	})
 	t.Run("custom urls", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(newCtx(t, config.Packslip{
-			Enabled:     "true",
 			URLTemplate: "https://dl.example.com/{{ .ArtifactName }}",
 		})))
 		require.Len(t, signed.Predicate.Artifacts, 2)
