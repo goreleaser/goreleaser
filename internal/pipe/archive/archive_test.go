@@ -1363,7 +1363,7 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 	ff, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
 	require.NoError(t, ff.Close())
-	a, err := archive.New(f, "tar.gz")
+	a, err := archive.New(f, "tar.gz", config.Archive{})
 	require.NoError(t, err)
 	a = NewEnhancedArchive(a, "")
 	t.Cleanup(func() {

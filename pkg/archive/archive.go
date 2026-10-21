@@ -22,13 +22,8 @@ type Archive interface {
 	Add(f config.File) error
 }
 
-// New archive.
-func New(w io.Writer, format string) (Archive, error) {
-	return NewWithConfig(w, format, config.Archive{})
-}
-
-// NewWithConfig creates an archive with the given configuration.
-func NewWithConfig(w io.Writer, format string, cfg config.Archive) (Archive, error) {
+// New creates an archive with the given configuration.
+func New(w io.Writer, format string, cfg config.Archive) (Archive, error) {
 	switch format {
 	case "tar.gz", "tgz":
 		return targz.New(w), nil
