@@ -968,8 +968,7 @@ func TestGiteaVersionRequestUsesReleaseContext(t *testing.T) {
 		require.Error(t, err)
 	case <-time.After(time.Second):
 		close(releaseResponse)
-		<-done
-		t.Fatal("Gitea version request did not return after cancellation")
+		t.Fatalf("Gitea version request did not return after cancellation: %v", <-done)
 	}
 	close(releaseResponse)
 }
@@ -1021,8 +1020,7 @@ func TestGiteaChangelogRequestUsesReleaseContext(t *testing.T) {
 		require.Error(t, err)
 	case <-time.After(time.Second):
 		close(releaseResponse)
-		<-done
-		t.Fatal("Gitea compare request did not return after cancellation")
+		t.Fatalf("Gitea compare request did not return after cancellation: %v", <-done)
 	}
 	close(releaseResponse)
 }

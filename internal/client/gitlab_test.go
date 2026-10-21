@@ -1347,8 +1347,7 @@ func TestGitLabVersionRequestUsesReleaseContext(t *testing.T) {
 		require.NoError(t, err)
 	case <-time.After(time.Second):
 		close(releaseResponse)
-		<-done
-		t.Fatal("GitLab version request did not return after cancellation")
+		t.Fatalf("GitLab version request did not return after cancellation: %v", <-done)
 	}
 	close(releaseResponse)
 }
@@ -1399,8 +1398,7 @@ func TestGitLabChangelogRequestUsesReleaseContext(t *testing.T) {
 		require.Error(t, err)
 	case <-time.After(time.Second):
 		close(releaseResponse)
-		<-done
-		t.Fatal("GitLab compare request did not return after cancellation")
+		t.Fatalf("GitLab compare request did not return after cancellation: %v", <-done)
 	}
 	close(releaseResponse)
 }
