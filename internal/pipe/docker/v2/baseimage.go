@@ -70,16 +70,21 @@ func baseImageBuildArgs(ctx *context.Context, content string, args map[string]st
 		})
 	}
 	seenFrom := false
+	var globalArgs [][2]string
 	for line := range strings.SplitSeq(continuationRe.ReplaceAllString(content, " "), "\n") {
 		line = strings.TrimSpace(line)
 		if m := argRe.FindStringSubmatch(line); m != nil && !seenFrom {
-			// Global ARG defaults can reference other global ARGs.
-			markUsed(m[2])
+			globalArgs = append(globalArgs, [2]string{m[1], m[2]})
 			continue
 		}
 		if m := fromRe.FindStringSubmatch(line); m != nil {
 			seenFrom = true
 			markUsed(m[1])
+		}
+	}
+	for _, arg := range slices.Backward(globalArgs) {
+		if used[arg[0]] {
+			markUsed(arg[1])
 		}
 	}
 	if len(used) == 0 {
