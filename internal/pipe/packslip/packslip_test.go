@@ -312,19 +312,32 @@ func TestSourceRepo(t *testing.T) {
 }
 
 func TestValidateProjectIdentity(t *testing.T) {
-	identity, err := packslip.IdentityFromToken(fakeToken(t, map[string]any{
+	token := fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
-		"job_workflow_ref": "acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0",
-	}))
+		"repository":       "acme/releases",
+		"job_workflow_ref": "acme/build/.github/workflows/release.yml@refs/tags/v1.0.0",
+	})
+	identity, err := packslip.IdentityFromToken(token)
 	require.NoError(t, err)
-	require.NoError(t, validateProjectIdentity("github.com/acme/releases/tool", identity))
-	require.ErrorContains(t, validateProjectIdentity("github.com/acme/source", identity), "must match")
+	// The reusable workflow is hosted in acme/build, but Fulcio certifies the
+	// caller acme/releases from the repository claim.
+	require.NoError(t, validateProjectIdentity("github.com/acme/releases/tool", token, identity))
+	require.ErrorContains(t, validateProjectIdentity("github.com/acme/build", token, identity), "caller repository")
+
+	missingRepo := fakeToken(t, map[string]any{
+		"iss":              "https://token.actions.githubusercontent.com",
+		"job_workflow_ref": "acme/build/.github/workflows/release.yml@refs/tags/v1.0.0",
+	})
+	missingIdentity, err := packslip.IdentityFromToken(missingRepo)
+	require.NoError(t, err)
+	require.ErrorContains(t, validateProjectIdentity("github.com/acme/releases", missingRepo, missingIdentity), "no repository claim")
 }
 
 func TestRun(t *testing.T) {
 	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
-		"job_workflow_ref": "acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0",
+		"repository":       "acme/releases",
+		"job_workflow_ref": "acme/build/.github/workflows/release.yml@refs/tags/v1.0.0",
 	}))
 	dist := t.TempDir()
 	archive := filepath.Join(dist, "tool_1.0.0_linux_amd64.tar.gz")
@@ -380,7 +393,7 @@ func TestRun(t *testing.T) {
 		Commit: "0123456789abcdef0123456789abcdef01234567",
 		Tag:    "v1.0.0",
 	}, signed.Predicate.Source)
-	require.Equal(t, "https://github.com/acme/releases/.github/workflows/release.yml@refs/tags/v1.0.0", signed.Predicate.Identity.KeyID)
+	require.Equal(t, "https://github.com/acme/build/.github/workflows/release.yml@refs/tags/v1.0.0", signed.Predicate.Identity.KeyID)
 	require.Len(t, signed.Predicate.Artifacts, 2)
 	byName := map[string]packslip.Artifact{}
 	for _, a := range signed.Predicate.Artifacts {
@@ -420,6 +433,7 @@ func setToken(t *testing.T) {
 	t.Helper()
 	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
+		"repository":       "acme/tools",
 		"job_workflow_ref": "acme/tools/.github/workflows/release.yml@refs/tags/v1.0.0",
 	}))
 }
@@ -503,6 +517,7 @@ func TestRunDuplicateName(t *testing.T) {
 func TestRunReleaseIDs(t *testing.T) {
 	t.Setenv("SIGSTORE_ID_TOKEN", fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
+		"repository":       "acme/tool",
 		"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
 	}))
 	dist := t.TempDir()

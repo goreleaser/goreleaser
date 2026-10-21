@@ -353,7 +353,11 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
 			art.Extra[artifact.ExtranDynLink] = true
-			if libc := elf.Libc(binary.Path); libc != "" {
+			libc := artifact.ExtraOr(*binary, artifact.ExtraLibc, "")
+			if libc == "" {
+				libc = elf.Libc(binary.Path)
+			}
+			if libc != "" {
 				art.Extra[artifact.ExtraLibc] = libc
 			}
 		}
@@ -371,7 +375,10 @@ func dynamicLibc(binaries []*artifact.Artifact) string {
 		if !artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
 			continue
 		}
-		got := elf.Libc(binary.Path)
+		got := artifact.ExtraOr(*binary, artifact.ExtraLibc, "")
+		if got == "" {
+			got = elf.Libc(binary.Path)
+		}
 		if got == "" || (libc != "" && libc != got) {
 			return ""
 		}

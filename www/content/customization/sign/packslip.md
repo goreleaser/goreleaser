@@ -107,7 +107,8 @@ entry with the tool's `project` is enough.
 - Executable paths inside archives, including the wrapping directory.
 - Statically linked Linux builds are described as needing no shared
   libraries, so they fit both glibc and musl hosts. For dynamically linked
-  Linux builds, GoReleaser reads the ELF program interpreter and records
+  Linux builds, GoReleaser reads the ELF program interpreter before optional
+  packing and records
   `gnu` or `musl`; it stops rather than publishing a manifest when the runtime
   cannot be determined.
 - Builds for a CPU level other than Go's default, such as `goamd64: v3` or
@@ -117,10 +118,12 @@ entry with the tool's `project` is enough.
   softfloat build for ARMv6 or ARMv7 has the variant `softfloat`.
 - The source repository, commit, and tag, taken from the git remote of the
   checkout, which can differ from the repository the release is published to.
-  On GitHub Actions, a GitHub `project` must name the workflow repository
+  On GitHub Actions, a GitHub `project` must name the caller repository
   (or one of its monorepo subprojects), because the keyless certificate is
-  bound to that repository. The workflow may still check out a different
-  source repository; that checkout is recorded in the source metadata.
+  bound to that repository. This also works with reusable workflows: the
+  reusable workflow can live in another repository. The workflow may still
+  check out a different source repository; that checkout is recorded in the
+  source metadata.
 
 The manifests are created after the artifacts are signed and notarized, so they
 describe the final bytes that are uploaded. They are not created in

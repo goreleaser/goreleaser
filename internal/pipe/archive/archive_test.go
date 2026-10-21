@@ -804,6 +804,37 @@ func TestRunPipeBinary(t *testing.T) {
 	testlib.RequireNoExtraField(t, windows2, artifact.ExtraReplaces)
 }
 
+// UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
+// before packing, and archive metadata must retain that recorded value rather
+// than probing the packed bytes again.
+func TestArchivePreservesRecordedLibc(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "packed-tool")
+	require.NoError(t, os.WriteFile(path, []byte("packed bytes without ELF metadata"), 0o755))
+	binary := &artifact.Artifact{
+		Type:   artifact.Binary,
+		Name:   "tool",
+		Path:   path,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Extra: map[string]any{
+			artifact.ExtraID:       "default",
+			artifact.ExtraBinary:   "tool",
+			artifact.ExtranDynLink: true,
+			artifact.ExtraLibc:     "musl",
+		},
+	}
+	require.Equal(t, "musl", dynamicLibc([]*artifact.Artifact{binary}))
+
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, skip(ctx, config.Archive{
+		ID:           "default",
+		NameTemplate: "{{ .Binary }}",
+	}, []*artifact.Artifact{binary}))
+	got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+	require.Len(t, got, 1)
+	require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibc, ""))
+}
+
 func TestRunPipeDistRemoved(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{

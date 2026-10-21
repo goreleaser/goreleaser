@@ -3,6 +3,8 @@
 package packslip
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -134,7 +136,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	var manifests []manifest
 	names := map[string]bool{}
 	for _, cfg := range configs {
-		m, err := build(ctx, cfg, identity)
+		m, err := build(ctx, cfg, token, identity)
 		if err != nil {
 			return err
 		}
@@ -176,7 +178,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // build creates the statement for one packslip entry. It returns nil when the
 // entry selects no artifacts.
-func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity) (*manifest, error) {
+func build(ctx *context.Context, cfg config.Packslip, token string, identity packslip.Identity) (*manifest, error) {
 	filters := []artifact.Filter{
 		artifact.ByTypes(artifact.UploadableArchive, artifact.UploadableBinary),
 	}
@@ -233,7 +235,7 @@ func build(ctx *context.Context, cfg config.Packslip, identity packslip.Identity
 			Tag:    ctx.Git.CurrentTag,
 		}
 	}
-	if err := validateProjectIdentity(cfg.Project, identity); err != nil {
+	if err := validateProjectIdentity(cfg.Project, token, identity); err != nil {
 		return nil, err
 	}
 
@@ -396,18 +398,23 @@ func sourceRepo(remote string) string {
 }
 
 // validateProjectIdentity ensures a GitHub Actions keyless certificate is
-// associated with the GitHub repository named by the manifest project. A
-// workflow repository may publish a checkout from another source repository;
-// that checkout remains in predicate.source and is intentionally independent.
-func validateProjectIdentity(project string, identity packslip.Identity) error {
-	repo := githubWorkflowRepo(identity.KeyID)
-	if repo == "" || !strings.HasPrefix(project, "github.com/") {
+// associated with the GitHub repository named by the manifest project. In a
+// reusable workflow, job_workflow_ref identifies the reusable workflow, while
+// the OIDC repository claim identifies the caller that Fulcio certifies.
+// A workflow may also publish a checkout from another source repository; that
+// checkout remains in predicate.source and is intentionally independent.
+func validateProjectIdentity(project, token string, identity packslip.Identity) error {
+	if githubWorkflowRepo(identity.KeyID) == "" || !strings.HasPrefix(project, "github.com/") {
 		return nil
+	}
+	repo, err := githubActionsCallerRepo(token)
+	if err != nil {
+		return err
 	}
 	if project == repo || strings.HasPrefix(project, repo+"/") {
 		return nil
 	}
-	return fmt.Errorf("packslips.project %q must match the GitHub Actions workflow repository %q", project, repo)
+	return fmt.Errorf("packslips.project %q must match the GitHub Actions caller repository %q", project, repo)
 }
 
 func githubWorkflowRepo(keyID string) string {
@@ -420,4 +427,30 @@ func githubWorkflowRepo(keyID string) string {
 		return ""
 	}
 	return "github.com/" + parts[0] + "/" + parts[1]
+}
+
+// githubActionsCallerRepo returns the GitHub repository named by the OIDC
+// token's repository claim. Fulcio validates this token while issuing the
+// certificate that signs the statement. This is only a preflight; Packslip
+// verification still validates the certificate's source repository.
+func githubActionsCallerRepo(token string) (string, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return "", errors.New("packslips: the OIDC token is not a JWT")
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", fmt.Errorf("packslips: decode the OIDC token: %w", err)
+	}
+	var claims struct {
+		Repository string `json:"repository"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return "", fmt.Errorf("packslips: decode the OIDC token: %w", err)
+	}
+	parts = strings.Split(claims.Repository, "/")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", errors.New("packslips: the GitHub Actions OIDC token has no repository claim")
+	}
+	return "github.com/" + claims.Repository, nil
 }

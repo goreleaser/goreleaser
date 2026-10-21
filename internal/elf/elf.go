@@ -57,7 +57,10 @@ func libcFromInterpreter(interpreter string) string {
 	switch {
 	case strings.Contains(name, "ld-musl-"):
 		return "musl"
-	case strings.Contains(name, "ld-linux"):
+	case strings.Contains(name, "ld-linux"),
+		strings.HasSuffix(name, "/ld.so.1"),
+		strings.HasSuffix(name, "/ld64.so.1"),
+		strings.HasSuffix(name, "/ld64.so.2"):
 		return "gnu"
 	default:
 		return ""
