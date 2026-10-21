@@ -207,7 +207,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if err != nil {
 		return err
 	}
-	a, err := archive.New(archiveFile, format)
+	a, err := archive.New(archiveFile, format, arch)
 	if err != nil {
 		return err
 	}
