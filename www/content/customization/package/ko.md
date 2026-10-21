@@ -156,6 +156,16 @@ kos:
       - FOO=bar
       - SOMETHING=value
 
+    # Linux capabilities to set on the binary inside the image.
+    #
+    # Accepts the same values as Docker's --cap-add, e.g. 'net_bind_service',
+    # 'cap_net_bind_service' or 'NET_BIND_SERVICE'.
+    # Note: setting this disables ko's layer cache for this image.
+    #
+    # {{< g_inline_version "v2.19" >}}
+    linux_capabilities:
+      - net_bind_service
+
     # Whether to disable this particular Ko configuration.
     #
     # Templates: allowed.

@@ -453,6 +453,9 @@ type Ko struct {
 	// v2.7+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
+	// v2.19+
+	LinuxCapabilities []string `yaml:"linux_capabilities,omitempty" json:"linux_capabilities,omitempty"`
+
 	// Deprecated: use [Repositories].
 	Repository string `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"`
 }

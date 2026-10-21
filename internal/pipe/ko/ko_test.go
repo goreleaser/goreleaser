@@ -1,8 +1,11 @@
 package ko
 
 import (
+	"archive/tar"
 	stdctx "context"
+	"errors"
 	"fmt"
+	"io"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +20,10 @@ import (
 	_ "github.com/distribution/distribution/v3/registry/auth/htpasswd"
 	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/ko/pkg/caps"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -270,6 +276,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		CreationTime        string
 		KoDataCreationTime  string
 		LocalDomain         string
+		LinuxCapabilities   []string
 	}{
 		{
 			Name:          "sbom-none",
@@ -314,6 +321,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 		{
 			Name:               "kodata-creation-time",
 			KoDataCreationTime: "1672531200",
+		},
+		{
+			Name:              "linux-capabilities",
+			LinuxCapabilities: []string{"net_bind_service"},
 		},
 		{
 			Name: "tag-templates",
@@ -368,6 +379,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
 						SBOMDirectory:      table.SBOMDirectory,
+						LinuxCapabilities:  table.LinuxCapabilities,
 						Bare:               true,
 					},
 				},
@@ -508,8 +520,37 @@ func TestPublishPipeSuccess(t *testing.T) {
 				koDataCreationTime = time.Unix(kdct, 0).UTC()
 			}
 			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.UTC())
+
+			var expectedXattr string
+			if len(table.LinuxCapabilities) > 0 {
+				fc, err := caps.NewFileCaps(table.LinuxCapabilities...)
+				require.NoError(t, err)
+				b, err := fc.ToXattrBytes()
+				require.NoError(t, err)
+				expectedXattr = string(b)
+			}
+			require.Equal(t, expectedXattr, binaryXattr(t, image, "security.capability"))
 		})
 	}
+}
+
+func binaryXattr(tb testing.TB, image v1.Image, key string) string {
+	tb.Helper()
+	rc := mutate.Extract(image)
+	defer rc.Close()
+	tr := tar.NewReader(rc)
+	for {
+		hdr, err := tr.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(tb, err)
+		if strings.HasPrefix(strings.TrimPrefix(hdr.Name, "/"), "ko-app/") && hdr.Typeflag == tar.TypeReg {
+			return hdr.PAXRecords["SCHILY.xattr."+key]
+		}
+	}
+	require.Fail(tb, "binary not found in image")
+	return ""
 }
 
 func TestSnapshot(t *testing.T) {
