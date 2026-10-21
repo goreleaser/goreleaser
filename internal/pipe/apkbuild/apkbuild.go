@@ -1,7 +1,6 @@
 package apkbuild
 
 import (
-	"bufio"
 	"bytes"
 	"cmp"
 	"crypto/sha256"
@@ -276,21 +275,7 @@ func applyTemplate(ctx *context.Context, source string, data templateData) (stri
 	if err := tpl.Execute(&out, data); err != nil {
 		return "", err
 	}
-	content, err := tmpl.New(ctx).Apply(out.String())
-	if err != nil {
-		return "", err
-	}
-
-	out.Reset()
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	for scanner.Scan() {
-		_, _ = out.WriteString(strings.TrimRight(scanner.Text(), " "))
-		_ = out.WriteByte('\n')
-	}
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-	return out.String(), nil
+	return tmpl.New(ctx).Apply(out.String())
 }
 
 func fixLines(s string, depth int) string {
@@ -339,6 +324,7 @@ func toAPKArch(goarch, goarm string) string {
 }
 
 func toAPKVersion(version string) (string, error) {
+	version, snapshot, hasSnapshot := strings.Cut(version, "-SNAPSHOT-")
 	version, metadata, hasMetadata := strings.Cut(version, "+")
 	base, prerelease, hasPrerelease := strings.Cut(version, "-")
 	result := base
@@ -352,6 +338,9 @@ func toAPKVersion(version string) (string, error) {
 	if hasMetadata {
 		result += "_p" + toAPKVersionNumber(metadata)
 	}
+	if hasSnapshot {
+		result += "_git" + toAPKVersionNumber("snapshot-"+strings.ToLower(snapshot))
+	}
 	return result, nil
 }
 
@@ -360,18 +349,13 @@ func toAPKPrerelease(prerelease string) (string, error) {
 	label := value[:len(value)-len(strings.TrimLeft(value, "abcdefghijklmnopqrstuvwxyz"))]
 	rest := value[len(label):]
 
-	suffix := "pre"
 	switch label {
-	case "snapshot":
-		return "_git" + toAPKVersionNumber(value), nil
 	case "alpha", "beta", "pre", "rc":
-		suffix = label
+	default:
+		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: supported labels are alpha, beta, pre, and rc", prerelease)
 	}
 
-	result := "_" + suffix
-	if label == "preview" {
-		result += "_p0"
-	}
+	result := "_" + label
 	if rest == "" {
 		return result, nil
 	}
@@ -380,7 +364,7 @@ func toAPKPrerelease(prerelease string) (string, error) {
 	if rest[0] == '.' || rest[0] == '-' {
 		parts = strings.Split(rest[1:], rest[:1])
 	}
-	if rest[0] == '-' || label == "preview" {
+	if rest[0] == '-' {
 		parts = append([]string{""}, parts...)
 	}
 	for i, part := range parts {

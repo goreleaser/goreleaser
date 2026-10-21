@@ -16,11 +16,15 @@ When an archive ID produces multiple formats for the same architecture,
 GoReleaser deterministically selects the first available format in this order:
 `tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
 
-Prerelease versions are converted to `apk` suffixes that keep their upgrade
-order: `alpha`, `beta`, `pre`, and `rc` map to their `apk` equivalents, and
-any other label maps to `_pre` (e.g. `1.2.3-dev.2` becomes `1.2.3_pre2`).
-Prereleases with non-numeric identifiers after the label, such as
-`1.2.3-dev.abc`, cannot be ordered and fail the pipe.
+Prerelease labels `alpha`, `beta`, `pre`, and `rc` map to their `apk`
+equivalents (e.g. `1.2.3-rc.2` becomes `1.2.3_rc2`). Other labels, such as
+`dev`, `nightly`, or `preview`, and non-numeric identifiers after the label,
+such as `1.2.3-rc.abc`, fail the pipe rather than generate package versions
+that can collide or prevent upgrades.
+
+The default snapshot version template is supported for stable and prerelease
+tags. Its `-SNAPSHOT-<commit>` suffix becomes an `_git` suffix with a numeric
+hash. Snapshot versions are deterministic, but are not chronologically ordered.
 
 This integration does not create `.apk` packages. To create those directly,
 use [nFPM][nfpm] instead.

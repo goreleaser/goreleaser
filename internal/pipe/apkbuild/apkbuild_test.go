@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -64,27 +65,41 @@ func TestToAPKArch(t *testing.T) {
 
 func TestToAPKVersion(t *testing.T) {
 	for input, expected := range map[string]string{
-		"1.2.3":           "1.2.3",
-		"1.2.3-beta.1":    "1.2.3_beta1",
-		"1.2.3-alpha1":    "1.2.3_alpha1",
-		"1.2.3-beta1":     "1.2.3_beta1",
-		"1.2.3-rc1":       "1.2.3_rc1",
-		"1.2.3-rc.2":      "1.2.3_rc2",
-		"1.2.3-preview.1": "1.2.3_pre_p0_p1",
-		"1.2.3-preview1":  "1.2.3_pre_p0_p1",
-		"1.2.3-rc-1":      "1.2.3_rc_p1",
-		"1.2.3-dev":       "1.2.3_pre",
-		"1.2.3-dev.1":     "1.2.3_pre1",
-		"1.2.3-dev.10":    "1.2.3_pre10",
-		"1.2.3-beta.1.1":  "1.2.3_beta1_p1",
-		"1.2.3-beta.2":    "1.2.3_beta2",
-		"1.2.3-nightly.2": "1.2.3_pre2",
-		"1.2.3-1":         "1.2.3_pre1",
+		"1.2.3":          "1.2.3",
+		"1.2.3-beta.1":   "1.2.3_beta1",
+		"1.2.3-alpha1":   "1.2.3_alpha1",
+		"1.2.3-beta1":    "1.2.3_beta1",
+		"1.2.3-rc1":      "1.2.3_rc1",
+		"1.2.3-rc.2":     "1.2.3_rc2",
+		"1.2.3-rc-1":     "1.2.3_rc_p1",
+		"1.2.3-pre":      "1.2.3_pre",
+		"1.2.3-pre.1":    "1.2.3_pre1",
+		"1.2.3-pre.10":   "1.2.3_pre10",
+		"1.2.3-beta.1.1": "1.2.3_beta1_p1",
+		"1.2.3-beta.2":   "1.2.3_beta2",
 	} {
 		t.Run(input, func(t *testing.T) {
 			got, err := toAPKVersion(input)
 			require.NoError(t, err)
 			require.Equal(t, expected, got)
+		})
+	}
+
+	for _, input := range []string{
+		"1.2.3-dev",
+		"1.2.3-dev.1",
+		"1.2.3-dev.2",
+		"1.2.3-dev.10",
+		"1.2.3-dev.1-SNAPSHOT-deadbeef",
+		"1.2.3-nightly.1",
+		"1.2.3-nightly.2",
+		"1.2.3-preview.1",
+		"1.2.3-preview1",
+		"1.2.3-1",
+	} {
+		t.Run(input+" has an unsupported label", func(t *testing.T) {
+			_, err := toAPKVersion(input)
+			require.ErrorContains(t, err, "supported labels are alpha, beta, pre, and rc")
 		})
 	}
 
@@ -106,6 +121,7 @@ func TestToAPKVersion(t *testing.T) {
 	for _, version := range []string{
 		"1.2.3+build.1",
 		"1.2.3-SNAPSHOT-deadbeef",
+		"1.2.3-rc.1-SNAPSHOT-deadbeef",
 	} {
 		t.Run(version+" is valid", func(t *testing.T) {
 			got, err := toAPKVersion(version)
@@ -127,10 +143,46 @@ func TestToAPKVersionOrder(t *testing.T) {
 	testlib.CheckPath(t, "apk")
 	for _, versions := range [][]string{
 		{"1.2.3-alpha1", "1.2.3-beta1", "1.2.3-rc1", "1.2.3"},
-		{"1.2.3-dev.1", "1.2.3-dev.2", "1.2.3-dev.10", "1.2.3"},
+		{"1.2.3-pre.1", "1.2.3-pre.2", "1.2.3-pre.10", "1.2.3"},
 		{"1.2.3-beta.1", "1.2.3-beta.1.1", "1.2.3-beta.2", "1.2.3"},
 	} {
 		requireAPKVersionOrder(t, versions)
+	}
+}
+
+func TestRunDefaultSnapshot(t *testing.T) {
+	for _, version := range []string{"1.2.3", "1.2.3-rc.1"} {
+		t.Run(version, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:        t.TempDir(),
+				ProjectName: "foo",
+				APKBuilds: []config.APKBuild{{
+					Description: "Foo",
+					Homepage:    "https://example.com",
+					License:     "MIT",
+					URLTemplate: "https://example.com/{{ .ArtifactName }}",
+				}},
+			}, testctx.Snapshot, testctx.WithVersion(version))
+			ctx.Git.ShortCommit = "deadbeef"
+			addArtifact(t, ctx, artifact.Artifact{
+				Name: "foo", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+				Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: "foo"},
+			})
+
+			require.NoError(t, snapshot.Pipe{}.Default(ctx))
+			require.NoError(t, snapshot.Pipe{}.Run(ctx))
+			require.Equal(t, version+"-SNAPSHOT-deadbeef", ctx.Version)
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, runAll(ctx, client.NewMock()))
+
+			content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+			require.NoError(t, err)
+			prefix := "1.2.3"
+			if version == "1.2.3-rc.1" {
+				prefix += "_rc1"
+			}
+			require.Contains(t, string(content), "pkgver='"+prefix+"_git"+toAPKVersionNumber("snapshot-deadbeef")+"'")
+		})
 	}
 }
 
@@ -628,7 +680,7 @@ func TestArchivePreferredOverAllBinariesForSameID(t *testing.T) {
 
 func TestCustomPackageIsEmittedVerbatim(t *testing.T) {
 	dist := t.TempDir()
-	payload := "[main]\n  indented = true\n\ttabbed = true\n"
+	payload := "[main]\n  indented = true  \n   \n\ttabbed = true\n"
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "foo",
