@@ -1057,23 +1057,23 @@ func TestUploadClosesOwnedConnections(t *testing.T) {
 func TestGetHTTPClientIsolation(t *testing.T) {
 	plain, err := getHTTPClient(&config.Upload{})
 	require.NoError(t, err)
-	require.True(t, plain == http.DefaultClient, "plain config should use the default client")
+	require.Same(t, http.DefaultClient, plain, "plain config should use the default client")
 
-	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 	t.Cleanup(srv.Close)
 
 	custom1, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
 	require.NoError(t, err)
-	require.True(t, custom1 != http.DefaultClient, "custom TLS config must not use the default client")
+	require.NotSame(t, http.DefaultClient, custom1, "custom TLS config must not use the default client")
 
 	custom2, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
 	require.NoError(t, err)
-	require.True(t, custom1 != custom2, "each client construction should be isolated")
+	require.NotSame(t, custom1, custom2, "each client construction should be isolated")
 
 	cc, err := getHTTPClient(&config.Upload{
 		ClientX509Cert: "testcert.pem",
 		ClientX509Key:  "testkey.pem",
 	})
 	require.NoError(t, err)
-	require.True(t, cc != http.DefaultClient, "client cert config must not use the default client")
+	require.NotSame(t, http.DefaultClient, cc, "client cert config must not use the default client")
 }
