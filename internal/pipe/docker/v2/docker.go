@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -183,7 +184,22 @@ func (p Publish) Publish(ctx *context.Context) error {
 			if err != nil {
 				return fmt.Errorf("dockers_v2.sbom: %w", err)
 			}
-			return buildImage(ctx, d, extraArgs...)
+			err = buildImage(ctx, d, extraArgs...)
+			if err == nil || pipe.IsSkip(err) {
+				return err
+			}
+			if !isRegistryDown(err) {
+				return err
+			}
+			allow, terr := tmpl.New(ctx).Bool(d.AllowRegistryDown)
+			if terr != nil {
+				return fmt.Errorf("dockers_v2.allow_registry_down: %w", terr)
+			}
+			if !allow {
+				return err
+			}
+			log.WithField("id", d.ID).WithError(err).Warn("registry is down, skipping push")
+			return pipe.Skipf("%s: registry is down", d.ID)
 		})
 	}
 	err = g.Wait()
@@ -894,6 +910,20 @@ var retriableBuildOutputs = []string{
 	"unable to connect to",
 	"hash sum mismatch",
 	"temporary error (try again later)",
+}
+
+// registryDownRE matches a failed push answered with an HTTP 5xx status.
+var registryDownRE = regexp.MustCompile(`(?i)unexpected status[^\n]*:\s+5\d\d\b`)
+
+// isRegistryDown reports whether a failed docker build was caused by a
+// registry that answered a push with a 5xx status.
+func isRegistryDown(err error) bool {
+	de, ok := errors.AsType[gerrors.ErrDetailed](err)
+	if !ok {
+		return false
+	}
+	out := de.Output()
+	return strings.Contains(out, "failed to push") && registryDownRE.MatchString(out)
 }
 
 func isFileNotFoundError(out string) bool {
