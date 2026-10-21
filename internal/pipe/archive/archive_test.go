@@ -1093,68 +1093,38 @@ func TestDefault(t *testing.T) {
 	require.Empty(t, ctx.Config.Archives[0].Zstd)
 }
 
-func TestDefaultZstd(t *testing.T) {
-	for _, tc := range []struct {
-		name   string
-		config string
-		err    string
-	}{
-		{name: "unset", config: "{}"},
-		{name: "fastest", config: "{level: fastest}"},
-		{name: "default", config: "{level: default}"},
-		{name: "better", config: "{level: better}"},
-		{name: "best", config: "{level: best, window_size: 27}"},
-		{name: "minimum window", config: "{window_size: 10}"},
-		{name: "maximum window", config: "{window_size: 29}"},
-		{
-			name:   "invalid level",
-			config: "{level: invalid}",
-			err:    `archive "test": invalid zstd level "invalid": must be fastest, default, better, or best`,
-		},
-		{
-			name:   "negative window",
-			config: "{window_size: -1}",
-			err:    `archive "test": invalid zstd window_size -1: must be between 10 and 29 (log2 bytes)`,
-		},
-		{
-			name:   "zero window",
-			config: "{window_size: 0}",
-			err:    `archive "test": invalid zstd window_size 0: must be between 10 and 29 (log2 bytes)`,
-		},
-		{
-			name:   "small window",
-			config: "{window_size: 9}",
-			err:    `archive "test": invalid zstd window_size 9: must be between 10 and 29 (log2 bytes)`,
-		},
-		{
-			name:   "large window",
-			config: "{window_size: 30}",
-			err:    `archive "test": invalid zstd window_size 30: must be between 10 and 29 (log2 bytes)`,
-		},
-		{
-			name:   "window would overflow shift",
-			config: "{window_size: 64}",
-			err:    `archive "test": invalid zstd window_size 64: must be between 10 and 29 (log2 bytes)`,
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			project, err := config.LoadReader(strings.NewReader(fmt.Sprintf(`
-version: 2
-archives:
-  - id: test
-    formats: [tar.zst]
-    zstd: %s
-`, tc.config)))
-			require.NoError(t, err)
-			ctx := testctx.WrapWithCfg(t.Context(), project)
-			expected := ctx.Config.Archives[0].Zstd
-			err = Pipe{}.Default(ctx)
-			if tc.err != "" {
-				require.EqualError(t, err, tc.err)
+func TestRunPipeZstdInvalid(t *testing.T) {
+	for _, format := range []string{"tar.zst", "tzst", "zip"} {
+		t.Run(format, func(t *testing.T) {
+			cfg := config.Archive{
+				ID:           "test",
+				NameTemplate: "test",
+				Formats:      []string{format},
+				Files:        []config.File{{Source: "no-matching-files*"}},
+				Zstd:         config.Zstd{Level: "invalid"},
+			}
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:     t.TempDir(),
+				Archives: []config.Archive{cfg},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "binary",
+				Path:   "archive.go",
+				Type:   artifact.Binary,
+				Goos:   "linux",
+				Goarch: "amd64",
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.Equal(t, cfg.Zstd, ctx.Config.Archives[0].Zstd)
+			err := Pipe{}.Run(ctx)
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			if format != "zip" {
+				require.EqualError(t, err, `invalid zstd level "invalid": must be fastest, default, better, or best`)
+				require.Empty(t, archives)
 				return
 			}
 			require.NoError(t, err)
-			require.Equal(t, expected, ctx.Config.Archives[0].Zstd)
+			require.Len(t, archives, 1)
 		})
 	}
 }

@@ -296,7 +296,8 @@ For more information, check [#602](https://github.com/goreleaser/goreleaser/issu
 ## Zstandard compression
 
 The `zstd` settings apply to `tar.zst` and `tzst` archives, including format
-overrides. If you omit them, the compression behavior stays unchanged.
+overrides. They are validated when creating a Zstandard archive and ignored for
+other formats. If you omit them, the compression behavior stays unchanged.
 
 A larger window can improve compression when an archive contains binaries with
 shared code. Higher levels and larger windows use more memory and take more time.

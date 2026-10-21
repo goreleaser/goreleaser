@@ -3,6 +3,7 @@ package tarzst
 import (
 	"archive/tar"
 	"bytes"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -82,27 +83,14 @@ func TestTarZstConfig(t *testing.T) {
 }
 
 func TestTarZstConfigInvalid(t *testing.T) {
-	window := 9
-	for _, tc := range []struct {
-		name string
-		cfg  config.Zstd
-		err  string
-	}{
-		{
-			name: "level",
-			cfg:  config.Zstd{Level: "invalid"},
-			err:  `invalid zstd level "invalid": must be fastest, default, better, or best`,
-		},
-		{
-			name: "window",
-			cfg:  config.Zstd{WindowSize: &window},
-			err:  "invalid zstd window_size 9: must be between 10 and 29 (log2 bytes)",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			require.EqualError(t, Validate(tc.cfg), tc.err)
-			_, err := New(io.Discard, tc.cfg)
-			require.EqualError(t, err, tc.err)
+	t.Run("level", func(t *testing.T) {
+		_, err := New(io.Discard, config.Zstd{Level: "invalid"})
+		require.EqualError(t, err, `invalid zstd level "invalid": must be fastest, default, better, or best`)
+	})
+	for _, window := range []int{-1, 0, 9, 30, 64} {
+		t.Run(fmt.Sprintf("window/%d", window), func(t *testing.T) {
+			_, err := New(io.Discard, config.Zstd{WindowSize: &window})
+			require.EqualError(t, err, fmt.Sprintf("invalid zstd window_size %d: must be between 10 and 29 (log2 bytes)", window))
 		})
 	}
 }

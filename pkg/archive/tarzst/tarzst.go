@@ -34,12 +34,6 @@ func New(target io.Writer, cfg config.Zstd) (Archive, error) {
 	}, nil
 }
 
-// Validate checks the zstd configuration.
-func Validate(cfg config.Zstd) error {
-	_, err := encoderOptions(cfg)
-	return err
-}
-
 func encoderOptions(cfg config.Zstd) ([]zstd.EOption, error) {
 	var opts []zstd.EOption
 	if cfg.Level != "" {
