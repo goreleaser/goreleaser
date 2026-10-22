@@ -162,7 +162,7 @@ kos:
     # 'cap_net_bind_service' or 'NET_BIND_SERVICE'.
     # Note: setting this disables ko's layer cache for this image.
     #
-    # {{< g_inline_version "v2.19-unreleased" >}}
+    # {{< g_inline_version "v2.19" >}}
     linux_capabilities:
       - net_bind_service
 

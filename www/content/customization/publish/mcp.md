@@ -134,7 +134,7 @@ mcp:
         # URL for streamable-http or sse transports.
         #
         # Required for streamable-http and sse transports.
-        # Templates: allowed. {{< g_inline_version "v2.19-unreleased" >}}
+        # Templates: allowed. {{< g_inline_version "v2.19" >}}
         url: "https://example.com/myserver/mcp"
 
   # Set to true to skip MCP publication. No local manifest is written.

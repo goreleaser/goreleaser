@@ -134,7 +134,7 @@ nix:
 
 ### `nix-hash`
 
-{{< g_version "v2.19-unreleased" >}}
+{{< g_version "v2.19" >}}
 
 GoReleaser now hashes the artifacts itself, so `nix-hash` no longer needs to be
 in the `$PATH`. Nothing in this pipe requires Nix to be installed any more.
