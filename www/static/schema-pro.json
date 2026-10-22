@@ -1754,7 +1754,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/file-alias",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/extra-file-alias",
 						"properties": {
 							"glob": {
 								"type": "string"
@@ -2911,6 +2911,12 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"linux_capabilities": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"repository": {
 						"type": "string"
