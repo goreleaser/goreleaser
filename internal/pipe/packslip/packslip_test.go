@@ -104,8 +104,8 @@ func TestDescribe(t *testing.T) {
 				Type: artifact.UploadableArchive, Name: "tool.tar.gz", Goos: "linux", Goarch: "arm64",
 				Extra: map[string]any{
 					artifact.ExtraFormat: "tar.gz", artifact.ExtraBinaries: []string{"tool"},
-					artifact.ExtranDynLink: true,
-					artifact.ExtraLibc:     "gnu",
+					artifact.ExtranDynLink:   true,
+					artifact.ExtraLibcFamily: "gnu",
 				},
 			},
 			want: packslip.Artifact{
@@ -239,15 +239,15 @@ func TestDescribeLinuxLibc(t *testing.T) {
 		},
 		"glibc": {
 			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{
-				artifact.ExtranDynLink: true,
-				artifact.ExtraLibc:     "gnu",
+				artifact.ExtranDynLink:   true,
+				artifact.ExtraLibcFamily: "gnu",
 			}},
 			want: "gnu",
 		},
 		"musl": {
 			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{
-				artifact.ExtranDynLink: true,
-				artifact.ExtraLibc:     "musl",
+				artifact.ExtranDynLink:   true,
+				artifact.ExtraLibcFamily: "musl",
 			}},
 			want: "musl",
 		},
@@ -293,6 +293,70 @@ func TestCPUVariant(t *testing.T) {
 		Goarch: "arm", Goarm: "7", Extra: map[string]any{artifact.ExtraABI: "softfloat"},
 	}))
 	require.Equal(t, "softfloat", cpuVariant(&artifact.Artifact{Goarch: "mipsle", Gomips: "softfloat"}))
+
+	// Rust and Zig keep the target's ABI instead of Go's float option.
+	for abi, want := range map[string]string{
+		"gnueabi":    "softfloat",
+		"musleabi":   "softfloat",
+		"gnueabihf":  "",
+		"musleabihf": "",
+	} {
+		require.Equal(t, want, cpuVariant(&artifact.Artifact{
+			Goarch: "arm", Goarm: "6", Extra: map[string]any{artifact.ExtraABI: abi},
+		}), abi)
+	}
+	require.Empty(t, cpuVariant(&artifact.Artifact{
+		Goarch: "arm", Goarm: "5", Extra: map[string]any{artifact.ExtraABI: "gnueabi"},
+	}))
+}
+
+// arm-unknown-linux-gnueabi and arm-unknown-linux-gnueabihf are both armv6 with
+// glibc, so only the variant tells the archives apart. Without it the
+// selectors are ambiguous and the statement is rejected.
+func TestRunRustARMFloatABIs(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:       dist,
+		Release:    config.Release{GitHub: config.Repo{Owner: "acme", Name: "tools"}},
+		GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
+		Packslips:  []config.Packslip{{}},
+	}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"), testctx.WithCommit("abc123"))
+	ctx.Git.FullCommit = "0123456789abcdef0123456789abcdef01234567"
+	ctx.Git.URL = "git@github.com:acme/tools.git"
+	for _, abi := range []string{"gnueabi", "gnueabihf"} {
+		name := "tool_1.0.0_linux_arm_" + abi + ".tar.gz"
+		path := filepath.Join(dist, name)
+		require.NoError(t, os.WriteFile(path, []byte(abi), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableArchive, Name: name, Path: path,
+			Goos: "linux", Goarch: "arm", Goarm: "6",
+			Extra: map[string]any{
+				artifact.ExtraID:         "default",
+				artifact.ExtraFormat:     "tar.gz",
+				artifact.ExtraBinaries:   []string{"tool"},
+				artifact.ExtraABI:        abi,
+				artifact.ExtranDynLink:   true,
+				artifact.ExtraLibcFamily: "gnu",
+			},
+		})
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	statement := signed["github.com/acme/tools"]
+	require.NoError(t, statement.Validate())
+	variants := map[string]string{}
+	for _, a := range statement.Predicate.Artifacts {
+		require.Equal(t, "armv6", a.Arch)
+		require.Equal(t, "gnu", a.Libc)
+		variants[a.Name] = a.Variant
+	}
+	require.Equal(t, map[string]string{
+		"tool_1.0.0_linux_arm_gnueabi.tar.gz":   "softfloat",
+		"tool_1.0.0_linux_arm_gnueabihf.tar.gz": "",
+	}, variants)
 }
 
 func TestSourceRepo(t *testing.T) {

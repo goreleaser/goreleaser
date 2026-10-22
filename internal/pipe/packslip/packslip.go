@@ -271,7 +271,7 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 			// statically linked: fits glibc and musl hosts alike.
 			out.Requires = &packslip.Requires{Libs: &[]string{}}
 		default:
-			libc := artifact.ExtraOr(*a, artifact.ExtraLibc, "")
+			libc := artifact.ExtraOr(*a, artifact.ExtraLibcFamily, "")
 			if libc == "" && a.Type == artifact.UploadableBinary {
 				libc = elf.Libc(a.Path)
 			}
@@ -342,10 +342,15 @@ func cpuVariant(a *artifact.Artifact) string {
 	case "riscv64":
 		level, def = a.Goriscv64, "rva20u64"
 	case "arm":
-		// The Go builder stores the float ABI separately from GOARM. ArchFromGo
-		// keeps the GOARM version; only a non-default float option distinguishes.
-		if artifact.ExtraOr(*a, artifact.ExtraABI, "") == "softfloat" && a.Goarm != "5" {
-			return "softfloat"
+		// The Go builder stores the float ABI separately from GOARM, as
+		// "softfloat". Rust and Zig keep the target's ABI, where the soft-float
+		// ones are "gnueabi" and "musleabi" and the hard-float ones end in "hf".
+		// ArchFromGo keeps the GOARM version; only the float ABI distinguishes.
+		switch artifact.ExtraOr(*a, artifact.ExtraABI, "") {
+		case "softfloat", "gnueabi", "musleabi":
+			if a.Goarm != "5" {
+				return "softfloat"
+			}
 		}
 		return ""
 	}

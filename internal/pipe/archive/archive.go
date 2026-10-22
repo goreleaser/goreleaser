@@ -286,7 +286,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}) {
 			art.Extra[artifact.ExtranDynLink] = true
 			if libc := dynamicLibc(binaries); libc != "" {
-				art.Extra[artifact.ExtraLibc] = libc
+				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
 		}
 	}
@@ -353,12 +353,12 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
 			art.Extra[artifact.ExtranDynLink] = true
-			libc := artifact.ExtraOr(*binary, artifact.ExtraLibc, "")
+			libc := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
 			if libc == "" {
 				libc = elf.Libc(binary.Path)
 			}
 			if libc != "" {
-				art.Extra[artifact.ExtraLibc] = libc
+				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
 		}
 		ctx.Artifacts.Add(art)
@@ -375,7 +375,7 @@ func dynamicLibc(binaries []*artifact.Artifact) string {
 		if !artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
 			continue
 		}
-		got := artifact.ExtraOr(*binary, artifact.ExtraLibc, "")
+		got := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
 		if got == "" {
 			got = elf.Libc(binary.Path)
 		}

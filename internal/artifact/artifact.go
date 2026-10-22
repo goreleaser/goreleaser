@@ -261,7 +261,7 @@ const (
 
 const (
 	ExtraABI          = "Abi"
-	ExtraLibc         = "Libc"
+	ExtraLibcFamily   = "LibcFamily"
 	ExtraSkipChecksum = "SkipChecksum"
 )
 

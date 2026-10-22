@@ -817,10 +817,10 @@ func TestArchivePreservesRecordedLibc(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Extra: map[string]any{
-			artifact.ExtraID:       "default",
-			artifact.ExtraBinary:   "tool",
-			artifact.ExtranDynLink: true,
-			artifact.ExtraLibc:     "musl",
+			artifact.ExtraID:         "default",
+			artifact.ExtraBinary:     "tool",
+			artifact.ExtranDynLink:   true,
+			artifact.ExtraLibcFamily: "musl",
 		},
 	}
 	require.Equal(t, "musl", dynamicLibc([]*artifact.Artifact{binary}))
@@ -832,7 +832,7 @@ func TestArchivePreservesRecordedLibc(t *testing.T) {
 	}, []*artifact.Artifact{binary}))
 	got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
 	require.Len(t, got, 1)
-	require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibc, ""))
+	require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

@@ -221,15 +221,23 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	if elf.IsDynamicallyLinked(a.Path) {
-		a.Extra[artifact.ExtranDynLink] = true
-		if libc := elf.Libc(a.Path); libc != "" {
-			a.Extra[artifact.ExtraLibc] = libc
-		}
-	}
+	recordLinkage(a)
 
 	ctx.Artifacts.Add(a)
 	return nil
+}
+
+// recordLinkage notes whether the built binary is dynamically linked and, if
+// so, its libc family. The family has its own key because a target such as
+// armv7-unknown-linux-gnueabihf.2.17 already stores the glibc version under
+// keyLibc.
+func recordLinkage(a *artifact.Artifact) {
+	if elf.IsDynamicallyLinked(a.Path) {
+		a.Extra[artifact.ExtranDynLink] = true
+		if libc := elf.Libc(a.Path); libc != "" {
+			a.Extra[artifact.ExtraLibcFamily] = libc
+		}
+	}
 }
 
 func makeArtifact(build config.Build, options api.Options) *artifact.Artifact {

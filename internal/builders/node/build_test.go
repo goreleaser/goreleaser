@@ -310,3 +310,25 @@ func createFakeExecutable(tb testing.TB, name, unix, windows string) string {
 	require.NoError(tb, os.WriteFile(path, []byte(unix), 0o755))
 	return path
 }
+
+// The SEA runtime is the stock, dynamically linked Node executable on Linux.
+func TestRecordLinkage(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tool")
+	testlib.WriteDynamicELF(t, path, "/lib64/ld-linux-x86-64.so.2")
+	a := &artifact.Artifact{Path: path, Extra: map[string]any{}}
+
+	recordLinkage(a)
+
+	require.Equal(t, true, a.Extra[artifact.ExtranDynLink])
+	require.Equal(t, "gnu", a.Extra[artifact.ExtraLibcFamily])
+
+	musl := filepath.Join(t.TempDir(), "tool-musl")
+	testlib.WriteDynamicELF(t, musl, "/lib/ld-musl-x86_64.so.1")
+	b := &artifact.Artifact{Path: musl, Extra: map[string]any{}}
+	recordLinkage(b)
+	require.Equal(t, "musl", b.Extra[artifact.ExtraLibcFamily])
+
+	missing := &artifact.Artifact{Path: filepath.Join(t.TempDir(), "none"), Extra: map[string]any{}}
+	recordLinkage(missing)
+	require.Empty(t, missing.Extra)
+}
