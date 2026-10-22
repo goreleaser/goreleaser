@@ -1125,6 +1125,11 @@ case "$*" in
 *registry.down/*)
   echo 'ERROR: failed to solve: failed to push registry.down/bad:latest: unexpected status from POST request to https://registry.down/v2/bad/blobs/uploads/: 503 Service Unavailable' >&2
   exit 1;;
+*registry.flaky/*)
+  echo '#12 pushing layers' >&2
+  echo 'ERROR: failed to solve: failed to push registry.flaky/bad:latest: unexpected status from POST request to https://registry.flaky/v2/bad/blobs/uploads/: 503 Service Unavailable' >&2
+  echo 'ERROR: failed to solve: failed to push registry.flaky/bad:latest: unexpected status from POST request to https://registry.flaky/v2/bad/blobs/uploads/: 403 Forbidden' >&2
+  exit 1;;
 *registry.denied/*)
   echo 'ERROR: failed to solve: failed to push registry.denied/bad:latest: unexpected status from POST request to https://registry.denied/v2/bad/blobs/uploads/: 401 Unauthorized' >&2
   exit 1;;
@@ -1134,7 +1139,7 @@ case "$*" in *--push*) echo sha256:test > id.txt;; esac
 	require.NoError(t, os.WriteFile(filepath.Join(binDir, "docker"), []byte(script), 0o755))
 	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-	run := func(t *testing.T, image, allow string) (*artifact.Artifacts, error) {
+	run := func(t *testing.T, image, allow string, hooks ...config.Hook) (*artifact.Artifacts, error) {
 		t.Helper()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
@@ -1146,6 +1151,7 @@ case "$*" in *--push*) echo sha256:test > id.txt;; esac
 					Tags:              []string{"latest"},
 					Platforms:         []string{"linux/amd64"},
 					AllowRegistryDown: allow,
+					Hooks:             config.BuildHookConfig{Post: hooks},
 					Retry:             config.Retry{Attempts: 1},
 				},
 				{
@@ -1186,6 +1192,20 @@ case "$*" in *--push*) echo sha256:test > id.txt;; esac
 		require.False(t, pipe.IsSkip(err), err)
 	})
 
+	t.Run("allowed but a retried 5xx is followed by a 4xx", func(t *testing.T) {
+		_, err := run(t, "registry.flaky/bad", "true")
+		require.Error(t, err)
+		require.False(t, pipe.IsSkip(err), err)
+	})
+
+	t.Run("allowed but a post hook fails with a 5xx", func(t *testing.T) {
+		_, err := run(t, "registry.valid/main", "true", config.Hook{
+			Cmd: "docker buildx build --push -t registry.down/hook .",
+		})
+		require.Error(t, err)
+		require.False(t, pipe.IsSkip(err), err)
+	})
+
 	t.Run("template error", func(t *testing.T) {
 		_, err := run(t, "registry.down/bad", "{{ .nope }}")
 		testlib.RequireTemplateError(t, err)
@@ -1198,16 +1218,18 @@ func TestIsRegistryDown(t *testing.T) {
 	}
 	for _, out := range []string{
 		"ERROR: failed to solve: failed to push quay.io/a/b:latest: unexpected status from POST request to https://quay.io/v2/a/b/blobs/uploads/: 503 Service Unavailable",
-		"failed to push ghcr.io/a/b: unexpected status code [manifests latest]: 502 Bad Gateway",
-		"failed to push foo/bar: unexpected status from HEAD request to https://x/v2/: 500 Internal Server Error",
+		"ERROR: failed to push ghcr.io/a/b: unexpected status code [manifests latest]: 502 Bad Gateway",
+		"ERROR: failed to push foo/bar: unexpected status from HEAD request to https://x/v2/: 500 Internal Server Error",
+		"#12 pushing layers\nERROR: failed to solve: failed to push foo/bar: unexpected status from POST request to https://x/v2/: 503 Service Unavailable\n",
 	} {
 		require.True(t, isRegistryDown(wrap(out)), out)
 	}
 	for _, out := range []string{
-		"failed to push quay.io/a/b: unexpected status from POST request to https://quay.io/v2/: 401 Unauthorized",
-		"failed to push quay.io/a/b: unexpected status from POST request to https://quay.io:5060/v2/: 403 Forbidden",
+		"ERROR: failed to solve: failed to push a/b: unexpected status from POST request to https://x/v2/: 503 Service Unavailable\nERROR: failed to solve: failed to push a/b: unexpected status from POST request to https://x/v2/: 403 Forbidden",
+		"ERROR: failed to solve: failed to push quay.io/a/b: unexpected status from POST request to https://quay.io/v2/: 401 Unauthorized",
+		"ERROR: failed to push quay.io/a/b: unexpected status from POST request to https://quay.io:5060/v2/: 403 Forbidden",
 		"failed to pull base: unexpected status from GET request to https://x/v2/: 503 Service Unavailable",
-		"failed to push quay.io/a/b: connection refused",
+		"ERROR: failed to push quay.io/a/b: connection refused",
 		"",
 	} {
 		require.False(t, isRegistryDown(wrap(out)), out)
