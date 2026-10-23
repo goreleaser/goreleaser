@@ -323,42 +323,38 @@ func isBare(format string) bool {
 }
 
 // cpuVariant returns the packslip variant for a build that targets a CPU
-// level other than Go's default, so that builds of the same platform stay
-// distinct. Default-level builds have no variant, so consumers that do not
-// ask for one get the most compatible build.
+// level or float ABI other than the default, so that builds of the same
+// platform stay distinct. Default builds have no variant, so consumers that do
+// not ask for one get the most compatible build.
 func cpuVariant(a *artifact.Artifact) string {
-	level, def := "", ""
+	var level string
 	switch a.Goarch {
 	case "amd64":
-		level, def = a.Goamd64, "v1"
+		level = a.Goamd64
 	case "386":
-		level, def = a.Go386, "sse2"
+		level = a.Go386
 	case "arm64":
-		level, def = a.Goarm64, "v8.0"
+		level = a.Goarm64
 	case "mips", "mipsle", "mips64", "mips64le":
-		level, def = a.Gomips, "hardfloat"
+		level = a.Gomips
 	case "ppc64", "ppc64le":
-		level, def = a.Goppc64, "power8"
+		level = a.Goppc64
 	case "riscv64":
-		level, def = a.Goriscv64, "rva20u64"
+		level = a.Goriscv64
 	case "arm":
 		// The Go builder stores the float ABI separately from GOARM, as
-		// "softfloat". Rust and Zig keep the target's ABI, where the soft-float
-		// ones are "gnueabi" and "musleabi" and the hard-float ones end in "hf".
-		// ArchFromGo keeps the GOARM version; only the float ABI distinguishes.
-		switch artifact.ExtraOr(*a, artifact.ExtraABI, "") {
-		case "softfloat", "gnueabi", "musleabi":
-			if a.Goarm != "5" {
-				return "softfloat"
-			}
+		// "softfloat" or "hardfloat". Rust and Zig keep the target's ABI, such
+		// as "gnueabi".
+		abi := artifact.ExtraOr(*a, artifact.ExtraABI, "")
+		if abi == "softfloat" || abi == "hardfloat" {
+			return packslip.VariantFromGo(a.Goarch, a.Goarm+","+abi)
 		}
-		return ""
+		if a.Goarm == "5" {
+			return ""
+		}
+		return packslip.VariantFromRustABI(abi)
 	}
-	if level == "" || level == def {
-		return ""
-	}
-	// GOARM64 options are comma separated, which a variant cannot contain.
-	return strings.ReplaceAll(level, ",", "-")
+	return packslip.VariantFromGo(a.Goarch, level)
 }
 
 // sourceRepo normalizes a git remote URL, such as git@github.com:acme/tool.git,
