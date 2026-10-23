@@ -184,6 +184,9 @@ release:
   # Keep in mind that this might also break things that depend on the release
   # URL, for instance, homebrew taps.
   #
+  # Passing `--skip=release` to `goreleaser release` has the same effect.
+  # {{< g_inline_version "v2.20" >}}
+  #
   # Templates: allowed.
   disable: true
 
