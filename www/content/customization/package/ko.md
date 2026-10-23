@@ -84,8 +84,10 @@ kos:
     repository: ghcr.io/foo/bar
 
     # Platforms to build and publish.
+    # Empty platforms are ignored, and the image is skipped if none are left.
     #
     # Default: 'linux/amd64'.
+    # Templates: allowed. {{< g_inline_version "v2.20" >}}
     platforms:
       - linux/amd64
       - linux/arm64
