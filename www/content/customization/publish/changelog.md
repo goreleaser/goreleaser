@@ -8,6 +8,8 @@ You can customize how the changelog is generated using the `changelog` section i
 ```yaml {filename=".goreleaser.yaml"}
 changelog:
   # Set this to true if you don't want any changelog at all.
+  # Passing `--skip=changelog` to `goreleaser release` has the same effect.
+  # {{< g_inline_version "v2.20" >}}
   #
   # Warning: this will also ignore any changelog files passed via `--release-notes`,
   # and will render an empty changelog.
