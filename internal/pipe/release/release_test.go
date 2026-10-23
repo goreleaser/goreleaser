@@ -259,9 +259,13 @@ func TestPublishRefreshKeepsSignedChecksumStableAfterPackslip(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("the test signer uses cp")
 	}
-	dist := t.TempDir()
-	archive := filepath.Join(dist, "tool.tar.gz")
-	metadata := filepath.Join(dist, "metadata.json")
+	distPath := t.TempDir()
+	workingDir, err := os.Getwd()
+	require.NoError(t, err)
+	dist, err := filepath.Rel(workingDir, distPath)
+	require.NoError(t, err)
+	archive := filepath.Join(distPath, "tool.tar.gz")
+	metadata := filepath.Join(distPath, "metadata.json")
 	require.NoError(t, os.WriteFile(archive, []byte("final archive bytes"), 0o644))
 	require.NoError(t, os.WriteFile(metadata, []byte(`{"metadata":true}`), 0o644))
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{

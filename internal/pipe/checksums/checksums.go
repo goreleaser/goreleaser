@@ -199,11 +199,11 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 	skipPaths := map[string]bool{}
 	for _, art := range ctx.Artifacts.List() {
 		if artifact.ExtraOr(*art, artifact.ExtraSkipChecksum, false) {
-			skipPaths[filepath.Clean(art.Path)] = true
+			skipPaths[canonicalPath(art.Path)] = true
 		}
 	}
 	for name, path := range extraFiles {
-		if skipPaths[filepath.Clean(path)] {
+		if skipPaths[canonicalPath(path)] {
 			continue
 		}
 		artifactList = append(artifactList, &artifact.Artifact{
@@ -217,6 +217,19 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 		return nil, errNoArtifacts
 	}
 	return artifactList, nil
+}
+
+// canonicalPath makes the comparison between registered artifacts and extra
+// file globs independent of relative, absolute, and existing symlink aliases.
+func canonicalPath(path string) string {
+	path = filepath.Clean(path)
+	if absolute, err := filepath.Abs(path); err == nil {
+		path = absolute
+	}
+	if resolved, err := filepath.EvalSymlinks(path); err == nil {
+		path = resolved
+	}
+	return filepath.Clean(path)
 }
 
 func checksums(algorithm string, a *artifact.Artifact) (string, error) {
