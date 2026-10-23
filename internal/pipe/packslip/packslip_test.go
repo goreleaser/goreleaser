@@ -271,6 +271,42 @@ func TestDescribeLinuxLibc(t *testing.T) {
 	}
 }
 
+// A Node SEA uses the stock glibc-linked Linux Node runtime. The Node builder
+// records DynamicallyLinked and LibcFamily; the archive pipe copies them onto
+// the uploadable artifact. Without that metadata, describe would treat a
+// missing linkage flag as static (requires.libs: []) and a conforming
+// installer could select the artifact on musl/Alpine.
+func TestDescribeNodeSEAArchive(t *testing.T) {
+	archive := &artifact.Artifact{
+		Type:   artifact.UploadableArchive,
+		Name:   "tool_1.0.0_linux_amd64.tar.gz",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Extra: map[string]any{
+			artifact.ExtraFormat:     "tar.gz",
+			artifact.ExtraBinaries:   []string{"tool"},
+			artifact.ExtranDynLink:   true,
+			artifact.ExtraLibcFamily: "gnu",
+		},
+	}
+	got, err := describe(archive, "https://example.com/tool_1.0.0_linux_amd64.tar.gz")
+	require.NoError(t, err)
+	require.Equal(t, "gnu", got.Libc)
+	require.Nil(t, got.Requires)
+
+	file := filepath.Join(t.TempDir(), archive.Name)
+	require.NoError(t, os.WriteFile(file, []byte("sea"), 0o644))
+	identity, err := packslip.IdentityFromToken(fakeToken(t, map[string]any{
+		"iss":              "https://token.actions.githubusercontent.com",
+		"job_workflow_ref": "acme/tool/.github/workflows/release.yml@refs/tags/v1.0.0",
+	}))
+	require.NoError(t, err)
+	_, err = packslip.Build(packslip.Predicate{
+		Project: "example.com/tool", Version: "1.0.0", PublishedAt: time.Now(), Identity: identity,
+	}, []packslip.ArtifactInput{{Path: file, Artifact: got}})
+	require.NoError(t, err)
+}
+
 func TestCPUVariant(t *testing.T) {
 	for want, a := range map[string]artifact.Artifact{
 		"":          {Goarch: "amd64", Goamd64: "v1"},

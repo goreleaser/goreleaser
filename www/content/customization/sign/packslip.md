@@ -3,7 +3,7 @@ title: "Packslip manifests"
 weight: 25
 ---
 
-{{< g_version "v2.19" >}}
+{{< g_version "v2.20" >}}
 
 [packslip](https://packslip.dev/) is an open format for publishing a signed
 release manifest next to your release artifacts. The manifest lists each

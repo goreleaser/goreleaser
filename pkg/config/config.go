@@ -1215,7 +1215,7 @@ type Checksum struct {
 
 // Packslip config.
 //
-// Since v2.19.
+// Since v2.20.
 type Packslip struct {
 	Disable      string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`

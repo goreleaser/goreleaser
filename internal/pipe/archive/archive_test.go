@@ -806,33 +806,51 @@ func TestRunPipeBinary(t *testing.T) {
 
 // UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
 // before packing, and archive metadata must retain that recorded value rather
-// than probing the packed bytes again.
+// than probing the packed bytes again. The same path covers a Node SEA, whose
+// stock Linux runtime is dynamically linked even when the packed bytes no
+// longer expose PT_INTERP.
 func TestArchivePreservesRecordedLibc(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "packed-tool")
-	require.NoError(t, os.WriteFile(path, []byte("packed bytes without ELF metadata"), 0o755))
-	binary := &artifact.Artifact{
-		Type:   artifact.Binary,
-		Name:   "tool",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "amd64",
-		Extra: map[string]any{
-			artifact.ExtraID:         "default",
-			artifact.ExtraBinary:     "tool",
-			artifact.ExtranDynLink:   true,
-			artifact.ExtraLibcFamily: "musl",
-		},
-	}
-	require.Equal(t, "musl", dynamicLibc([]*artifact.Artifact{binary}))
+	for _, tt := range []struct {
+		name   string
+		builder string
+		libc   string
+	}{
+		{name: "musl after UPX", libc: "musl"},
+		{name: "node SEA glibc", builder: "node", libc: "gnu"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "packed-tool")
+			require.NoError(t, os.WriteFile(path, []byte("packed bytes without ELF metadata"), 0o755))
+			extra := map[string]any{
+				artifact.ExtraID:         "default",
+				artifact.ExtraBinary:     "tool",
+				artifact.ExtranDynLink:   true,
+				artifact.ExtraLibcFamily: tt.libc,
+			}
+			if tt.builder != "" {
+				extra[artifact.ExtraBuilder] = tt.builder
+			}
+			binary := &artifact.Artifact{
+				Type:   artifact.Binary,
+				Name:   "tool",
+				Path:   path,
+				Goos:   "linux",
+				Goarch: "amd64",
+				Extra:  extra,
+			}
+			require.Equal(t, tt.libc, dynamicLibc([]*artifact.Artifact{binary}))
 
-	ctx := testctx.Wrap(t.Context())
-	require.NoError(t, skip(ctx, config.Archive{
-		ID:           "default",
-		NameTemplate: "{{ .Binary }}",
-	}, []*artifact.Artifact{binary}))
-	got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
-	require.Len(t, got, 1)
-	require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
+			ctx := testctx.Wrap(t.Context())
+			require.NoError(t, skip(ctx, config.Archive{
+				ID:           "default",
+				NameTemplate: "{{ .Binary }}",
+			}, []*artifact.Artifact{binary}))
+			got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+			require.Len(t, got, 1)
+			require.Equal(t, tt.libc, artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
+			require.True(t, artifact.ExtraOr(*got[0], artifact.ExtranDynLink, false))
+		})
+	}
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

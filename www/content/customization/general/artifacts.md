@@ -90,7 +90,7 @@ The most common fields are:
 | `WrappedIn`         | `string`   | The directory name the files are wrapped in                |
 | `Checksum`          | `string`   | The checksum in `algorithm:hash` format                    |
 | `Abi`               | `string`   | The target ABI, such as an ARM float ABI                   |
-| `Libc`              | `string`   | The detected libc family for a dynamic Linux binary        |
+| `LibcFamily`        | `string`   | The detected libc family for a dynamic Linux binary        |
 | `Size`              | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
 | `Digest`            | `string`   | The Docker image digest                                    |
 | `Platforms`         | `[]string` | The platforms a Docker (v2) image was built for            |
