@@ -4,11 +4,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -247,6 +250,70 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	require.Contains(t, client.UploadedFileNames, "checksum")
 	require.Contains(t, client.UploadedFileNames, "checksum.pem")
 	require.Contains(t, client.UploadedFileNames, "checksum.sig")
+}
+
+// A Packslip bundle is signed after checksums. It cannot be part of those
+// checksums without changing the bytes a checksum signature was made over
+// during the publish-time refresh.
+func TestPublishRefreshKeepsSignedChecksumStableAfterPackslip(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the test signer uses cp")
+	}
+	dist := t.TempDir()
+	archive := filepath.Join(dist, "tool.tar.gz")
+	require.NoError(t, os.WriteFile(archive, []byte("final archive bytes"), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "tool",
+		Checksum:    config.Checksum{NameTemplate: "checksums.txt"},
+		Signs: []config.Sign{{
+			Cmd:       "cp",
+			Args:      []string{"$artifact", "$signature"},
+			Artifacts: "checksum",
+			Signature: "${artifact}.sig",
+		}},
+		Release: config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}},
+	}, testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "tool.tar.gz",
+		Path: archive,
+	})
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
+	require.NoError(t, sign.Pipe{}.Default(ctx))
+	require.NoError(t, sign.Pipe{}.Run(ctx))
+
+	checksum := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()[0]
+	signature := ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List()[0]
+	before, err := os.ReadFile(checksum.Path)
+	require.NoError(t, err)
+	require.Equal(t, before, mustReadFile(t, signature.Path))
+
+	manifest := filepath.Join(dist, "packslip.sigstore.json")
+	require.NoError(t, os.WriteFile(manifest, []byte(`{"bundle":true}`), 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableFile,
+		Name: "packslip.sigstore.json",
+		Path: manifest,
+		Extra: map[string]any{
+			artifact.ExtraSkipChecksum: true,
+		},
+	})
+
+	require.NoError(t, doPublish(ctx, &client.Mock{}))
+	after, err := os.ReadFile(checksum.Path)
+	require.NoError(t, err)
+	require.Equal(t, before, after)
+	require.Equal(t, after, mustReadFile(t, signature.Path))
+	require.NotContains(t, string(after), "packslip.sigstore.json")
+}
+
+func mustReadFile(t *testing.T, path string) []byte {
+	t.Helper()
+	b, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return b
 }
 
 func TestRunPipeWithIDsThenFilters(t *testing.T) {

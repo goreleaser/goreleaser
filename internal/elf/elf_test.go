@@ -37,7 +37,29 @@ func TestIsDynamicallyLinked(t *testing.T) {
 			require.NoError(t, err, "go build failed: %s", output)
 
 			require.Equal(t, tc.want, IsDynamicallyLinked(binPath))
+			if tc.want {
+				// The test host may be glibc or musl; both are valid dynamic
+				// Linux runtimes and the detector must recognize either.
+				require.Contains(t, []string{"gnu", "musl"}, Libc(binPath))
+			} else {
+				require.Empty(t, Libc(binPath))
+			}
 		})
+	}
+}
+
+func TestLibcFromInterpreter(t *testing.T) {
+	for interpreter, want := range map[string]string{
+		"/lib64/ld-linux-x86-64.so.2": "gnu",
+		"/lib64/ld64.so.2":            "gnu", // ppc64le
+		"/lib64/ld64.so.1":            "gnu", // ppc64
+		"/lib/ld.so.1":                "gnu", // mips
+		"/lib/ld64.so.1":              "gnu", // s390x
+		"/lib/ld-musl-aarch64.so.1":   "musl",
+		"/lib/ld-uClibc.so.0":         "",
+		"":                            "",
+	} {
+		require.Equal(t, want, libcFromInterpreter(interpreter), interpreter)
 	}
 }
 

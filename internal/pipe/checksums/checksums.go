@@ -184,6 +184,9 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 	filter := artifact.And(
 		artifact.ByTypes(artifact.ReleaseUploadableTypes()...),
 		artifact.Not(artifact.ByTypes(artifact.Checksum, artifact.Signature, artifact.Certificate)),
+		artifact.Not(func(a *artifact.Artifact) bool {
+			return artifact.ExtraOr(*a, artifact.ExtraSkipChecksum, false)
+		}),
 		artifact.ByIDs(ctx.Config.Checksum.IDs...),
 	)
 	artifactList := ctx.Artifacts.Filter(filter).List()

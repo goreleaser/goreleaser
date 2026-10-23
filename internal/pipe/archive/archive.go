@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -277,10 +278,16 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		if abi, ok := binaries[0].Extra[artifact.ExtraABI]; ok {
+			art.Extra[artifact.ExtraABI] = abi
+		}
 		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
 			return artifact.ExtraOr(*bin, artifact.ExtranDynLink, false)
 		}) {
 			art.Extra[artifact.ExtranDynLink] = true
+			if libc := dynamicLibc(binaries); libc != "" {
+				art.Extra[artifact.ExtraLibcFamily] = libc
+			}
 		}
 	}
 
@@ -341,12 +348,43 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		if abi, ok := binary.Extra[artifact.ExtraABI]; ok {
+			art.Extra[artifact.ExtraABI] = abi
+		}
 		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
 			art.Extra[artifact.ExtranDynLink] = true
+			libc := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
+			if libc == "" {
+				libc = elf.Libc(binary.Path)
+			}
+			if libc != "" {
+				art.Extra[artifact.ExtraLibcFamily] = libc
+			}
 		}
 		ctx.Artifacts.Add(art)
 	}
 	return nil
+}
+
+// dynamicLibc returns the shared libc family for all dynamically linked
+// binaries in an archive. An empty result means that one could not be read or
+// the archive combines incompatible runtimes; the consumer must not guess.
+func dynamicLibc(binaries []*artifact.Artifact) string {
+	var libc string
+	for _, binary := range binaries {
+		if !artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+			continue
+		}
+		got := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
+		if got == "" {
+			got = elf.Libc(binary.Path)
+		}
+		if got == "" || (libc != "" && libc != got) {
+			return ""
+		}
+		libc = got
+	}
+	return libc
 }
 
 func packageFormats(archive config.Archive, platform string) []string {

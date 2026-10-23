@@ -89,12 +89,15 @@ The most common fields are:
 | `Format`            | `string`   | The archive format (e.g., `tar.gz`, `zip`)                 |
 | `WrappedIn`         | `string`   | The directory name the files are wrapped in                |
 | `Checksum`          | `string`   | The checksum in `algorithm:hash` format                    |
+| `Abi`               | `string`   | The target ABI, such as an ARM float ABI                   |
+| `LibcFamily`        | `string`   | The detected libc family for a dynamic Linux binary        |
 | `Size`              | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
 | `Digest`            | `string`   | The Docker image digest                                    |
 | `Platforms`         | `[]string` | The platforms a Docker (v2) image was built for            |
 | `Replaces`          | `bool`     | Whether a universal binary replaces single-arch ones       |
 | `Files`             | `[]string` | Any extra files an archive might have                      |
 | `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
+| `SkipChecksum`      | `bool`     | Whether the file is intentionally omitted from checksums   |
 
 > [!NOTE]
 > There might be other fields in `extra` depending on the artifact type and
