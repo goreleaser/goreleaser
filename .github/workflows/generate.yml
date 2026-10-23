@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
       - name: "install sponsors"
-        run: npm install -g @goreleaser/sponsors@latest
+        run: npm install -g @goreleaser/sponsors@0.3.8
       - run: task docs:sponsors
         env:
           GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
