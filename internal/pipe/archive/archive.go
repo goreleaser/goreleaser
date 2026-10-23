@@ -238,6 +238,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}
 	}
 	bins := []string{}
+	packslipBins := []string{}
 	for _, binary := range binaries {
 		dst := binary.Name
 		if arch.StripBinaryDirectory {
@@ -251,17 +252,21 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
 		bins = append(bins, dst)
+		if isPackslipExecutable(binary) {
+			packslipBins = append(packslipBins, dst)
+		}
 	}
 	art := &artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: folder + "." + format,
 		Path: archivePath,
 		Extra: map[string]any{
-			artifact.ExtraID:        arch.ID,
-			artifact.ExtraFormat:    format,
-			artifact.ExtraWrappedIn: wrap,
-			artifact.ExtraBinaries:  bins,
-			artifact.ExtraFiles:     listExtraFiles(files),
+			artifact.ExtraID:           arch.ID,
+			artifact.ExtraFormat:       format,
+			artifact.ExtraWrappedIn:    wrap,
+			artifact.ExtraBinaries:     bins,
+			artifact.ExtraPackslipBins: packslipBins,
+			artifact.ExtraFiles:        listExtraFiles(files),
 		},
 	}
 	if len(binaries) > 0 {
@@ -289,6 +294,9 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
 		}
+		if len(packslipBins) == 0 {
+			art.Extra[artifact.ExtraSkipPackslip] = true
+		}
 	}
 
 	ctx.Artifacts.Add(art)
@@ -301,6 +309,18 @@ func listExtraFiles(files []config.File) []string {
 		result = append(result, f.Destination)
 	}
 	return result
+}
+
+// isPackslipExecutable distinguishes executable build artifacts from headers
+// and C libraries. The latter still belong in release archives, but they are
+// not installable commands and must not be described as Packslip bins.
+func isPackslipExecutable(a *artifact.Artifact) bool {
+	switch a.Type {
+	case artifact.Header, artifact.CArchive, artifact.CShared:
+		return false
+	default:
+		return true
+	}
 }
 
 func wrapFolder(a config.Archive) string {
@@ -325,6 +345,14 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			WithField("name", finalName).
 			Info("archiving")
 
+		extra := map[string]any{
+			artifact.ExtraID:     archive.ID,
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: binary.Name,
+		}
+		if !isPackslipExecutable(binary) {
+			extra[artifact.ExtraSkipPackslip] = true
+		}
 		art := &artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
@@ -339,11 +367,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goppc64:   binary.Goppc64,
 			Goriscv64: binary.Goriscv64,
 			Target:    binary.Target,
-			Extra: map[string]any{
-				artifact.ExtraID:     archive.ID,
-				artifact.ExtraFormat: "binary",
-				artifact.ExtraBinary: binary.Name,
-			},
+			Extra:     extra,
 		}
 		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep

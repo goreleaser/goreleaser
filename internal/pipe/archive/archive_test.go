@@ -804,6 +804,66 @@ func TestRunPipeBinary(t *testing.T) {
 	testlib.RequireNoExtraField(t, windows2, artifact.ExtraReplaces)
 }
 
+func TestPackslipMetadataSkipsLibraryOnlyArtifacts(t *testing.T) {
+	newCtx := func(t *testing.T, formats []string) *context.Context {
+		t.Helper()
+		return testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+			Archives: []config.Archive{{
+				ID:           "default",
+				Builds:       []string{"default"},
+				Formats:      formats,
+				NameTemplate: "tool",
+			}},
+		})
+	}
+	add := func(t *testing.T, ctx *context.Context, typ artifact.Type, name string) {
+		t.Helper()
+		path := filepath.Join(ctx.Config.Dist, name)
+		require.NoError(t, os.WriteFile(path, []byte(name), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: typ, Name: name, Path: path, Goos: "linux", Goarch: "amd64",
+			Extra: map[string]any{artifact.ExtraID: "default"},
+		})
+	}
+
+	t.Run("archive", func(t *testing.T) {
+		ctx := newCtx(t, []string{"tar.gz"})
+		add(t, ctx, artifact.Header, "libtool.h")
+		add(t, ctx, artifact.CShared, "libtool.so")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.Equal(t, []string{"libtool.h", "libtool.so"}, artifact.ExtraOr(*got[0], artifact.ExtraBinaries, []string{}))
+		require.Empty(t, artifact.ExtraOr(*got[0], artifact.ExtraPackslipBins, []string{}))
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+
+	t.Run("raw library", func(t *testing.T) {
+		ctx := newCtx(t, []string{"binary"})
+		add(t, ctx, artifact.CArchive, "libtool.a")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+		require.Len(t, got, 1)
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+
+	t.Run("executable archive", func(t *testing.T) {
+		ctx := newCtx(t, []string{"tar.gz"})
+		add(t, ctx, artifact.Binary, "tool")
+		add(t, ctx, artifact.Header, "tool.h")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.Equal(t, []string{"tool", "tool.h"}, artifact.ExtraOr(*got[0], artifact.ExtraBinaries, []string{}))
+		require.Equal(t, []string{"tool"}, artifact.ExtraOr(*got[0], artifact.ExtraPackslipBins, []string{}))
+		require.False(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+}
+
 // UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
 // before packing, and archive metadata must retain that recorded value rather
 // than probing the packed bytes again. The same path covers a Node SEA, whose

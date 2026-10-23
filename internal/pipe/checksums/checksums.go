@@ -196,7 +196,16 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 		return nil, err
 	}
 
+	skipPaths := map[string]bool{}
+	for _, art := range ctx.Artifacts.List() {
+		if artifact.ExtraOr(*art, artifact.ExtraSkipChecksum, false) {
+			skipPaths[filepath.Clean(art.Path)] = true
+		}
+	}
 	for name, path := range extraFiles {
+		if skipPaths[filepath.Clean(path)] {
+			continue
+		}
 		artifactList = append(artifactList, &artifact.Artifact{
 			Name: name,
 			Path: path,

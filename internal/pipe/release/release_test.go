@@ -261,11 +261,16 @@ func TestPublishRefreshKeepsSignedChecksumStableAfterPackslip(t *testing.T) {
 	}
 	dist := t.TempDir()
 	archive := filepath.Join(dist, "tool.tar.gz")
+	metadata := filepath.Join(dist, "metadata.json")
 	require.NoError(t, os.WriteFile(archive, []byte("final archive bytes"), 0o644))
+	require.NoError(t, os.WriteFile(metadata, []byte(`{"metadata":true}`), 0o644))
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "tool",
-		Checksum:    config.Checksum{NameTemplate: "checksums.txt"},
+		Checksum: config.Checksum{
+			NameTemplate: "checksums.txt",
+			ExtraFiles:   []config.ExtraFile{{Glob: filepath.Join(dist, "*.json")}},
+		},
 		Signs: []config.Sign{{
 			Cmd:       "cp",
 			Args:      []string{"$artifact", "$signature"},

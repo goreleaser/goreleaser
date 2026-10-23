@@ -263,6 +263,8 @@ const (
 	ExtraABI          = "Abi"
 	ExtraLibcFamily   = "LibcFamily"
 	ExtraSkipChecksum = "SkipChecksum"
+	ExtraSkipPackslip = "SkipPackslip"
+	ExtraPackslipBins = "PackslipBinaries"
 )
 
 // Extras represents the extra fields in an artifact.

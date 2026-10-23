@@ -168,6 +168,9 @@ func (Pipe) Run(ctx *context.Context) error {
 func build(ctx *context.Context, cfg config.Packslip, token string, identity packslip.Identity) (*manifest, error) {
 	filters := []artifact.Filter{
 		artifact.ByTypes(artifact.UploadableArchive, artifact.UploadableBinary),
+		artifact.Not(func(a *artifact.Artifact) bool {
+			return artifact.ExtraOr(*a, artifact.ExtraSkipPackslip, false)
+		}),
 	}
 	if len(cfg.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(cfg.IDs...))
@@ -278,7 +281,12 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 		}
 	default:
 		wrap := artifact.ExtraOr(*a, artifact.ExtraWrappedIn, "")
-		for _, bin := range artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}) {
+		bins := artifact.ExtraOr(
+			*a,
+			artifact.ExtraPackslipBins,
+			artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}),
+		)
+		for _, bin := range bins {
 			if isBare(format) {
 				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, path.Base(bin)))
 				break

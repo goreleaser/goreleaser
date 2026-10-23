@@ -99,6 +99,24 @@ func TestDescribe(t *testing.T) {
 				Requires: &packslip.Requires{Libs: &[]string{}},
 			},
 		},
+		"archive ignores non-executable members": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: "tool_1.0.0_linux_amd64.tar.gz",
+				Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{
+					artifact.ExtraFormat:       "tar.gz",
+					artifact.ExtraWrappedIn:    "tool_1.0.0",
+					artifact.ExtraBinaries:     []string{"tool", "tool.h"},
+					artifact.ExtraPackslipBins: []string{"tool"},
+				},
+			},
+			want: packslip.Artifact{
+				Name: "tool_1.0.0_linux_amd64.tar.gz", OS: "linux", Arch: "x86_64", Format: "tar.gz",
+				URL:      "https://example.com/x",
+				Bin:      []packslip.Bin{packslip.NewBin("tool_1.0.0/tool")},
+				Requires: &packslip.Requires{Libs: &[]string{}},
+			},
+		},
 		"linux archive, cgo": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableArchive, Name: "tool.tar.gz", Goos: "linux", Goarch: "arm64",
@@ -519,6 +537,42 @@ func TestRunNoArtifacts(t *testing.T) {
 		Packslips: []config.Packslip{{Project: "example.com/tool", NameTemplate: "packslip.sigstore.json"}},
 	})
 	require.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
+}
+
+func TestRunSkipsLibraryArtifacts(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	dist := t.TempDir()
+	for _, name := range []string{"libtool.tar.gz", "libtool.so"} {
+		file := filepath.Join(dist, name)
+		require.NoError(t, os.WriteFile(file, []byte(name), 0o644))
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:       dist,
+		Release:    config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}},
+		GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
+		Packslips:  []config.Packslip{{}},
+	}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	for _, tt := range []struct {
+		name string
+		typ  artifact.Type
+	}{
+		{name: "libtool.tar.gz", typ: artifact.UploadableArchive},
+		{name: "libtool.so", typ: artifact.UploadableBinary},
+	} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: tt.typ, Name: tt.name, Path: filepath.Join(dist, tt.name),
+			Goos: "linux", Goarch: "amd64",
+			Extra: map[string]any{
+				artifact.ExtraFormat:       "tar.gz",
+				artifact.ExtraSkipPackslip: true,
+			},
+		})
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
+	require.Empty(t, signed)
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableFile)).List())
 }
 
 func TestRunNoProject(t *testing.T) {
