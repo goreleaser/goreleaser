@@ -458,11 +458,19 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		bare:                cfg.Bare,
 		preserveImportPaths: cfg.PreserveImportPaths,
 		baseImportPaths:     cfg.BaseImportPaths,
-		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
 		linuxCapabilities:   cfg.LinuxCapabilities,
+	}
+
+	platforms, err := applyTemplate(ctx, cfg.Platforms)
+	if err != nil {
+		return nil, err
+	}
+	opts.platforms = removeEmpty(platforms)
+	if len(opts.platforms) == 0 {
+		return nil, pipe.Skip("no platforms to build")
 	}
 
 	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
