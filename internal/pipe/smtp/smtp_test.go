@@ -285,6 +285,6 @@ func TestGetConfig(t *testing.T) {
 			Username: "user",
 			Host:     "host",
 		})
-		require.EqualError(t, err, "SMTP: env: environment variable \"SMTP_PASSWORD\" should not be empty")
+		require.EqualError(t, err, "env: environment variable \"SMTP_PASSWORD\" should not be empty")
 	})
 }
