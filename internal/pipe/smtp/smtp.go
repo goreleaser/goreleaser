@@ -4,7 +4,6 @@ package smtp
 import (
 	"crypto/tls"
 	"errors"
-	"fmt"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
@@ -98,9 +97,9 @@ func (p Pipe) Announce(ctx *context.Context) error {
 }
 
 var (
-	errNoPort     = errors.New("SMTP: missing smtp.port or $SMTP_PORT")
-	errNoUsername = errors.New("SMTP: missing smtp.username or $SMTP_USERNAME")
-	errNoHost     = errors.New("SMTP: missing smtp.host or $SMTP_HOST")
+	errNoPort     = errors.New("missing smtp.port or $SMTP_PORT")
+	errNoUsername = errors.New("missing smtp.username or $SMTP_USERNAME")
+	errNoHost     = errors.New("missing smtp.host or $SMTP_HOST")
 )
 
 func getConfig(smtp config.SMTP) (Config, error) {
@@ -110,7 +109,7 @@ func getConfig(smtp config.SMTP) (Config, error) {
 		Username: smtp.Username,
 	}
 	if err := env.Parse(&cfg); err != nil {
-		return cfg, fmt.Errorf("SMTP: %w", err)
+		return cfg, err
 	}
 	if cfg.Username == "" {
 		return cfg, errNoUsername
