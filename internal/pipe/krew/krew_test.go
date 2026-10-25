@@ -226,7 +226,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Description = "lalala"
 				ctx.Config.Krews[0].ShortDescription = ""
 			},
-			expectedRunError: `krew: manifest short description is not set`,
+			expectedRunError: `manifest short description is not set`,
 		},
 		"no desc": {
 			prepare: func(ctx *context.Context) {
@@ -235,7 +235,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Description = ""
 				ctx.Config.Krews[0].ShortDescription = "lalala"
 			},
-			expectedRunError: `krew: manifest description is not set`,
+			expectedRunError: `manifest description is not set`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

@@ -56,9 +56,9 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepositories    = errors.New("ko: missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
-	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
-	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
+	errNoRepositories    = errors.New("missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errInvalidMainPath   = errors.New("invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
+	errInvalidMainGoPath = errors.New("invalid Main path: your path should point to a directory instead of a .go file")
 )
 
 // Pipe that build OCI compliant images with ko.
