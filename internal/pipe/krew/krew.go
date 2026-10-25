@@ -93,13 +93,13 @@ func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater) error {
 	if krew.Name == "" {
-		return pipe.Skip("krew: manifest name is not set")
+		return pipe.Skip("manifest name is not set")
 	}
 	if krew.Description == "" {
-		return errors.New("krew: manifest description is not set")
+		return errors.New("manifest description is not set")
 	}
 	if krew.ShortDescription == "" {
-		return errors.New("krew: manifest short description is not set")
+		return errors.New("manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
