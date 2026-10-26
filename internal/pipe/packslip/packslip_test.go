@@ -307,6 +307,8 @@ func TestDescribeNodeSEAArchive(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func cpuVariant(a *artifact.Artifact) string { return goTarget(a).Variant() }
+
 func TestCPUVariant(t *testing.T) {
 	for want, a := range map[string]artifact.Artifact{
 		"":          {Goarch: "amd64", Goamd64: "v1"},
@@ -411,26 +413,22 @@ func TestSourceRepo(t *testing.T) {
 	}
 }
 
-func TestValidateProjectIdentity(t *testing.T) {
+func TestProjectSigner(t *testing.T) {
 	token := fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
 		"repository":       "acme/releases",
 		"job_workflow_ref": "acme/build/.github/workflows/release.yml@refs/tags/v1.0.0",
 	})
-	identity, err := packslip.IdentityFromToken(token)
-	require.NoError(t, err)
 	// The reusable workflow is hosted in acme/build, but Fulcio certifies the
 	// caller acme/releases from the repository claim.
-	require.NoError(t, validateProjectIdentity("github.com/acme/releases/tool", token, identity))
-	require.ErrorContains(t, validateProjectIdentity("github.com/acme/build", token, identity), "caller repository")
+	require.NoError(t, packslip.CheckProjectSigner("github.com/acme/releases/tool", token))
+	require.ErrorContains(t, packslip.CheckProjectSigner("github.com/acme/build", token), "does not belong")
 
 	missingRepo := fakeToken(t, map[string]any{
 		"iss":              "https://token.actions.githubusercontent.com",
 		"job_workflow_ref": "acme/build/.github/workflows/release.yml@refs/tags/v1.0.0",
 	})
-	missingIdentity, err := packslip.IdentityFromToken(missingRepo)
-	require.NoError(t, err)
-	require.ErrorContains(t, validateProjectIdentity("github.com/acme/releases", missingRepo, missingIdentity), "no repository claim")
+	require.ErrorContains(t, packslip.CheckProjectSigner("github.com/acme/releases", missingRepo), "no repository claim")
 }
 
 func TestRun(t *testing.T) {

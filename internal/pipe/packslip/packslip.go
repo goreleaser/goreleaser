@@ -3,8 +3,6 @@
 package packslip
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -45,7 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			cfg.Project = repo
 		}
 		if cfg.NameTemplate == "" {
-			cfg.NameTemplate = defaultName(repo, cfg.Project)
+			cfg.NameTemplate = packslip.BundleName(cfg.Project, repo)
 		}
 		if cfg.Project == "" {
 			continue
@@ -65,17 +63,6 @@ func repoProject(ctx *context.Context) string {
 		return "github.com/" + gh.Owner + "/" + gh.Name
 	}
 	return ""
-}
-
-// defaultName is the bundle name the packslip spec gives a project: a
-// monorepo tool github.com/acme/repo/crates/cli is
-// packslip.crates-cli.sigstore.json, and anything else is
-// packslip.sigstore.json.
-func defaultName(repo, project string) string {
-	if sub, ok := strings.CutPrefix(project, repo+"/"); ok && repo != "" {
-		return "packslip." + strings.ReplaceAll(sub, "/", "-") + ".sigstore.json"
-	}
-	return "packslip.sigstore.json"
 }
 
 // signFunc signs a statement keylessly. It is a variable so tests do not need
@@ -235,8 +222,8 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 			Tag:    ctx.Git.CurrentTag,
 		}
 	}
-	if err := validateProjectIdentity(cfg.Project, token, identity); err != nil {
-		return nil, err
+	if err := packslip.CheckProjectSigner(cfg.Project, token); err != nil {
+		return nil, fmt.Errorf("packslips.project: %w", err)
 	}
 
 	statement, err := packslip.Build(predicate, inputs)
@@ -257,13 +244,14 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 		format = "raw"
 	}
 	format = normalizeFormat(format)
+	target := goTarget(a)
 	out := packslip.Artifact{
 		Name:    a.Name,
 		OS:      a.Goos,
-		Arch:    packslip.ArchFromGo(a.Goarch, a.Goarm),
+		Arch:    target.Arch(),
 		URL:     url,
 		Format:  format,
-		Variant: cpuVariant(a),
+		Variant: target.Variant(),
 	}
 	if a.Goos == "linux" {
 		switch {
@@ -322,39 +310,22 @@ func isBare(format string) bool {
 	return false
 }
 
-// cpuVariant returns the packslip variant for a build that targets a CPU
-// level or float ABI other than the default, so that builds of the same
-// platform stay distinct. Default builds have no variant, so consumers that do
-// not ask for one get the most compatible build.
-func cpuVariant(a *artifact.Artifact) string {
-	var level string
-	switch a.Goarch {
-	case "amd64":
-		level = a.Goamd64
-	case "386":
-		level = a.Go386
-	case "arm64":
-		level = a.Goarm64
-	case "mips", "mipsle", "mips64", "mips64le":
-		level = a.Gomips
-	case "ppc64", "ppc64le":
-		level = a.Goppc64
-	case "riscv64":
-		level = a.Goriscv64
-	case "arm":
-		// The Go builder stores the float ABI separately from GOARM, as
-		// "softfloat" or "hardfloat". Rust and Zig keep the target's ABI, such
-		// as "gnueabi".
-		abi := artifact.ExtraOr(*a, artifact.ExtraABI, "")
-		if abi == "softfloat" || abi == "hardfloat" {
-			return packslip.VariantFromGo(a.Goarch, a.Goarm+","+abi)
-		}
-		if a.Goarm == "5" {
-			return ""
-		}
-		return packslip.VariantFromRustABI(abi)
+// goTarget is the Go settings of a build, as packslip reads them to pick the
+// architecture and variant. The Go builder stores the float ABI separately
+// from GOARM, as "softfloat" or "hardfloat". Rust and Zig keep the target's
+// ABI, such as "gnueabi".
+func goTarget(a *artifact.Artifact) packslip.GoTarget {
+	return packslip.GoTarget{
+		GOARCH:    a.Goarch,
+		GOARM:     a.Goarm,
+		GOAMD64:   a.Goamd64,
+		GO386:     a.Go386,
+		GOARM64:   a.Goarm64,
+		GOMIPS:    a.Gomips,
+		GOPPC64:   a.Goppc64,
+		GORISCV64: a.Goriscv64,
+		FloatABI:  artifact.ExtraOr(*a, artifact.ExtraABI, ""),
 	}
-	return packslip.VariantFromGo(a.Goarch, level)
 }
 
 // sourceRepo normalizes a git remote URL, such as git@github.com:acme/tool.git,
@@ -396,62 +367,4 @@ func sourceRepo(remote string) string {
 		return ""
 	}
 	return scheme + "://" + host + "/" + repoPath
-}
-
-// validateProjectIdentity ensures a GitHub Actions keyless certificate is
-// associated with the GitHub repository named by the manifest project. In a
-// reusable workflow, job_workflow_ref identifies the reusable workflow, while
-// the OIDC repository claim identifies the caller that Fulcio certifies.
-// A workflow may also publish a checkout from another source repository; that
-// checkout remains in predicate.source and is intentionally independent.
-func validateProjectIdentity(project, token string, identity packslip.Identity) error {
-	if githubWorkflowRepo(identity.KeyID) == "" || !strings.HasPrefix(project, "github.com/") {
-		return nil
-	}
-	repo, err := githubActionsCallerRepo(token)
-	if err != nil {
-		return err
-	}
-	if project == repo || strings.HasPrefix(project, repo+"/") {
-		return nil
-	}
-	return fmt.Errorf("packslips.project %q must match the GitHub Actions caller repository %q", project, repo)
-}
-
-func githubWorkflowRepo(keyID string) string {
-	u, err := url.Parse(keyID)
-	if err != nil || u.Scheme != "https" || u.Host != "github.com" {
-		return ""
-	}
-	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
-	if len(parts) < 5 || parts[2] != ".github" || parts[3] != "workflows" {
-		return ""
-	}
-	return "github.com/" + parts[0] + "/" + parts[1]
-}
-
-// githubActionsCallerRepo returns the GitHub repository named by the OIDC
-// token's repository claim. Fulcio validates this token while issuing the
-// certificate that signs the statement. This is only a preflight; Packslip
-// verification still validates the certificate's source repository.
-func githubActionsCallerRepo(token string) (string, error) {
-	parts := strings.Split(token, ".")
-	if len(parts) != 3 {
-		return "", errors.New("packslips: the OIDC token is not a JWT")
-	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", fmt.Errorf("packslips: decode the OIDC token: %w", err)
-	}
-	var claims struct {
-		Repository string `json:"repository"`
-	}
-	if err := json.Unmarshal(payload, &claims); err != nil {
-		return "", fmt.Errorf("packslips: decode the OIDC token: %w", err)
-	}
-	parts = strings.Split(claims.Repository, "/")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return "", errors.New("packslips: the GitHub Actions OIDC token has no repository claim")
-	}
-	return "github.com/" + claims.Repository, nil
 }
