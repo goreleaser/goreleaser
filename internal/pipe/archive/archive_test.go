@@ -33,7 +33,8 @@ func TestRunPipeZstd(t *testing.T) {
 	data, err := os.ReadFile("archive.go")
 	require.NoError(t, err)
 	data = bytes.Repeat(data, 64)
-	source := filepath.Join(t.TempDir(), "binary")
+	testlib.Mktmp(t)
+	source := "binary"
 	require.NoError(t, os.WriteFile(source, data, 0o755))
 
 	for _, tc := range []struct {
@@ -57,7 +58,7 @@ func TestRunPipeZstd(t *testing.T) {
 				Zstd:         config.Zstd{Level: "best", WindowSize: &window},
 			}
 			if tc.meta {
-				cfg.Files = []config.File{{Source: filepath.ToSlash(source), Destination: "binary"}}
+				cfg.Files = []config.File{{Source: source, Destination: "binary"}}
 			}
 			if tc.override {
 				cfg.Formats = []string{"zip"}

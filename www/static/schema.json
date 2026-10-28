@@ -2370,6 +2370,12 @@
 							}
 						]
 					},
+					"linux_capabilities": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"repository": {
 						"type": "string"
 					}
