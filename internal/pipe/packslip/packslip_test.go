@@ -785,6 +785,7 @@ func TestRunNameNotAFileName(t *testing.T) {
 	setToken(t)
 	for _, name := range []string{
 		"../foo_linux_amd64.tar.gz",
+		"./packslip.sigstore.json",
 		"sub/packslip.sigstore.json",
 		`sub\packslip.sigstore.json`,
 		"..",
@@ -796,6 +797,26 @@ func TestRunNameNotAFileName(t *testing.T) {
 			})
 			require.ErrorContains(t, Pipe{}.Run(ctx), "must be a file name")
 			require.Empty(t, signed)
+		})
+	}
+}
+
+// Two entries whose names resolve to one file would overwrite each other's
+// bundle after both were signed.
+func TestRunNameAliases(t *testing.T) {
+	setToken(t)
+	for name, second := range map[string]string{
+		"dot slash": "./packslip.foo.sigstore.json",
+		"case":      "Packslip.Foo.sigstore.json",
+	} {
+		t.Run(name, func(t *testing.T) {
+			signed := stubSign(t)
+			ctx := monorepoCtx(t, []config.Packslip{
+				{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: "packslip.foo.sigstore.json"},
+				{IDs: []string{"bar"}, Project: "github.com/acme/tools/bar", NameTemplate: second},
+			})
+			require.Error(t, Pipe{}.Run(ctx))
+			require.Empty(t, signed, "nothing is signed when two names alias")
 		})
 	}
 }
@@ -837,6 +858,26 @@ func TestRunReleaseDisable(t *testing.T) {
 		ctx.Config.Release.Disable = "true"
 		require.ErrorContains(t, Pipe{}.Run(ctx), "release.disable")
 		require.Empty(t, signed)
+	})
+	t.Run("templated", func(t *testing.T) {
+		for tpl, disabled := range map[string]bool{
+			`{{ eq .Version "1.0.0" }}`: true,
+			"{{ .IsSnapshot }}":         false,
+		} {
+			signed := stubSign(t)
+			ctx := monorepoCtx(t, []config.Packslip{
+				{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+			})
+			ctx.Config.Release.Disable = tpl
+			err := Pipe{}.Run(ctx)
+			if disabled {
+				require.ErrorContains(t, err, "release.disable", tpl)
+				require.Empty(t, signed, tpl)
+			} else {
+				require.NoError(t, err, tpl)
+				require.Len(t, signed, 1, tpl)
+			}
+		}
 	})
 	t.Run("custom urls", func(t *testing.T) {
 		signed := stubSign(t)

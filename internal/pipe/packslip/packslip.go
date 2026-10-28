@@ -137,13 +137,16 @@ func (Pipe) Run(ctx *context.Context) error {
 		if m == nil {
 			continue
 		}
-		if names[m.name] {
+		// names that differ only in case are one file on case-insensitive
+		// file systems, so the second bundle would replace the first.
+		key := strings.ToLower(m.name)
+		if names[key] {
 			return fmt.Errorf("found multiple packslips named '%s', set a distinct name_template for each", m.name)
 		}
 		if err := checkNoOverwrite(ctx, m.name, extraFiles); err != nil {
 			return err
 		}
-		names[m.name] = true
+		names[key] = true
 		manifests = append(manifests, *m)
 	}
 	if len(manifests) == 0 {
