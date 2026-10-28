@@ -272,18 +272,24 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if len(binaries) > 0 {
 		art.Goos = binaries[0].Goos
 		art.Goarch = binaries[0].Goarch
-		art.Goamd64 = binaries[0].Goamd64
-		art.Go386 = binaries[0].Go386
-		art.Goarm = binaries[0].Goarm
-		art.Goarm64 = binaries[0].Goarm64
-		art.Gomips = binaries[0].Gomips
-		art.Goppc64 = binaries[0].Goppc64
-		art.Goriscv64 = binaries[0].Goriscv64
+		// Builders that have no notion of a CPU level, such as Rust, leave
+		// these empty, and GroupByPlatform puts their binaries in the same
+		// archive as Go ones that set it. Take the level from whichever binary
+		// has one, so it does not depend on which build finished first.
+		art.Goamd64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goamd64 })
+		art.Go386 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Go386 })
+		art.Goarm = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goarm })
+		art.Goarm64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goarm64 })
+		art.Gomips = firstSet(binaries, func(a *artifact.Artifact) string { return a.Gomips })
+		art.Goppc64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goppc64 })
+		art.Goriscv64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goriscv64 })
 		art.Target = binaries[0].Target
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
-		if abi, ok := binaries[0].Extra[artifact.ExtraABI]; ok {
+		if abi := firstSet(binaries, func(a *artifact.Artifact) string {
+			return artifact.ExtraOr(*a, artifact.ExtraABI, "")
+		}); abi != "" {
 			art.Extra[artifact.ExtraABI] = abi
 		}
 		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
@@ -294,9 +300,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
 		}
-		if len(packslipBins) == 0 {
-			art.Extra[artifact.ExtraSkipPackslip] = true
-		}
+	}
+	// an archive with nothing installable, such as a meta archive, has no
+	// platform or commands to describe.
+	if len(packslipBins) == 0 {
+		art.Extra[artifact.ExtraSkipPackslip] = true
 	}
 
 	ctx.Artifacts.Add(art)
@@ -309,6 +317,16 @@ func listExtraFiles(files []config.File) []string {
 		result = append(result, f.Destination)
 	}
 	return result
+}
+
+// firstSet returns the first non-empty value get reads from the binaries.
+func firstSet(binaries []*artifact.Artifact, get func(*artifact.Artifact) string) string {
+	for _, binary := range binaries {
+		if v := get(binary); v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 // isPackslipExecutable distinguishes executable build artifacts from headers

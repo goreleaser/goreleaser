@@ -133,6 +133,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		if names[m.name] {
 			return fmt.Errorf("found multiple packslips named '%s', set a distinct name_template for each", m.name)
 		}
+		if err := checkNoOverwrite(ctx, m.name); err != nil {
+			return err
+		}
 		names[m.name] = true
 		manifests = append(manifests, *m)
 	}
@@ -163,6 +166,35 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
+// checkNoOverwrite refuses a manifest name that matches an existing artifact,
+// by upload name or by file. Writing the manifest would otherwise replace a
+// file that was already hashed or signed.
+func checkNoOverwrite(ctx *context.Context, name string) error {
+	file := filepath.Join(ctx.Config.Dist, name)
+	for _, a := range ctx.Artifacts.List() {
+		if a.Name == name || samePath(a.Path, file) {
+			return fmt.Errorf("packslips.name_template: '%s' would overwrite the %s artifact '%s', set a distinct name_template", name, a.Type, a.Name)
+		}
+	}
+	return nil
+}
+
+// samePath reports whether two paths name the same file, including through
+// relative paths, links and ../ segments.
+func samePath(a, b string) bool {
+	if a == "" || b == "" {
+		return false
+	}
+	absA, errA := filepath.Abs(a)
+	absB, errB := filepath.Abs(b)
+	if errA == nil && errB == nil && absA == absB {
+		return true
+	}
+	infoA, errA := os.Stat(a)
+	infoB, errB := os.Stat(b)
+	return errA == nil && errB == nil && os.SameFile(infoA, infoB)
+}
+
 // build creates the statement for one packslip entry. It returns nil when the
 // entry selects no artifacts.
 func build(ctx *context.Context, cfg config.Packslip, token string, identity packslip.Identity) (*manifest, error) {
@@ -177,6 +209,13 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 	}
 	urlTemplate := cfg.URLTemplate
 	if urlTemplate == "" {
+		skipUpload, err := tmpl.New(ctx).Bool(ctx.Config.Release.SkipUpload)
+		if err != nil {
+			return nil, err
+		}
+		if skipUpload {
+			return nil, fmt.Errorf("packslips.url_template must be set when release.skip_upload is set, as the release has no assets to link to")
+		}
 		// the URLs point at the release, so only describe what it uploads.
 		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
@@ -277,16 +316,17 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 	case artifact.UploadableBinary:
 		bin := artifact.ExtraOr(*a, artifact.ExtraBinary, "")
 		if bin != "" {
-			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", path.Base(bin))}
+			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", path.Base(slash(bin)))}
 		}
 	default:
-		wrap := artifact.ExtraOr(*a, artifact.ExtraWrappedIn, "")
+		wrap := slash(artifact.ExtraOr(*a, artifact.ExtraWrappedIn, ""))
 		bins := artifact.ExtraOr(
 			*a,
 			artifact.ExtraPackslipBins,
 			artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}),
 		)
 		for _, bin := range bins {
+			bin = slash(bin)
 			if isBare(format) {
 				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, path.Base(bin)))
 				break
@@ -295,6 +335,12 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 		}
 	}
 	return out, nil
+}
+
+// slash converts backslashes to slashes, as the archive writer does for the
+// name of every entry, so the signed path is the one in the archive.
+func slash(p string) string {
+	return strings.ReplaceAll(p, "\\", "/")
 }
 
 // normalizeFormat maps GoReleaser's archive aliases to the Packslip format

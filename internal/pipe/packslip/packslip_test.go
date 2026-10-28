@@ -215,6 +215,41 @@ func TestDescribe(t *testing.T) {
 				Requires: &packslip.Requires{Libs: &[]string{}},
 			},
 		},
+		// the archive writer turns backslashes into slashes in every entry.
+		"backslash path in an archive": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: "tool_1.0.0_windows_amd64.zip", Goos: "windows", Goarch: "amd64",
+				Extra: map[string]any{
+					artifact.ExtraFormat:    "zip",
+					artifact.ExtraWrappedIn: "tool_1.0.0",
+					artifact.ExtraBinaries:  []string{`bin\\app.exe`},
+				},
+			},
+			want: packslip.Artifact{
+				Name: "tool_1.0.0_windows_amd64.zip", OS: "windows", Arch: "x86_64", Format: "zip",
+				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NewBin("tool_1.0.0/bin/app.exe")},
+			},
+		},
+		"backslash path in a compressed binary": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: "app_windows_amd64.gz", Goos: "windows", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraFormat: "gz", artifact.ExtraBinaries: []string{`bin\\app.exe`}},
+			},
+			want: packslip.Artifact{
+				Name: "app_windows_amd64.gz", OS: "windows", Arch: "x86_64", Format: "gz",
+				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NamedBin("app_windows_amd64", "app")},
+			},
+		},
+		"backslash path in a raw binary": {
+			in: artifact.Artifact{
+				Type: artifact.UploadableBinary, Name: "app_windows_amd64.exe", Goos: "windows", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: `bin\\app.exe`},
+			},
+			want: packslip.Artifact{
+				Name: "app_windows_amd64.exe", OS: "windows", Arch: "x86_64", Format: "raw",
+				URL: "https://example.com/x", Bin: []packslip.Bin{packslip.NamedBin("app_windows_amd64.exe", "app")},
+			},
+		},
 		"amd64 v3": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableArchive, Name: "tool.zip", Goos: "windows", Goarch: "amd64", Goamd64: "v3",
@@ -715,5 +750,72 @@ func TestRunReleaseIDs(t *testing.T) {
 			URLTemplate: "https://dl.example.com/{{ .ArtifactName }}",
 		})))
 		require.Len(t, signed.Predicate.Artifacts, 2)
+	})
+}
+
+func TestRunNameOverwritesArtifact(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: "foo_linux_amd64.tar.gz"},
+	})
+	archive := filepath.Join(ctx.Config.Dist, "foo_linux_amd64.tar.gz")
+
+	err := Pipe{}.Run(ctx)
+	require.ErrorContains(t, err, "would overwrite")
+	require.ErrorContains(t, err, "foo_linux_amd64.tar.gz")
+	require.Empty(t, signed, "nothing is signed when the name is taken")
+	got, err := os.ReadFile(archive)
+	require.NoError(t, err)
+	require.Equal(t, "foo", string(got), "the archive is left alone")
+}
+
+func TestRunNameOverwritesArtifactPath(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+	})
+	// a different upload name, but the same file once resolved.
+	ctx.Config.Packslips[0].NameTemplate = "../" + filepath.Base(ctx.Config.Dist) + "/foo_linux_amd64.tar.gz"
+	require.ErrorContains(t, Pipe{}.Run(ctx), "would overwrite")
+	require.Empty(t, signed)
+}
+
+func TestRunSkipUpload(t *testing.T) {
+	setToken(t)
+	t.Run("release urls", func(t *testing.T) {
+		signed := stubSign(t)
+		ctx := monorepoCtx(t, []config.Packslip{
+			{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+		})
+		ctx.Config.Release.SkipUpload = "true"
+		require.ErrorContains(t, Pipe{}.Run(ctx), "release.skip_upload")
+		require.Empty(t, signed, "nothing is signed for assets that are never uploaded")
+	})
+	t.Run("templated", func(t *testing.T) {
+		signed := stubSign(t)
+		ctx := monorepoCtx(t, []config.Packslip{
+			{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+		})
+		ctx.Config.Release.SkipUpload = "{{ .IsSnapshot }}"
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Len(t, signed, 1)
+	})
+	t.Run("custom urls", func(t *testing.T) {
+		signed := stubSign(t)
+		ctx := monorepoCtx(t, []config.Packslip{
+			{
+				IDs: []string{"foo"}, Project: "github.com/acme/tools/foo",
+				URLTemplate: "https://dl.example.com/{{ .ArtifactName }}",
+			},
+		})
+		ctx.Config.Release.SkipUpload = "true"
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Len(t, signed, 1)
+		require.Equal(t,
+			"https://dl.example.com/foo_linux_amd64.tar.gz",
+			signed["github.com/acme/tools/foo"].Predicate.Artifacts[0].URL,
+		)
 	})
 }

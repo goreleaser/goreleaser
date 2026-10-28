@@ -61,6 +61,8 @@ packslips:
     # Template for the URL each artifact can be downloaded from.
     #
     # Default: the release page of your SCM.
+    # Required when `release.skip_upload` is set, as the release then has no
+    # assets to link to.
     # Templates: allowed.
     url_template: "https://dl.example.com/{{ .Tag }}/{{ .ArtifactName }}"
 ```
@@ -94,7 +96,8 @@ This uploads `packslip.foo.sigstore.json` and `packslip.cmd-bar.sigstore.json`,
 each describing only its tool. Installers pick the manifest by the signed
 project name, not the file name. An entry without `ids` describes every
 archive and binary, so set `ids` on each entry when a release has several
-tools. Two entries cannot have the same project or file name.
+tools. Two entries cannot have the same project or file name, and a file
+name cannot be the name of an archive, checksum, or other artifact.
 
 When each tool has its own release and configuration file instead, a single
 entry with the tool's `project` is enough.

@@ -864,6 +864,89 @@ func TestPackslipMetadataSkipsLibraryOnlyArtifacts(t *testing.T) {
 	})
 }
 
+func TestPackslipMetadataSkipsMetaArchives(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "tool",
+				Builds:       []string{"default"},
+				Formats:      []string{"zip"},
+				NameTemplate: "tool",
+			},
+			{
+				ID:           "docs",
+				NameTemplate: "docs",
+				Meta:         true,
+				Formats:      []string{"zip"},
+				Files:        []config.File{{Source: "./testdata/a/a.txt"}},
+			},
+			{
+				ID:           "more-docs",
+				NameTemplate: "more-docs",
+				Meta:         true,
+				Formats:      []string{"zip"},
+				Files:        []config.File{{Source: "./testdata/a/b/a.txt"}},
+			},
+		},
+	})
+	path := filepath.Join(ctx.Config.Dist, "tool")
+	require.NoError(t, os.WriteFile(path, []byte("tool"), 0o755))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Binary, Name: "tool", Path: path, Goos: "linux", Goarch: "amd64",
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 3)
+	for _, a := range archives {
+		meta := artifact.ExtraOr(*a, artifact.ExtraID, "") != "tool"
+		require.Equal(t, meta, artifact.ExtraOr(*a, artifact.ExtraSkipPackslip, false), a.Name)
+	}
+}
+
+// Rust and Zig builds leave the Go CPU levels empty, and GroupByPlatform puts
+// them in the same archive as a Go build that sets one. The archive must carry
+// the level whichever build finished first.
+func TestRunPipeMixedCPULevels(t *testing.T) {
+	for name, levels := range map[string][]string{
+		"unset first": {"", "v3"},
+		"unset last":  {"v3", ""},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					NameTemplate: "archive",
+					Formats:      []string{"tar.gz"},
+				}},
+			})
+			for i, level := range levels {
+				name := fmt.Sprintf("bin%d", i)
+				path := filepath.Join(dist, name)
+				require.NoError(t, os.WriteFile(path, []byte(name), 0o755))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Type: artifact.Binary, Name: name, Path: path,
+					Goos: "linux", Goarch: "amd64", Goamd64: level,
+					Extra: map[string]any{artifact.ExtraID: "default"},
+				})
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			require.Len(t, archives, 1)
+			require.Equal(t, "v3", archives[0].Goamd64)
+		})
+	}
+}
+
 // UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
 // before packing, and archive metadata must retain that recorded value rather
 // than probing the packed bytes again. The same path covers a Node SEA, whose
