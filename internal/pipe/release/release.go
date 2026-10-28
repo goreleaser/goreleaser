@@ -29,7 +29,7 @@ type Pipe struct{}
 func (Pipe) String() string { return "scm releases" }
 
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
-	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
+	return client.ReleaseDisabled(ctx)
 }
 
 // Default sets the pipe defaults.

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -141,7 +142,7 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish) {
 		return nil
 	}
-	if b, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable); err != nil || b {
+	if b, err := client.ReleaseDisabled(ctx); err != nil || b {
 		return err
 	}
 

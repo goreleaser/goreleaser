@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -136,6 +137,17 @@ func TestReleaseFlags(t *testing.T) {
 		})
 
 		requireAll(t, ctx, skips.Sign, skips.Publish, skips.Validate, skips.Announce)
+	})
+
+	t.Run("skip release", func(t *testing.T) {
+		ctx := setup(t, releaseOpts{
+			skips: []string{string(skips.SCMRelease)},
+		})
+		requireAll(t, ctx, skips.SCMRelease)
+
+		skip, err := release.Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("parallelism", func(t *testing.T) {
