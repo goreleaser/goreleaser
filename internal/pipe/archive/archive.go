@@ -292,9 +292,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}); abi != "" {
 			art.Extra[artifact.ExtraABI] = abi
 		}
-		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
-			return artifact.ExtraOr(*bin, artifact.ExtranDynLink, false)
-		}) {
+		if slices.ContainsFunc(binaries, dynamicallyLinked) {
 			art.Extra[artifact.ExtranDynLink] = true
 			if libc := dynamicLibc(binaries); libc != "" {
 				art.Extra[artifact.ExtraLibcFamily] = libc
@@ -395,7 +393,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if abi, ok := binary.Extra[artifact.ExtraABI]; ok {
 			art.Extra[artifact.ExtraABI] = abi
 		}
-		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+		if dynamicallyLinked(binary) {
 			art.Extra[artifact.ExtranDynLink] = true
 			libc := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
 			if libc == "" {
@@ -412,6 +410,16 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 	return nil
 }
 
+// dynamicallyLinked reports whether a binary is dynamically linked, as its
+// builder recorded or, for a builder that records nothing, as its ELF headers
+// show. Only the builder can tell for a binary that was packed afterwards.
+func dynamicallyLinked(binary *artifact.Artifact) bool {
+	if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+		return true
+	}
+	return isPackslipExecutable(binary) && elf.IsDynamicallyLinked(binary.Path)
+}
+
 // staticallyLinked reports whether every executable in an archive is known to
 // be statically linked. A binary that no builder flagged as dynamic is not
 // taken for static unless its ELF headers say so, so a file that could not be
@@ -422,7 +430,7 @@ func staticallyLinked(binaries []*artifact.Artifact) bool {
 		if !isPackslipExecutable(binary) {
 			continue
 		}
-		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) || !elf.IsStaticallyLinked(binary.Path) {
+		if dynamicallyLinked(binary) || !elf.IsStaticallyLinked(binary.Path) {
 			return false
 		}
 		found = true
@@ -436,7 +444,7 @@ func staticallyLinked(binaries []*artifact.Artifact) bool {
 func dynamicLibc(binaries []*artifact.Artifact) string {
 	var libc string
 	for _, binary := range binaries {
-		if !artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+		if !dynamicallyLinked(binary) {
 			continue
 		}
 		got := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")

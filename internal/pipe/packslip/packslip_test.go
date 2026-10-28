@@ -781,16 +781,75 @@ func TestRunNameOverwritesArtifact(t *testing.T) {
 	require.Equal(t, "foo", string(got), "the archive is left alone")
 }
 
-func TestRunNameOverwritesArtifactPath(t *testing.T) {
+func TestRunNameNotAFileName(t *testing.T) {
+	setToken(t)
+	for _, name := range []string{
+		"../foo_linux_amd64.tar.gz",
+		"sub/packslip.sigstore.json",
+		`sub\packslip.sigstore.json`,
+		"..",
+	} {
+		t.Run(name, func(t *testing.T) {
+			signed := stubSign(t)
+			ctx := monorepoCtx(t, []config.Packslip{
+				{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: name},
+			})
+			require.ErrorContains(t, Pipe{}.Run(ctx), "must be a file name")
+			require.Empty(t, signed)
+		})
+	}
+}
+
+func TestRunNameOverwritesExtraFile(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: "notes.json"},
+	})
+	extra := filepath.Join(t.TempDir(), "notes.json")
+	require.NoError(t, os.WriteFile(extra, []byte("notes"), 0o644))
+	ctx.Config.Release.ExtraFiles = []config.ExtraFile{{Glob: extra}}
+
+	require.ErrorContains(t, Pipe{}.Run(ctx), "would overwrite the release extra file 'notes.json'")
+	require.Empty(t, signed)
+}
+
+func TestRunIDsMatchNothing(t *testing.T) {
 	setToken(t)
 	signed := stubSign(t)
 	ctx := monorepoCtx(t, []config.Packslip{
 		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+		{IDs: []string{"baz"}, Project: "github.com/acme/tools/baz"},
 	})
-	// a different upload name, but the same file once resolved.
-	ctx.Config.Packslips[0].NameTemplate = "../" + filepath.Base(ctx.Config.Dist) + "/foo_linux_amd64.tar.gz"
-	require.ErrorContains(t, Pipe{}.Run(ctx), "would overwrite")
-	require.Empty(t, signed)
+	err := Pipe{}.Run(ctx)
+	require.ErrorContains(t, err, "packslips.ids [baz] match no archives or binaries")
+	require.ErrorContains(t, err, "github.com/acme/tools/baz")
+	require.Empty(t, signed, "nothing is signed when an entry is invalid")
+}
+
+func TestRunReleaseDisable(t *testing.T) {
+	setToken(t)
+	t.Run("release urls", func(t *testing.T) {
+		signed := stubSign(t)
+		ctx := monorepoCtx(t, []config.Packslip{
+			{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"},
+		})
+		ctx.Config.Release.Disable = "true"
+		require.ErrorContains(t, Pipe{}.Run(ctx), "release.disable")
+		require.Empty(t, signed)
+	})
+	t.Run("custom urls", func(t *testing.T) {
+		signed := stubSign(t)
+		ctx := monorepoCtx(t, []config.Packslip{
+			{
+				IDs: []string{"foo"}, Project: "github.com/acme/tools/foo",
+				URLTemplate: "https://dl.example.com/{{ .ArtifactName }}",
+			},
+		})
+		ctx.Config.Release.Disable = "true"
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Len(t, signed, 1)
+	})
 }
 
 func TestRunSkipUpload(t *testing.T) {

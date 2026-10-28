@@ -1033,6 +1033,42 @@ func TestStaticLinkageRecorded(t *testing.T) {
 	})
 }
 
+// A builder that records no linkage still produces a dynamic ELF that the
+// archive must not describe as static or libc-independent.
+func TestUnflaggedDynamicLinkageDetected(t *testing.T) {
+	for name, format := range map[string]string{"archive": "tar.gz", "raw": "binary"} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					Formats:      []string{format},
+					NameTemplate: "tool",
+				}},
+			})
+			path := filepath.Join(dist, "tool")
+			testlib.WriteDynamicELF(t, path, "/lib/ld-musl-x86_64.so.1")
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type: artifact.Binary, Name: "tool", Path: path, Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraID: "default"},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			got := ctx.Artifacts.Filter(artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+			)).List()
+			require.Len(t, got, 1)
+			require.True(t, artifact.ExtraOr(*got[0], artifact.ExtranDynLink, false))
+			require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
+			require.False(t, artifact.ExtraOr(*got[0], artifact.ExtraStaticLink, false))
+		})
+	}
+}
+
 // UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
 // before packing, and archive metadata must retain that recorded value rather
 // than probing the packed bytes again. The same path covers a Node SEA, whose

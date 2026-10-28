@@ -39,7 +39,7 @@ packslips:
     # IDs of the archives and binaries to describe.
     #
     # Default: all of them. Without a `url_template`, only those the release
-    # uploads (see `release.ids`).
+    # uploads (see `release.ids`). IDs that match nothing are an error.
     ids:
       - foo
 
@@ -55,14 +55,15 @@ packslips:
     # Default: 'packslip.sigstore.json', or 'packslip.<subpath>.sigstore.json'
     # for a project under the release repository, with `/` in the subpath
     # replaced by `-` (`packslip.foo.sigstore.json` here).
+    # It must be a file name, without a directory.
     # Templates: allowed.
     name_template: "packslip.foo.sigstore.json"
 
     # Template for the URL each artifact can be downloaded from.
     #
     # Default: the release page of your SCM.
-    # Required when `release.skip_upload` is set, as the release then has no
-    # assets to link to.
+    # Required when `release.disable` or `release.skip_upload` is set, as the
+    # release then has no assets to link to.
     # Templates: allowed.
     url_template: "https://dl.example.com/{{ .Tag }}/{{ .ArtifactName }}"
 ```
@@ -97,7 +98,8 @@ each describing only its tool. Installers pick the manifest by the signed
 project name, not the file name. An entry without `ids` describes every
 archive and binary, so set `ids` on each entry when a release has several
 tools. Two entries cannot have the same project or file name, and a file
-name cannot be the name of an archive, checksum, or other artifact.
+name cannot be the name of an archive, checksum, release extra file, or
+other artifact.
 
 When each tool has its own release and configuration file instead, a single
 entry with the tool's `project` is enough.
@@ -111,8 +113,9 @@ entry with the tool's `project` is enough.
 - Linux builds that GoReleaser inspected and found statically linked are
   described as needing no shared libraries, so they fit both glibc and musl
   hosts. For dynamically linked Linux builds, GoReleaser reads the ELF program
-  interpreter before optional packing and records `gnu` or `musl`; it stops
-  rather than publishing a manifest when the runtime cannot be determined. A
+  interpreter, before optional packing where the builder records it, and
+  records `gnu` or `musl`; it stops rather than publishing a manifest when the
+  runtime cannot be determined. A
   Linux build it could not inspect, such as a script, is described without a
   library list, which installers read as not checked.
 - Builds for a CPU level other than Go's default, such as `goamd64: v3` or

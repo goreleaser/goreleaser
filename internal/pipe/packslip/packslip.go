@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/elf"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -120,6 +121,12 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	// build every statement before signing any, so a bad entry does not
 	// leave the others recorded in the transparency log.
+	// release.extra_files are added to the release later, so check the
+	// manifest names against them too.
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
+	if err != nil {
+		return err
+	}
 	var manifests []manifest
 	names := map[string]bool{}
 	for _, cfg := range configs {
@@ -133,7 +140,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		if names[m.name] {
 			return fmt.Errorf("found multiple packslips named '%s', set a distinct name_template for each", m.name)
 		}
-		if err := checkNoOverwrite(ctx, m.name); err != nil {
+		if err := checkNoOverwrite(ctx, m.name, extraFiles); err != nil {
 			return err
 		}
 		names[m.name] = true
@@ -166,14 +173,20 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-// checkNoOverwrite refuses a manifest name that matches an existing artifact,
-// by upload name or by file. Writing the manifest would otherwise replace a
-// file that was already hashed or signed.
-func checkNoOverwrite(ctx *context.Context, name string) error {
+// checkNoOverwrite refuses a manifest name that matches an existing artifact
+// or release extra file, by upload name or by file. Writing the manifest would
+// otherwise replace a file that was already hashed or signed, or upload two
+// files under one name.
+func checkNoOverwrite(ctx *context.Context, name string, extraFiles map[string]string) error {
 	file := filepath.Join(ctx.Config.Dist, name)
 	for _, a := range ctx.Artifacts.List() {
 		if a.Name == name || samePath(a.Path, file) {
 			return fmt.Errorf("packslips.name_template: '%s' would overwrite the %s artifact '%s', set a distinct name_template", name, a.Type, a.Name)
+		}
+	}
+	for extraName, extraPath := range extraFiles {
+		if extraName == name || samePath(extraPath, file) {
+			return fmt.Errorf("packslips.name_template: '%s' would overwrite the release extra file '%s', set a distinct name_template", name, extraName)
 		}
 	}
 	return nil
@@ -209,18 +222,28 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 	}
 	urlTemplate := cfg.URLTemplate
 	if urlTemplate == "" {
-		skipUpload, err := tmpl.New(ctx).Bool(ctx.Config.Release.SkipUpload)
-		if err != nil {
-			return nil, err
-		}
-		if skipUpload {
-			return nil, fmt.Errorf("packslips.url_template must be set when release.skip_upload is set, as the release has no assets to link to")
+		for _, setting := range []struct{ name, value string }{
+			{"release.disable", ctx.Config.Release.Disable},
+			{"release.skip_upload", ctx.Config.Release.SkipUpload},
+		} {
+			set, err := tmpl.New(ctx).Bool(setting.value)
+			if err != nil {
+				return nil, err
+			}
+			if set {
+				return nil, fmt.Errorf("packslips.url_template must be set when %s is set, as the release has no assets to link to", setting.name)
+			}
 		}
 		// the URLs point at the release, so only describe what it uploads.
 		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
 	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(artifacts) == 0 {
+		if len(cfg.IDs) > 0 {
+			// most likely a typo, which would otherwise leave the project
+			// without a manifest and nothing to say so.
+			return nil, fmt.Errorf("packslips.ids %v match no archives or binaries to describe for %s", cfg.IDs, cfg.Project)
+		}
 		log.WithField("project", cfg.Project).Warn("no archives or binaries to describe")
 		return nil, nil
 	}
@@ -275,6 +298,9 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 	name, err := tmpl.New(ctx).Apply(cfg.NameTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("packslips.name_template: %w", err)
+	}
+	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+		return nil, fmt.Errorf("packslips.name_template: '%s' must be a file name, without a directory", name)
 	}
 	return &manifest{name: name, statement: statement}, nil
 }
