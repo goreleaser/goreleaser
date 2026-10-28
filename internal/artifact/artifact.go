@@ -262,6 +262,7 @@ const (
 const (
 	ExtraABI          = "Abi"
 	ExtraLibcFamily   = "LibcFamily"
+	ExtraStaticLink   = "StaticallyLinked"
 	ExtraSkipChecksum = "SkipChecksum"
 	ExtraSkipPackslip = "SkipPackslip"
 	ExtraPackslipBins = "PackslipBinaries"

@@ -87,9 +87,10 @@ func TestDescribe(t *testing.T) {
 				Type: artifact.UploadableArchive, Name: "tool_1.0.0_linux_amd64.tar.gz",
 				Goos: "linux", Goarch: "amd64",
 				Extra: map[string]any{
-					artifact.ExtraFormat:    "tar.gz",
-					artifact.ExtraWrappedIn: "tool_1.0.0",
-					artifact.ExtraBinaries:  []string{"tool"},
+					artifact.ExtraFormat:     "tar.gz",
+					artifact.ExtraWrappedIn:  "tool_1.0.0",
+					artifact.ExtraBinaries:   []string{"tool"},
+					artifact.ExtraStaticLink: true,
 				},
 			},
 			want: packslip.Artifact{
@@ -108,6 +109,7 @@ func TestDescribe(t *testing.T) {
 					artifact.ExtraWrappedIn:    "tool_1.0.0",
 					artifact.ExtraBinaries:     []string{"tool", "tool.h"},
 					artifact.ExtraPackslipBins: []string{"tool"},
+					artifact.ExtraStaticLink:   true,
 				},
 			},
 			want: packslip.Artifact{
@@ -174,7 +176,7 @@ func TestDescribe(t *testing.T) {
 		"tar xz alias": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableArchive, Name: "tool_linux_amd64.txz", Goos: "linux", Goarch: "amd64",
-				Extra: map[string]any{artifact.ExtraFormat: "txz", artifact.ExtraBinaries: []string{"tool"}},
+				Extra: map[string]any{artifact.ExtraFormat: "txz", artifact.ExtraBinaries: []string{"tool"}, artifact.ExtraStaticLink: true},
 			},
 			want: packslip.Artifact{
 				Name: "tool_linux_amd64.txz", OS: "linux", Arch: "x86_64", Format: "tar.xz",
@@ -185,7 +187,7 @@ func TestDescribe(t *testing.T) {
 		"tar zstd alias": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableArchive, Name: "tool_linux_amd64.tzst", Goos: "linux", Goarch: "amd64",
-				Extra: map[string]any{artifact.ExtraFormat: "tzst", artifact.ExtraBinaries: []string{"tool"}},
+				Extra: map[string]any{artifact.ExtraFormat: "tzst", artifact.ExtraBinaries: []string{"tool"}, artifact.ExtraStaticLink: true},
 			},
 			want: packslip.Artifact{
 				Name: "tool_linux_amd64.tzst", OS: "linux", Arch: "x86_64", Format: "tar.zst",
@@ -196,7 +198,7 @@ func TestDescribe(t *testing.T) {
 		"bare binary in a directory": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableBinary, Name: "app_linux_amd64", Goos: "linux", Goarch: "amd64",
-				Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: "bin/app"},
+				Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: "bin/app", artifact.ExtraStaticLink: true},
 			},
 			want: packslip.Artifact{
 				Name: "app_linux_amd64", OS: "linux", Arch: "x86_64", Format: "raw",
@@ -207,7 +209,7 @@ func TestDescribe(t *testing.T) {
 		"compressed binary in a directory": {
 			in: artifact.Artifact{
 				Type: artifact.UploadableArchive, Name: "app_linux_amd64.gz", Goos: "linux", Goarch: "amd64",
-				Extra: map[string]any{artifact.ExtraFormat: "gz", artifact.ExtraBinaries: []string{"bin/app"}},
+				Extra: map[string]any{artifact.ExtraFormat: "gz", artifact.ExtraBinaries: []string{"bin/app"}, artifact.ExtraStaticLink: true},
 			},
 			want: packslip.Artifact{
 				Name: "app_linux_amd64.gz", OS: "linux", Arch: "x86_64", Format: "gz",
@@ -286,9 +288,15 @@ func TestDescribeLinuxLibc(t *testing.T) {
 		in   artifact.Artifact
 		want string
 		err  string
+		// no libraries are claimed, as when linkage was never inspected.
+		unchecked bool
 	}{
 		"static": {
-			in: artifact.Artifact{Goos: "linux", Goarch: "amd64"},
+			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{artifact.ExtraStaticLink: true}},
+		},
+		"not inspected": {
+			in:        artifact.Artifact{Goos: "linux", Goarch: "amd64"},
+			unchecked: true,
 		},
 		"glibc": {
 			in: artifact.Artifact{Goos: "linux", Goarch: "amd64", Extra: map[string]any{
@@ -317,8 +325,11 @@ func TestDescribeLinuxLibc(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Equal(t, tt.want, got.Libc)
-			if tt.want == "" {
+			if tt.unchecked {
+				require.Nil(t, got.Requires, "libs stay unset when linkage is unknown")
+			} else if tt.want == "" {
 				require.NotNil(t, got.Requires)
+				require.Equal(t, &[]string{}, got.Requires.Libs)
 			}
 		})
 	}

@@ -108,12 +108,13 @@ entry with the tool's `project` is enough.
   artifacts), with the platform GoReleaser built them for. A universal macOS
   binary has no architecture.
 - Executable paths inside archives, including the wrapping directory.
-- Statically linked Linux builds are described as needing no shared
-  libraries, so they fit both glibc and musl hosts. For dynamically linked
-  Linux builds, GoReleaser reads the ELF program interpreter before optional
-  packing and records
-  `gnu` or `musl`; it stops rather than publishing a manifest when the runtime
-  cannot be determined.
+- Linux builds that GoReleaser inspected and found statically linked are
+  described as needing no shared libraries, so they fit both glibc and musl
+  hosts. For dynamically linked Linux builds, GoReleaser reads the ELF program
+  interpreter before optional packing and records `gnu` or `musl`; it stops
+  rather than publishing a manifest when the runtime cannot be determined. A
+  Linux build it could not inspect, such as a script, is described without a
+  library list, which installers read as not checked.
 - Builds for a CPU level other than Go's default, such as `goamd64: v3` or
   `goarm64: v8.2`, carry that level as the packslip `variant` (`v3`, `v8.2`),
   so installers pick the default-level build unless asked for another. A

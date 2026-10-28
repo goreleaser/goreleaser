@@ -25,6 +25,26 @@ func IsDynamicallyLinked(path string) bool {
 	})
 }
 
+// IsStaticallyLinked checks if the given binary is known to be statically
+// linked. It returns true only for an ELF executable without a PT_INTERP
+// segment, which loads no shared libraries. Unlike !IsDynamicallyLinked, it
+// returns false for files that are not ELF or cannot be read, so callers do not
+// take a file they could not inspect for a static one.
+func IsStaticallyLinked(path string) bool {
+	f, err := elf.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	if f.Type != elf.ET_EXEC && f.Type != elf.ET_DYN {
+		return false
+	}
+	return !slices.ContainsFunc(f.Progs, func(prog *elf.Prog) bool {
+		return prog.Type == elf.PT_INTERP
+	})
+}
+
 // Libc reports the libc family selected by an ELF program interpreter. It
 // returns an empty string for statically linked, non-ELF, and unknown dynamic
 // binaries so callers do not guess a compatible runtime.

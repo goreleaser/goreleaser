@@ -299,6 +299,8 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			if libc := dynamicLibc(binaries); libc != "" {
 				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
+		} else if art.Goos == "linux" && staticallyLinked(binaries) {
+			art.Extra[artifact.ExtraStaticLink] = true
 		}
 	}
 	// an archive with nothing installable, such as a meta archive, has no
@@ -402,10 +404,30 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			if libc != "" {
 				art.Extra[artifact.ExtraLibcFamily] = libc
 			}
+		} else if binary.Goos == "linux" && isPackslipExecutable(binary) && elf.IsStaticallyLinked(binary.Path) {
+			art.Extra[artifact.ExtraStaticLink] = true
 		}
 		ctx.Artifacts.Add(art)
 	}
 	return nil
+}
+
+// staticallyLinked reports whether every executable in an archive is known to
+// be statically linked. A binary that no builder flagged as dynamic is not
+// taken for static unless its ELF headers say so, so a file that could not be
+// inspected leaves the answer unknown.
+func staticallyLinked(binaries []*artifact.Artifact) bool {
+	var found bool
+	for _, binary := range binaries {
+		if !isPackslipExecutable(binary) {
+			continue
+		}
+		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) || !elf.IsStaticallyLinked(binary.Path) {
+			return false
+		}
+		found = true
+	}
+	return found
 }
 
 // dynamicLibc returns the shared libc family for all dynamically linked

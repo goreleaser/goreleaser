@@ -12,12 +12,27 @@ import (
 // Only the headers are valid; the file is not meant to run.
 func WriteDynamicELF(tb testing.TB, path, interpreter string) {
 	tb.Helper()
+	writeELF(tb, path, interpreter)
+}
+
+// WriteStaticELF writes a minimal Linux ELF executable without a program
+// interpreter to path. Only the headers are valid; the file is not meant to run.
+func WriteStaticELF(tb testing.TB, path string) {
+	tb.Helper()
+	writeELF(tb, path, "")
+}
+
+func writeELF(tb testing.TB, path, interpreter string) {
+	tb.Helper()
 	const (
 		ehsize    = 64
 		phentsize = 56
-		phnum     = 1
 		ptInterp  = 3
 	)
+	phnum := 1
+	if interpreter == "" {
+		phnum = 0
+	}
 	interp := append([]byte(interpreter), 0)
 	var buf bytes.Buffer
 	w := func(v any) {
@@ -39,15 +54,17 @@ func WriteDynamicELF(tb testing.TB, path, interpreter string) {
 	w(uint16(0))                                                               // shentsize
 	w(uint16(0))                                                               // shnum
 	w(uint16(0))                                                               // shstrndx
-	w(uint32(ptInterp))                                                        // p_type
-	w(uint32(4))                                                               // p_flags: PF_R
-	w(uint64(ehsize + phentsize))                                              // p_offset
-	w(uint64(0))                                                               // p_vaddr
-	w(uint64(0))                                                               // p_paddr
-	w(uint64(len(interp)))                                                     // p_filesz
-	w(uint64(len(interp)))                                                     // p_memsz
-	w(uint64(1))                                                               // p_align
-	buf.Write(interp)
+	if phnum > 0 {
+		w(uint32(ptInterp))           // p_type
+		w(uint32(4))                  // p_flags: PF_R
+		w(uint64(ehsize + phentsize)) // p_offset
+		w(uint64(0))                  // p_vaddr
+		w(uint64(0))                  // p_paddr
+		w(uint64(len(interp)))        // p_filesz
+		w(uint64(len(interp)))        // p_memsz
+		w(uint64(1))                  // p_align
+		buf.Write(interp)
+	}
 	if err := os.WriteFile(path, buf.Bytes(), 0o755); err != nil {
 		tb.Fatal(err)
 	}

@@ -37,6 +37,7 @@ func TestIsDynamicallyLinked(t *testing.T) {
 			require.NoError(t, err, "go build failed: %s", output)
 
 			require.Equal(t, tc.want, IsDynamicallyLinked(binPath))
+			require.Equal(t, !tc.want, IsStaticallyLinked(binPath))
 			if tc.want {
 				// The test host may be glibc or musl; both are valid dynamic
 				// Linux runtimes and the detector must recognize either.
@@ -46,6 +47,16 @@ func TestIsDynamicallyLinked(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Not being dynamic does not make a file static: it must be an ELF executable.
+func TestIsStaticallyLinkedNeedsELF(t *testing.T) {
+	dir := t.TempDir()
+	script := filepath.Join(dir, "script")
+	require.NoError(t, os.WriteFile(script, []byte("#!/bin/sh\n"), 0o755))
+	require.False(t, IsDynamicallyLinked(script))
+	require.False(t, IsStaticallyLinked(script))
+	require.False(t, IsStaticallyLinked(filepath.Join(dir, "missing")))
 }
 
 func TestLibcFromInterpreter(t *testing.T) {

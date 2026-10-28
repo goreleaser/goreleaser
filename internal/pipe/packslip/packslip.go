@@ -298,8 +298,13 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 	if a.Goos == "linux" {
 		switch {
 		case !artifact.ExtraOr(*a, artifact.ExtranDynLink, false):
-			// statically linked: fits glibc and musl hosts alike.
-			out.Requires = &packslip.Requires{Libs: &[]string{}}
+			// only a build that was inspected and found static needs no
+			// libraries. For any other, libs stays unset, which is how a
+			// packslip says they were not checked.
+			if artifact.ExtraOr(*a, artifact.ExtraStaticLink, false) {
+				// statically linked: fits glibc and musl hosts alike.
+				out.Requires = &packslip.Requires{Libs: &[]string{}}
+			}
 		default:
 			libc := artifact.ExtraOr(*a, artifact.ExtraLibcFamily, "")
 			if libc == "" && a.Type == artifact.UploadableBinary {

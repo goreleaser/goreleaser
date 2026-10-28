@@ -97,6 +97,9 @@ The most common fields are:
 | `Replaces`          | `bool`     | Whether a universal binary replaces single-arch ones       |
 | `Files`             | `[]string` | Any extra files an archive might have                      |
 | `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
+| `StaticallyLinked`  | `bool`     | Whether a Linux binary was inspected and is static         |
+| `PackslipBinaries`  | `[]string` | The archive's executables, without headers and C libraries |
+| `SkipPackslip`      | `bool`     | Whether the file is left out of packslip manifests         |
 | `SkipChecksum`      | `bool`     | Whether the file is intentionally omitted from checksums   |
 
 > [!NOTE]

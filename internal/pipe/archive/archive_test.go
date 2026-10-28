@@ -947,6 +947,92 @@ func TestRunPipeMixedCPULevels(t *testing.T) {
 	}
 }
 
+func TestStaticLinkageRecorded(t *testing.T) {
+	write := func(t *testing.T, dir, name string, kind string) *artifact.Artifact {
+		t.Helper()
+		path := filepath.Join(dir, name)
+		extra := map[string]any{artifact.ExtraID: "default"}
+		switch kind {
+		case "static":
+			testlib.WriteStaticELF(t, path)
+		case "dynamic":
+			testlib.WriteDynamicELF(t, path, "/lib64/ld-linux-x86-64.so.2")
+			extra[artifact.ExtranDynLink] = true
+		case "script":
+			require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\n"), 0o755))
+		}
+		return &artifact.Artifact{
+			Type: artifact.Binary, Name: name, Path: path,
+			Goos: "linux", Goarch: "amd64", Extra: extra,
+		}
+	}
+
+	for name, tt := range map[string]struct {
+		formats []string
+		kinds   []string
+		want    bool
+	}{
+		"static":                {[]string{"tar.gz"}, []string{"static"}, true},
+		"all static":            {[]string{"tar.gz"}, []string{"static", "static"}, true},
+		"dynamic":               {[]string{"tar.gz"}, []string{"dynamic"}, false},
+		"static and dynamic":    {[]string{"tar.gz"}, []string{"static", "dynamic"}, false},
+		"not an ELF":            {[]string{"tar.gz"}, []string{"script"}, false},
+		"static and not an ELF": {[]string{"tar.gz"}, []string{"static", "script"}, false},
+		"static, raw":           {[]string{"binary"}, []string{"static"}, true},
+		"dynamic, raw":          {[]string{"binary"}, []string{"dynamic"}, false},
+		"not an ELF, raw":       {[]string{"binary"}, []string{"script"}, false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					Formats:      tt.formats,
+					NameTemplate: "tool",
+				}},
+			})
+			for i, kind := range tt.kinds {
+				ctx.Artifacts.Add(write(t, dist, fmt.Sprintf("tool%d", i), kind))
+			}
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			got := ctx.Artifacts.Filter(artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+			)).List()
+			require.NotEmpty(t, got)
+			for _, a := range got {
+				require.Equal(t, tt.want, artifact.ExtraOr(*a, artifact.ExtraStaticLink, false), a.Name)
+			}
+		})
+	}
+
+	t.Run("a header does not decide", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			Archives: []config.Archive{{
+				ID:           "default",
+				Builds:       []string{"default"},
+				Formats:      []string{"tar.gz"},
+				NameTemplate: "tool",
+			}},
+		})
+		ctx.Artifacts.Add(write(t, dist, "tool", "static"))
+		header := write(t, dist, "tool.h", "script")
+		header.Type = artifact.Header
+		ctx.Artifacts.Add(header)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraStaticLink, false))
+	})
+}
+
 // UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
 // before packing, and archive metadata must retain that recorded value rather
 // than probing the packed bytes again. The same path covers a Node SEA, whose
@@ -954,9 +1040,9 @@ func TestRunPipeMixedCPULevels(t *testing.T) {
 // longer expose PT_INTERP.
 func TestArchivePreservesRecordedLibc(t *testing.T) {
 	for _, tt := range []struct {
-		name   string
+		name    string
 		builder string
-		libc   string
+		libc    string
 	}{
 		{name: "musl after UPX", libc: "musl"},
 		{name: "node SEA glibc", builder: "node", libc: "gnu"},
