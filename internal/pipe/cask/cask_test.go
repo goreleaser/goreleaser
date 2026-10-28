@@ -681,13 +681,22 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.Casks[0].Repository.Owner = "test"
 				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Zap = config.HomebrewCaskUninstall{
-					Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
-					Quit:      []string{"quit1", "quit2", "quit3"},
-					LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
-					Trash:     []string{"trash1", "trash2", "trash3"},
-					Delete:    []string{"delete1", "delete2", "delete3"},
+				ctx.Config.Casks[0].Zap = config.HomebrewCaskZap{
+					HomebrewCaskUninstall: config.HomebrewCaskUninstall{
+						Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
+						Quit:      []string{"quit1", "quit2", "quit3"},
+						LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
+						Trash:     []string{"trash1", "trash2", "trash3"},
+						Delete:    []string{"delete1", "delete2", "delete3"},
+					},
 				}
+			},
+		},
+		"zap_not_required": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Zap = config.HomebrewCaskZap{NotRequired: true}
 			},
 		},
 		"url_parameters_curl": {
