@@ -16,11 +16,12 @@ When an archive ID produces multiple formats for the same architecture,
 GoReleaser deterministically selects the first available format in this order:
 `tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
 
-Prerelease labels `alpha`, `beta`, `pre`, and `rc` map to their `apk`
-equivalents (e.g. `1.2.3-rc.2` becomes `1.2.3_rc2`). Other labels, such as
-`dev`, `nightly`, or `preview`, and non-numeric identifiers after the label,
-such as `1.2.3-rc.abc`, fail the pipe rather than generate package versions
-that can collide or prevent upgrades.
+Prerelease labels `alpha`, `beta`, `pre`, and `rc`, optionally followed by
+digits, map to their `apk` equivalents (e.g. `1.2.3-rc2` becomes `1.2.3_rc2`).
+Other labels, such as `dev`, `nightly`, or `preview`, and any separator after
+the label, such as `1.2.3-rc.2` or `1.2.3-rc-2`, fail the pipe rather than
+generate package versions that can collide or prevent upgrades: SemVer orders
+every `rc.N` before every `rcN`, and `apk` cannot express both.
 
 The default snapshot version template is supported for stable and prerelease
 tags. Its `-SNAPSHOT-<commit>` suffix becomes an `_git` suffix with a numeric

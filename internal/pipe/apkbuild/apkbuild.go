@@ -355,28 +355,10 @@ func toAPKPrerelease(prerelease string) (string, error) {
 		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: supported labels are alpha, beta, pre, and rc", prerelease)
 	}
 
-	result := "_" + label
-	if rest == "" {
-		return result, nil
+	if strings.Trim(rest, "0123456789") != "" {
+		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use only digits after the label, e.g. %q", prerelease, "rc1")
 	}
-
-	parts := strings.Split(rest, ".")
-	if rest[0] == '.' || rest[0] == '-' {
-		parts = strings.Split(rest[1:], rest[:1])
-	}
-	if rest[0] == '-' {
-		parts = append([]string{""}, parts...)
-	}
-	for i, part := range parts {
-		if (i > 0 && part == "") || strings.Trim(part, "0123456789") != "" {
-			return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use numeric identifiers after the label, e.g. %q", prerelease, "rc.1")
-		}
-	}
-	result += parts[0]
-	if len(parts) > 1 {
-		result += "_p" + strings.Join(parts[1:], "_p")
-	}
-	return result, nil
+	return "_" + label + rest, nil
 }
 
 func toAPKVersionNumber(value string) string {

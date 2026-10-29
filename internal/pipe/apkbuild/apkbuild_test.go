@@ -65,18 +65,15 @@ func TestToAPKArch(t *testing.T) {
 
 func TestToAPKVersion(t *testing.T) {
 	for input, expected := range map[string]string{
-		"1.2.3":          "1.2.3",
-		"1.2.3-beta.1":   "1.2.3_beta1",
-		"1.2.3-alpha1":   "1.2.3_alpha1",
-		"1.2.3-beta1":    "1.2.3_beta1",
-		"1.2.3-rc1":      "1.2.3_rc1",
-		"1.2.3-rc.2":     "1.2.3_rc2",
-		"1.2.3-rc-1":     "1.2.3_rc_p1",
-		"1.2.3-pre":      "1.2.3_pre",
-		"1.2.3-pre.1":    "1.2.3_pre1",
-		"1.2.3-pre.10":   "1.2.3_pre10",
-		"1.2.3-beta.1.1": "1.2.3_beta1_p1",
-		"1.2.3-beta.2":   "1.2.3_beta2",
+		"1.2.3":             "1.2.3",
+		"1.2.3-rc":          "1.2.3_rc",
+		"1.2.3-rc1":         "1.2.3_rc1",
+		"1.2.3-RC1":         "1.2.3_rc1",
+		"1.2.3-beta2":       "1.2.3_beta2",
+		"1.2.3-alpha1":      "1.2.3_alpha1",
+		"1.2.3-pre":         "1.2.3_pre",
+		"1.2.3-pre10":       "1.2.3_pre10",
+		"1.2.3-rc1+build.1": "1.2.3_rc1_p" + toAPKVersionNumber("build.1"),
 	} {
 		t.Run(input, func(t *testing.T) {
 			got, err := toAPKVersion(input)
@@ -110,6 +107,13 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-rc-",
 		"1.2.3-dev_1",
 		"1.2.3-0abc",
+		"1.2.3-beta.1",
+		"1.2.3-rc.2",
+		"1.2.3-beta.1.1",
+		"1.2.3-rc-1",
+		"1.2.3-rc1.1",
+		"1.2.3-pre.10",
+		"1.2.3-rc1-2",
 	} {
 		t.Run(input+" is rejected", func(t *testing.T) {
 			_, err := toAPKVersion(input)
@@ -117,11 +121,18 @@ func TestToAPKVersion(t *testing.T) {
 		})
 	}
 
+	for _, input := range []string{"1.2.3-beta.1", "1.2.3-rc-1", "1.2.3-rc1.1"} {
+		t.Run(input+" suggests the undotted form", func(t *testing.T) {
+			_, err := toAPKVersion(input)
+			require.ErrorContains(t, err, `"rc1"`)
+		})
+	}
+
 	valid := `^[0-9]+(?:\.[0-9]+)*(?:_(?:alpha|beta|pre|rc|cvs|svn|git|hg|p)[0-9]*)*$`
 	for _, version := range []string{
 		"1.2.3+build.1",
 		"1.2.3-SNAPSHOT-deadbeef",
-		"1.2.3-rc.1-SNAPSHOT-deadbeef",
+		"1.2.3-rc1-SNAPSHOT-deadbeef",
 	} {
 		t.Run(version+" is valid", func(t *testing.T) {
 			got, err := toAPKVersion(version)
@@ -130,11 +141,6 @@ func TestToAPKVersion(t *testing.T) {
 		})
 	}
 
-	beta1dot0, err := toAPKVersion("1.2.3-beta.1.0")
-	require.NoError(t, err)
-	beta10, err := toAPKVersion("1.2.3-beta.10")
-	require.NoError(t, err)
-	require.NotEqual(t, beta1dot0, beta10)
 	require.LessOrEqual(t, len(toAPKVersionNumber("SNAPSHOT-deadbeef")), 20)
 }
 
@@ -143,15 +149,15 @@ func TestToAPKVersionOrder(t *testing.T) {
 	testlib.CheckPath(t, "apk")
 	for _, versions := range [][]string{
 		{"1.2.3-alpha1", "1.2.3-beta1", "1.2.3-rc1", "1.2.3"},
-		{"1.2.3-pre.1", "1.2.3-pre.2", "1.2.3-pre.10", "1.2.3"},
-		{"1.2.3-beta.1", "1.2.3-beta.1.1", "1.2.3-beta.2", "1.2.3"},
+		{"1.2.3-beta1", "1.2.3-beta2", "1.2.3-beta10", "1.2.3"},
+		{"1.2.3-rc", "1.2.3-rc1", "1.2.3"},
 	} {
 		requireAPKVersionOrder(t, versions)
 	}
 }
 
 func TestRunDefaultSnapshot(t *testing.T) {
-	for _, version := range []string{"1.2.3", "1.2.3-rc.1"} {
+	for _, version := range []string{"1.2.3", "1.2.3-rc1"} {
 		t.Run(version, func(t *testing.T) {
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dist:        t.TempDir(),
@@ -178,7 +184,7 @@ func TestRunDefaultSnapshot(t *testing.T) {
 			content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
 			require.NoError(t, err)
 			prefix := "1.2.3"
-			if version == "1.2.3-rc.1" {
+			if version == "1.2.3-rc1" {
 				prefix += "_rc1"
 			}
 			require.Contains(t, string(content), "pkgver='"+prefix+"_git"+toAPKVersionNumber("snapshot-deadbeef")+"'")
@@ -896,7 +902,7 @@ func TestPublishSkip(t *testing.T) {
 		},
 		"auto prerelease": func(ctx *context.Context) {
 			ctx.Config.APKBuilds[0].SkipUpload = "auto"
-			ctx.Semver.Prerelease = "beta.1"
+			ctx.Semver.Prerelease = "beta1"
 		},
 		"template": func(ctx *context.Context) {
 			ctx.Config.APKBuilds[0].SkipUpload = "{{ .IsSnapshot }}"
