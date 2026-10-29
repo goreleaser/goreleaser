@@ -135,7 +135,7 @@ is useful for local development:
 ```sh
 GOOS="linux" \
 GOARCH="arm64" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 It will default to your current `GOOS`/`GOARCH`.
@@ -144,7 +144,7 @@ It will default to your current `GOOS`/`GOARCH`.
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -152,7 +152,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 
 ```sh
 TARGET="linux-arm64" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -160,7 +160,7 @@ TARGET="linux-arm64" \
 
 ```sh
 TARGET="aarch64-linux" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -168,7 +168,7 @@ TARGET="aarch64-linux" \
 
 ```sh
 TARGET="bun-linux-arm64" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -176,7 +176,7 @@ TARGET="bun-linux-arm64" \
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -184,7 +184,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 
 ```sh
 TARGET="none-any" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
@@ -192,7 +192,7 @@ TARGET="none-any" \
 
 ```sh
 TARGET="none-any" \
-  goreleaser build --single-target --clean
+  goreleaser build --single-target --snapshot --clean
 ```
 
 {{< /tab >}}
