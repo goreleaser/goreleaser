@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -37,7 +38,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	repo := repoProject(ctx)
-	projects := map[string]bool{}
+	projects := map[string]string{}
 	for i := range ctx.Config.Packslips {
 		cfg := &ctx.Config.Packslips[i]
 		if cfg.Project == "" {
@@ -49,12 +50,34 @@ func (Pipe) Default(ctx *context.Context) error {
 		if cfg.Project == "" {
 			continue
 		}
-		if projects[cfg.Project] {
+		key := projectKey(cfg.Project)
+		if prev, ok := projects[key]; ok {
+			if prev != cfg.Project {
+				return fmt.Errorf("found multiple packslips with the project '%s' ('%s'), each project needs its own entry", cfg.Project, prev)
+			}
 			return fmt.Errorf("found multiple packslips with the project '%s', each project needs its own entry", cfg.Project)
 		}
-		projects[cfg.Project] = true
+		projects[key] = cfg.Project
 	}
 	return nil
+}
+
+// projectKey spells a project the way packslip compares it. GitHub and
+// GitLab resolve repository names without regard to case, so two spellings
+// of one repository name the same project, while a monorepo subpath and a
+// domain project stay case-sensitive.
+func projectKey(project string) string {
+	parts := strings.Split(project, "/")
+	switch parts[0] {
+	case "github.com":
+		for i := 1; i < len(parts) && i <= 2; i++ {
+			parts[i] = strings.ToLower(parts[i])
+		}
+		return strings.Join(parts, "/")
+	case "gitlab.com":
+		return strings.ToLower(project)
+	}
+	return project
 }
 
 // repoProject is the packslip project of the GitHub repository the release
@@ -277,9 +300,15 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 		})
 	}
 
+	// packslip versions are strict semver, so a tag such as v1.2 is signed
+	// as version 1.2.0. The source tag and URLs keep the tag as it is.
+	version := ctx.Version
+	if sv, err := semver.NewVersion(version); err == nil {
+		version = sv.String()
+	}
 	predicate := packslip.Predicate{
 		Project:     cfg.Project,
-		Version:     ctx.Version,
+		Version:     version,
 		PublishedAt: time.Now().UTC(),
 		Identity:    identity,
 	}
@@ -304,6 +333,12 @@ func build(ctx *context.Context, cfg config.Packslip, token string, identity pac
 	}
 	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
 		return nil, fmt.Errorf("packslips.name_template: '%s' must be a file name, without a directory", name)
+	}
+	// the release uploads artifacts under a name with spaces trimmed around
+	// it and before its extension, so the name checked for clashes would not
+	// be the name uploaded.
+	if stem := strings.TrimSuffix(name, filepath.Ext(name)); strings.TrimSpace(name) != name || strings.TrimSpace(stem) != stem {
+		return nil, fmt.Errorf("packslips.name_template: '%s' must not have spaces around the name or before its extension", name)
 	}
 	return &manifest{name: name, statement: statement}, nil
 }

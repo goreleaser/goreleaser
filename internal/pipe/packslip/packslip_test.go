@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,6 +46,47 @@ func TestDefaultDuplicateProject(t *testing.T) {
 		Packslips: []config.Packslip{{}, {Project: "github.com/acme/tool"}},
 	})
 	require.ErrorContains(t, Pipe{}.Default(ctx), "multiple packslips with the project 'github.com/acme/tool'")
+}
+
+// GitHub and GitLab repository names compare without regard to case, so two
+// spellings of one repository would be refused by installers as two
+// manifests for one project.
+func TestDefaultDuplicateProjectCase(t *testing.T) {
+	for name, projects := range map[string][2]string{
+		"github owner":  {"github.com/acme/tools/foo", "github.com/ACME/tools/foo"},
+		"github repo":   {"github.com/acme/tools", "github.com/acme/Tools"},
+		"gitlab group":  {"gitlab.com/acme/group/tools", "gitlab.com/acme/Group/tools"},
+		"repo vs empty": {"", "github.com/Acme/Tool"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Release: config.Release{GitHub: config.Repo{Owner: "acme", Name: "tool"}},
+				Packslips: []config.Packslip{
+					{Project: projects[0], NameTemplate: "one.sigstore.json"},
+					{Project: projects[1], NameTemplate: "two.sigstore.json"},
+				},
+			})
+			require.ErrorContains(t, Pipe{}.Default(ctx), "multiple packslips with the project")
+		})
+	}
+}
+
+func TestDefaultProjectCaseDistinct(t *testing.T) {
+	for name, projects := range map[string][2]string{
+		"github subpath": {"github.com/acme/tools/foo", "github.com/acme/tools/Foo"},
+		"domain":         {"tools.example.com/foo", "tools.example.com/Foo"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Release: config.Release{GitHub: config.Repo{Owner: "acme", Name: "tools"}},
+				Packslips: []config.Packslip{
+					{Project: projects[0], NameTemplate: "one.sigstore.json"},
+					{Project: projects[1], NameTemplate: "two.sigstore.json"},
+				},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+		})
+	}
 }
 
 func TestSkip(t *testing.T) {
@@ -576,6 +618,50 @@ func TestRun(t *testing.T) {
 	require.JSONEq(t, `{"bundle":true}`, string(got))
 }
 
+// GoReleaser accepts tags such as v1.2, but packslip versions are strict
+// semver, so the signed version is spelled out while the tag and URLs stay as
+// they are.
+func TestRunVersionSpelling(t *testing.T) {
+	setToken(t)
+	for tag, want := range map[string]string{
+		"v1.2":               "1.2.0",
+		"v1.2.3":             "1.2.3",
+		"v1.2.3-rc.1+build5": "1.2.3-rc.1+build5",
+	} {
+		t.Run(tag, func(t *testing.T) {
+			signed := stubSign(t)
+			dist := t.TempDir()
+			archive := filepath.Join(dist, "tool_linux_amd64.tar.gz")
+			require.NoError(t, os.WriteFile(archive, []byte("archive"), 0o644))
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist:       dist,
+				Release:    config.Release{GitHub: config.Repo{Owner: "acme", Name: "tools"}},
+				GitHubURLs: config.GitHubURLs{Download: "https://github.com"},
+				Packslips:  []config.Packslip{{}},
+			}, testctx.GitHubTokenType, testctx.WithVersion(strings.TrimPrefix(tag, "v")), testctx.WithCurrentTag(tag))
+			ctx.Git.FullCommit = "0123456789abcdef0123456789abcdef01234567"
+			ctx.Git.URL = "https://github.com/acme/tools.git"
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type: artifact.UploadableArchive, Name: filepath.Base(archive), Path: archive,
+				Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{
+					artifact.ExtraID:       "default",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"tool"},
+				},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			statement := signed["github.com/acme/tools"]
+			require.Equal(t, want, statement.Predicate.Version)
+			require.Equal(t, tag, statement.Predicate.Source.Tag)
+			require.Len(t, statement.Predicate.Artifacts, 1)
+			require.Equal(t, "https://github.com/acme/tools/releases/download/"+tag+"/tool_linux_amd64.tar.gz", statement.Predicate.Artifacts[0].URL)
+		})
+	}
+}
+
 func TestRunNoArtifacts(t *testing.T) {
 	setToken(t)
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -797,6 +883,33 @@ func TestRunNameNotAFileName(t *testing.T) {
 			})
 			require.ErrorContains(t, Pipe{}.Run(ctx), "must be a file name")
 			require.Empty(t, signed)
+		})
+	}
+}
+
+// The release trims spaces around an artifact's name, so a name with spaces
+// would pass the clash checks and then upload under another file's name.
+func TestRunNameUntrimmed(t *testing.T) {
+	setToken(t)
+	for _, name := range []string{
+		" checksums.txt",
+		"checksums .txt",
+		"checksums.txt ",
+	} {
+		t.Run(name, func(t *testing.T) {
+			signed := stubSign(t)
+			ctx := monorepoCtx(t, []config.Packslip{
+				{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: name},
+			})
+			checksums := filepath.Join(ctx.Config.Dist, "checksums.txt")
+			require.NoError(t, os.WriteFile(checksums, []byte("sums"), 0o644))
+			ctx.Artifacts.Add(&artifact.Artifact{Type: artifact.Checksum, Name: "checksums.txt", Path: checksums})
+
+			require.ErrorContains(t, Pipe{}.Run(ctx), "must not have spaces")
+			require.Empty(t, signed)
+			got, err := os.ReadFile(checksums)
+			require.NoError(t, err)
+			require.Equal(t, "sums", string(got), "the checksums file is left alone")
 		})
 	}
 }

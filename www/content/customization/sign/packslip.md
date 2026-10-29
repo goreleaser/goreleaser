@@ -55,7 +55,7 @@ packslips:
     # Default: 'packslip.sigstore.json', or 'packslip.<subpath>.sigstore.json'
     # for a project under the release repository, with `/` in the subpath
     # replaced by `-` (`packslip.foo.sigstore.json` here).
-    # It must be a file name, without a directory.
+    # It must be a file name, without a directory or spaces around it.
     # Templates: allowed.
     name_template: "packslip.foo.sigstore.json"
 
@@ -99,7 +99,9 @@ project name, not the file name. An entry without `ids` describes every
 archive and binary, so set `ids` on each entry when a release has several
 tools. Two entries cannot have the same project or file name, and a file
 name cannot be the name of an archive, checksum, release extra file, or
-other artifact.
+other artifact. GitHub and GitLab owner, group, and repository names compare
+without regard to case, so `github.com/acme/tools` and
+`github.com/ACME/tools` are the same project; a subpath compares exactly.
 
 When each tool has its own release and configuration file instead, a single
 entry with the tool's `project` is enough.
@@ -123,6 +125,8 @@ entry with the tool's `project` is enough.
   so installers pick the default-level build unless asked for another. A
   `goarm64` option such as `v8.2,lse` becomes `v8.2-lse`, and a `goarm`
   softfloat build for ARMv6 or ARMv7 has the variant `softfloat`.
+- The version, spelled as strict semver: a tag such as `v1.2` is signed as
+  version `1.2.0`, and the source tag stays `v1.2`.
 - The source repository, commit, and tag, taken from the git remote of the
   checkout, which can differ from the repository the release is published to.
   On GitHub Actions, a GitHub `project` must name the caller repository
