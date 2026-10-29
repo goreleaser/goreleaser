@@ -39,6 +39,7 @@ const (
 	MCP            Key = "mcp"
 	Iru            Key = "iru"
 	SRPM           Key = "srpm"
+	APKBuild       Key = "apkbuild"
 )
 
 func String(ctx *context.Context) string {
@@ -127,6 +128,7 @@ var Release = Keys{
 	Nix,
 	AUR,
 	AURSource,
+	APKBuild,
 	NFPM,
 	Makeself,
 	Flatpak,

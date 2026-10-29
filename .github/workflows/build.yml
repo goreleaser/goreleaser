@@ -140,6 +140,17 @@ jobs:
           echo "62488394d5233283096466350487ed46470366f57db4bec824a87ecbacce960a  $HOME/.local/bin/nixfmt" | sha256sum -c -
           chmod +x "$HOME/.local/bin/alejandra" "$HOME/.local/bin/nixfmt"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: setup-apk
+        # apk-tools isn't packaged for ubuntu, but its releases ship a static
+        # binary, pinned by checksum like the nix formatters above.
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/apk" \
+            https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v3.0.8/x86_64/apk.static
+          echo "11758d76de3699c7606152357f415f55879743ccf0e3d8942d5ba98cf29a3c86  $HOME/.local/bin/apk" | sha256sum -c -
+          chmod +x "$HOME/.local/bin/apk"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
