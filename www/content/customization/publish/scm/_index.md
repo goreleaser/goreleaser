@@ -184,6 +184,14 @@ release:
   # Keep in mind that this might also break things that depend on the release
   # URL, for instance, homebrew taps.
   #
+  # Passing `--skip=release` to `goreleaser release` has the same effect
+  # {{< g_inline_version "v2.20" >}}.
+  #
+  # When the release is disabled, the repository is not resolved, so the
+  # default project name might differ (e.g. `v2` for a `/v2` Go module).
+  # If you release the same config from several runners, and only some of them
+  # publish the release, set `project_name` explicitly.
+  #
   # Templates: allowed.
   disable: true
 

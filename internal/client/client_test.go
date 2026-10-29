@@ -12,6 +12,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -61,6 +62,17 @@ func TestNewReleaseClient(t *testing.T) {
 			testctx.WithTokenType(context.TokenTypeGitHub),
 		))
 		testlib.RequireTemplateError(t, err)
+	})
+
+	t.Run("skipped", func(t *testing.T) {
+		t.Parallel()
+		cli, err := NewReleaseClient(testctx.Wrap(
+			t.Context(),
+			testctx.Skip(skips.SCMRelease),
+			testctx.WithTokenType(context.TokenTypeGitHub),
+		))
+		require.NoError(t, err)
+		require.IsType(t, errURLTemplater{}, cli)
 	})
 
 	t.Run("disabled", func(t *testing.T) {
