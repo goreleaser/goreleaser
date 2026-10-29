@@ -114,6 +114,8 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-rc1.1",
 		"1.2.3-pre.10",
 		"1.2.3-rc1-2",
+		"1.2.3-rc01",
+		"1.2.3-beta007",
 	} {
 		t.Run(input+" is rejected", func(t *testing.T) {
 			_, err := toAPKVersion(input)

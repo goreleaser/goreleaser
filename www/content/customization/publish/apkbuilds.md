@@ -17,7 +17,7 @@ GoReleaser deterministically selects the first available format in this order:
 `tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
 
 Prerelease labels `alpha`, `beta`, `pre`, and `rc`, optionally followed by
-digits, map to their `apk` equivalents (e.g. `1.2.3-rc2` becomes `1.2.3_rc2`).
+digits without leading zeros, map to their `apk` equivalents (e.g. `1.2.3-rc2` becomes `1.2.3_rc2`).
 Other labels, such as `dev`, `nightly`, or `preview`, and any separator after
 the label, such as `1.2.3-rc.2` or `1.2.3-rc-2`, fail the pipe rather than
 generate package versions that can collide or prevent upgrades: SemVer orders
