@@ -958,3 +958,54 @@ func addArtifact(tb testing.TB, ctx *context.Context, art artifact.Artifact) {
 	require.NoError(tb, os.WriteFile(art.Path, []byte(art.Name), 0o644))
 	ctx.Artifacts.Add(&art)
 }
+
+func TestFieldsAreTemplatedOnce(t *testing.T) {
+	for name, field := range map[string]struct {
+		set    func(*config.APKBuild, string)
+		render string
+	}{
+		"description":  {func(c *config.APKBuild, v string) { c.Description = v }, "pkgdesc='%s'"},
+		"homepage":     {func(c *config.APKBuild, v string) { c.Homepage = v }, "url='%s'"},
+		"license":      {func(c *config.APKBuild, v string) { c.License = v }, "license='%s'"},
+		"maintainers":  {func(c *config.APKBuild, v string) { c.Maintainers = []string{v} }, "# Maintainer: %s"},
+		"contributors": {func(c *config.APKBuild, v string) { c.Contributors = []string{v} }, "# Contributor: %s"},
+		"provides":     {func(c *config.APKBuild, v string) { c.Provides = []string{v} }, "provides='%s'"},
+		"depends":      {func(c *config.APKBuild, v string) { c.Depends = []string{v} }, "depends='%s'"},
+		"makedepends":  {func(c *config.APKBuild, v string) { c.MakeDepends = []string{v} }, "makedepends='%s'"},
+		"replaces":     {func(c *config.APKBuild, v string) { c.Replaces = []string{v} }, "replaces='%s'"},
+		"options":      {func(c *config.APKBuild, v string) { c.Options = []string{v} }, "options='%s !check'"},
+		"rel":          {func(c *config.APKBuild, v string) { c.Rel = v }, "pkgrel='%s'"},
+		"package":      {func(c *config.APKBuild, v string) { c.Package = "echo " + v }, "package() {\necho %s\n}"},
+	} {
+		for input, expected := range map[string]string{
+			`{{ "{{ .Version }}" }}`: "{{ .Version }}",
+			`{{ "{{ .Nope }}" }}`:    "{{ .Nope }}",
+			"{{ .Version }}":         "1.0.0",
+		} {
+			t.Run(name+" "+input, func(t *testing.T) {
+				cfg := config.APKBuild{
+					Description: "Foo",
+					Homepage:    "https://example.com",
+					License:     "MIT",
+					URLTemplate: "https://example.com/{{ .ArtifactName }}",
+				}
+				field.set(&cfg, input)
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+					Dist:        t.TempDir(),
+					ProjectName: "foo",
+					APKBuilds:   []config.APKBuild{cfg},
+				}, testctx.WithVersion("1.0.0"))
+				addArtifact(t, ctx, artifact.Artifact{
+					Name: "foo", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableBinary,
+					Extra: map[string]any{artifact.ExtraFormat: "binary", artifact.ExtraBinary: "foo"},
+				})
+
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.NoError(t, runAll(ctx, client.NewMock()))
+				content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+				require.NoError(t, err)
+				require.Contains(t, string(content), fmt.Sprintf(field.render, expected))
+			})
+		}
+	}
+}

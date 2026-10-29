@@ -105,8 +105,22 @@ func doRun(ctx *context.Context, apk config.APKBuild, cli client.ReleaseURLTempl
 		&apk.Description,
 		&apk.Homepage,
 		&apk.License,
+		&apk.Rel,
 	); err != nil {
 		return err
+	}
+	for _, values := range []*[]string{
+		&apk.Maintainers,
+		&apk.Contributors,
+		&apk.Provides,
+		&apk.Depends,
+		&apk.MakeDepends,
+		&apk.Replaces,
+		&apk.Options,
+	} {
+		if err := tmpl.New(ctx).ApplySlice(values); err != nil {
+			return err
+		}
 	}
 
 	filters := []artifact.Filter{
@@ -261,10 +275,10 @@ func buildAPKBuild(ctx *context.Context, pkg config.APKBuild, cli client.Release
 	if err != nil {
 		return "", err
 	}
-	return applyTemplate(ctx, apkbuildTemplate, data)
+	return applyTemplate(apkbuildTemplate, data)
 }
 
-func applyTemplate(ctx *context.Context, source string, data templateData) (string, error) {
+func applyTemplate(source string, data templateData) (string, error) {
 	tpl := template.Must(template.New(data.Name).Funcs(template.FuncMap{
 		"fixLines":   fixLines,
 		"shellJoin":  shellJoin,
@@ -275,7 +289,7 @@ func applyTemplate(ctx *context.Context, source string, data templateData) (stri
 	if err := tpl.Execute(&out, data); err != nil {
 		return "", err
 	}
-	return tmpl.New(ctx).Apply(out.String())
+	return out.String(), nil
 }
 
 func fixLines(s string, depth int) string {
