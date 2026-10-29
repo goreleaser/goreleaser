@@ -127,7 +127,7 @@ may have some extra fields:
 | `.Ppc64`        | `GOPPC64` {{< g_inline_version "v2.4" >}}                       |
 | `.Riscv64`      | `GORISCV64` {{< g_inline_version "v2.4" >}}                     |
 | `.I386`         | `GO386` {{< g_inline_version "v2.4" >}}                         |
-| `.Abi`          | target ABI, when the builder sets one {{< g_inline_version "v2.19-unreleased" >}} |
+| `.Abi`          | target ABI, when the builder sets one {{< g_inline_version "v2.19" >}} |
 | `.Target`       | the whole target {{< g_inline_version "v2.5" >}}                |
 | `.Binary`       | artifact name (without the extension)                           |
 | `.ArtifactID`   | artifact id {{< g_inline_version "v2.3" >}}{{< g_inline_pro >}} |
@@ -152,7 +152,7 @@ In the nFPM name template field, you can use those extra fields:
 
 In the [Homebrew Cask](/customization/publish/homebrew_casks/)
 `hooks.*.install_steps` and `hooks.*.uninstall_steps` options, you can use these
-extra fields {{< g_inline_version "v2.19-unreleased" >}}:
+extra fields {{< g_inline_version "v2.19" >}}:
 
 | Key           | Description                                                        |
 | ------------- | ------------------------------------------------------------------ |
@@ -231,7 +231,7 @@ On all fields, you have these available functions:
 | `readFile "/foo/bar.txt"`         | reads the file contents if it can be read, or return empty string {{< g_inline_version "v2.12" >}}                                |
 | `englishJoin`                     | will join multiple items in english {{< g_inline_version "v2.14" >}}                                                              |
 | `list "a" "b" "c"`                | makes a list of strings                                                                                                           |
-| `targetVariant .`                 | the target variant suffix of the current artifact {{< g_inline_version "v2.19-unreleased" >}}                                     |
+| `targetVariant .`                 | the target variant suffix of the current artifact {{< g_inline_version "v2.19" >}}                                                |
 
 ### `targetVariant`
 

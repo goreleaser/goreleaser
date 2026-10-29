@@ -33,6 +33,11 @@ cask "{{ .Name }}" do
   {{ conflicts . }}
   {{- end }}
 
+  {{- if and .MacOSPackages (not .LinuxPackages) }}
+  {{- /* macOS-only cask: without this, `brew tap` (readall, os=all) fails with
+    "Missing Linux stanzas" for the Linux contexts. */}}
+  depends_on :macos
+  {{- end }}
   {{- with .Dependencies }}
   {{ depends  . }}
   {{- end }}

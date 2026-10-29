@@ -27,9 +27,9 @@ cask "url_parameters_post" do
     end
   end
   on_linux do
-    on_intel do
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      url "https://dummyhost/download/v#{version}/bin.tar.zst",
+    depends_on arch: :x86_64
+    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    url "https://dummyhost/download/v#{version}/bin.tar.zst",
         using: :post,
         header: [
           "Accept: application/octet-stream",
@@ -37,7 +37,6 @@ cask "url_parameters_post" do
         data: {
           "payload" => "hello_world",
         }
-    end
   end
 
   name "url_parameters_post"

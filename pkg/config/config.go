@@ -481,6 +481,9 @@ type Ko struct {
 	// v2.7+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
+	// v2.19+
+	LinuxCapabilities []string `yaml:"linux_capabilities,omitempty" json:"linux_capabilities,omitempty"`
+
 	// Deprecated: use [Repositories].
 	Repository string `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"`
 }
@@ -683,6 +686,7 @@ type Archive struct {
 	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=tar.zst,enum=tzst,enum=xz,enum=binary,default=tar.gz"`
+	Zstd                      Zstd             `yaml:"zstd,omitempty" json:"zstd,omitempty"`
 	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripBinaryDirectory      bool             `yaml:"strip_binary_directory,omitempty" json:"strip_binary_directory,omitempty"`
@@ -695,6 +699,12 @@ type Archive struct {
 
 	// Deprecated: use [IDs] instead.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
+}
+
+// Zstd configures compression for tar.zst and tzst archives.
+type Zstd struct {
+	Level      string `yaml:"level,omitempty" json:"level,omitempty" jsonschema:"enum=fastest,enum=default,enum=better,enum=best"`
+	WindowSize *int   `yaml:"window_size,omitempty" json:"window_size,omitempty" jsonschema:"minimum=10,maximum=29"`
 }
 
 type ReleaseNotesMode string

@@ -260,12 +260,25 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 
 	if len(artifacts) == 0 {
 		log.Info("no artifacts found")
+		return nil
 	}
 	log.Debugf("will upload %d artifacts", len(artifacts))
+	// Share a single client per upload configuration so custom TLS transports
+	// can reuse connections across artifacts and retries. The client is owned
+	// here and its idle connections are cleaned up once all workers finish.
+	client, err := getHTTPClient(upload)
+	if err != nil {
+		return err
+	}
+	if client != h.DefaultClient {
+		if tr, ok := client.Transport.(*h.Transport); ok {
+			defer tr.CloseIdleConnections()
+		}
+	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
 		g.Go(func() error {
-			return uploadAsset(ctx, upload, artifact, kind, check)
+			return uploadAsset(ctx, upload, artifact, kind, client, check)
 		})
 	}
 	if err := g.Wait(); err != nil {
@@ -278,7 +291,7 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 }
 
 // uploadAsset uploads file to target and logs all actions.
-func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
+func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, client *h.Client, check ResponseChecker) error {
 	// username and secret are optional since the server may not support/need
 	// basic authentication always
 	username, err := getUsername(ctx, upload, kind)
@@ -329,7 +342,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		WithField("file", artifact.Name).
 		Info("uploading")
 
-	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, kind, artifact, check)
+	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, kind, artifact, client, check)
 	if err != nil {
 		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
 	}
@@ -366,7 +379,7 @@ func appendEscapedName(base, name string) string {
 }
 
 // uploadAssetToServer uploads the asset file to target.
-func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, kind string, artifact *artifact.Artifact, check ResponseChecker) (*h.Response, error) {
+func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, kind string, artifact *artifact.Artifact, client *h.Client, check ResponseChecker) (*h.Response, error) {
 	var resp *h.Response
 	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		a, err := assetOpen(kind, artifact)
@@ -380,7 +393,7 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 			return retryx.Unrecoverable(err)
 		}
 
-		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by caller (uploadAsset)
+		resp, err = executeHTTPRequest(ctx, client, req, check) //nolint:bodyclose // closed by caller (uploadAsset)
 		if err != nil {
 			return retryx.HTTP(err, resp)
 		}
@@ -444,11 +457,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 // On success the caller owns resp.Body and must close it.
 // On error the body is already closed; the returned resp (if non-nil)
 // can still be inspected for status code, headers, etc.
-func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Request, check ResponseChecker) (*h.Response, error) {
-	client, err := getHTTPClient(upload)
-	if err != nil {
-		return nil, err
-	}
+func executeHTTPRequest(ctx *context.Context, client *h.Client, req *h.Request, check ResponseChecker) (*h.Response, error) {
 	log.Debugf("executing request: %s %s", req.Method, redact.String(req.URL.String(), ctx.Env.Strings()))
 	resp, err := client.Do(req)
 	if err != nil {

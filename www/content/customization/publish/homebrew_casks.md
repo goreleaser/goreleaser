@@ -213,7 +213,7 @@ homebrew_casks:
     # not written to the Cask. It is still checked as a template, so it must
     # remain valid. The same applies to `uninstall` and `uninstall_steps`.
     #
-    # All four `_steps` options are {{< g_inline_version "v2.19-unreleased" >}}.
+    # All four `_steps` options are {{< g_inline_version "v2.19" >}}.
     #
     # Templates: allowed. {{< g_inline_version "v2.13" >}}
     hooks:

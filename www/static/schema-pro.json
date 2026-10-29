@@ -514,6 +514,9 @@
 					"formats": {
 						"$ref": "#/$defs/StringArray"
 					},
+					"zstd": {
+						"$ref": "#/$defs/Zstd"
+					},
 					"format_overrides": {
 						"items": {
 							"$ref": "#/$defs/FormatOverride"
@@ -1873,7 +1876,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/file-alias",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/extra-file-alias",
 						"properties": {
 							"glob": {
 								"type": "string"
@@ -2531,6 +2534,12 @@
 			},
 			"HomebrewCaskHook": {
 				"properties": {
+					"install_steps": {
+						"type": "string"
+					},
+					"uninstall_steps": {
+						"type": "string"
+					},
 					"install": {
 						"type": "string"
 					},
@@ -3024,6 +3033,12 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"linux_capabilities": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"repository": {
 						"type": "string"
@@ -7132,6 +7147,26 @@
 				"required": [
 					"locale"
 				]
+			},
+			"Zstd": {
+				"properties": {
+					"level": {
+						"type": "string",
+						"enum": [
+							"fastest",
+							"default",
+							"better",
+							"best"
+						]
+					},
+					"window_size": {
+						"type": "integer",
+						"maximum": 29,
+						"minimum": 10
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			}
 		},
 		"description": "goreleaser configuration definition file"

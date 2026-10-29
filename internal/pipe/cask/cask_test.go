@@ -213,6 +213,108 @@ func TestFullCaskMacOSOnly(t *testing.T) {
 	golden.RequireEqualRb(t, []byte(cask))
 }
 
+// https://github.com/goreleaser/goreleaser/issues/7217
+// When builds.ignore leaves a single arch per OS, the cask must declare
+// `depends_on arch:` and keep the stanzas flat: brew's readall (os=all,
+// arch=all) rejects on_arm/on_intel-only casks with "Missing URL" / "Missing
+// Linux stanzas" otherwise.
+func TestCaskSingleArchPerOS(t *testing.T) {
+	t.Run("arm64-mac-amd64-linux", func(t *testing.T) {
+		requireCaskSingleArchPerOS(t, "arm64", "amd64")
+	})
+	t.Run("amd64-mac-arm64-linux", func(t *testing.T) {
+		requireCaskSingleArchPerOS(t, "amd64", "arm64")
+	})
+}
+
+func requireCaskSingleArchPerOS(t *testing.T, macArch, linuxArch string) {
+	t.Helper()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "test",
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	folder := t.TempDir()
+	for name, target := range map[string][2]string{
+		"test_1.0.0_darwin_" + macArch + ".tar.gz":  {"darwin", macArch},
+		"test_1.0.0_linux_" + linuxArch + ".tar.gz": {"linux", linuxArch},
+	} {
+		path := filepath.Join(folder, name)
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   target[0],
+			Goarch: target[1],
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:       "test",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"test"},
+			},
+		})
+	}
+
+	data, err := dataFor(ctx, config.HomebrewCask{Name: "test"}, client.NewMock(), ctx.Artifacts.List())
+	require.NoError(t, err)
+	require.Equal(t, macArch, data.SingleMacOSArch)
+	require.Equal(t, linuxArch, data.SingleLinuxArch)
+
+	cask, err := doBuildCask(ctx, data)
+	require.NoError(t, err)
+
+	golden.RequireEqualRb(t, []byte(cask))
+	rubyArch := map[string]string{"amd64": "x86_64", "arm64": "arm64"}
+	require.Contains(t, cask, "  depends_on arch: :"+rubyArch[linuxArch]+"\n")
+	require.NotContains(t, cask, "on_intel do")
+	if macArch == "arm64" {
+		require.Contains(t, cask, "  depends_on arch: :arm64\n")
+		require.NotContains(t, cask, "on_arm do")
+	}
+}
+
+// https://github.com/goreleaser/goreleaser/issues/7217
+// An amd64-only macOS cask keeps the Rosetta compatibility caveats, gets its
+// stanzas flat, and the cask is declared macOS-only so Linux contexts are not
+// audited by brew.
+func TestCaskAmd64OnlyMacOSKeepsCaveats(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "test",
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	folder := t.TempDir()
+	path := filepath.Join(folder, "test_1.0.0_darwin_amd64.tar.gz")
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "test_1.0.0_darwin_amd64.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:       "test",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"test"},
+		},
+	})
+
+	data, err := dataFor(ctx, config.HomebrewCask{Name: "test"}, client.NewMock(), ctx.Artifacts.List())
+	require.NoError(t, err)
+	require.True(t, data.HasOnlyAmd64MacOsPkg)
+	require.Equal(t, "amd64", data.SingleMacOSArch)
+	require.Empty(t, data.LinuxPackages)
+
+	cask, err := doBuildCask(ctx, data)
+	require.NoError(t, err)
+
+	golden.RequireEqualRb(t, []byte(cask))
+	require.Contains(t, cask, "  depends_on :macos\n")
+	require.Contains(t, cask, "def caveats")
+	require.NotContains(t, cask, "on_intel do")
+	require.NotContains(t, cask, "depends_on arch: :x86_64")
+}
+
 func TestCaskDescriptionEscapesRubyString(t *testing.T) {
 	for name, tt := range map[string]struct {
 		description string
@@ -1845,7 +1947,8 @@ func TestRunPipeUniversalArchiveWithLinuxBinary(t *testing.T) {
 	macos, linux, ok := strings.Cut(content, "  on_linux do\n")
 	require.True(t, ok, content)
 	require.Contains(t, macos, "    binary \"foo\"\n")
-	require.Contains(t, linux, "      binary \"foo_linux_amd64\", target: \"foo\"\n")
+	require.Contains(t, linux, "  depends_on arch: :x86_64\n")
+	require.Contains(t, linux, "    binary \"foo_linux_amd64\", target: \"foo\"\n")
 }
 
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {

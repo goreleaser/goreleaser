@@ -185,6 +185,32 @@ func TestFilter(t *testing.T) {
 	).List(), 2)
 }
 
+func TestCPUVariantFilters(t *testing.T) {
+	for _, tt := range []struct {
+		arch, baseline, other string
+		filter                func(string) Filter
+		setVariant            func(*Artifact, string)
+	}{
+		{"386", "sse2", "softfloat", ByGo386, func(a *Artifact, v string) { a.Go386 = v }},
+		{"ppc64le", "power8", "power9", ByGoppc64, func(a *Artifact, v string) { a.Goppc64 = v }},
+		{"riscv64", "rva20u64", "rva22u64", ByGoriscv64, func(a *Artifact, v string) { a.Goriscv64 = v }},
+	} {
+		t.Run(tt.arch, func(t *testing.T) {
+			unspecified := &Artifact{Goarch: tt.arch}
+			baseline := &Artifact{Goarch: tt.arch}
+			other := &Artifact{Goarch: tt.arch}
+			tt.setVariant(baseline, tt.baseline)
+			tt.setVariant(other, tt.other)
+
+			require.True(t, tt.filter(tt.baseline)(unspecified))
+			require.True(t, tt.filter(tt.baseline)(baseline))
+			require.False(t, tt.filter(tt.baseline)(other))
+			require.False(t, tt.filter(tt.other)(unspecified))
+			require.True(t, tt.filter(tt.other)(other))
+		})
+	}
+}
+
 func TestRemove(t *testing.T) {
 	data := []*Artifact{
 		{

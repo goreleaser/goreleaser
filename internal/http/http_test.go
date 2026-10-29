@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -923,4 +925,155 @@ func TestUploadArtifactNameTargetURL(t *testing.T) {
 			require.Equal(t, tt.want, <-requestURIs)
 		})
 	}
+}
+
+func TestUploadReusesHTTPClient(t *testing.T) {
+	var mu sync.Mutex
+	addrs := map[string]struct{}{}
+	attempts := map[string]int{}
+	var total atomic.Int64
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		addrs[r.RemoteAddr] = struct{}{}
+		attempts[r.URL.Path]++
+		n := attempts[r.URL.Path]
+		mu.Unlock()
+		total.Add(1)
+		if r.TLS == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if u, p, ok := r.BasicAuth(); !ok || u != "u1" || p != "s3cr3t" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		if r.URL.Path == "/blah/2.1.0/retry.bin" && n == 1 {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+	})
+	srv := httptest.NewUnstartedServer(mux)
+	srv.StartTLS()
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "blah",
+		Retry:       config.Retry{Attempts: 5},
+	}, testctx.WithVersion("2.1.0"))
+	ctx.Parallelism = 1
+
+	folder := t.TempDir()
+	for _, name := range []string{"a.bin", "b.bin", "retry.bin"} {
+		path := filepath.Join(folder, name)
+		require.NoError(t, os.WriteFile(path, []byte("data-"+name), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableBinary,
+		})
+	}
+
+	upload := config.Upload{
+		Name:         "reuse",
+		Mode:         ModeBinary,
+		Target:       srv.URL + "/{{.ProjectName}}/{{.Version}}/",
+		Username:     "u1",
+		Password:     "s3cr3t",
+		TrustedCerts: cert(srv),
+	}
+	is2xx := func(r *http.Response) error {
+		if r.StatusCode/100 == 2 {
+			return nil
+		}
+		return fmt.Errorf("unexpected http status code: %v", r.StatusCode)
+	}
+	require.NoError(t, Upload(ctx, []config.Upload{upload}, "test", is2xx))
+	require.Equal(t, int64(4), total.Load(), "expected 3 artifacts plus one retry")
+	mu.Lock()
+	defer mu.Unlock()
+	require.Equal(t, 2, attempts["/blah/2.1.0/retry.bin"], "retryable artifact should have been attempted twice")
+	require.Len(t, addrs, 1, "expected a single reused connection, got %v", addrs)
+}
+
+func TestUploadClosesOwnedConnections(t *testing.T) {
+	for _, status := range []int{http.StatusCreated, http.StatusBadRequest} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			states := make(chan http.ConnState, 2)
+			srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if _, err := io.Copy(io.Discard, r.Body); err != nil {
+					t.Error(err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(status)
+			}))
+			srv.Config.ConnState = func(_ net.Conn, state http.ConnState) {
+				if state == http.StateIdle || state == http.StateClosed {
+					states <- state
+				}
+			}
+			srv.StartTLS()
+			t.Cleanup(srv.Close)
+
+			path := filepath.Join(t.TempDir(), "asset.bin")
+			require.NoError(t, os.WriteFile(path, []byte("asset"), 0o644))
+			ctx := testctx.Wrap(t.Context())
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: "asset.bin",
+				Path: path,
+				Type: artifact.UploadableBinary,
+			})
+			err := Upload(ctx, []config.Upload{{
+				Name:         "cleanup",
+				Mode:         ModeBinary,
+				Target:       srv.URL,
+				TrustedCerts: cert(srv),
+			}}, "test", func(r *http.Response) error {
+				if r.StatusCode != http.StatusCreated {
+					return fmt.Errorf("unexpected http status code: %d", r.StatusCode)
+				}
+				return nil
+			})
+			if status == http.StatusCreated {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, "unexpected http status code: 400")
+			}
+			for _, want := range []http.ConnState{http.StateIdle, http.StateClosed} {
+				select {
+				case got := <-states:
+					require.Equal(t, want, got)
+				case <-time.After(5 * time.Second):
+					t.Fatalf("connection did not reach %s after Upload returned", want)
+				}
+			}
+		})
+	}
+}
+
+func TestGetHTTPClientIsolation(t *testing.T) {
+	plain, err := getHTTPClient(&config.Upload{})
+	require.NoError(t, err)
+	require.Same(t, http.DefaultClient, plain, "plain config should use the default client")
+
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	t.Cleanup(srv.Close)
+
+	custom1, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
+	require.NoError(t, err)
+	require.NotSame(t, http.DefaultClient, custom1, "custom TLS config must not use the default client")
+
+	custom2, err := getHTTPClient(&config.Upload{TrustedCerts: cert(srv)})
+	require.NoError(t, err)
+	require.NotSame(t, custom1, custom2, "each client construction should be isolated")
+
+	cc, err := getHTTPClient(&config.Upload{
+		ClientX509Cert: "testcert.pem",
+		ClientX509Key:  "testkey.pem",
+	})
+	require.NoError(t, err)
+	require.NotSame(t, http.DefaultClient, cc, "client cert config must not use the default client")
 }

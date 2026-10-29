@@ -2,6 +2,8 @@ package tarzst
 
 import (
 	"archive/tar"
+	"bytes"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -15,12 +17,91 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestTarZstConfig(t *testing.T) {
+	data, err := os.ReadFile("tarzst.go")
+	require.NoError(t, err)
+	data = bytes.Repeat(data, 128)
+	source := filepath.Join(t.TempDir(), "binary")
+	require.NoError(t, os.WriteFile(source, data, 0o755))
+
+	for _, tc := range []struct {
+		name    string
+		level   string
+		encoder zstd.EncoderLevel
+		window  int
+	}{
+		{name: "unset"},
+		{name: "fastest", level: "fastest", encoder: zstd.SpeedFastest},
+		{name: "default", level: "default", encoder: zstd.SpeedDefault},
+		{name: "better", level: "better", encoder: zstd.SpeedBetterCompression},
+		{name: "best", level: "best", encoder: zstd.SpeedBestCompression},
+		{name: "window only", window: 10},
+		{name: "level and window", level: "better", encoder: zstd.SpeedBetterCompression, window: 20},
+		{name: "large window", level: "fastest", encoder: zstd.SpeedFastest, window: 27},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config.Zstd{Level: tc.level}
+			var opts []zstd.EOption
+			if tc.level != "" {
+				opts = append(opts, zstd.WithEncoderLevel(tc.encoder))
+			}
+			if tc.window != 0 {
+				cfg.WindowSize = &tc.window
+				opts = append(opts, zstd.WithWindowSize(1<<tc.window))
+			}
+			var compressed bytes.Buffer
+			a, err := New(&compressed, cfg)
+			require.NoError(t, err)
+			require.NoError(t, a.Add(config.File{Source: source, Destination: "binary"}))
+			require.NoError(t, a.Close())
+
+			decoder, err := zstd.NewReader(nil)
+			require.NoError(t, err)
+			defer decoder.Close()
+			uncompressed, err := decoder.DecodeAll(compressed.Bytes(), nil)
+			require.NoError(t, err)
+			reader := tar.NewReader(bytes.NewReader(uncompressed))
+			header, err := reader.Next()
+			require.NoError(t, err)
+			require.Equal(t, "binary", header.Name)
+			actual, err := io.ReadAll(reader)
+			require.NoError(t, err)
+			require.Equal(t, data, actual)
+			_, err = reader.Next()
+			require.ErrorIs(t, err, io.EOF)
+
+			var expected bytes.Buffer
+			encoder, err := zstd.NewWriter(&expected, opts...)
+			require.NoError(t, err)
+			_, err = encoder.Write(uncompressed)
+			require.NoError(t, err)
+			require.NoError(t, encoder.Close())
+			require.Equal(t, expected.Len(), compressed.Len(), "compressed size must match the configured encoder")
+			require.True(t, bytes.Equal(expected.Bytes(), compressed.Bytes()), "archive must match the configured encoder output")
+		})
+	}
+}
+
+func TestTarZstConfigInvalid(t *testing.T) {
+	t.Run("level", func(t *testing.T) {
+		_, err := New(io.Discard, config.Zstd{Level: "invalid"})
+		require.EqualError(t, err, `invalid zstd level "invalid": must be fastest, default, better, or best`)
+	})
+	for _, window := range []int{-1, 0, 9, 30, 64} {
+		t.Run(fmt.Sprintf("window/%d", window), func(t *testing.T) {
+			_, err := New(io.Discard, config.Zstd{WindowSize: &window})
+			require.EqualError(t, err, fmt.Sprintf("invalid zstd window_size %d: must be between 10 and 29 (log2 bytes)", window))
+		})
+	}
+}
+
 func TestTarZstFile(t *testing.T) {
 	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.zst"))
 	require.NoError(t, err)
 	defer f.Close()
-	archive := New(f)
+	archive, err := New(f, config.Zstd{})
+	require.NoError(t, err)
 	defer archive.Close()
 
 	require.Error(t, archive.Add(config.File{
@@ -121,7 +202,8 @@ func TestTarZstFileInfo(t *testing.T) {
 	f, err := os.Create(filepath.Join(t.TempDir(), "test.tar.gz"))
 	require.NoError(t, err)
 	defer f.Close()
-	archive := New(f)
+	archive, err := New(f, config.Zstd{})
+	require.NoError(t, err)
 	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{

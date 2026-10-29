@@ -689,7 +689,7 @@ func testSBOMCataloging(
 
 	tgz, err := os.OpenFile(filepath.Join(tmpdir, "artifact5.tar.gz"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o644)
 	require.NoError(tb, err)
-	a, err := archive.New(tgz, "tar.gz")
+	a, err := archive.New(tgz, "tar.gz", config.Archive{})
 	require.NoError(tb, err)
 	require.NoError(tb, a.Add(config.File{
 		Source:      filepath.Join(tmpdir, "linux_amd64", "artifact4"),

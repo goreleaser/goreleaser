@@ -94,6 +94,47 @@ func TestSignJSONSchema(t *testing.T) {
 	}
 }
 
+func TestArchiveZstdJSONSchema(t *testing.T) {
+	t.Parallel()
+
+	data, err := json.Marshal(jsonschema.Reflect(&Project{}))
+	require.NoError(t, err)
+	schema, err := validator.CompileString("schema.json", string(data))
+	require.NoError(t, err)
+
+	for _, tc := range []struct {
+		name  string
+		zstd  map[string]any
+		valid bool
+	}{
+		{name: "unset", zstd: map[string]any{}, valid: true},
+		{name: "fastest", zstd: map[string]any{"level": "fastest"}, valid: true},
+		{name: "default", zstd: map[string]any{"level": "default"}, valid: true},
+		{name: "better", zstd: map[string]any{"level": "better"}, valid: true},
+		{name: "best", zstd: map[string]any{"level": "best", "window_size": float64(27)}, valid: true},
+		{name: "minimum window", zstd: map[string]any{"window_size": float64(10)}, valid: true},
+		{name: "maximum window", zstd: map[string]any{"window_size": float64(29)}, valid: true},
+		{name: "invalid level", zstd: map[string]any{"level": "invalid"}},
+		{name: "zero window", zstd: map[string]any{"window_size": float64(0)}},
+		{name: "small window", zstd: map[string]any{"window_size": float64(9)}},
+		{name: "large window", zstd: map[string]any{"window_size": float64(30)}},
+		{name: "fractional window", zstd: map[string]any{"window_size": 10.5}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := schema.Validate(map[string]any{
+				"archives": []any{map[string]any{"formats": []any{"tar.zst"}, "zstd": tc.zstd}},
+			})
+			if tc.valid {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
 func TestMCPTransportStrictConfig(t *testing.T) {
 	t.Parallel()
 

@@ -1,6 +1,9 @@
 {{- define "macos_packages" }}
+{{- if eq $.SingleMacOSArch "arm64" }}
+  depends_on arch: :arm64
+{{- end }}
 {{- range $element := .MacOSPackages }}
-  {{- if eq $element.Arch "all" }}
+{{- if or (eq $element.Arch "all") (eq $.SingleMacOSArch $element.Arch) }}
   sha256 "{{ $element.SHA256 }}"
   url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
   {{- if .Binary }}
@@ -18,7 +21,7 @@
   {{- end }}
   {{- end }}
 
-  {{- else }}
+{{- else }}
   {{- if eq $element.Arch "amd64" }}
   on_intel do
   {{- end }}

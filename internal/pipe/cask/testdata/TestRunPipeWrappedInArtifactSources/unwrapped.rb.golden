@@ -3,16 +3,14 @@ cask "wrappedin" do
   version "1.0.1"
 
   on_macos do
-    on_arm do
-      sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
-      url "https://dummyhost/download/v#{version}/bin_arm64.tar.gz"
-    end
+    depends_on arch: :arm64
+    sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+    url "https://dummyhost/download/v#{version}/bin_arm64.tar.gz"
   end
   on_linux do
-    on_intel do
-      sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
-      url "https://dummyhost/download/v#{version}/bin_linux.tar.gz"
-    end
+    depends_on arch: :x86_64
+    sha256 "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+    url "https://dummyhost/download/v#{version}/bin_linux.tar.gz"
   end
 
   name "wrappedin"

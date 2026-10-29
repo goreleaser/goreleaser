@@ -9,6 +9,7 @@ import (
 	"io"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -196,15 +197,17 @@ type buildOptions struct {
 	preserveImportPaths bool
 	baseImportPaths     bool
 	localDomain         string
+	linuxCapabilities   []string
 }
 
 func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
 	buildOptions := []build.Option{
 		build.WithConfig(map[string]build.Config{
 			o.importPath: {
-				Ldflags: o.ldflags,
-				Flags:   o.flags,
-				Env:     o.env,
+				Ldflags:           o.ldflags,
+				Flags:             o.flags,
+				Env:               o.env,
+				LinuxCapabilities: o.linuxCapabilities,
 			},
 		}),
 		build.WithPlatforms(o.platforms...),
@@ -260,7 +263,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	}
 	switch o.sbom {
 	case "spdx":
-		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+		buildOptions = append(buildOptions, build.WithSPDX(koVersion()))
 		if o.SBOMDirectory != "" {
 			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
 		}
@@ -275,6 +278,27 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		return nil, fmt.Errorf("newGo: %w", err)
 	}
 	return build.NewCaching(b)
+}
+
+// koVersion returns the version of the ko module GoReleaser was built with,
+// which ko uses as the creator tool version in generated SBOMs.
+func koVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "devel"
+	}
+	for _, dep := range info.Deps {
+		if dep.Path != "github.com/google/ko" {
+			continue
+		}
+		if dep.Replace != nil {
+			dep = dep.Replace
+		}
+		if dep.Version != "" && dep.Version != "(devel)" {
+			return dep.Version
+		}
+	}
+	return "devel"
 }
 
 func getLocalDomain(ctx *context.Context, ko config.Ko) (string, error) {
@@ -438,6 +462,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
+		linuxCapabilities:   cfg.LinuxCapabilities,
 	}
 
 	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
