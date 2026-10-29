@@ -237,21 +237,27 @@ func formatPriority(format string) int {
 	return slices.Index(supportedArchiveFormats, format)
 }
 
-func defaultPackage(art *artifact.Artifact) string {
+func defaultPackage(art *artifact.Artifact) (string, error) {
 	switch art.Type {
 	case artifact.UploadableBinary:
 		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-		return fmt.Sprintf("install -Dm755 %q %q", "$srcdir/$_source", "$pkgdir/usr/bin/"+filepath.Base(bin))
+		return fmt.Sprintf("install -Dm755 %q %q", "$srcdir/$_source", "$pkgdir/usr/bin/"+filepath.Base(bin)), nil
 	case artifact.UploadableArchive:
 		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 		var commands []string
+		installed := map[string]string{}
 		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			name := filepath.Base(bin)
+			if previous, ok := installed[name]; ok {
+				return "", fmt.Errorf("binaries %q and %q would both be installed as %q: set apkbuild.package to install them", previous, bin, name)
+			}
+			installed[name] = bin
 			src := filepath.ToSlash(filepath.Clean(filepath.Join("$srcdir", folder, bin)))
-			commands = append(commands, fmt.Sprintf("install -Dm755 %q %q", src, "$pkgdir/usr/bin/"+filepath.Base(bin)))
+			commands = append(commands, fmt.Sprintf("install -Dm755 %q %q", src, "$pkgdir/usr/bin/"+name))
 		}
-		return strings.Join(commands, "\n")
+		return strings.Join(commands, "\n"), nil
 	default:
-		return ""
+		return "", nil
 	}
 }
 
@@ -437,7 +443,10 @@ func dataFor(ctx *context.Context, cfg config.APKBuild, cli client.ReleaseURLTem
 		}
 		packageCommand := ""
 		if cfg.Package == "" {
-			packageCommand = defaultPackage(art)
+			packageCommand, err = defaultPackage(art)
+			if err != nil {
+				return result, err
+			}
 		}
 		result.Arches = append(result.Arches, arch)
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage{

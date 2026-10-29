@@ -241,7 +241,9 @@ func TestDefaultPackage(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			require.Equal(t, tt.expect, defaultPackage(&tt.artifact))
+			got, err := defaultPackage(&tt.artifact)
+			require.NoError(t, err)
+			require.Equal(t, tt.expect, got)
 		})
 	}
 }
@@ -1008,4 +1010,48 @@ func TestFieldsAreTemplatedOnce(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestDuplicateBinaryNames(t *testing.T) {
+	setup := func(t *testing.T, pkg string) *context.Context {
+		t.Helper()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        t.TempDir(),
+			ProjectName: "foo",
+			APKBuilds: []config.APKBuild{{
+				Description: "Foo",
+				Homepage:    "https://example.com",
+				License:     "MIT",
+				URLTemplate: "https://example.com/{{ .ArtifactName }}",
+				Package:     pkg,
+			}},
+		}, testctx.WithVersion("1.0.0"))
+		addArtifact(t, ctx, artifact.Artifact{
+			Name: "foo.tar.gz", Goos: "linux", Goarch: "amd64", Goamd64: "v1", Type: artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraWrappedIn: "",
+				artifact.ExtraBinaries:  []string{"client/tool", "server/tool"},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		return ctx
+	}
+
+	t.Run("inferred instructions", func(t *testing.T) {
+		ctx := setup(t, "")
+		err := runAll(ctx, client.NewMock())
+		require.ErrorContains(t, err, `"tool"`)
+		require.ErrorContains(t, err, "package")
+		require.NoFileExists(t, filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.APKBuild)).List())
+	})
+
+	t.Run("custom package", func(t *testing.T) {
+		ctx := setup(t, `install -Dm755 "$srcdir/client/tool" "$pkgdir/usr/bin/tool-client"`)
+		require.NoError(t, runAll(ctx, client.NewMock()))
+		content, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "apkbuild", "foo.apkbuild"))
+		require.NoError(t, err)
+		require.Contains(t, string(content), "package() {\n"+`install -Dm755 "$srcdir/client/tool" "$pkgdir/usr/bin/tool-client"`+"\n}")
+	})
 }
