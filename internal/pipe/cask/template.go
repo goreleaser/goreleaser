@@ -102,14 +102,8 @@ func conflictsString(conflicts []config.HomebrewCaskConflict) string {
 	return joinGroups("conflicts_with", groups)
 }
 
-func zapString(z config.HomebrewCaskZap) string {
-	if block := makeUninstallLikeBlock("zap", z.HomebrewCaskUninstall); block != "" {
-		return block
-	}
-	if z.NotRequired {
-		return "zap :not_required"
-	}
-	return "# No zap stanza required"
+func zapString(u config.HomebrewCaskUninstall) string {
+	return cmp.Or(makeUninstallLikeBlock("zap", u), "zap :not_required")
 }
 
 func uninstallString(u config.HomebrewCaskUninstall) string {

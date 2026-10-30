@@ -29,5 +29,5 @@ cask "test" do
     skip "Auto-generated on release."
   end
 
-  # No zap stanza required
+  zap :not_required
 end

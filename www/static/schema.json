@@ -1882,7 +1882,7 @@
 						"$ref": "#/$defs/HomebrewCaskUninstall"
 					},
 					"zap": {
-						"$ref": "#/$defs/HomebrewCaskZap"
+						"$ref": "#/$defs/HomebrewCaskUninstall"
 					},
 					"generate_completions_from_executable": {
 						"$ref": "#/$defs/HomebrewCaskGeneratedCompletions"
@@ -2066,45 +2066,6 @@
 							"type": "string"
 						},
 						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"HomebrewCaskZap": {
-				"properties": {
-					"launchctl": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"quit": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"login_item": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"delete": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"trash": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"not_required": {
-						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

@@ -234,11 +234,10 @@ homebrew_casks:
 
     # Additional procedures for a more complete uninstall, including user files
     # and shared resources.
+    #
+    # If no zap directive is set, `zap :not_required` is rendered instead, which
+    # requires Homebrew 7.0.11 or later.
     zap:
-      # Renders `zap :not_required` when no other directive is set, instead of
-      # the `# No zap stanza required` comment.
-      # Requires a Homebrew version that supports `zap :not_required`.
-      not_required: false
       launchctl:
         - "my.fancy.package.service"
       quit:

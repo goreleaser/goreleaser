@@ -464,6 +464,19 @@ func TestFlightString(t *testing.T) {
 	})
 }
 
+func TestZapString(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Equal(t, "zap :not_required", zapString(config.HomebrewCaskUninstall{}))
+	})
+	t.Run("directives", func(t *testing.T) {
+		require.Equal(
+			t,
+			"zap trash: [\n      \"~/.foo\",\n    ]\n",
+			zapString(config.HomebrewCaskUninstall{Trash: []string{"~/.foo"}}),
+		)
+	})
+}
+
 func TestCompileManpagesBrokenGlob(t *testing.T) {
 	brew := config.HomebrewCask{
 		Manpages: []string{"[invalid"},
@@ -681,22 +694,13 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.Casks[0].Repository.Owner = "test"
 				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Zap = config.HomebrewCaskZap{
-					HomebrewCaskUninstall: config.HomebrewCaskUninstall{
-						Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
-						Quit:      []string{"quit1", "quit2", "quit3"},
-						LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
-						Trash:     []string{"trash1", "trash2", "trash3"},
-						Delete:    []string{"delete1", "delete2", "delete3"},
-					},
+				ctx.Config.Casks[0].Zap = config.HomebrewCaskUninstall{
+					Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
+					Quit:      []string{"quit1", "quit2", "quit3"},
+					LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
+					Trash:     []string{"trash1", "trash2", "trash3"},
+					Delete:    []string{"delete1", "delete2", "delete3"},
 				}
-			},
-		},
-		"zap_not_required": {
-			prepare: func(ctx *context.Context) {
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Zap = config.HomebrewCaskZap{NotRequired: true}
 			},
 		},
 		"url_parameters_curl": {

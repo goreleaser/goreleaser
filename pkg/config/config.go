@@ -236,7 +236,7 @@ type HomebrewCask struct {
 	Conflicts             []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Hooks                 HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Uninstall             HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
-	Zap                   HomebrewCaskZap          `yaml:"zap,omitempty" json:"zap,omitempty"`
+	Zap                   HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
 
 	// v2.15+
 	GenerateCompletionsFromExecutable HomebrewCaskGeneratedCompletions `yaml:"generate_completions_from_executable,omitempty" json:"generate_completions_from_executable,omitempty"`
@@ -272,14 +272,6 @@ type HomebrewCaskUninstall struct {
 	LoginItem []string `yaml:"login_item,omitempty" json:"login_item,omitempty"`
 	Delete    []string `yaml:"delete,omitempty" json:"delete,omitempty"`
 	Trash     []string `yaml:"trash,omitempty" json:"trash,omitempty"`
-}
-
-// HomebrewCaskZap is the zap stanza of a cask.
-type HomebrewCaskZap struct {
-	HomebrewCaskUninstall `yaml:",inline" json:",inline"`
-
-	// NotRequired renders `zap :not_required` when no other directive is set.
-	NotRequired bool `yaml:"not_required,omitempty" json:"not_required,omitempty"`
 }
 
 type HomebrewCaskHooks struct {
