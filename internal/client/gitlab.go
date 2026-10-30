@@ -631,6 +631,26 @@ func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	return urlTemplate, nil
 }
 
+// gitlabLinkType returns the GitLab release link type for an artifact type:
+// distributable build outputs are packages, everything else (checksums,
+// signatures, SBOMs, extra files...) stays "other".
+func gitlabLinkType(t artifact.Type) gitlab.LinkTypeValue {
+	switch t {
+	case artifact.UploadableArchive,
+		artifact.UploadableBinary,
+		artifact.Makeself,
+		artifact.LinuxPackage,
+		artifact.MSIX,
+		artifact.Flatpak,
+		artifact.SourceRPM,
+		artifact.PyWheel,
+		artifact.PySdist:
+		return gitlab.PackageLinkType
+	default:
+		return gitlab.OtherLinkType
+	}
+}
+
 // Upload uploads a file into a release repository.
 func (c *gitlabClient) Upload(
 	ctx *context.Context,
@@ -708,8 +728,9 @@ func (c *gitlabClient) Upload(
 		name := artifact.Name
 		filename := "/" + name
 		opt := &gitlab.CreateReleaseLinkOptions{
-			Name: &name,
-			URL:  &linkURL,
+			Name:     &name,
+			URL:      &linkURL,
+			LinkType: new(gitlabLinkType(artifact.Type)),
 		}
 		if c.isV17OrLater {
 			opt.DirectAssetPath = &filename

@@ -91,6 +91,15 @@ gitlab_urls:
 > pipe](/customization/publish/upload/#gitlab-generic-package-registry)
 > instead.
 
+## Asset link types
+
+GitLab groups release assets by [link type](https://docs.gitlab.com/ee/api/releases/links.html#create-a-release-link).
+GoReleaser marks archives, binaries, Linux packages (and other package-like
+artifacts such as Makeself, MSIX, Flatpak, source RPMs and Python
+distributions) as `package`.
+Everything else — checksums, signatures, certificates, SBOMs, extra files and
+source archives — is left as `other`.
+
 ## Example release
 
 You can check [this example repository](https://gitlab.com/goreleaser/example/-/releases) for a real world example.
