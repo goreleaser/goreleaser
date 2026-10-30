@@ -73,7 +73,7 @@ cask "test" do
     post-uninstall
   end
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     Here are some caveats

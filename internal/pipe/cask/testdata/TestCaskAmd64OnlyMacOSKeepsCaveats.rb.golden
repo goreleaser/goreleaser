@@ -25,5 +25,5 @@ cask "test" do
   end
   depends_on :macos
 
-  # No zap stanza required
+  zap :not_required
 end

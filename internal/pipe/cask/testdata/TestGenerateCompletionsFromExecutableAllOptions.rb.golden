@@ -43,5 +43,5 @@ cask "test" do
     shell_parameter_format: :cobra,
     shells: [:bash, :zsh, :fish, :pwsh]
 
-  # No zap stanza required
+  zap :not_required
 end

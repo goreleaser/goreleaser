@@ -50,7 +50,7 @@ cask "generate_completions_default_executable" do
   generate_completions_from_executable "generate_completions_default_executable",
     shell_parameter_format: :cobra
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     don't do this generate_completions_default_executable

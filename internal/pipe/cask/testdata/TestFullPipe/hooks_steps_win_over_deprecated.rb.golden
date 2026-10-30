@@ -47,7 +47,7 @@ cask "hooks_steps_win_over_deprecated" do
     run "/usr/bin/true"
   end
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     don't do this hooks_steps_win_over_deprecated

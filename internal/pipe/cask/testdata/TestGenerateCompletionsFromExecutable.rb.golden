@@ -40,5 +40,5 @@ cask "test" do
 
   generate_completions_from_executable "bin/myapp"
 
-  # No zap stanza required
+  zap :not_required
 end
