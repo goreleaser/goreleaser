@@ -287,6 +287,12 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		for _, b := range binaries {
+			if v, ok := b.Extra[artifact.ExtraSliceVariants]; ok {
+				art.Extra[artifact.ExtraSliceVariants] = v
+				break
+			}
+		}
 		if abi := firstSet(binaries, func(a *artifact.Artifact) string {
 			return artifact.ExtraOr(*a, artifact.ExtraABI, "")
 		}); abi != "" {
@@ -389,6 +395,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
+		}
+		if v, ok := binary.Extra[artifact.ExtraSliceVariants]; ok {
+			art.Extra[artifact.ExtraSliceVariants] = v
 		}
 		if abi, ok := binary.Extra[artifact.ExtraABI]; ok {
 			art.Extra[artifact.ExtraABI] = abi

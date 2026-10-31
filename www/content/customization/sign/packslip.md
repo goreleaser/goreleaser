@@ -110,7 +110,9 @@ entry with the tool's `project` is enough.
 
 - Archives and binaries (`UploadableArchive` and `UploadableBinary`
   artifacts), with the platform GoReleaser built them for. A universal macOS
-  binary has no architecture.
+  binary has no architecture, so one joined from a slice built for a CPU level
+  other than the default, such as `goamd64: v3`, is refused rather than
+  described as runnable on every Mac.
 - Executable paths inside archives, including the wrapping directory.
 - Linux builds that GoReleaser inspected and found statically linked are
   described as needing no shared libraries, so they fit both glibc and musl

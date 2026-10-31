@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -206,32 +207,16 @@ func (Pipe) Run(ctx *context.Context) error {
 func checkNoOverwrite(ctx *context.Context, name string, extraFiles map[string]string) error {
 	file := filepath.Join(ctx.Config.Dist, name)
 	for _, a := range ctx.Artifacts.List() {
-		if a.Name == name || samePath(a.Path, file) {
+		if a.Name == name || gio.SamePath(a.Path, file) {
 			return fmt.Errorf("packslips.name_template: '%s' would overwrite the %s artifact '%s', set a distinct name_template", name, a.Type, a.Name)
 		}
 	}
 	for extraName, extraPath := range extraFiles {
-		if extraName == name || samePath(extraPath, file) {
+		if extraName == name || gio.SamePath(extraPath, file) {
 			return fmt.Errorf("packslips.name_template: '%s' would overwrite the release extra file '%s', set a distinct name_template", name, extraName)
 		}
 	}
 	return nil
-}
-
-// samePath reports whether two paths name the same file, including through
-// relative paths, links and ../ segments.
-func samePath(a, b string) bool {
-	if a == "" || b == "" {
-		return false
-	}
-	absA, errA := filepath.Abs(a)
-	absB, errB := filepath.Abs(b)
-	if errA == nil && errB == nil && absA == absB {
-		return true
-	}
-	infoA, errA := os.Stat(a)
-	infoB, errB := os.Stat(b)
-	return errA == nil && errB == nil && os.SameFile(infoA, infoB)
 }
 
 // build creates the statement for one packslip entry. It returns nil when the
@@ -350,6 +335,15 @@ func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
 		format = "raw"
 	}
 	format = normalizeFormat(format)
+	// a universal binary has no arch or variant to say that one of its
+	// slices needs a CPU level above the default, and would read as
+	// runnable everywhere.
+	if variants := artifact.ExtraOr(*a, artifact.ExtraSliceVariants, []string{}); len(variants) > 0 {
+		return packslip.Artifact{}, fmt.Errorf(
+			"cannot describe %q: it has slices built for the CPU level %s, which a universal binary cannot declare, build the darwin binaries at the default CPU level",
+			a.Name, strings.Join(variants, ", "),
+		)
+	}
 	target := goTarget(a)
 	out := packslip.Artifact{
 		Name:    a.Name,

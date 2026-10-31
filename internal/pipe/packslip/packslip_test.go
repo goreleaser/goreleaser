@@ -2,7 +2,9 @@ package packslip
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -501,6 +505,92 @@ func TestRunRustARMFloatABIs(t *testing.T) {
 		"tool_1.0.0_linux_arm_gnueabi.tar.gz":   "softfloat",
 		"tool_1.0.0_linux_arm_gnueabihf.tar.gz": "",
 	}, variants)
+}
+
+// A universal binary has no arch or variant, so it would read as runnable on
+// any Mac. One joined from a slice that needs a CPU level above the default
+// must be refused before anything is signed, replacing its slices or not.
+func TestRunUniversalBinaryCPULevels(t *testing.T) {
+	run := func(t *testing.T, amd64 string, replace bool) (map[string]packslip.Statement, error) {
+		t.Helper()
+		setToken(t)
+		signed := stubSign(t)
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:        dist,
+			ProjectName: "tool",
+			Release:     config.Release{GitHub: config.Repo{Owner: "acme", Name: "tools"}},
+			GitHubURLs:  config.GitHubURLs{Download: "https://github.com"},
+			UniversalBinaries: []config.UniversalBinary{{
+				ID:      "tool",
+				IDs:     []string{"tool"},
+				Replace: replace,
+			}},
+			Archives: []config.Archive{{
+				ID:           "tool",
+				IDs:          []string{"tool"},
+				Formats:      []string{"tar.gz"},
+				NameTemplate: "tool_{{ .Os }}_{{ .Arch }}{{ with .Amd64 }}_{{ . }}{{ end }}",
+			}},
+			Packslips: []config.Packslip{{}},
+		}, testctx.GitHubTokenType, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+		ctx.Git.FullCommit = "0123456789abcdef0123456789abcdef01234567"
+		ctx.Git.URL = "git@github.com:acme/tools.git"
+		// the pipe only reads the Mach-O cpu type and subtype of each slice.
+		for _, b := range []struct {
+			arch, amd64 string
+			cpu, subcpu uint32
+		}{
+			{"amd64", amd64, 0x01000007, 3},
+			{"arm64", "", 0x0100000c, 0},
+		} {
+			dir := filepath.Join(dist, "tool_darwin_"+b.arch)
+			require.NoError(t, os.MkdirAll(dir, 0o755))
+			path := filepath.Join(dir, "tool")
+			data := make([]byte, 16)
+			binary.LittleEndian.PutUint32(data[0:], 0xfeedfacf)
+			binary.LittleEndian.PutUint32(data[4:], b.cpu)
+			binary.LittleEndian.PutUint32(data[8:], b.subcpu)
+			require.NoError(t, os.WriteFile(path, data, 0o755))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type: artifact.Binary, Name: "tool", Path: path,
+				Goos: "darwin", Goarch: b.arch, Goamd64: b.amd64,
+				Extra: map[string]any{
+					artifact.ExtraID:     "tool",
+					artifact.ExtraBinary: "tool",
+					artifact.ExtraExt:    "",
+				},
+			})
+		}
+		require.NoError(t, universalbinary.Pipe{}.Default(ctx))
+		require.NoError(t, universalbinary.Pipe{}.Run(ctx))
+		require.NoError(t, archive.Pipe{}.Default(ctx))
+		require.NoError(t, archive.Pipe{}.Run(ctx))
+		require.NoError(t, Pipe{}.Default(ctx))
+		return signed, Pipe{}.Run(ctx)
+	}
+
+	for _, replace := range []bool{true, false} {
+		t.Run(fmt.Sprintf("v3 slice is refused, replace=%t", replace), func(t *testing.T) {
+			signed, err := run(t, "v3", replace)
+			require.ErrorContains(t, err, "CPU level v3")
+			require.Empty(t, signed)
+		})
+		t.Run(fmt.Sprintf("default level is described, replace=%t", replace), func(t *testing.T) {
+			signed, err := run(t, "v1", replace)
+			require.NoError(t, err)
+			statement := signed["github.com/acme/tools"]
+			require.NoError(t, statement.Validate())
+			var universal int
+			for _, a := range statement.Predicate.Artifacts {
+				if a.OS == "darwin" && a.Arch == "" {
+					universal++
+					require.Empty(t, a.Variant)
+				}
+			}
+			require.Equal(t, 1, universal)
+		})
+	}
 }
 
 func TestSourceRepo(t *testing.T) {

@@ -266,6 +266,9 @@ const (
 	ExtraSkipChecksum = "SkipChecksum"
 	ExtraSkipPackslip = "SkipPackslip"
 	ExtraPackslipBins = "PackslipBinaries"
+	// ExtraSliceVariants lists the CPU levels, such as "v3", of the slices a
+	// universal binary was joined from, when any is above the default.
+	ExtraSliceVariants = "SliceVariants"
 )
 
 // Extras represents the extra fields in an artifact.
