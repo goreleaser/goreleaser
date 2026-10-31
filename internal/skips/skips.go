@@ -20,6 +20,7 @@ const (
 	Sign           Key = "sign"
 	Validate       Key = "validate"
 	SBOM           Key = "sbom"
+	Packslip       Key = "packslip"
 	Ko             Key = "ko"
 	Docker         Key = "docker"
 	Before         Key = "before"
@@ -117,6 +118,7 @@ var Release = Keys{
 	Sign,
 	Validate,
 	SBOM,
+	Packslip,
 	Ko,
 	Docker,
 	Winget,

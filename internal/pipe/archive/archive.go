@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -237,6 +238,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}
 	}
 	bins := []string{}
+	packslipBins := []string{}
 	for _, binary := range binaries {
 		dst := binary.Name
 		if arch.StripBinaryDirectory {
@@ -250,38 +252,65 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
 		bins = append(bins, dst)
+		if isPackslipExecutable(binary) {
+			packslipBins = append(packslipBins, dst)
+		}
 	}
 	art := &artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: folder + "." + format,
 		Path: archivePath,
 		Extra: map[string]any{
-			artifact.ExtraID:        arch.ID,
-			artifact.ExtraFormat:    format,
-			artifact.ExtraWrappedIn: wrap,
-			artifact.ExtraBinaries:  bins,
-			artifact.ExtraFiles:     listExtraFiles(files),
+			artifact.ExtraID:           arch.ID,
+			artifact.ExtraFormat:       format,
+			artifact.ExtraWrappedIn:    wrap,
+			artifact.ExtraBinaries:     bins,
+			artifact.ExtraPackslipBins: packslipBins,
+			artifact.ExtraFiles:        listExtraFiles(files),
 		},
 	}
 	if len(binaries) > 0 {
 		art.Goos = binaries[0].Goos
 		art.Goarch = binaries[0].Goarch
-		art.Goamd64 = binaries[0].Goamd64
-		art.Go386 = binaries[0].Go386
-		art.Goarm = binaries[0].Goarm
-		art.Goarm64 = binaries[0].Goarm64
-		art.Gomips = binaries[0].Gomips
-		art.Goppc64 = binaries[0].Goppc64
-		art.Goriscv64 = binaries[0].Goriscv64
+		// Builders that have no notion of a CPU level, such as Rust, leave
+		// these empty, and GroupByPlatform puts their binaries in the same
+		// archive as Go ones that set it. Take the level from whichever binary
+		// has one, so it does not depend on which build finished first.
+		art.Goamd64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goamd64 })
+		art.Go386 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Go386 })
+		art.Goarm = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goarm })
+		art.Goarm64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goarm64 })
+		art.Gomips = firstSet(binaries, func(a *artifact.Artifact) string { return a.Gomips })
+		art.Goppc64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goppc64 })
+		art.Goriscv64 = firstSet(binaries, func(a *artifact.Artifact) string { return a.Goriscv64 })
 		art.Target = binaries[0].Target
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
-		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
-			return artifact.ExtraOr(*bin, artifact.ExtranDynLink, false)
-		}) {
-			art.Extra[artifact.ExtranDynLink] = true
+		for _, b := range binaries {
+			if v, ok := b.Extra[artifact.ExtraSliceVariants]; ok {
+				art.Extra[artifact.ExtraSliceVariants] = v
+				break
+			}
 		}
+		if abi := firstSet(binaries, func(a *artifact.Artifact) string {
+			return artifact.ExtraOr(*a, artifact.ExtraABI, "")
+		}); abi != "" {
+			art.Extra[artifact.ExtraABI] = abi
+		}
+		if slices.ContainsFunc(binaries, dynamicallyLinked) {
+			art.Extra[artifact.ExtranDynLink] = true
+			if libc := dynamicLibc(binaries); libc != "" {
+				art.Extra[artifact.ExtraLibcFamily] = libc
+			}
+		} else if art.Goos == "linux" && staticallyLinked(binaries) {
+			art.Extra[artifact.ExtraStaticLink] = true
+		}
+	}
+	// an archive with nothing installable, such as a meta archive, has no
+	// platform or commands to describe.
+	if len(packslipBins) == 0 {
+		art.Extra[artifact.ExtraSkipPackslip] = true
 	}
 
 	ctx.Artifacts.Add(art)
@@ -294,6 +323,28 @@ func listExtraFiles(files []config.File) []string {
 		result = append(result, f.Destination)
 	}
 	return result
+}
+
+// firstSet returns the first non-empty value get reads from the binaries.
+func firstSet(binaries []*artifact.Artifact, get func(*artifact.Artifact) string) string {
+	for _, binary := range binaries {
+		if v := get(binary); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+// isPackslipExecutable distinguishes executable build artifacts from headers
+// and C libraries. The latter still belong in release archives, but they are
+// not installable commands and must not be described as Packslip bins.
+func isPackslipExecutable(a *artifact.Artifact) bool {
+	switch a.Type {
+	case artifact.Header, artifact.CArchive, artifact.CShared:
+		return false
+	default:
+		return true
+	}
 }
 
 func wrapFolder(a config.Archive) string {
@@ -318,6 +369,14 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			WithField("name", finalName).
 			Info("archiving")
 
+		extra := map[string]any{
+			artifact.ExtraID:     archive.ID,
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: binary.Name,
+		}
+		if !isPackslipExecutable(binary) {
+			extra[artifact.ExtraSkipPackslip] = true
+		}
 		art := &artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
@@ -332,21 +391,81 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goppc64:   binary.Goppc64,
 			Goriscv64: binary.Goriscv64,
 			Target:    binary.Target,
-			Extra: map[string]any{
-				artifact.ExtraID:     archive.ID,
-				artifact.ExtraFormat: "binary",
-				artifact.ExtraBinary: binary.Name,
-			},
+			Extra:     extra,
 		}
 		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
-		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+		if v, ok := binary.Extra[artifact.ExtraSliceVariants]; ok {
+			art.Extra[artifact.ExtraSliceVariants] = v
+		}
+		if abi, ok := binary.Extra[artifact.ExtraABI]; ok {
+			art.Extra[artifact.ExtraABI] = abi
+		}
+		if dynamicallyLinked(binary) {
 			art.Extra[artifact.ExtranDynLink] = true
+			libc := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
+			if libc == "" {
+				libc = elf.Libc(binary.Path)
+			}
+			if libc != "" {
+				art.Extra[artifact.ExtraLibcFamily] = libc
+			}
+		} else if binary.Goos == "linux" && isPackslipExecutable(binary) && elf.IsStaticallyLinked(binary.Path) {
+			art.Extra[artifact.ExtraStaticLink] = true
 		}
 		ctx.Artifacts.Add(art)
 	}
 	return nil
+}
+
+// dynamicallyLinked reports whether a binary is dynamically linked, as its
+// builder recorded or, for a builder that records nothing, as its ELF headers
+// show. Only the builder can tell for a binary that was packed afterwards.
+func dynamicallyLinked(binary *artifact.Artifact) bool {
+	if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+		return true
+	}
+	return isPackslipExecutable(binary) && elf.IsDynamicallyLinked(binary.Path)
+}
+
+// staticallyLinked reports whether every executable in an archive is known to
+// be statically linked. A binary that no builder flagged as dynamic is not
+// taken for static unless its ELF headers say so, so a file that could not be
+// inspected leaves the answer unknown.
+func staticallyLinked(binaries []*artifact.Artifact) bool {
+	var found bool
+	for _, binary := range binaries {
+		if !isPackslipExecutable(binary) {
+			continue
+		}
+		if dynamicallyLinked(binary) || !elf.IsStaticallyLinked(binary.Path) {
+			return false
+		}
+		found = true
+	}
+	return found
+}
+
+// dynamicLibc returns the shared libc family for all dynamically linked
+// binaries in an archive. An empty result means that one could not be read or
+// the archive combines incompatible runtimes; the consumer must not guess.
+func dynamicLibc(binaries []*artifact.Artifact) string {
+	var libc string
+	for _, binary := range binaries {
+		if !dynamicallyLinked(binary) {
+			continue
+		}
+		got := artifact.ExtraOr(*binary, artifact.ExtraLibcFamily, "")
+		if got == "" {
+			got = elf.Libc(binary.Path)
+		}
+		if got == "" || (libc != "" && libc != got) {
+			return ""
+		}
+		libc = got
+	}
+	return libc
 }
 
 func packageFormats(archive config.Archive, platform string) []string {

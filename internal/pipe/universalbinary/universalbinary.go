@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -23,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	packslip "github.com/jdx/packslip/go"
 )
 
 // Pipe for macos universal binaries.
@@ -250,6 +252,12 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 	maps.Copy(extra, binaries[0].Extra)
 	extra[artifact.ExtraReplaces] = unibin.Replace
 	extra[artifact.ExtraID] = unibin.ID
+	// the joined artifact has no CPU level of its own, so keep the levels of
+	// its slices for whoever needs to know that it does not run everywhere.
+	delete(extra, artifact.ExtraSliceVariants)
+	if variants := sliceVariants(binaries); len(variants) > 0 {
+		extra[artifact.ExtraSliceVariants] = variants
+	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UniversalBinary,
@@ -261,6 +269,24 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 	})
 
 	return nil
+}
+
+// sliceVariants returns the sorted, distinct CPU levels above the default of
+// the given binaries.
+func sliceVariants(binaries []*artifact.Artifact) []string {
+	var variants []string
+	for _, b := range binaries {
+		variant := packslip.GoTarget{
+			GOARCH:  b.Goarch,
+			GOAMD64: b.Goamd64,
+			GOARM64: b.Goarm64,
+		}.Variant()
+		if variant != "" {
+			variants = append(variants, variant)
+		}
+	}
+	slices.Sort(variants)
+	return slices.Compact(variants)
 }
 
 func filterFor(unibin config.UniversalBinary) artifact.Filter {

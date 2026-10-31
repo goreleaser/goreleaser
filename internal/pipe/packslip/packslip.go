@@ -1,0 +1,487 @@
+// Package packslip creates signed packslip release manifests describing the
+// release artifacts.
+package packslip
+
+import (
+	"errors"
+	"fmt"
+	"net/url"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/Masterminds/semver/v3"
+	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	packslip "github.com/jdx/packslip/go"
+)
+
+// Pipe that creates the packslip manifests.
+type Pipe struct{}
+
+func (Pipe) String() string { return "creating packslip manifests" }
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Packslip) || len(ctx.Config.Packslips) == 0
+}
+
+// Default sets the pipe defaults.
+func (Pipe) Default(ctx *context.Context) error {
+	repo := repoProject(ctx)
+	projects := map[string]string{}
+	for i := range ctx.Config.Packslips {
+		cfg := &ctx.Config.Packslips[i]
+		if cfg.Project == "" {
+			cfg.Project = repo
+		}
+		if cfg.NameTemplate == "" {
+			cfg.NameTemplate = packslip.BundleName(cfg.Project, repo)
+		}
+		if cfg.Project == "" {
+			continue
+		}
+		key := projectKey(cfg.Project)
+		if prev, ok := projects[key]; ok {
+			if prev != cfg.Project {
+				return fmt.Errorf("found multiple packslips with the project '%s' ('%s'), each project needs its own entry", cfg.Project, prev)
+			}
+			return fmt.Errorf("found multiple packslips with the project '%s', each project needs its own entry", cfg.Project)
+		}
+		projects[key] = cfg.Project
+	}
+	return nil
+}
+
+// projectKey spells a project the way packslip compares it. GitHub and
+// GitLab resolve repository names without regard to case, so two spellings
+// of one repository name the same project, while a monorepo subpath and a
+// domain project stay case-sensitive.
+func projectKey(project string) string {
+	parts := strings.Split(project, "/")
+	switch parts[0] {
+	case "github.com":
+		for i := 1; i < len(parts) && i <= 2; i++ {
+			parts[i] = strings.ToLower(parts[i])
+		}
+		return strings.Join(parts, "/")
+	case "gitlab.com":
+		return strings.ToLower(project)
+	}
+	return project
+}
+
+// repoProject is the packslip project of the GitHub repository the release
+// is published to, or "" when it is not published to GitHub.
+func repoProject(ctx *context.Context) string {
+	if gh := ctx.Config.Release.GitHub; gh.Owner != "" && gh.Name != "" {
+		return "github.com/" + gh.Owner + "/" + gh.Name
+	}
+	return ""
+}
+
+// signFunc signs a statement keylessly. It is a variable so tests do not need
+// to reach Sigstore.
+var signFunc = func(ctx *context.Context, statement packslip.Statement, token string) ([]byte, error) {
+	options, err := packslip.ProductionKeylessOptions(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	return packslip.SignKeyless(statement, options)
+}
+
+// manifest is a statement ready to be signed.
+type manifest struct {
+	name      string
+	statement packslip.Statement
+}
+
+// Run the pipe.
+func (Pipe) Run(ctx *context.Context) error {
+	var configs []config.Packslip
+	for _, cfg := range ctx.Config.Packslips {
+		disable, err := tmpl.New(ctx).Bool(cfg.Disable)
+		if err != nil {
+			return err
+		}
+		if disable {
+			continue
+		}
+		if cfg.Project == "" {
+			return errors.New("packslips.project must be set when the release is not on GitHub")
+		}
+		configs = append(configs, cfg)
+	}
+	if len(configs) == 0 {
+		return pipe.Skip("all packslips are disabled")
+	}
+	if ctx.Snapshot {
+		return pipe.ErrSnapshotEnabled
+	}
+	if skips.Any(ctx, skips.Publish) {
+		// the manifests are signed into a public transparency log, so they
+		// are only created for releases that are actually published.
+		return pipe.ErrSkipPublishEnabled
+	}
+
+	token, err := packslip.AmbientIDToken(ctx)
+	if err != nil {
+		return err
+	}
+	identity, err := packslip.IdentityFromToken(token)
+	if err != nil {
+		return err
+	}
+
+	// build every statement before signing any, so a bad entry does not
+	// leave the others recorded in the transparency log.
+	// release.extra_files are added to the release later, so check the
+	// manifest names against them too.
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
+	if err != nil {
+		return err
+	}
+	var manifests []manifest
+	names := map[string]bool{}
+	for _, cfg := range configs {
+		m, err := build(ctx, cfg, token, identity)
+		if err != nil {
+			return err
+		}
+		if m == nil {
+			continue
+		}
+		// names that differ only in case are one file on case-insensitive
+		// file systems, so the second bundle would replace the first.
+		key := strings.ToLower(m.name)
+		if names[key] {
+			return fmt.Errorf("found multiple packslips named '%s', set a distinct name_template for each", m.name)
+		}
+		if err := checkNoOverwrite(ctx, m.name, extraFiles); err != nil {
+			return err
+		}
+		names[key] = true
+		manifests = append(manifests, *m)
+	}
+	if len(manifests) == 0 {
+		return pipe.Skip("no archives or binaries to describe")
+	}
+
+	for _, m := range manifests {
+		log.WithField("file", m.name).Info("signing packslip manifest")
+		bundle, err := signFunc(ctx, m.statement, token)
+		if err != nil {
+			return fmt.Errorf("could not sign packslip manifest %s: %w", m.name, err)
+		}
+		file := filepath.Join(ctx.Config.Dist, m.name)
+		if err := os.WriteFile(file, bundle, 0o644); err != nil {
+			return err
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableFile,
+			Name: m.name,
+			Path: file,
+			Extra: map[string]any{
+				artifact.ExtraID:           "packslip",
+				artifact.ExtraSkipChecksum: true,
+			},
+		})
+	}
+	return nil
+}
+
+// checkNoOverwrite refuses a manifest name that matches an existing artifact
+// or release extra file, by upload name or by file. Writing the manifest would
+// otherwise replace a file that was already hashed or signed, or upload two
+// files under one name.
+func checkNoOverwrite(ctx *context.Context, name string, extraFiles map[string]string) error {
+	file := filepath.Join(ctx.Config.Dist, name)
+	for _, a := range ctx.Artifacts.List() {
+		if a.Name == name || gio.SamePath(a.Path, file) {
+			return fmt.Errorf("packslips.name_template: '%s' would overwrite the %s artifact '%s', set a distinct name_template", name, a.Type, a.Name)
+		}
+	}
+	for extraName, extraPath := range extraFiles {
+		if extraName == name || gio.SamePath(extraPath, file) {
+			return fmt.Errorf("packslips.name_template: '%s' would overwrite the release extra file '%s', set a distinct name_template", name, extraName)
+		}
+	}
+	return nil
+}
+
+// build creates the statement for one packslip entry. It returns nil when the
+// entry selects no artifacts.
+func build(ctx *context.Context, cfg config.Packslip, token string, identity packslip.Identity) (*manifest, error) {
+	filters := []artifact.Filter{
+		artifact.ByTypes(artifact.UploadableArchive, artifact.UploadableBinary),
+		artifact.Not(func(a *artifact.Artifact) bool {
+			return artifact.ExtraOr(*a, artifact.ExtraSkipPackslip, false)
+		}),
+	}
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
+	}
+	urlTemplate := cfg.URLTemplate
+	if urlTemplate == "" {
+		for _, setting := range []struct{ name, value string }{
+			{"release.disable", ctx.Config.Release.Disable},
+			{"release.skip_upload", ctx.Config.Release.SkipUpload},
+		} {
+			set, err := tmpl.New(ctx).Bool(setting.value)
+			if err != nil {
+				return nil, err
+			}
+			if set {
+				return nil, fmt.Errorf("packslips.url_template must be set when %s is set, as the release has no assets to link to", setting.name)
+			}
+		}
+		// the URLs point at the release, so only describe what it uploads.
+		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
+	}
+	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	if len(artifacts) == 0 {
+		if len(cfg.IDs) > 0 {
+			// most likely a typo, which would otherwise leave the project
+			// without a manifest and nothing to say so.
+			return nil, fmt.Errorf("packslips.ids %v match no archives or binaries to describe for %s", cfg.IDs, cfg.Project)
+		}
+		log.WithField("project", cfg.Project).Warn("no archives or binaries to describe")
+		return nil, nil
+	}
+
+	if urlTemplate == "" {
+		cl, err := client.NewReleaseClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if urlTemplate, err = cl.ReleaseURLTemplate(ctx); err != nil {
+			return nil, fmt.Errorf("packslips.url_template: %w", err)
+		}
+	}
+
+	inputs := make([]packslip.ArtifactInput, 0, len(artifacts))
+	for _, a := range artifacts {
+		url, err := tmpl.New(ctx).WithArtifact(a).Apply(urlTemplate)
+		if err != nil {
+			return nil, fmt.Errorf("packslips.url_template: %w", err)
+		}
+		described, err := describe(a, url)
+		if err != nil {
+			return nil, err
+		}
+		inputs = append(inputs, packslip.ArtifactInput{
+			Path:     a.Path,
+			Artifact: described,
+		})
+	}
+
+	// packslip versions are strict semver, so a tag such as v1.2 is signed
+	// as version 1.2.0. The source tag and URLs keep the tag as it is.
+	version := ctx.Version
+	if sv, err := semver.NewVersion(version); err == nil {
+		version = sv.String()
+	}
+	predicate := packslip.Predicate{
+		Project:     cfg.Project,
+		Version:     version,
+		PublishedAt: time.Now().UTC(),
+		Identity:    identity,
+	}
+	if repo := sourceRepo(ctx.Git.URL); repo != "" {
+		predicate.Source = &packslip.Source{
+			Repo:   repo,
+			Commit: ctx.Git.FullCommit,
+			Tag:    ctx.Git.CurrentTag,
+		}
+	}
+	if err := packslip.CheckProjectSigner(cfg.Project, token); err != nil {
+		return nil, fmt.Errorf("packslips.project: %w", err)
+	}
+
+	statement, err := packslip.Build(predicate, inputs)
+	if err != nil {
+		return nil, fmt.Errorf("could not build packslip statement for %s: %w", cfg.Project, err)
+	}
+	name, err := tmpl.New(ctx).Apply(cfg.NameTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("packslips.name_template: %w", err)
+	}
+	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+		return nil, fmt.Errorf("packslips.name_template: '%s' must be a file name, without a directory", name)
+	}
+	// the release uploads artifacts under a name with spaces trimmed around
+	// it and before its extension, so the name checked for clashes would not
+	// be the name uploaded.
+	if stem := strings.TrimSuffix(name, filepath.Ext(name)); strings.TrimSpace(name) != name || strings.TrimSpace(stem) != stem {
+		return nil, fmt.Errorf("packslips.name_template: '%s' must not have spaces around the name or before its extension", name)
+	}
+	return &manifest{name: name, statement: statement}, nil
+}
+
+// describe maps a GoReleaser artifact to a packslip artifact.
+func describe(a *artifact.Artifact, url string) (packslip.Artifact, error) {
+	format := artifact.ExtraOr(*a, artifact.ExtraFormat, "")
+	if format == "binary" {
+		format = "raw"
+	}
+	format = normalizeFormat(format)
+	// a universal binary has no arch or variant to say that one of its
+	// slices needs a CPU level above the default, and would read as
+	// runnable everywhere.
+	if variants := artifact.ExtraOr(*a, artifact.ExtraSliceVariants, []string{}); len(variants) > 0 {
+		return packslip.Artifact{}, fmt.Errorf(
+			"cannot describe %q: it has slices built for the CPU level %s, which a universal binary cannot declare, build the darwin binaries at the default CPU level",
+			a.Name, strings.Join(variants, ", "),
+		)
+	}
+	target := goTarget(a)
+	out := packslip.Artifact{
+		Name:    a.Name,
+		OS:      a.Goos,
+		Arch:    target.Arch(),
+		URL:     url,
+		Format:  format,
+		Variant: target.Variant(),
+	}
+	if a.Goos == "linux" {
+		switch {
+		case !artifact.ExtraOr(*a, artifact.ExtranDynLink, false):
+			// only a build that was inspected and found static needs no
+			// libraries. For any other, libs stays unset, which is how a
+			// packslip says they were not checked.
+			if artifact.ExtraOr(*a, artifact.ExtraStaticLink, false) {
+				// statically linked: fits glibc and musl hosts alike.
+				out.Requires = &packslip.Requires{Libs: &[]string{}}
+			}
+		default:
+			libc := artifact.ExtraOr(*a, artifact.ExtraLibcFamily, "")
+			if libc == "" && a.Type == artifact.UploadableBinary {
+				libc = elf.Libc(a.Path)
+			}
+			if libc != "gnu" && libc != "musl" {
+				return packslip.Artifact{}, fmt.Errorf("cannot determine libc for dynamically linked Linux artifact %q", a.Name)
+			}
+			out.Libc = libc
+		}
+	}
+
+	switch a.Type {
+	case artifact.UploadableBinary:
+		bin := artifact.ExtraOr(*a, artifact.ExtraBinary, "")
+		if bin != "" {
+			out.Bin = []packslip.Bin{packslip.NewBareBin(a.Name, "raw", path.Base(slash(bin)))}
+		}
+	default:
+		wrap := slash(artifact.ExtraOr(*a, artifact.ExtraWrappedIn, ""))
+		bins := artifact.ExtraOr(
+			*a,
+			artifact.ExtraPackslipBins,
+			artifact.ExtraOr(*a, artifact.ExtraBinaries, []string{}),
+		)
+		for _, bin := range bins {
+			bin = slash(bin)
+			if isBare(format) {
+				out.Bin = append(out.Bin, packslip.NewBareBin(a.Name, format, path.Base(bin)))
+				break
+			}
+			out.Bin = append(out.Bin, packslip.NewBin(path.Join(wrap, bin)))
+		}
+	}
+	return out, nil
+}
+
+// slash converts backslashes to slashes, as the archive writer does for the
+// name of every entry, so the signed path is the one in the archive.
+func slash(p string) string {
+	return strings.ReplaceAll(p, "\\", "/")
+}
+
+// normalizeFormat maps GoReleaser's archive aliases to the Packslip format
+// vocabulary. Artifact names and download URLs intentionally remain untouched.
+func normalizeFormat(format string) string {
+	switch format {
+	case "txz":
+		return "tar.xz"
+	case "tzst":
+		return "tar.zst"
+	default:
+		return format
+	}
+}
+
+func isBare(format string) bool {
+	switch format {
+	case "gz", "xz", "zst", "bz2":
+		return true
+	}
+	return false
+}
+
+// goTarget is the Go settings of a build, as packslip reads them to pick the
+// architecture and variant. The Go builder stores the float ABI separately
+// from GOARM, as "softfloat" or "hardfloat". Rust and Zig keep the target's
+// ABI, such as "gnueabi".
+func goTarget(a *artifact.Artifact) packslip.GoTarget {
+	return packslip.GoTarget{
+		GOARCH:    a.Goarch,
+		GOARM:     a.Goarm,
+		GOAMD64:   a.Goamd64,
+		GO386:     a.Go386,
+		GOARM64:   a.Goarm64,
+		GOMIPS:    a.Gomips,
+		GOPPC64:   a.Goppc64,
+		GORISCV64: a.Goriscv64,
+		FloatABI:  artifact.ExtraOr(*a, artifact.ExtraABI, ""),
+	}
+}
+
+// sourceRepo normalizes a git remote URL, such as git@github.com:acme/tool.git,
+// to https://github.com/acme/tool. It returns "" when the URL is not
+// understood.
+func sourceRepo(remote string) string {
+	s := strings.TrimSuffix(strings.TrimRight(strings.TrimSpace(remote), "/"), ".git")
+	var scheme, host, repoPath string
+	if strings.Contains(s, "://") {
+		u, err := url.Parse(s)
+		if err != nil {
+			return ""
+		}
+		repoPath = u.Path
+		switch u.Scheme {
+		case "http", "https":
+			host = u.Host
+			scheme = u.Scheme
+		case "ssh":
+			host = u.Hostname()
+			scheme = "https"
+		default:
+			return ""
+		}
+	} else {
+		// scp-like syntax: [user@]host:owner/name
+		var ok bool
+		host, repoPath, ok = strings.Cut(s, ":")
+		if !ok {
+			return ""
+		}
+		if _, h, ok := strings.Cut(host, "@"); ok {
+			host = h
+		}
+		scheme = "https"
+	}
+	repoPath = strings.Trim(repoPath, "/")
+	if host == "" || !strings.Contains(repoPath, "/") {
+		return ""
+	}
+	return scheme + "://" + host + "/" + repoPath
+}

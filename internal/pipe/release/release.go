@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"slices"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
@@ -164,17 +166,6 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	for name, path := range extraFiles {
-		if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
-			return fmt.Errorf("failed to upload %s: %w", name, err)
-		}
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: name,
-			Path: path,
-			Type: artifact.UploadableFile,
-		})
-	}
-
 	types := artifact.ReleaseUploadableTypes()
 	if ctx.Config.Release.IncludeMeta {
 		types = append(types, artifact.Metadata)
@@ -183,6 +174,28 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByTypes(types...),
 		artifact.ByIDs(ctx.Config.Release.IDs...),
 	)
+
+	// a broad glob can match a file that an earlier pipe already registered
+	// for upload, such as the checksums or a signature in dist. Uploading it
+	// again under its own name would be rejected by the forge.
+	registered := ctx.Artifacts.Filter(filters).List()
+	for name, path := range extraFiles {
+		if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("failed to upload %s: %w", name, err)
+		}
+		if slices.ContainsFunc(registered, func(a *artifact.Artifact) bool {
+			return a.Name == name && gio.SamePath(a.Path, path)
+		}) {
+			log.WithField("name", name).
+				Debug("extra file is already registered for upload, skipping")
+			continue
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
 	uploadable := ctx.Artifacts.Filter(filters).List()
