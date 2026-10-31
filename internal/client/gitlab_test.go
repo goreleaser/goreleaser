@@ -1834,6 +1834,61 @@ func TestGitLabUploadPackageRegistry(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestGitLabUploadLinkType(t *testing.T) {
+	t.Parallel()
+	for name, tt := range map[string]struct {
+		typ  artifact.Type
+		want string
+	}{
+		"archive":  {artifact.UploadableArchive, "package"},
+		"binary":   {artifact.UploadableBinary, "package"},
+		"linux":    {artifact.LinuxPackage, "package"},
+		"checksum": {artifact.Checksum, "other"},
+		"sbom":     {artifact.SBOM, "other"},
+		"file":     {artifact.UploadableFile, "other"},
+		"source":   {artifact.UploadableSourceArchive, "other"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			var got atomic.Value
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				switch {
+				case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+					fmt.Fprint(w, `{"version":"18.0.0"}`)
+				case strings.Contains(r.URL.Path, "packages/generic") && r.Method == http.MethodPut:
+					w.WriteHeader(http.StatusCreated)
+					fmt.Fprint(w, `{"message":"201 Created"}`)
+				case strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost:
+					var body struct {
+						LinkType string `json:"link_type"`
+					}
+					_ = json.NewDecoder(r.Body).Decode(&body)
+					got.Store(body.LinkType)
+					w.WriteHeader(http.StatusCreated)
+					fmt.Fprint(w, `{"id":1,"name":"test","direct_asset_url":"http://example.com/test"}`)
+				default:
+					fmt.Fprint(w, "{}")
+				}
+			}))
+			t.Cleanup(srv.Close)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "myproject",
+				GitLabURLs:  config.GitLabURLs{API: srv.URL, UsePackageRegistry: true},
+				Release:     config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			client, err := newGitLab(ctx, "test-token")
+			require.NoError(t, err)
+			require.NoError(t, client.Upload(ctx, "v1.0.0", &artifact.Artifact{
+				Name: "test",
+				Path: "testdata/gitlab/milestone.json",
+				Type: tt.typ,
+			}))
+			require.Equal(t, tt.want, got.Load())
+		})
+	}
+}
+
 func TestGitLabCreateReleaseCreateError(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
