@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
@@ -506,6 +507,61 @@ func TestRunPipeExtraOverride(t *testing.T) {
 	require.True(t, client.UploadedFile)
 	require.Contains(t, client.UploadedFileNames, "f1")
 	require.True(t, strings.HasSuffix(client.UploadedFilePaths["f1"], "testdata/upload_same_name/f1"))
+}
+
+// A glob that also matches a file an earlier pipe registered for upload, such
+// as a signed manifest in dist, must not upload that file twice.
+func TestRunPipeExtraFileAlreadyRegistered(t *testing.T) {
+	setup := func(t *testing.T, rel config.Release) (*context.Context, string) {
+		t.Helper()
+		distPath := t.TempDir()
+		workingDir, err := os.Getwd()
+		require.NoError(t, err)
+		dist, err := filepath.Rel(workingDir, distPath)
+		require.NoError(t, err)
+		manifest := filepath.Join(distPath, "packslip.sigstore.json")
+		require.NoError(t, os.WriteFile(manifest, []byte(`{"bundle":true}`), 0o644))
+		require.NoError(t, os.WriteFile(filepath.Join(distPath, "metadata.json"), []byte(`{}`), 0o644))
+		rel.GitHub = config.Repo{Owner: "test", Name: "test"}
+		rel.ExtraFiles = []config.ExtraFile{{Glob: filepath.Join(dist, "*.json")}}
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:    dist,
+			Release: rel,
+		}, testctx.WithCurrentTag("v1.0.0"))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableFile,
+			Name: "packslip.sigstore.json",
+			Path: manifest,
+			Extra: map[string]any{
+				artifact.ExtraID:           "packslip",
+				artifact.ExtraSkipChecksum: true,
+			},
+		})
+		return ctx, manifest
+	}
+	count := func(names []string, name string) int {
+		return len(slices.DeleteFunc(slices.Clone(names), func(n string) bool { return n != name }))
+	}
+
+	t.Run("same name and file is uploaded once", func(t *testing.T) {
+		ctx, _ := setup(t, config.Release{})
+		client := &client.Mock{}
+		require.NoError(t, doPublish(ctx, client))
+		require.Equal(t, 1, count(client.UploadedFileNames, "packslip.sigstore.json"))
+		// metadata is not uploaded by default, so the glob is how it gets there.
+		require.Equal(t, 1, count(client.UploadedFileNames, "metadata.json"))
+	})
+
+	t.Run("same name from another file is kept", func(t *testing.T) {
+		ctx, manifest := setup(t, config.Release{})
+		other := filepath.Join(t.TempDir(), "packslip.sigstore.json")
+		require.NoError(t, os.WriteFile(other, []byte(`{"other":true}`), 0o644))
+		ctx.Config.Release.ExtraFiles = []config.ExtraFile{{Glob: other}}
+		client := &client.Mock{}
+		require.NoError(t, doPublish(ctx, client))
+		require.Equal(t, 2, count(client.UploadedFileNames, "packslip.sigstore.json"))
+		require.NotEqual(t, manifest, other)
+	})
 }
 
 func TestDefault(t *testing.T) {
