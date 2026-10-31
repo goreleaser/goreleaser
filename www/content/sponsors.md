@@ -191,6 +191,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [buonanotte immagini](https://buonanotteimmagini.org/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [buongiorno immagini](https://buongiornoimmagine.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Horoskopi](https://horoskopishqip.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [Paw Pampering](https://pawpampering.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
 
 <!-- sponsors:end -->
