@@ -174,7 +174,6 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Ryan Nixon](https://www.ryannixon.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Weston Schmidt](http://comcast.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Santosh Yadav](https://Santoshyadav.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [David Birks](https://github.com/dbirks?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Benjamin Kane](https://www.bbkane.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Carl Tsai](https://github.com/moonape1226?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Ethan Li](https://linkedin.com/in/ethanjli?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
