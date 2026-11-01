@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/fileglob"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -60,14 +62,20 @@ func Find(ctx *context.Context, files []config.ExtraFile) (map[string]string, er
 // UploadNames spells the names of found extra files the way
 // [artifact.Artifacts.Add] registers them, so that names which differ only in
 // whitespace are compared, and uploaded, as the one name they become.
-func UploadNames(files map[string]string) map[string]string {
+func UploadNames(files map[string]string) (map[string]string, error) {
 	result := make(map[string]string, len(files))
-	for name, path := range files {
+	names := make([]string, 0, len(files))
+	for name := range files {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	for _, name := range names {
+		path := files[name]
 		name = artifact.CleanName(name)
-		if old, ok := result[name]; ok && old != path {
-			log.Warnf("overriding %s with %s for name %s", old, path, name)
+		if old, ok := result[name]; ok && !gio.SamePath(old, path) {
+			return nil, fmt.Errorf("extra files %q and %q have the same upload name %q", old, path, name)
 		}
 		result[name] = path
 	}
-	return result
+	return result, nil
 }

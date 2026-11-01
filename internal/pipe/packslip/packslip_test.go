@@ -1057,6 +1057,23 @@ func TestRunNameOverwritesExtraFileWithWhitespace(t *testing.T) {
 	require.Equal(t, "notes", string(got))
 }
 
+func TestRunExtraFileUploadNameCollision(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo"}})
+	first := filepath.Join(t.TempDir(), "first.json")
+	second := filepath.Join(t.TempDir(), "second.json")
+	require.NoError(t, os.WriteFile(first, []byte("first"), 0o644))
+	require.NoError(t, os.WriteFile(second, []byte("second"), 0o644))
+	ctx.Config.Release.ExtraFiles = []config.ExtraFile{
+		{Glob: first, NameTemplate: "notes.json"},
+		{Glob: second, NameTemplate: " notes.json"},
+	}
+
+	require.ErrorContains(t, Pipe{}.Run(ctx), `have the same upload name "notes.json"`)
+	require.Empty(t, signed)
+}
+
 func TestRunIDsMatchNothing(t *testing.T) {
 	setToken(t)
 	signed := stubSign(t)

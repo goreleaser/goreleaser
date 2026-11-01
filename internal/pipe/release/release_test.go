@@ -595,6 +595,23 @@ func TestRunPipeExtraFileWhitespaceAlias(t *testing.T) {
 	require.Equal(t, []string{"packslip.sigstore.json"}, client.UploadedFileNames)
 }
 
+func TestRunPipeExtraFileUploadNameCollision(t *testing.T) {
+	first := filepath.Join(t.TempDir(), "first.json")
+	second := filepath.Join(t.TempDir(), "second.json")
+	require.NoError(t, os.WriteFile(first, []byte("first"), 0o644))
+	require.NoError(t, os.WriteFile(second, []byte("second"), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{
+		GitHub: config.Repo{Owner: "test", Name: "test"},
+		ExtraFiles: []config.ExtraFile{
+			{Glob: first, NameTemplate: "notes.json"},
+			{Glob: second, NameTemplate: " notes.json"},
+		},
+	}}, testctx.WithCurrentTag("v1.0.0"))
+	client := &client.Mock{}
+	require.ErrorContains(t, doPublish(ctx, client), `have the same upload name "notes.json"`)
+	require.False(t, client.UploadedFile)
+}
+
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

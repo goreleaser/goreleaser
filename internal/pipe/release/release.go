@@ -165,7 +165,10 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	extraFiles = extrafiles.UploadNames(extraFiles)
+	extraFiles, err = extrafiles.UploadNames(extraFiles)
+	if err != nil {
+		return err
+	}
 
 	types := artifact.ReleaseUploadableTypes()
 	if ctx.Config.Release.IncludeMeta {

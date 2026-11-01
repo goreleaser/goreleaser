@@ -151,7 +151,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	extraFiles = extrafiles.UploadNames(extraFiles)
+	extraFiles, err = extrafiles.UploadNames(extraFiles)
+	if err != nil {
+		return err
+	}
 	var manifests []manifest
 	names := map[string]bool{}
 	for _, cfg := range configs {
