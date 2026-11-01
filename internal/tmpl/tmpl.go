@@ -482,6 +482,7 @@ func filter(reverse bool) func(content, exp string) (string, error) {
 }
 
 var mdv2EscapeReplacer = strings.NewReplacer(
+	"\\", "\\\\",
 	"_", "\\_",
 	"*", "\\*",
 	"[", "\\[",

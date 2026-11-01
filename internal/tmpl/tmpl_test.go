@@ -686,6 +686,10 @@ func TestMdv2Escape(t *testing.T) {
 		"aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!",
 		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"),
 	)
+	// A backslash escapes the character after it, so a literal one is
+	// escaped too, and the one before "_" does not leave "_" unescaped.
+	require.Equal(t, `C:\\new\\a\_b`, mdv2Escape(`C:\new\a_b`))
+	require.Equal(t, `a\\\_b`, mdv2Escape(`a\_b`))
 }
 
 func TestInvalidMap(t *testing.T) {
