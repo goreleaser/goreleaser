@@ -1038,6 +1038,25 @@ func TestRunNameOverwritesExtraFile(t *testing.T) {
 	require.Empty(t, signed)
 }
 
+// The release registers an extra file under its trimmed name, so a name that
+// only differs from the manifest's by whitespace is the same upload.
+func TestRunNameOverwritesExtraFileWithWhitespace(t *testing.T) {
+	setToken(t)
+	signed := stubSign(t)
+	ctx := monorepoCtx(t, []config.Packslip{
+		{IDs: []string{"foo"}, Project: "github.com/acme/tools/foo", NameTemplate: "packslip.sigstore.json"},
+	})
+	extra := filepath.Join(t.TempDir(), "notes.json")
+	require.NoError(t, os.WriteFile(extra, []byte("notes"), 0o644))
+	ctx.Config.Release.ExtraFiles = []config.ExtraFile{{Glob: extra, NameTemplate: " packslip.sigstore.json"}}
+
+	require.ErrorContains(t, Pipe{}.Run(ctx), "would overwrite the release extra file 'packslip.sigstore.json'")
+	require.Empty(t, signed, "nothing is signed when the names collide")
+	got, err := os.ReadFile(extra)
+	require.NoError(t, err)
+	require.Equal(t, "notes", string(got))
+}
+
 func TestRunIDsMatchNothing(t *testing.T) {
 	setToken(t)
 	signed := stubSign(t)

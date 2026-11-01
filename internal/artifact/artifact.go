@@ -880,11 +880,16 @@ func (artifacts *Artifacts) Visit(fn VisitFn) error {
 	return nil
 }
 
-func cleanName(a Artifact) string {
-	name := a.Name
+// CleanName is the name an artifact is registered under: the name without the
+// whitespace around its stem.
+func CleanName(name string) string {
 	ext := filepath.Ext(name)
-	result := strings.TrimSpace(strings.TrimSuffix(name, ext)) + ext
-	if name != result {
+	return strings.TrimSpace(strings.TrimSuffix(name, ext)) + ext
+}
+
+func cleanName(a Artifact) string {
+	result := CleanName(a.Name)
+	if a.Name != result {
 		log.WithField("name", a.Name).
 			WithField("new name", result).
 			WithField("type", a.Type).

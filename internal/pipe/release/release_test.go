@@ -564,6 +564,37 @@ func TestRunPipeExtraFileAlreadyRegistered(t *testing.T) {
 	})
 }
 
+// An extra file named with stray whitespace is registered under its trimmed
+// name, so it is the same upload as the artifact that already has that name.
+func TestRunPipeExtraFileWhitespaceAlias(t *testing.T) {
+	distPath := t.TempDir()
+	workingDir, err := os.Getwd()
+	require.NoError(t, err)
+	dist, err := filepath.Rel(workingDir, distPath)
+	require.NoError(t, err)
+	manifest := filepath.Join(distPath, "packslip.sigstore.json")
+	require.NoError(t, os.WriteFile(manifest, []byte(`{"bundle":true}`), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "test", Name: "test"},
+			ExtraFiles: []config.ExtraFile{{
+				Glob:         filepath.Join(dist, "packslip.sigstore.json"),
+				NameTemplate: " packslip.sigstore.json",
+			}},
+		},
+	}, testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableFile,
+		Name: "packslip.sigstore.json",
+		Path: manifest,
+	})
+
+	client := &client.Mock{}
+	require.NoError(t, doPublish(ctx, client))
+	require.Equal(t, []string{"packslip.sigstore.json"}, client.UploadedFileNames)
+}
+
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
