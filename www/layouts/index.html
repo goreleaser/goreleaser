@@ -399,9 +399,8 @@
 		<div class="goreleaser-hero__content">
 			<h1 class="gradient-text">Release engineering, simplified.</h1>
 			<p>
-				We handle the complexities of releasing so you can focus on
-				building what really matters:
-				<strong class="gradient-text-2">your software</strong>.
+				Tag a commit. GoReleaser builds, signs, packages, and publishes
+				it where your users install from.
 			</p>
 			<!-- prettier-ignore -->
 			<div class="lang-icons">
@@ -413,7 +412,7 @@
 				{{ end }}
 			</div>
 			<!-- prettier-ignore -->
-			<a href="/getting-started/intro/" class="goreleaser-btn goreleaser-btn--primary">
+			<a href="/getting-started/" class="goreleaser-btn goreleaser-btn--primary">
 				{{ partial "utils/icon.html" (dict
 					"name" "lightning-bolt"
 					"attributes" `height=1em class="hx:inline-block hx:align-middle"`
@@ -424,8 +423,9 @@
 				{{ partial "utils/icon.html" (dict
 					"name" "sparkles"
 					"attributes" `height=1em class="hx:inline-block hx:align-middle"`
-				) }} Pro
+				) }} Pro for teams
 			</a>
+			<p><a href="/resources/users/">Used by about 50k open-source repositories.</a></p>
 		</div>
 		<div class="goreleaser-hero__image">
 			<img
@@ -449,11 +449,12 @@
 <section class="goreleaser-body-section">
 	<div class="goreleaser-section-inner">
 		<div class="goreleaser-section-title">
-			<h2>Everything you need to release with confidence</h2>
+			<h2>One config, every target</h2>
 		</div>
 		<p class="goreleaser-section-subtitle">
-			GoReleaser does everything you need to create a professional release
-			process for Go, Rust, TypeScript, Zig, and Python projects.
+			One config covers binaries, Docker images, Homebrew, Linux packages,
+			and Windows and macOS installers. It works for Go, Rust,
+			TypeScript, Zig, and Python projects.
 		</p>
 
 		<div class="goreleaser-feature-grid">
@@ -464,11 +465,12 @@
 						"name" "lightning-bolt"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`
 					) }}
-					Fast &amp; Automated
+					One command
 				</h3>
 				<p>
-					From commit to a release in seconds &mdash; automate your
-					entire workflow with a single command.
+					<code>goreleaser release</code> takes a tagged commit to a
+					published release. Try it locally first with
+					<code>goreleaser release --snapshot --clean</code>.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -478,11 +480,12 @@
 						"name" "globe-alt"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`
 					) }}
-					Multiple Languages
+					Five languages
 				</h3>
 				<p>
-					First-class support for Go, Rust, TypeScript, Python, and
-					Zig projects.
+					Go, Rust, TypeScript, Zig, and Python. As of v2.19, the
+					Zig, Rust, Bun, Deno, UV, and Poetry builders are no longer
+					experimental.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -492,10 +495,11 @@
 						"name" "desktop-computer"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`
 					) }}
-					Cross-Platform
+					Cross-platform builds
 				</h3>
 				<p>
-					Build and release for multiple platforms and architectures.
+					Build for multiple platforms and architectures, including
+					macOS universal binaries and RISC-V 64 packages.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -505,11 +509,12 @@
 						"name" "cube"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Multiple Formats
+					Packages people already use
 				</h3>
 				<p>
-					Package your software exactly how your users want it &mdash;
-					from binaries to Docker images and system packages.
+					Archives, Docker images, Linux packages through nFPM, Snap,
+					Flatpak, and Chocolatey. macOS .pkg and .dmg and Windows
+					.msi and .exe installers come with Pro.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -519,11 +524,11 @@
 						"name" "collection"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Package Managers
+					Published where they install from
 				</h3>
 				<p>
-					Automatically publish to Homebrew, Scoop, Winget, AUR, Nix,
-					and more.
+					Homebrew, Scoop, Winget, AUR, Nix, and more. Publishing to
+					Nix no longer needs Nix installed.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -533,11 +538,27 @@
 						"name" "shield-check"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Security Made Easy
+					Signed and notarized
 				</h3>
 				<p>
-					Release with confidence using built-in SBOM generation, code
-					signing, and notarization.
+					SBOMs, code signing, and notarization are built in.
+				</p>
+			</div>
+			<div class="goreleaser-feature-card">
+				<!-- prettier-ignore -->
+				<h3>
+					{{ partial "utils/icon.html" (dict
+						"name" "shield-check"
+						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
+					}}
+					Checked after it ships
+				</h3>
+				<p>
+					Preflight checks can stop a release before the build when the
+					token can't publish. With Pro, the verify step re-downloads
+					what you published and runs your own checks. It catches
+					broken uploads and bad signatures after the release
+					"succeeded."
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -547,11 +568,12 @@
 						"name" "terminal"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					GitHub Actions and beyond
+					Runs in your CI
 				</h3>
 				<p>
-					Works seamlessly with GitHub Actions, GitLab CI, and other
-					popular CI/CD platforms.
+					GitHub Actions, GitLab CI, Jenkins, CircleCI, and more. In
+					GitHub Actions it writes a release summary to the job
+					summary, with nothing to configure.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -561,10 +583,10 @@
 						"name" "chip"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					AI Ready
+					Works with AI tools
 				</h3>
 				<p>
-					Easily integrate with AI tools using the
+					Connect them through the
 					<a href="https://github.com/goreleaser/mcp"
 						>GoReleaser MCP</a
 					>.
@@ -577,21 +599,22 @@
 						"name" "speakerphone"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Keep users informed
+					Tell people it shipped
 				</h3>
 				<p>
-					Generate customizable changelogs and announce releases to 𝕏,
-					Slack, Discord, and more.
+					Changelogs you can customize, plus announcements to X,
+					Slack, Discord, Mastodon, and more.
 				</p>
 			</div>
 		</div>
 
 		<div class="goreleaser-section-title">
-			<h2>Supported by Amazing Sponsors</h2>
+			<h2>Thank you, sponsors</h2>
 		</div>
 		<p class="goreleaser-section-subtitle">
-			These are some of the companies that help make GoReleaser possible.
-			<a href="/sponsors/">Become a sponsor!</a>
+			These companies help make GoReleaser possible. If yours uses it in
+			its releases, you can join them.
+			<a href="/sponsors/">Sponsor the project</a>
 		</p>
 
 		<div class="goreleaser-sponsors-tiers">
@@ -673,14 +696,14 @@
 		</div>
 
 		<div class="goreleaser-section-title">
-			<h2>Trusted by Industry Leaders</h2>
+			<h2>Who ships with GoReleaser</h2>
 		</div>
 		<p class="goreleaser-section-subtitle">
-			Join
-			<a href="/resources/users/">
-				thousands of developers and companies
-			</a>
-			who rely on GoReleaser for their mission-critical releases.
+			Google, Microsoft, GitHub, and Uber are among about 100
+			organizations on our users list. The project has ~16.1k stars and
+			508 contributors. Thanks, everyone.
+			<br />
+			<a href="/resources/users/">See the users list</a>
 		</p>
 
 		<div class="goreleaser-logos-marquee">
