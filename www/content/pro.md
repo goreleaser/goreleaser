@@ -90,7 +90,7 @@ with these additional features:
 {{< cards cols="2" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=yearly&wanted=true" title="Personal — $165/yr" subtitle="For your personal projects." icon="user" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=yearly&wanted=true" title="Startup — $247/yr" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
-{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=yearly&wanted=true" title="Business — $948/yr" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=yearly&wanted=true" title="Business — $948/yr" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=yearly&wanted=true" title="Enterprise — $3,300/yr" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
 {{< /cards >}}
 
@@ -101,7 +101,7 @@ with these additional features:
 {{< cards cols="2" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=monthly&wanted=true" title="Personal — $15/mo" subtitle="For your personal projects." icon="user" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=monthly&wanted=true" title="Startup — $22/mo" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
-{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=monthly&wanted=true" title="Business — $86/mo" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=monthly&wanted=true" title="Business — $86/mo" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=monthly&wanted=true" title="Enterprise — $300/mo" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
 {{< /cards >}}
 
