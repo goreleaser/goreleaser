@@ -43,7 +43,7 @@ require (
 	github.com/klauspost/pgzip v1.3.0
 	github.com/mattn/go-mastodon v0.0.13
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/modelcontextprotocol/registry v1.8.6
+	github.com/modelcontextprotocol/registry v1.8.7
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
