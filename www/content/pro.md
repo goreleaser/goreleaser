@@ -6,13 +6,18 @@ sidebar:
   hide: true
 ---
 
-GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
-additional features:
+GoReleaser Pro is for teams that ship macOS and Windows installers, sign and
+notarize natively, release from a monorepo, publish nightlies, or build in
+air-gapped environments. It is a paid, closed-source distribution of GoReleaser
+with these additional features:
 
+- [Verify what you published](/customization/verify/). After upload, GoReleaser
+  re-downloads your release assets and runs your own checks, right before
+  announcing. It catches broken uploads and bad signatures after the release
+  "succeeded";
 - [Export OpenTelemetry traces](/customization/telemetry/) of your releases to your own collector (Enterprise plan);
 - Run in air-gapped environments with [offline licenses](#offline-licenses)
   (Business and Enterprise plans);
-- [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
 - Smart [SemVer tag sorting](/customization/general/git/#semver-sorting);
