@@ -6,13 +6,18 @@ sidebar:
   hide: true
 ---
 
-GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
-additional features:
+GoReleaser Pro is for teams that ship macOS and Windows installers, sign and
+notarize natively, release from a monorepo, publish nightlies, or build in
+air-gapped environments. It is a paid, closed-source distribution of GoReleaser
+with these additional features:
 
+- [Verify what you published](/customization/verify/). After upload, GoReleaser
+  re-downloads your release assets and runs your own checks, right before
+  announcing. It catches broken uploads and bad signatures after the release
+  "succeeded";
 - [Export OpenTelemetry traces](/customization/telemetry/) of your releases to your own collector (Enterprise plan);
 - Run in air-gapped environments with [offline licenses](#offline-licenses)
   (Business and Enterprise plans);
-- [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
 - Smart [SemVer tag sorting](/customization/general/git/#semver-sorting);
@@ -85,7 +90,7 @@ additional features:
 {{< cards cols="2" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=yearly&wanted=true" title="Personal — $165/yr" subtitle="For your personal projects." icon="user" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=yearly&wanted=true" title="Startup — $247/yr" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
-{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=yearly&wanted=true" title="Business — $948/yr" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=yearly&wanted=true" title="Business — $948/yr" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=yearly&wanted=true" title="Enterprise — $3,300/yr" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
 {{< /cards >}}
 
@@ -96,7 +101,7 @@ additional features:
 {{< cards cols="2" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=5Ut2O2lkGo6A2yu9q9HXyg%3D%3D&recurrence=monthly&wanted=true" title="Personal — $15/mo" subtitle="For your personal projects." icon="user" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=e1n1yQCH968rENm8w0FBgQ%3D%3D&recurrence=monthly&wanted=true" title="Startup — $22/mo" subtitle="For small companies (up to 20 people) and up to 5 repositories." icon="user-group" >}}
-{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=monthly&wanted=true" title="Business — $86/mo" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" tag="most popular" tagColor="green" >}}
+{{< card link="https://gumroad.com/l/CadfZ?option=0XPP8t1FY9Y--XPBkS6PlQ%3D%3D&recurrence=monthly&wanted=true" title="Business — $86/mo" subtitle="For big companies (up to 100 people) and up to 20 repositories. Can create and use air-gapped licenses." icon="briefcase" >}}
 {{< card link="https://gumroad.com/l/CadfZ?option=RKh9SHYqKo8Nx_MWpIWj0g%3D%3D&recurrence=monthly&wanted=true" title="Enterprise — $300/mo" subtitle="For bigger companies. Unlimited users and repositories. Can create and use air-gapped licenses." icon="office-building" >}}
 {{< /cards >}}
 
