@@ -37,5 +37,5 @@ cask "wrappedin" do
   zsh_completion "completions/wrappedin.zsh"
   fish_completion "completions/wrappedin.fish"
 
-  # No zap stanza required
+  zap :not_required
 end

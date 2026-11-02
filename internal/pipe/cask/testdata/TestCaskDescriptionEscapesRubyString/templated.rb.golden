@@ -38,5 +38,5 @@ cask "test" do
   zsh_completion "mybin.zsh"
   fish_completion "mybin.fish"
 
-  # No zap stanza required
+  zap :not_required
 end
