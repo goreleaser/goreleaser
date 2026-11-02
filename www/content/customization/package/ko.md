@@ -88,7 +88,7 @@ kos:
     # the image is skipped if none are left.
     #
     # Default: 'linux/amd64'.
-    # Templates: allowed. {{< g_inline_version "v2.20" >}}
+    # Templates: allowed. {{< g_inline_version "v2.20-unreleased" >}}
     platforms:
       - linux/amd64
       - linux/arm64
