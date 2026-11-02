@@ -177,6 +177,8 @@
 	}
 
 	.goreleaser-body-section {
+		width: 100%;
+		min-width: 0;
 		padding: 4rem 1.5rem 3rem;
 	}
 
@@ -252,6 +254,10 @@
 		margin: 0;
 	}
 
+	.goreleaser-feature-card code {
+		white-space: nowrap;
+	}
+
 	.dark .goreleaser-feature-card p {
 		color: #9ca3af;
 	}
@@ -265,6 +271,7 @@
 
 	.goreleaser-logos-marquee {
 		overflow: hidden;
+		width: 100%;
 		margin-bottom: 3rem;
 		-webkit-mask-image: linear-gradient(
 			to right,
@@ -452,9 +459,8 @@
 			<h2>One config, every target</h2>
 		</div>
 		<p class="goreleaser-section-subtitle">
-			One config covers binaries, Docker images, Homebrew, Linux packages,
-			and Windows and macOS installers. It works for Go, Rust,
-			TypeScript, Zig, and Python projects.
+			Binaries, Docker images, Homebrew, Linux packages, and installers
+			for Go, Rust, TypeScript, Zig, and Python projects.
 		</p>
 
 		<div class="goreleaser-feature-grid">
@@ -469,8 +475,7 @@
 				</h3>
 				<p>
 					<code>goreleaser release</code> takes a tagged commit to a
-					published release. Try it locally first with
-					<code>goreleaser release --snapshot --clean</code>.
+					published release.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -480,24 +485,11 @@
 						"name" "globe-alt"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`
 					) }}
-					Five languages
+					Five languages, every platform
 				</h3>
 				<p>
-					Go, Rust, TypeScript, Zig, and Python.
-				</p>
-			</div>
-			<div class="goreleaser-feature-card">
-				<!-- prettier-ignore -->
-				<h3>
-					{{ partial "utils/icon.html" (dict
-						"name" "desktop-computer"
-						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`
-					) }}
-					Cross-platform builds
-				</h3>
-				<p>
-					Build for multiple platforms and architectures, including
-					macOS universal binaries and RISC-V 64 packages.
+					Go, Rust, TypeScript, Zig, and Python, built for multiple
+					platforms and architectures.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -510,9 +502,8 @@
 					Packages people already use
 				</h3>
 				<p>
-					Archives, Docker images, Linux packages through nFPM, Snap,
-					Flatpak, and Chocolatey. macOS .pkg and .dmg and Windows
-					.msi and .exe installers come with Pro.
+					Archives, Docker images, Linux packages, Snap, Flatpak,
+					and Chocolatey.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -522,7 +513,7 @@
 						"name" "collection"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Published where they install from
+					Where they install from
 				</h3>
 				<p>
 					Homebrew, Scoop, Winget, AUR, Nix, and more.
@@ -545,31 +536,27 @@
 				<!-- prettier-ignore -->
 				<h3>
 					{{ partial "utils/icon.html" (dict
-						"name" "terminal"
+						"name" "shield-check"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Runs in your CI
+					Checked before and after
 				</h3>
 				<p>
-					GitHub Actions, GitLab CI, Jenkins, CircleCI, and more. In
-					GitHub Actions it writes a release summary to the job
-					summary, with nothing to configure.
+					Preflight checks stop a release that can't publish. With Pro,
+					verify re-downloads what you shipped and runs your own checks.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
 				<!-- prettier-ignore -->
 				<h3>
 					{{ partial "utils/icon.html" (dict
-						"name" "chip"
+						"name" "terminal"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Works with AI tools
+					Runs in your CI
 				</h3>
 				<p>
-					Connect them through the
-					<a href="https://github.com/goreleaser/mcp"
-						>GoReleaser MCP</a
-					>.
+					GitHub Actions, GitLab CI, Jenkins, CircleCI, and more.
 				</p>
 			</div>
 			<div class="goreleaser-feature-card">
@@ -583,7 +570,23 @@
 				</h3>
 				<p>
 					Changelogs you can customize, plus announcements to X,
-					Slack, Discord, Mastodon, and more.
+					Slack, Discord, and Mastodon.
+				</p>
+			</div>
+			<div class="goreleaser-feature-card">
+				<!-- prettier-ignore -->
+				<h3>
+					{{ partial "utils/icon.html" (dict
+						"name" "chip"
+						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
+					}}
+					Works with AI tools
+				</h3>
+				<p>
+					Connect your tools through the
+					<a href="https://github.com/goreleaser/mcp"
+						>GoReleaser MCP</a
+					>.
 				</p>
 			</div>
 		</div>
@@ -594,7 +597,10 @@
 		<p class="goreleaser-section-subtitle">
 			These companies help make GoReleaser possible. If yours uses it in
 			its releases, you can join them.
-			<a href="/sponsors/">Sponsor the project</a>
+			<br />
+			<a href="/sponsors/" class="goreleaser-btn goreleaser-btn--primary"
+				>Sponsor the project</a
+			>
 		</p>
 
 		<div class="goreleaser-sponsors-tiers">
