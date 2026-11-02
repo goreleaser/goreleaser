@@ -48,12 +48,12 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
-	github.com/slack-go/slack v0.31.0
+	github.com/slack-go/slack v0.33.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
 	github.com/ulikunitz/xz v0.5.17
 	gitlab.com/gitlab-org/api/client-go v1.46.0
-	go.yaml.in/yaml/v3 v3.0.5
+	go.yaml.in/yaml/v3 v3.0.6
 	gocloud.dev v0.47.0
 	golang.org/x/crypto v0.58.0
 	golang.org/x/mod v0.42.0
@@ -175,7 +175,7 @@ require (
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.0 // indirect
 	github.com/go-git/go-git/v5 v5.19.2 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.7 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.25.5 // indirect
