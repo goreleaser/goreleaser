@@ -103,7 +103,7 @@ func conflictsString(conflicts []config.HomebrewCaskConflict) string {
 }
 
 func zapString(u config.HomebrewCaskUninstall) string {
-	return cmp.Or(makeUninstallLikeBlock("zap", u), "# No zap stanza required")
+	return cmp.Or(makeUninstallLikeBlock("zap", u), "zap :not_required")
 }
 
 func uninstallString(u config.HomebrewCaskUninstall) string {

@@ -75,7 +75,7 @@ cask "url_parameters_curl" do
     touch "/tmp/hi"
   end
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     don't do this url_parameters_curl

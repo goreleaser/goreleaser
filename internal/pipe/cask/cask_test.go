@@ -464,6 +464,19 @@ func TestFlightString(t *testing.T) {
 	})
 }
 
+func TestZapString(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Equal(t, "zap :not_required", zapString(config.HomebrewCaskUninstall{}))
+	})
+	t.Run("directives", func(t *testing.T) {
+		require.Equal(
+			t,
+			"zap trash: [\n      \"~/.foo\",\n    ]\n",
+			zapString(config.HomebrewCaskUninstall{Trash: []string{"~/.foo"}}),
+		)
+	})
+}
+
 func TestCompileManpagesBrokenGlob(t *testing.T) {
 	brew := config.HomebrewCask{
 		Manpages: []string{"[invalid"},

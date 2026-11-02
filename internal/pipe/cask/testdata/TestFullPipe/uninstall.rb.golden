@@ -74,7 +74,7 @@ cask "uninstall" do
       "trash3",
     ]
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     don't do this uninstall

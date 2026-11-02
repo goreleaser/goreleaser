@@ -26,7 +26,7 @@ targets_json=$(printf '%s\n' "${targets[@]}" | jq -R . | jq -s .)
 # (v25.5.0+ where LIEF is bundled into the official builds).
 versions=$(curl -fsSL https://nodejs.org/dist/index.json | jq -r '
   map(select(
-    (.version | ltrimstr("v") | split(".") | map(tonumber)) as $v |
+    (.version | ltrimstr("v") | split(".") | .[:2] | map(tonumber)) as $v |
       ($v[0] > 25)
       or ($v[0] == 25 and $v[1] >= 5)
   ))

@@ -35,5 +35,5 @@ cask "wrappedin" do
   binary "wrappedin"
   binary "other"
 
-  # No zap stanza required
+  zap :not_required
 end
