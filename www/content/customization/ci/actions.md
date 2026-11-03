@@ -201,10 +201,11 @@ personal access token with access to that repository.
 
 ### GitHub App token
 
-For example, to publish a Homebrew cask to `my-org/homebrew-tap`:
+For example, to publish a Homebrew cask and a Nix package to
+`my-org/homebrew-tap` and `my-org/nur`:
 
 1. [Create a GitHub App][create-app] with repository `Contents: read and write`
-   permission and install it on `my-org/homebrew-tap`.
+   permission and install it on both repositories.
 2. Add the app's client ID as the `APP_CLIENT_ID` repository variable and its
    private key as the `APP_PRIVATE_KEY` repository secret in the repository
    that runs the workflow.
@@ -217,14 +218,16 @@ jobs:
     # ...
     steps:
       # ...
-      - name: Create tap token
-        id: tap-token
+      - name: Create publishing token
+        id: publishing-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: my-org
-          repositories: homebrew-tap
+          repositories: |
+            homebrew-tap
+            nur
           permission-contents: write
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
@@ -233,19 +236,28 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ steps.tap-token.outputs.token }}
+          PUBLISH_TOKEN: ${{ steps.publishing-token.outputs.token }}
 ```
 
-Configure the cask to use the tap token while `GITHUB_TOKEN` remains available
-for the release repository:
+Configure the cask and Nix package to use the publishing token while
+`GITHUB_TOKEN` remains available for the release repository:
 
 ```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   - repository:
       owner: my-org
       name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+      token: "{{ .Env.PUBLISH_TOKEN }}"
+nix:
+  - repository:
+      owner: my-org
+      name: nur
+      token: "{{ .Env.PUBLISH_TOKEN }}"
 ```
+
+The repositories in a token must belong to the same owner. For repositories
+under different owners, install the app on each owner and create a token for
+each installation.
 
 Installation tokens expire after one hour. For releases that take longer,
 see the [token action documentation][app-token].
