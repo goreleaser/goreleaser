@@ -20,7 +20,8 @@ with these additional features:
   (Business and Enterprise plans);
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
-- Smart [SemVer tag sorting](/customization/general/git/#semver-sorting);
+- [SemVer and smart SemVer tag sorting](/customization/general/git/#smart-semver-sorting),
+  and tag exclusion patterns and prefixes;
 - Publish to [NPM registries](/customization/publish/npm/);
 - [Native sign and notarize](/customization/sign/notarize/#native)
   macOS App Bundles, Disk Images, and Installers;
@@ -40,7 +41,7 @@ with these additional features:
 - Create [Windows installers (`.msi`)](/customization/package/msi/) with msitools or WiX;
 - Use `goreleaser release --single-target` to build the whole pipeline for a
   single architecture locally;
-- Check boxes in pull request templates;
+- Check boxes in GitHub pull request templates;
 - [Template entire files](/customization/general/templatefiles/) and add them to the
   release. You can also template files that will be included in archives,
   packages, Docker images, etc...;
@@ -52,8 +53,9 @@ with these additional features:
   [HTTP server](/customization/publish/upload/) instances;
 - [Split and merge builds](/customization/general/partial/) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
-- More [changelog options](/customization/publish/changelog/): Filter commits by path
-  & subgroups, group dividers;
+- More [changelog options](/customization/publish/changelog/): Filter commits by path,
+  use subgroups and group dividers, and set a custom title;
+- Load release notes [headers and footers](/customization/publish/scm/) from files or URLs;
 - Have custom [before and after hooks for archives](/customization/package/archives/);
 - Prepare a release with
   `goreleaser release --prepare`,
