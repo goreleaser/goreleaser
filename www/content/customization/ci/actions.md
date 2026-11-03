@@ -196,10 +196,65 @@ are required by GoReleaser:
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]
 that contains your workflow.
 
-If you need to push the homebrew tap to another repository, you must create a
-custom [Personal Access Token][pat] with `repo` permissions and [add it as a
-secret in the repository][secrets]. If you create a secret named `GH_PAT`, the
-step will look like this:
+To publish to another repository, use a GitHub App installation token or a
+personal access token with access to that repository.
+
+### GitHub App token
+
+For example, to publish a Homebrew cask to `my-org/homebrew-tap`:
+
+1. [Create a GitHub App][create-app] with repository `Contents: read and write`
+   permission and install it on `my-org/homebrew-tap`.
+2. Add the app's client ID as the `APP_CLIENT_ID` repository variable and its
+   private key as the `APP_PRIVATE_KEY` repository secret in the repository
+   that runs the workflow.
+3. Generate an installation token before running GoReleaser:
+
+```yaml {filename=".github/workflows/release.yml"}
+jobs:
+  # ...
+  goreleaser:
+    # ...
+    steps:
+      # ...
+      - name: Create tap token
+        id: tap-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: my-org
+          repositories: homebrew-tap
+          permission-contents: write
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ steps.tap-token.outputs.token }}
+```
+
+Configure the cask to use the tap token while `GITHUB_TOKEN` remains available
+for the release repository:
+
+```yaml {filename=".goreleaser.yaml"}
+homebrew_casks:
+  - repository:
+      owner: my-org
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+```
+
+Installation tokens expire after one hour. For releases that take longer,
+see the [token action documentation][app-token].
+
+### Personal access token
+
+Alternatively, create a [Personal Access Token][pat] with access to the
+repositories GoReleaser needs and [add it as a secret][secrets]. For example,
+if you create a secret named `GH_PAT`, the step will look like this:
 
 ```yaml {filename=".github/workflows/release.yml"}
 jobs:
@@ -233,5 +288,7 @@ You can check [this example repository](https://github.com/goreleaser/example/re
 [about-github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret
 [pat]: https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/
 [secrets]: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+[create-app]: https://docs.github.com/en/apps/creating-github-apps/setting-up-a-github-app/creating-a-github-app
+[app-token]: https://github.com/actions/create-github-app-token
 [oidc]: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect#adding-permissions-settings
 [cosign]: https://github.com/sigstore/cosign
