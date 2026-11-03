@@ -248,12 +248,21 @@ homebrew_casks:
       owner: my-org
       name: homebrew-tap
       token: "{{ .Env.PUBLISH_TOKEN }}"
+    commit_author:
+      use_github_app_token: true
 nix:
   - repository:
       owner: my-org
       name: nur
       token: "{{ .Env.PUBLISH_TOKEN }}"
+    commit_author:
+      use_github_app_token: true
 ```
+
+With `use_github_app_token: true` (since v2.13), GoReleaser omits the custom
+committer when publishing through the GitHub API. GitHub uses the app's bot
+identity as the author and committer and signs the commits. You do not need to
+look up the bot's user ID or configure its name and email.
 
 The repositories in a token must belong to the same owner. For repositories
 under different owners, install the app on each owner and create a token for
