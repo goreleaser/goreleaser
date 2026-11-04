@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"encoding/json"
 
 	"github.com/stretchr/testify/require"
 )
@@ -141,4 +142,19 @@ func TestVersion(t *testing.T) {
 func TestPro(t *testing.T) {
 	_, err := LoadReader(strings.NewReader("version: 2\npro: true\nnope: true\n"))
 	require.ErrorIs(t, err, ErrProConfig)
+}
+
+func TestPrivateKeyOmittedFromJSON(t *testing.T) {
+	for name, v := range map[string]any{
+		"git":       GitRepoRef{URL: "ssh://example.invalid/repo.git", PrivateKey: "SECRET"},
+		"aur":       AUR{PrivateKey: "SECRET"},
+		"aursource": AURSource{PrivateKey: "SECRET"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			bts, err := json.Marshal(v)
+			require.NoError(t, err)
+			require.NotContains(t, string(bts), "SECRET")
+			require.NotContains(t, string(bts), "private_key")
+		})
+	}
 }
