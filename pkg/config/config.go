@@ -3,7 +3,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -99,15 +98,6 @@ type GitRepoRef struct {
 	PrivateKey string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 }
 
-// MarshalJSON omits the private key so it is never serialized into
-// artifacts.json or other JSON output.
-func (g GitRepoRef) MarshalJSON() ([]byte, error) {
-	type plain GitRepoRef
-	v := plain(g)
-	v.PrivateKey = ""
-	return json.Marshal(v)
-}
-
 type PullRequestBase struct {
 	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
@@ -159,15 +149,6 @@ type AUR struct {
 	Install string `yaml:"install,omitempty" json:"install,omitempty"`
 }
 
-// MarshalJSON omits the private key so it is never serialized into
-// artifacts.json or other JSON output.
-func (a AUR) MarshalJSON() ([]byte, error) {
-	type plain AUR
-	v := plain(a)
-	v.PrivateKey = ""
-	return json.Marshal(v)
-}
-
 type AURSource struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -200,15 +181,6 @@ type AURSource struct {
 	// v2.8+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Install string `yaml:"install,omitempty" json:"install,omitempty"`
-}
-
-// MarshalJSON omits the private key so it is never serialized into
-// artifacts.json or other JSON output.
-func (a AURSource) MarshalJSON() ([]byte, error) {
-	type plain AURSource
-	v := plain(a)
-	v.PrivateKey = ""
-	return json.Marshal(v)
 }
 
 // Homebrew contains the brew section.
