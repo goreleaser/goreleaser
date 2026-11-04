@@ -2,11 +2,11 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 	"testing"
-	"encoding/json"
 
 	"github.com/stretchr/testify/require"
 )
