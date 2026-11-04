@@ -41,6 +41,7 @@ const (
 	Iru            Key = "iru"
 	SRPM           Key = "srpm"
 	SCMRelease     Key = "release"
+	Changelog      Key = "changelog"
 )
 
 func String(ctx *context.Context) string {
@@ -147,6 +148,7 @@ var Release = Keys{
 	MCP,
 	Iru,
 	SCMRelease,
+	Changelog,
 }
 
 var Build = Keys{

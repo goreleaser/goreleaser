@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -84,8 +85,8 @@ func TestReleaseBrokenProject(t *testing.T) {
 func TestReleaseFlags(t *testing.T) {
 	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
 		tb.Helper()
-		ctx := testctx.Wrap(t.Context())
-		require.NoError(t, setupReleaseContext(ctx, opts))
+		ctx := testctx.Wrap(tb.Context())
+		require.NoError(tb, setupReleaseContext(ctx, opts))
 		return ctx
 	}
 
@@ -148,6 +149,27 @@ func TestReleaseFlags(t *testing.T) {
 		skip, err := release.Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, skip)
+	})
+
+	t.Run("skip changelog", func(t *testing.T) {
+		for name, opts := range map[string]releaseOpts{
+			"default": {
+				skips: []string{string(skips.Changelog)},
+			},
+			"with release notes": {
+				skips:            []string{string(skips.Changelog)},
+				releaseNotesFile: "notes.md",
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				ctx := setup(t, opts)
+				requireAll(t, ctx, skips.Changelog)
+
+				skip, err := changelog.Pipe{}.Skip(ctx)
+				require.NoError(t, err)
+				require.True(t, skip)
+			})
+		}
 	})
 
 	t.Run("parallelism", func(t *testing.T) {

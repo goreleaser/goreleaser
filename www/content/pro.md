@@ -6,16 +6,22 @@ sidebar:
   hide: true
 ---
 
-GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
-additional features:
+GoReleaser Pro is for teams that ship macOS and Windows installers, sign and
+notarize natively, release from a monorepo, publish nightlies, or build in
+air-gapped environments. It is a paid, closed-source distribution of GoReleaser
+with these additional features:
 
+- [Verify what you published](/customization/verify/). After upload, GoReleaser
+  re-downloads your release assets and runs your own checks, right before
+  announcing. It catches broken uploads and bad signatures after the release
+  "succeeded";
 - [Export OpenTelemetry traces](/customization/telemetry/) of your releases to your own collector (Enterprise plan);
 - Run in air-gapped environments with [offline licenses](#offline-licenses)
   (Business and Enterprise plans);
-- [Verify published release assets](/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](/customization/package/nsis/);
-- Smart [SemVer tag sorting](/customization/general/git/#semver-sorting);
+- [SemVer and smart SemVer tag sorting](/customization/general/git/#smart-semver-sorting),
+  and tag exclusion patterns and prefixes;
 - Publish to [NPM registries](/customization/publish/npm/);
 - [Native sign and notarize](/customization/sign/notarize/#native)
   macOS App Bundles, Disk Images, and Installers;
@@ -35,7 +41,7 @@ additional features:
 - Create [Windows installers (`.msi`)](/customization/package/msi/) with msitools or WiX;
 - Use `goreleaser release --single-target` to build the whole pipeline for a
   single architecture locally;
-- Check boxes in pull request templates;
+- Check boxes in GitHub pull request templates;
 - [Template entire files](/customization/general/templatefiles/) and add them to the
   release. You can also template files that will be included in archives,
   packages, Docker images, etc...;
@@ -47,8 +53,9 @@ additional features:
   [HTTP server](/customization/publish/upload/) instances;
 - [Split and merge builds](/customization/general/partial/) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
-- More [changelog options](/customization/publish/changelog/): Filter commits by path
-  & subgroups, group dividers;
+- More [changelog options](/customization/publish/changelog/): Filter commits by path,
+  use subgroups and group dividers, and set a custom title;
+- Load release notes [headers and footers](/customization/publish/scm/) from files or URLs;
 - Have custom [before and after hooks for archives](/customization/package/archives/);
 - Prepare a release with
   `goreleaser release --prepare`,

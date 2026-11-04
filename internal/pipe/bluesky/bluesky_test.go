@@ -165,6 +165,13 @@ func TestAnnounceWithMockServer(t *testing.T) {
 					"did":        "did:plc:test123",
 				}))
 			case "/xrpc/com.atproto.repo.createRecord":
+				// Without a release URL there is nothing to link: a facet would
+				// have an empty uri, which the lexicon's "uri" format rejects.
+				var body struct {
+					Record map[string]any `json:"record"`
+				}
+				assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+				assert.NotContains(t, body.Record, "facets")
 				w.Header().Set("Content-Type", "application/json")
 				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"uri": "at://did:plc:test123/app.bsky.feed.post/test",
