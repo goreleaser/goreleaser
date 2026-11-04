@@ -423,6 +423,16 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 }
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
+	// Rendered before loading the package, so an image left without platforms
+	// is skipped even if its working directory does not exist.
+	platforms, err := tmpl.New(ctx).Slice(cfg.Platforms, tmpl.NonEmpty())
+	if err != nil {
+		return nil, err
+	}
+	if len(platforms) == 0 {
+		return nil, pipe.Skipf("ko %s: no platforms to build", cfg.ID)
+	}
+
 	localImportPath := cfg.Main
 	if localImportPath == "" {
 		// ko.main is optional, and go1.27+ rejects an empty package pattern.
@@ -458,7 +468,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		bare:                cfg.Bare,
 		preserveImportPaths: cfg.PreserveImportPaths,
 		baseImportPaths:     cfg.BaseImportPaths,
-		platforms:           cfg.Platforms,
+		platforms:           platforms,
 		sbom:                cfg.SBOM,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
