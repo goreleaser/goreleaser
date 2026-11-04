@@ -23,7 +23,7 @@ func (Preflight) Skip(ctx *context.Context) (bool, error) {
 	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish) {
 		return true, nil
 	}
-	return client.ReleaseDisabled(ctx)
+	return skips.ReleaseDisabled(ctx)
 }
 
 func (Preflight) Run(ctx *context.Context) error {

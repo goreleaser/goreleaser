@@ -66,8 +66,9 @@ func TestNewReleaseClient(t *testing.T) {
 
 	t.Run("skipped", func(t *testing.T) {
 		t.Parallel()
-		cli, err := NewReleaseClient(testctx.Wrap(
+		cli, err := NewReleaseClient(testctx.WrapWithCfg(
 			t.Context(),
+			config.Project{Release: config.Release{Disable: "{{ .Nope }}"}},
 			testctx.Skip(skips.SCMRelease),
 			testctx.WithTokenType(context.TokenTypeGitHub),
 		))

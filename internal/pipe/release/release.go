@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -29,7 +30,7 @@ type Pipe struct{}
 func (Pipe) String() string { return "scm releases" }
 
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
-	return client.ReleaseDisabled(ctx)
+	return skips.ReleaseDisabled(ctx)
 }
 
 // Default sets the pipe defaults.
