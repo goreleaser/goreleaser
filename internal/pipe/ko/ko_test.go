@@ -722,10 +722,15 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	require.NoError(t, validateMainPath("../../app/"))
 	require.NoError(t, validateMainPath("./testdata/app/main"))
 	require.NoError(t, validateMainPath("./testdata/app/folder.with.dots"))
+	require.NoError(t, validateMainPath(".."))
+	require.NoError(t, validateMainPath("../app"))
 
 	require.ErrorIs(t, validateMainPath("app/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/app"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("..."), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath(".app"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("..app"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainGoPath)
 
 	// testing with real context

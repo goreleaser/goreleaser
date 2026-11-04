@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -616,10 +615,12 @@ func validateMainPath(path string) error {
 	if path == "" {
 		return nil
 	}
-	if matched, _ := regexp.MatchString(`^\.?(\.\/[^\/]?.*)?$`, path); !matched {
+	if path != "." && path != ".." &&
+		!strings.HasPrefix(path, "./") &&
+		!strings.HasPrefix(path, "../") {
 		return errInvalidMainPath
 	}
-	// paths sure can have dots in them, but if the path ends in .go, it's probably a file that one misundertood as a valid value
+	// paths sure can have dots in them, but if the path ends in .go, it's probably a file that one misunderstood as a valid value
 	if strings.HasSuffix(path, ".go") {
 		return errInvalidMainGoPath
 	}
