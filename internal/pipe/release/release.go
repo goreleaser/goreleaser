@@ -30,7 +30,10 @@ type Pipe struct{}
 func (Pipe) String() string { return "scm releases" }
 
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
-	return skips.ReleaseDisabled(ctx)
+	if skips.Any(ctx, skips.SCMRelease) {
+		return true, nil
+	}
+	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 }
 
 // Default sets the pipe defaults.

@@ -138,10 +138,10 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish) {
+	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish, skips.SCMRelease) {
 		return nil
 	}
-	if b, err := skips.ReleaseDisabled(ctx); err != nil || b {
+	if b, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable); err != nil || b {
 		return err
 	}
 

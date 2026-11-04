@@ -128,7 +128,10 @@ func New(ctx *context.Context) (Client, error) {
 // NewReleaseClient returns a ReleaserURLTemplater, handling the possibility of
 // the release being disabled.
 func NewReleaseClient(ctx *context.Context) (ReleaseURLTemplater, error) {
-	disable, err := skips.ReleaseDisabled(ctx)
+	if skips.Any(ctx, skips.SCMRelease) {
+		return errURLTemplater{}, nil
+	}
+	disable, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 	if err != nil {
 		return nil, err
 	}

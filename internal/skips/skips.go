@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -64,14 +63,6 @@ func Any(ctx *context.Context, keys ...Key) bool {
 		}
 	}
 	return false
-}
-
-// ReleaseDisabled reports whether the SCM release is disabled by configuration or by --skip=release.
-func ReleaseDisabled(ctx *context.Context) (bool, error) {
-	if Any(ctx, SCMRelease) {
-		return true, nil
-	}
-	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 }
 
 func Set(ctx *context.Context, keys ...Key) {
