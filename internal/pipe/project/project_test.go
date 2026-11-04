@@ -8,6 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -80,6 +82,45 @@ func TestEmptyProjectName_DefaultsToGoModPath(t *testing.T) {
 	require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "init", "github.com/foo/bar").Run())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestProjectNameWithSkippedRelease(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:acme/foo.git")
+	require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "init", "github.com/acme/foo/v2").Run())
+
+	for _, tt := range []struct {
+		name        string
+		projectName string
+		disable     string
+		skip        bool
+		want        string
+	}{
+		{name: "release", want: "foo"},
+		{name: "skipped", skip: true, want: "v2"},
+		{name: "disabled", disable: "true", want: "v2"},
+		{name: "release with explicit name", projectName: "foo", want: "foo"},
+		{name: "skipped with explicit name", projectName: "foo", skip: true, want: "foo"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: tt.projectName,
+				Release:     config.Release{Disable: tt.disable},
+			}, testctx.GitHubTokenType)
+			if tt.skip {
+				skips.Set(ctx, skips.SCMRelease)
+			}
+			err := release.Pipe{}.Default(ctx)
+			if tt.skip || tt.disable == "true" {
+				testlib.AssertSkipped(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.Equal(t, tt.want, ctx.Config.ProjectName)
+		})
+	}
 }
 
 func TestEmptyProjectName_GoModPathIgnoresToolchainNotice(t *testing.T) {
