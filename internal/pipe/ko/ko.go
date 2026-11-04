@@ -212,38 +212,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		}),
 		build.WithPlatforms(o.platforms...),
 		build.WithBaseImages(func(_ stdctx.Context, _ string) (name.Reference, build.Result, error) {
-			ref, err := name.ParseReference(o.baseImage)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			if cached, found := baseImages.Load(o.baseImage); found {
-				return ref, cached.(build.Result), nil
-			}
-
-			if localImage, _ := daemon.Image(ref); localImage != nil {
-				baseImages.Store(o.baseImage, localImage)
-				return ref, localImage, err
-			}
-
-			desc, err := remote.Get(
-				ref,
-				remote.WithAuthFromKeychain(keychain),
-			)
-			if err != nil {
-				return nil, nil, err
-			}
-			if desc.MediaType.IsImage() {
-				img, err := desc.Image()
-				baseImages.Store(o.baseImage, img)
-				return ref, img, err
-			}
-			if desc.MediaType.IsIndex() {
-				idx, err := desc.ImageIndex()
-				baseImages.Store(o.baseImage, idx)
-				return ref, idx, err
-			}
-			return nil, nil, fmt.Errorf("unexpected base image media type: %s", desc.MediaType)
+			return getBaseImage(o.baseImage)
 		}),
 	}
 	if o.creationTime != nil {
@@ -278,6 +247,54 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		return nil, fmt.Errorf("newGo: %w", err)
 	}
 	return build.NewCaching(b)
+}
+
+// getBaseImage resolves the given base image, caching the result.
+//
+// The image is fetched from its registry first, so a stale copy in the local
+// Docker daemon never shadows the published one. The daemon is only used as a
+// fallback, so images that only exist locally can still be used.
+func getBaseImage(image string) (name.Reference, build.Result, error) {
+	ref, err := name.ParseReference(image)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if cached, found := baseImages.Load(image); found {
+		return ref, cached.(build.Result), nil
+	}
+
+	result, err := fetchBaseImage(ref)
+	if err != nil {
+		return nil, nil, err
+	}
+	baseImages.Store(image, result)
+	return ref, result, nil
+}
+
+func fetchBaseImage(ref name.Reference) (build.Result, error) {
+	desc, err := remote.Get(
+		ref,
+		remote.WithAuthFromKeychain(keychain),
+	)
+	if err != nil {
+		localImage, derr := daemon.Image(ref)
+		if derr != nil {
+			return nil, err
+		}
+		log.WithField("image", ref.Name()).
+			WithError(err).
+			Info("could not fetch remote base image, using the local docker daemon one")
+		return localImage, nil
+	}
+	switch {
+	case desc.MediaType.IsImage():
+		return desc.Image()
+	case desc.MediaType.IsIndex():
+		return desc.ImageIndex()
+	default:
+		return nil, fmt.Errorf("unexpected base image media type: %s", desc.MediaType)
+	}
 }
 
 // koVersion returns the version of the ko module GoReleaser was built with,
