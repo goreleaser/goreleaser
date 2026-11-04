@@ -364,19 +364,25 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		return fmt.Errorf("close: %w", err)
 	}
 
-	ctx.Artifacts.Add(makeArtifact(
-		ko.ID,
-		ref.Name(),
-		ref.Context().Digest(ref.Identifier()).DigestStr(),
-	))
-	if !ctx.Snapshot {
-		// snapshots only load the image into the local daemon.
-		summary.Appendf("Pushed Docker image `%s`", ref.Name())
+	digest := ref.Context().Digest(ref.Identifier()).DigestStr()
+	if ctx.Snapshot {
+		// snapshots only load the image into the local daemon, and do not
+		// copy images to other repositories, as they would be local only
+		// anyway.
+		ctx.Artifacts.Add(makeArtifact(ko.ID, ref.Name(), digest))
+		return nil
 	}
 
-	if ctx.Snapshot || len(opts.imageRepos) == 1 {
-		// do not copy images when snapshoting, as these images will be
-		// local only anyway.
+	// ko only returns a single reference, which might not even contain a
+	// tag, so register every pushed tag instead.
+	repo := ref.Context().Name()
+	for _, tag := range opts.tags {
+		dst := repo + ":" + tag
+		ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+		summary.Appendf("Pushed Docker image `%s`", dst)
+	}
+
+	if len(opts.imageRepos) == 1 {
 		return nil
 	}
 
