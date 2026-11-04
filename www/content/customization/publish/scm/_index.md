@@ -185,7 +185,7 @@ release:
   # URL, for instance, homebrew taps.
   #
   # Passing `--skip=release` to `goreleaser release` has the same effect
-  # {{< g_inline_version "v2.20" >}}.
+  # {{< g_inline_version "v2.20-unreleased" >}}.
   #
   # When the release is disabled, the repository is not resolved, so the
   # default project name might differ (e.g. `v2` for a `/v2` Go module).
