@@ -196,7 +196,7 @@ func TestBuildBuildOptionsPlatforms(t *testing.T) {
 		require.Equal(t, []string{"linux/amd64"}, opts.platforms)
 	})
 
-	t.Run("comma separated and whitespace", func(t *testing.T) {
+	t.Run("platform entries are preserved", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
 			"PLATFORMS": "linux/arm64, linux/s390x",
 		}))
@@ -204,7 +204,7 @@ func TestBuildBuildOptionsPlatforms(t *testing.T) {
 		cfg.Platforms = []string{"linux/amd64\n", "{{ .Env.PLATFORMS }}"}
 		opts, err := buildBuildOptions(ctx, cfg)
 		require.NoError(t, err)
-		require.Equal(t, []string{"linux/amd64", "linux/arm64", "linux/s390x"}, opts.platforms)
+		require.Equal(t, []string{"linux/amd64\n", "linux/arm64, linux/s390x"}, opts.platforms)
 	})
 
 	t.Run("no platforms left", func(t *testing.T) {

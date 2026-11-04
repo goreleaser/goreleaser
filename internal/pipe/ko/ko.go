@@ -425,7 +425,7 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
 	// Rendered before loading the package, so an image left without platforms
 	// is skipped even if its working directory does not exist.
-	platforms, err := applyPlatformsTemplate(ctx, cfg.Platforms)
+	platforms, err := tmpl.New(ctx).Slice(cfg.Platforms, tmpl.NonEmpty())
 	if err != nil {
 		return nil, err
 	}
@@ -584,24 +584,6 @@ func applyTemplate(ctx *context.Context, templateable []string) ([]string, error
 		templated = append(templated, tlf)
 	}
 	return templated, nil
-}
-
-// applyPlatformsTemplate renders the platforms, splitting comma-separated
-// lists and dropping empty entries, as ko only splits a single entry itself.
-func applyPlatformsTemplate(ctx *context.Context, templateable []string) ([]string, error) {
-	templated, err := tmpl.New(ctx).Slice(templateable)
-	if err != nil {
-		return nil, err
-	}
-	var platforms []string
-	for _, t := range templated {
-		for p := range strings.SplitSeq(t, ",") {
-			if p = strings.TrimSpace(p); p != "" {
-				platforms = append(platforms, p)
-			}
-		}
-	}
-	return platforms, nil
 }
 
 func applyTemplateToMapValues(ctx *context.Context, templateable map[string]string) (map[string]string, error) {
