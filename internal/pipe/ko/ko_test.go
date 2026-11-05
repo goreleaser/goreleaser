@@ -40,6 +40,8 @@ const (
 	registry1     = "localhost:5052/"
 	registry2Port = "5053"
 	registry2     = "localhost:5053/"
+	registry4Port = "5055"
+	registry4     = "localhost:5055/"
 )
 
 func TestDefault(t *testing.T) {
@@ -610,6 +612,50 @@ func binaryXattr(tb testing.TB, image v1.Image, key string) string {
 	}
 	require.Fail(tb, "binary not found in image")
 	return ""
+}
+
+func TestPublishPipeArtifactsForAllTags(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	testlib.StartRegistry(t, "ko_registry4", registry4Port)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				ID:  "foo",
+				Env: []string{"GOCACHE=" + gocacheOnce()},
+			},
+		},
+		Kos: []config.Ko{
+			{
+				ID:           "default",
+				Build:        "foo",
+				WorkingDir:   "./testdata/app/",
+				Repositories: []string{registry4 + "tags"},
+				Tags:         []string{"latest", "{{.Version}}"},
+				SBOM:         "none",
+				Bare:         true,
+			},
+		},
+	}, testctx.WithVersion("1.2.0"))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
+	names := make([]string, 0, len(manifests))
+	for _, m := range manifests {
+		names = append(names, m.Name)
+		require.Equal(t, m.Name, m.Path)
+		require.Equal(t, "default", m.Extra[artifact.ExtraID])
+		require.NotEmpty(t, m.Extra[artifact.ExtraDigest])
+		require.Equal(t, manifests[0].Extra[artifact.ExtraDigest], m.Extra[artifact.ExtraDigest])
+	}
+	require.ElementsMatch(t, []string{
+		registry4 + "tags:latest",
+		registry4 + "tags:1.2.0",
+	}, names)
 }
 
 func TestSnapshot(t *testing.T) {
