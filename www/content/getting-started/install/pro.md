@@ -127,7 +127,7 @@ To install, after downloading the files, run:
 
 ```bash
 dpkg -i goreleaser*.deb
-rpm -ivh goreleaser*.rpm
+rpm -ivh --nosignature goreleaser*.rpm
 apk add --allow-untrusted goreleaser*.apk
 ```
 

@@ -241,7 +241,7 @@ tasks:
   goreleaser:test:rpm:
     desc: Tests rpm packages
     vars:
-      rpm: "rpm --nodeps -ivh"
+      rpm: "rpm --nodeps --nosignature -ivh"
     cmds:
       - task: goreleaser:test:pkg
         vars:
