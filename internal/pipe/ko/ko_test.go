@@ -23,6 +23,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/ko/pkg/caps"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -40,6 +41,8 @@ const (
 	registry1     = "localhost:5052/"
 	registry2Port = "5053"
 	registry2     = "localhost:5053/"
+	registry3Port = "5054"
+	registry3     = "localhost:5054/"
 )
 
 func TestDefault(t *testing.T) {
@@ -804,6 +807,47 @@ func TestPublishLocalBaseImage(t *testing.T) {
 		ctx.Snapshot = true
 		require.NoError(t, doBuild(ctx, ctx.Config.Kos[0]))
 	})
+}
+
+func TestGetBaseImageRemoteTakesPriority(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	testlib.StartRegistry(t, "ko_registry3", registry3Port)
+
+	image := registry3 + "ko-base:latest"
+	ref, err := name.ParseReference(image)
+	require.NoError(t, err)
+
+	remoteImage, err := random.Image(1024, 1)
+	require.NoError(t, err)
+	require.NoError(t, remote.Write(ref, remoteImage))
+	remoteDigest, err := remoteImage.Digest()
+	require.NoError(t, err)
+
+	// a different image, with the same name, in the local daemon.
+	cmd := exec.Command("docker", "build", "-t", image, "-f", "./testdata/Dockerfile", ".")
+	output, err := cmd.CombinedOutput()
+	t.Cleanup(func() {
+		_ = exec.Command("docker", "rmi", image).Run()
+		baseImages.Delete(image)
+	})
+	require.NoError(t, err, string(output))
+
+	_, result, err := getBaseImage(image)
+	require.NoError(t, err)
+	img, ok := result.(v1.Image)
+	require.True(t, ok)
+	digest, err := img.Digest()
+	require.NoError(t, err)
+	require.Equal(t, remoteDigest, digest)
+}
+
+func TestGetBaseImageDoesNotCacheErrors(t *testing.T) {
+	image := "localhost:1/nope:latest"
+	_, _, err := getBaseImage(image)
+	require.Error(t, err)
+	_, found := baseImages.Load(image)
+	require.False(t, found)
 }
 
 func TestPublishPipeError(t *testing.T) {
