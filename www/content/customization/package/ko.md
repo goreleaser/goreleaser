@@ -152,6 +152,9 @@ kos:
 
     # Env to use on build.
     #
+    # If build.tool is a versioned Go binary (e.g. 'go1.25.3', as installed by
+    # golang.org/dl), 'GOTOOLCHAIN' is set to it, unless already set here.
+    #
     # Default: build.env.
     # Templates: allowed.
     env:
