@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"regexp"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -97,6 +99,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(ko.Env) == 0 {
 			ko.Env = build.Env
 		}
+
+		ko.Env = withGoToolchain(ko.Env, build.Tool)
 
 		if ko.Main == "" {
 			ko.Main = build.Main
@@ -410,6 +414,26 @@ func secondaryDestinations(opts *buildOptions) []string {
 		}
 	}
 	return dsts
+}
+
+// goToolchainRe matches versioned Go binaries, such as the ones installed by
+// golang.org/dl (e.g. go1.25.3, go1.26rc1).
+var goToolchainRe = regexp.MustCompile(`^go1(\.\d+){1,2}((rc|beta)\d+)?$`)
+
+// withGoToolchain maps a versioned Go build tool to GOTOOLCHAIN, since ko
+// always runs the default go binary.
+// It does nothing if env already sets GOTOOLCHAIN.
+func withGoToolchain(env []string, tool string) []string {
+	tool = filepath.Base(tool)
+	if !goToolchainRe.MatchString(tool) {
+		return env
+	}
+	for _, e := range env {
+		if strings.HasPrefix(e, "GOTOOLCHAIN=") {
+			return env
+		}
+	}
+	return append(slices.Clone(env), "GOTOOLCHAIN="+tool)
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
