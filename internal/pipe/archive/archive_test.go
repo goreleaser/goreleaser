@@ -231,6 +231,7 @@ func TestRunPipe(t *testing.T) {
 				Extra: map[string]any{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
+					artifact.ExtraABI:    "softfloat",
 				},
 			}
 			linuxMipsBuild := &artifact.Artifact{
@@ -321,6 +322,9 @@ func TestRunPipe(t *testing.T) {
 					"foo/bar/foobar/blah.txt",
 				}, artifact.MustExtra[[]string](*arch, artifact.ExtraFiles))
 				require.Empty(t, artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
+				if arch.Goos == "linux" && arch.Goarch == "arm" {
+					require.Equal(t, "softfloat", artifact.ExtraOr(*arch, artifact.ExtraABI, ""))
+				}
 			}
 			require.Len(t, archives, 13)
 			// TODO: should verify the artifact fields here too
@@ -799,6 +803,320 @@ func TestRunPipeBinary(t *testing.T) {
 	require.Equal(t, "myotherbin_0.0.1_windows_amd64.exe", windows2.Name)
 	require.Equal(t, "myotherbin.exe", artifact.MustExtra[string](*windows2, artifact.ExtraBinary))
 	testlib.RequireNoExtraField(t, windows2, artifact.ExtraReplaces)
+}
+
+func TestPackslipMetadataSkipsLibraryOnlyArtifacts(t *testing.T) {
+	newCtx := func(t *testing.T, formats []string) *context.Context {
+		t.Helper()
+		return testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: t.TempDir(),
+			Archives: []config.Archive{{
+				ID:           "default",
+				Builds:       []string{"default"},
+				Formats:      formats,
+				NameTemplate: "tool",
+			}},
+		})
+	}
+	add := func(t *testing.T, ctx *context.Context, typ artifact.Type, name string) {
+		t.Helper()
+		path := filepath.Join(ctx.Config.Dist, name)
+		require.NoError(t, os.WriteFile(path, []byte(name), 0o644))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: typ, Name: name, Path: path, Goos: "linux", Goarch: "amd64",
+			Extra: map[string]any{artifact.ExtraID: "default"},
+		})
+	}
+
+	t.Run("archive", func(t *testing.T) {
+		ctx := newCtx(t, []string{"tar.gz"})
+		add(t, ctx, artifact.Header, "libtool.h")
+		add(t, ctx, artifact.CShared, "libtool.so")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.Equal(t, []string{"libtool.h", "libtool.so"}, artifact.ExtraOr(*got[0], artifact.ExtraBinaries, []string{}))
+		require.Empty(t, artifact.ExtraOr(*got[0], artifact.ExtraPackslipBins, []string{}))
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+
+	t.Run("raw library", func(t *testing.T) {
+		ctx := newCtx(t, []string{"binary"})
+		add(t, ctx, artifact.CArchive, "libtool.a")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+		require.Len(t, got, 1)
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+
+	t.Run("executable archive", func(t *testing.T) {
+		ctx := newCtx(t, []string{"tar.gz"})
+		add(t, ctx, artifact.Binary, "tool")
+		add(t, ctx, artifact.Header, "tool.h")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.Equal(t, []string{"tool", "tool.h"}, artifact.ExtraOr(*got[0], artifact.ExtraBinaries, []string{}))
+		require.Equal(t, []string{"tool"}, artifact.ExtraOr(*got[0], artifact.ExtraPackslipBins, []string{}))
+		require.False(t, artifact.ExtraOr(*got[0], artifact.ExtraSkipPackslip, false))
+	})
+}
+
+func TestPackslipMetadataSkipsMetaArchives(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "tool",
+				Builds:       []string{"default"},
+				Formats:      []string{"zip"},
+				NameTemplate: "tool",
+			},
+			{
+				ID:           "docs",
+				NameTemplate: "docs",
+				Meta:         true,
+				Formats:      []string{"zip"},
+				Files:        []config.File{{Source: "./testdata/a/a.txt"}},
+			},
+			{
+				ID:           "more-docs",
+				NameTemplate: "more-docs",
+				Meta:         true,
+				Formats:      []string{"zip"},
+				Files:        []config.File{{Source: "./testdata/a/b/a.txt"}},
+			},
+		},
+	})
+	path := filepath.Join(ctx.Config.Dist, "tool")
+	require.NoError(t, os.WriteFile(path, []byte("tool"), 0o755))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Binary, Name: "tool", Path: path, Goos: "linux", Goarch: "amd64",
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 3)
+	for _, a := range archives {
+		meta := artifact.ExtraOr(*a, artifact.ExtraID, "") != "tool"
+		require.Equal(t, meta, artifact.ExtraOr(*a, artifact.ExtraSkipPackslip, false), a.Name)
+	}
+}
+
+// Rust and Zig builds leave the Go CPU levels empty, and GroupByPlatform puts
+// them in the same archive as a Go build that sets one. The archive must carry
+// the level whichever build finished first.
+func TestRunPipeMixedCPULevels(t *testing.T) {
+	for name, levels := range map[string][]string{
+		"unset first": {"", "v3"},
+		"unset last":  {"v3", ""},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					NameTemplate: "archive",
+					Formats:      []string{"tar.gz"},
+				}},
+			})
+			for i, level := range levels {
+				name := fmt.Sprintf("bin%d", i)
+				path := filepath.Join(dist, name)
+				require.NoError(t, os.WriteFile(path, []byte(name), 0o755))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Type: artifact.Binary, Name: name, Path: path,
+					Goos: "linux", Goarch: "amd64", Goamd64: level,
+					Extra: map[string]any{artifact.ExtraID: "default"},
+				})
+			}
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			require.Len(t, archives, 1)
+			require.Equal(t, "v3", archives[0].Goamd64)
+		})
+	}
+}
+
+func TestStaticLinkageRecorded(t *testing.T) {
+	write := func(t *testing.T, dir, name string, kind string) *artifact.Artifact {
+		t.Helper()
+		path := filepath.Join(dir, name)
+		extra := map[string]any{artifact.ExtraID: "default"}
+		switch kind {
+		case "static":
+			testlib.WriteStaticELF(t, path)
+		case "dynamic":
+			testlib.WriteDynamicELF(t, path, "/lib64/ld-linux-x86-64.so.2")
+			extra[artifact.ExtranDynLink] = true
+		case "script":
+			require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\n"), 0o755))
+		}
+		return &artifact.Artifact{
+			Type: artifact.Binary, Name: name, Path: path,
+			Goos: "linux", Goarch: "amd64", Extra: extra,
+		}
+	}
+
+	for name, tt := range map[string]struct {
+		formats []string
+		kinds   []string
+		want    bool
+	}{
+		"static":                {[]string{"tar.gz"}, []string{"static"}, true},
+		"all static":            {[]string{"tar.gz"}, []string{"static", "static"}, true},
+		"dynamic":               {[]string{"tar.gz"}, []string{"dynamic"}, false},
+		"static and dynamic":    {[]string{"tar.gz"}, []string{"static", "dynamic"}, false},
+		"not an ELF":            {[]string{"tar.gz"}, []string{"script"}, false},
+		"static and not an ELF": {[]string{"tar.gz"}, []string{"static", "script"}, false},
+		"static, raw":           {[]string{"binary"}, []string{"static"}, true},
+		"dynamic, raw":          {[]string{"binary"}, []string{"dynamic"}, false},
+		"not an ELF, raw":       {[]string{"binary"}, []string{"script"}, false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					Formats:      tt.formats,
+					NameTemplate: "tool",
+				}},
+			})
+			for i, kind := range tt.kinds {
+				ctx.Artifacts.Add(write(t, dist, fmt.Sprintf("tool%d", i), kind))
+			}
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			got := ctx.Artifacts.Filter(artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+			)).List()
+			require.NotEmpty(t, got)
+			for _, a := range got {
+				require.Equal(t, tt.want, artifact.ExtraOr(*a, artifact.ExtraStaticLink, false), a.Name)
+			}
+		})
+	}
+
+	t.Run("a header does not decide", func(t *testing.T) {
+		dist := t.TempDir()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			Archives: []config.Archive{{
+				ID:           "default",
+				Builds:       []string{"default"},
+				Formats:      []string{"tar.gz"},
+				NameTemplate: "tool",
+			}},
+		})
+		ctx.Artifacts.Add(write(t, dist, "tool", "static"))
+		header := write(t, dist, "tool.h", "script")
+		header.Type = artifact.Header
+		ctx.Artifacts.Add(header)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+		require.Len(t, got, 1)
+		require.True(t, artifact.ExtraOr(*got[0], artifact.ExtraStaticLink, false))
+	})
+}
+
+// A builder that records no linkage still produces a dynamic ELF that the
+// archive must not describe as static or libc-independent.
+func TestUnflaggedDynamicLinkageDetected(t *testing.T) {
+	for name, format := range map[string]string{"archive": "tar.gz", "raw": "binary"} {
+		t.Run(name, func(t *testing.T) {
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					ID:           "default",
+					Builds:       []string{"default"},
+					Formats:      []string{format},
+					NameTemplate: "tool",
+				}},
+			})
+			path := filepath.Join(dist, "tool")
+			testlib.WriteDynamicELF(t, path, "/lib/ld-musl-x86_64.so.1")
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type: artifact.Binary, Name: "tool", Path: path, Goos: "linux", Goarch: "amd64",
+				Extra: map[string]any{artifact.ExtraID: "default"},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			got := ctx.Artifacts.Filter(artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+			)).List()
+			require.Len(t, got, 1)
+			require.True(t, artifact.ExtraOr(*got[0], artifact.ExtranDynLink, false))
+			require.Equal(t, "musl", artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
+			require.False(t, artifact.ExtraOr(*got[0], artifact.ExtraStaticLink, false))
+		})
+	}
+}
+
+// UPX can remove a dynamic ELF's PT_INTERP segment. The builder records libc
+// before packing, and archive metadata must retain that recorded value rather
+// than probing the packed bytes again. The same path covers a Node SEA, whose
+// stock Linux runtime is dynamically linked even when the packed bytes no
+// longer expose PT_INTERP.
+func TestArchivePreservesRecordedLibc(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		builder string
+		libc    string
+	}{
+		{name: "musl after UPX", libc: "musl"},
+		{name: "node SEA glibc", builder: "node", libc: "gnu"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "packed-tool")
+			require.NoError(t, os.WriteFile(path, []byte("packed bytes without ELF metadata"), 0o755))
+			extra := map[string]any{
+				artifact.ExtraID:         "default",
+				artifact.ExtraBinary:     "tool",
+				artifact.ExtranDynLink:   true,
+				artifact.ExtraLibcFamily: tt.libc,
+			}
+			if tt.builder != "" {
+				extra[artifact.ExtraBuilder] = tt.builder
+			}
+			binary := &artifact.Artifact{
+				Type:   artifact.Binary,
+				Name:   "tool",
+				Path:   path,
+				Goos:   "linux",
+				Goarch: "amd64",
+				Extra:  extra,
+			}
+			require.Equal(t, tt.libc, dynamicLibc([]*artifact.Artifact{binary}))
+
+			ctx := testctx.Wrap(t.Context())
+			require.NoError(t, skip(ctx, config.Archive{
+				ID:           "default",
+				NameTemplate: "{{ .Binary }}",
+			}, []*artifact.Artifact{binary}))
+			got := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+			require.Len(t, got, 1)
+			require.Equal(t, tt.libc, artifact.ExtraOr(*got[0], artifact.ExtraLibcFamily, ""))
+			require.True(t, artifact.ExtraOr(*got[0], artifact.ExtranDynLink, false))
+		})
+	}
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

@@ -28,6 +28,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -186,6 +187,20 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
+	recordLinkage(a)
+
 	ctx.Artifacts.Add(a)
 	return nil
+}
+
+// recordLinkage notes whether the built binary is dynamically linked and, if
+// so, its libc family. The SEA runtime is the stock Node executable, which is
+// dynamically linked on Linux, so a missing flag must not read as static.
+func recordLinkage(a *artifact.Artifact) {
+	if elf.IsDynamicallyLinked(a.Path) {
+		a.Extra[artifact.ExtranDynLink] = true
+		if libc := elf.Libc(a.Path); libc != "" {
+			a.Extra[artifact.ExtraLibcFamily] = libc
+		}
+	}
 }

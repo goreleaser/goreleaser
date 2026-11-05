@@ -37,6 +37,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/notary"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/opencollective"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/packslip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/project"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
@@ -94,6 +95,7 @@ var Defaulters = []Defaulter{
 	checksums.Pipe{},
 	sign.Pipe{},
 	sign.DockerPipe{},
+	packslip.Pipe{},
 	sbom.Pipe{},
 	docker.Pipe{},
 	dockerv2.Base{},
