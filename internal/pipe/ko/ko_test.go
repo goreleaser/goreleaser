@@ -86,6 +86,58 @@ func TestDefault(t *testing.T) {
 	}, ctx.Config.Kos[0])
 }
 
+func TestDefaultGoToolchain(t *testing.T) {
+	for name, tt := range map[string]struct {
+		tool     string
+		buildEnv []string
+		koEnv    []string
+		want     []string
+	}{
+		"default tool":      {tool: "", want: nil},
+		"go":                {tool: "go", want: nil},
+		"custom binary":     {tool: "/opt/mygo/bin/go", want: nil},
+		"templated":         {tool: "{{ .Env.GOBIN }}", want: nil},
+		"versioned":         {tool: "go1.25.3", want: []string{"GOTOOLCHAIN=go1.25.3"}},
+		"versioned minor":   {tool: "go1.26", want: []string{"GOTOOLCHAIN=go1.26"}},
+		"release candidate": {tool: "go1.26rc1", want: []string{"GOTOOLCHAIN=go1.26rc1"}},
+		"versioned path":    {tool: "/home/me/go/bin/go1.25.3", want: []string{"GOTOOLCHAIN=go1.25.3"}},
+		"inherited env": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"FOO=bar"},
+			want:     []string{"FOO=bar", "GOTOOLCHAIN=go1.25.3"},
+		},
+		"ko env": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"FOO=bar"},
+			koEnv:    []string{"BAR=foo"},
+			want:     []string{"BAR=foo", "GOTOOLCHAIN=go1.25.3"},
+		},
+		"explicit toolchain": {
+			tool:  "go1.25.3",
+			koEnv: []string{"GOTOOLCHAIN=go1.26.0"},
+			want:  []string{"GOTOOLCHAIN=go1.26.0"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "test",
+				Env:         []string{"KO_DOCKER_REPO=" + registry1},
+				Builds: []config.Build{
+					{ID: "test", Tool: tt.tool, Env: tt.buildEnv},
+				},
+				Kos: []config.Ko{
+					{Env: tt.koEnv},
+				},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.Equal(t, tt.want, ctx.Config.Kos[0].Env)
+			if len(tt.buildEnv) > 0 {
+				require.Equal(t, tt.buildEnv, ctx.Config.Builds[0].Env, "build env must not be modified")
+			}
+		})
+	}
+}
+
 func TestDefaultCycloneDX(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
