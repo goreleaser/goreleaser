@@ -10,6 +10,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -127,6 +128,9 @@ func New(ctx *context.Context) (Client, error) {
 // NewReleaseClient returns a ReleaserURLTemplater, handling the possibility of
 // the release being disabled.
 func NewReleaseClient(ctx *context.Context) (ReleaseURLTemplater, error) {
+	if skips.Any(ctx, skips.SCMRelease) {
+		return errURLTemplater{}, nil
+	}
 	disable, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 	if err != nil {
 		return nil, err

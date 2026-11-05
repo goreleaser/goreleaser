@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -720,6 +721,13 @@ func TestSkip(t *testing.T) {
 			},
 		})
 
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
+	})
+
+	t.Run("skip flag", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.SCMRelease))
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)

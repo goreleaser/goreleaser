@@ -24,6 +24,13 @@ func TestPreflightSkip(t *testing.T) {
 		require.True(t, skip)
 	})
 
+	t.Run("skip release", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.SCMRelease))
+		skip, err := Preflight{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, skip)
+	})
+
 	t.Run("release disabled", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{Disable: "true"},
