@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -610,6 +611,98 @@ func TestPublishBadRequest(t *testing.T) {
 	err := pipe.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "got status code 400")
+}
+
+func TestPublishRetriesVersionNotYetVisible(t *testing.T) {
+	var calls int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		if calls == 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, `{"title":"Failed to publish server","status":400,"detail":"registry validation failed for package 0 (@test/server): NPM package '@test/server' exists, but version '1.0.0' was not found (status: 404). A newly published release can take a moment to appear on the registry. Wait and retry, or publish version '1.0.0' before registering it"}`)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+		assert.NoError(t, json.NewEncoder(w).Encode(apiv0.ServerResponse{
+			Meta: apiv0.ResponseMeta{
+				Official: &apiv0.RegistryExtensions{Status: "pending"},
+			},
+		}))
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Retry: config.Retry{
+			Attempts: 3,
+			Delay:    time.Millisecond,
+			MaxDelay: 10 * time.Millisecond,
+		},
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
+					},
+				},
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+
+	pipe := &Pipe{registry: srv.URL}
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
+		return &mockAuthProvider{token: "test-token"}, nil
+	}
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Publish(ctx))
+	require.Equal(t, 2, calls)
+}
+
+func TestPublishDoesNotRetryOtherBadRequests(t *testing.T) {
+	var calls int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, `{"title":"Failed to publish server","status":400,"detail":"registry validation failed for package 0 (@test/server): NPM package '@test/server' does not exist"}`)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Retry: config.Retry{
+			Attempts: 3,
+			Delay:    time.Millisecond,
+			MaxDelay: 10 * time.Millisecond,
+		},
+		MCP: config.MCP{
+			MCPDetails: config.MCPDetails{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+
+	pipe := &Pipe{registry: srv.URL}
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
+		return &mockAuthProvider{token: "test-token"}, nil
+	}
+	require.NoError(t, pipe.Default(ctx))
+	err := pipe.Publish(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "got status code 400")
+	require.Equal(t, 1, calls)
 }
 
 func TestPublishMultiplePackages(t *testing.T) {
