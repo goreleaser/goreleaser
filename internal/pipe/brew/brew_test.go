@@ -1,14 +1,17 @@
 package brew
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -1479,6 +1482,75 @@ func TestRunPipeNoRepoNameDoesNotStopOthers(t *testing.T) {
 
 	brew := artifact.MustExtra[config.Homebrew](*formulae[0], brewConfigExtra)
 	require.Equal(t, []string{"foo"}, brew.IDs)
+}
+
+func TestPrivateKeyTemplateInArtifactMetadata(t *testing.T) {
+	const keyTemplate = "{{ .Env.SSH_KEY }}"
+	const prepareKey = "prepare-secret"
+	folder := t.TempDir()
+	url := testlib.GitMakeBareRepository(t)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Brews: []config.Homebrew{{
+			Name:     "foo",
+			Goamd64:  "v1",
+			Homepage: "https://goreleaser.com",
+			Repository: config.RepoRef{
+				Name:   "tap",
+				Branch: "metadata-test",
+				Git: config.GitRepoRef{
+					URL:        url,
+					PrivateKey: keyTemplate,
+				},
+			},
+		}},
+	}, testctx.WithCurrentTag("v1.0.1"), testctx.WithVersion("1.0.1"),
+		testctx.WithEnv(map[string]string{"SSH_KEY": prepareKey}))
+	archivePath := filepath.Join(folder, "foo.tar.gz")
+	require.NoError(t, os.WriteFile(archivePath, []byte("archive"), 0o600))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo.tar.gz",
+		Path:    archivePath,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	require.NoError(t, (metadata.ArtifactsPipe{}).Run(ctx))
+
+	data, err := os.ReadFile(filepath.Join(folder, "artifacts.json"))
+	require.NoError(t, err)
+	require.NotContains(t, string(data), prepareKey)
+	var artifacts []*artifact.Artifact
+	require.NoError(t, json.Unmarshal(data, &artifacts))
+	var formula *artifact.Artifact
+	for _, a := range artifacts {
+		if a.Type == artifact.BrewFormula {
+			formula = a
+		}
+	}
+	require.NotNil(t, formula)
+	brew := artifact.MustExtra[config.Homebrew](*formula, brewConfigExtra)
+	require.Equal(t, keyTemplate, brew.Repository.Git.PrivateKey)
+
+	key, err := os.ReadFile(testlib.MakeNewSSHKey(t, ""))
+	require.NoError(t, err)
+	publishCtx := testctx.WrapWithCfg(t.Context(), ctx.Config,
+		testctx.WithCurrentTag("v1.0.1"), testctx.WithVersion("1.0.1"),
+		testctx.WithEnv(map[string]string{"SSH_KEY": string(key)}))
+	require.NoError(t, doPublish(publishCtx, formula, client.NewMock()))
+	content, err := exec.CommandContext(t.Context(), "git", "--git-dir="+url, "show", "metadata-test:foo.rb").CombinedOutput()
+	require.NoError(t, err, string(content))
+	expected, err := os.ReadFile(formula.Path)
+	require.NoError(t, err)
+	require.Equal(t, string(expected), string(content))
 }
 
 func TestInstalls(t *testing.T) {
