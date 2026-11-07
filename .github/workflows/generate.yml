@@ -25,7 +25,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: "install gofumpt"
-        uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8 # v3.0.0
+        uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: mvdan/gofumpt
           tag: v0.10.0
@@ -33,7 +33,7 @@ jobs:
           rename-to: gofumpt
           chmod: 0755
       - name: "install jv"
-        uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8 # v3.0.0
+        uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: santhosh-tekuri/jsonschema
           tag: v6.0.2
