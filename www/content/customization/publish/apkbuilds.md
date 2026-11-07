@@ -4,7 +4,7 @@ linkTitle: APKBUILD
 weight: 125
 ---
 
-{{< g_version "v2.19-unreleased" >}}
+{{< g_version "v2.20-unreleased" >}}
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and
 publish an [`APKBUILD`][apkbuild] that packages prebuilt Linux binaries.
@@ -16,12 +16,14 @@ When an archive ID produces multiple formats for the same architecture,
 GoReleaser deterministically selects the first available format in this order:
 `tar.gz`, `tgz`, `tar.xz`, `tar`, then `zip`.
 
-Prerelease labels `alpha`, `beta`, `pre`, and `rc`, optionally followed by
-digits without leading zeros, map to their `apk` equivalents (e.g. `1.2.3-rc2` becomes `1.2.3_rc2`).
-Other labels, such as `dev`, `nightly`, or `preview`, and any separator after
+Lowercase prerelease labels `alpha`, `beta`, `pre`, and `rc`, optionally
+followed by a single digit, map to their `apk` equivalents (e.g. `1.2.3-rc2` becomes `1.2.3_rc2`).
+Other labels, such as `dev`, `nightly`, or `preview`, uppercase labels, such as
+`1.2.3-RC1`, more than one digit, such as `1.2.3-rc10`, and any separator after
 the label, such as `1.2.3-rc.2` or `1.2.3-rc-2`, fail the pipe rather than
 generate package versions that can collide or prevent upgrades: SemVer orders
-every `rc.N` before every `rcN`, and `apk` cannot express both.
+every `rc.N` before every `rcN`, `RC1` before `rc1`, and `rc10` before `rc2`,
+and `apk` cannot express these.
 
 The default snapshot version template is supported for stable and prerelease
 tags. Its `-SNAPSHOT-<commit>` suffix becomes an `_git` suffix with a numeric

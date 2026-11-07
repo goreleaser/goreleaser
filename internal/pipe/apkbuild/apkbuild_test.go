@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
@@ -68,11 +69,10 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3":             "1.2.3",
 		"1.2.3-rc":          "1.2.3_rc",
 		"1.2.3-rc1":         "1.2.3_rc1",
-		"1.2.3-RC1":         "1.2.3_rc1",
 		"1.2.3-beta2":       "1.2.3_beta2",
+		"1.2.3-beta9":       "1.2.3_beta9",
 		"1.2.3-alpha1":      "1.2.3_alpha1",
 		"1.2.3-pre":         "1.2.3_pre",
-		"1.2.3-pre10":       "1.2.3_pre10",
 		"1.2.3-rc1+build.1": "1.2.3_rc1_p" + toAPKVersionNumber("build.1"),
 	} {
 		t.Run(input, func(t *testing.T) {
@@ -116,10 +116,29 @@ func TestToAPKVersion(t *testing.T) {
 		"1.2.3-rc1-2",
 		"1.2.3-rc01",
 		"1.2.3-beta007",
+		"1.2.3-pre10",
+		"1.2.3-beta10",
+		"1.2.3-rc10",
+		"1.2.3-RC1",
+		"1.2.3-Beta1",
 	} {
 		t.Run(input+" is rejected", func(t *testing.T) {
 			_, err := toAPKVersion(input)
 			require.ErrorContains(t, err, "cannot be converted to an ordered apk version")
+		})
+	}
+
+	for _, input := range []string{"1.2.3-beta10", "1.2.3-rc10"} {
+		t.Run(input+" requires a single digit", func(t *testing.T) {
+			_, err := toAPKVersion(input)
+			require.ErrorContains(t, err, "use at most one digit after the label")
+		})
+	}
+
+	for _, input := range []string{"1.2.3-RC1", "1.2.3-Beta1"} {
+		t.Run(input+" requires a lowercase label", func(t *testing.T) {
+			_, err := toAPKVersion(input)
+			require.ErrorContains(t, err, "use a lowercase label")
 		})
 	}
 
@@ -151,10 +170,24 @@ func TestToAPKVersionOrder(t *testing.T) {
 	testlib.CheckPath(t, "apk")
 	for _, versions := range [][]string{
 		{"1.2.3-alpha1", "1.2.3-beta1", "1.2.3-rc1", "1.2.3"},
-		{"1.2.3-beta1", "1.2.3-beta2", "1.2.3-beta10", "1.2.3"},
+		{"1.2.3-beta1", "1.2.3-beta2", "1.2.3-beta9", "1.2.3"},
 		{"1.2.3-rc", "1.2.3-rc1", "1.2.3"},
 	} {
 		requireAPKVersionOrder(t, versions)
+	}
+}
+
+func TestToAPKVersionRejectsUnorderedSuffixes(t *testing.T) {
+	for _, versions := range [][2]string{
+		{"1.2.3-beta10", "1.2.3-beta2"},
+		{"1.2.3-rc10", "1.2.3-rc2"},
+		{"1.2.3-RC1", "1.2.3-rc1"},
+	} {
+		t.Run(versions[0]+" before "+versions[1], func(t *testing.T) {
+			require.True(t, semver.MustParse(versions[0]).LessThan(semver.MustParse(versions[1])))
+			_, err := toAPKVersion(versions[0])
+			require.Error(t, err)
+		})
 	}
 }
 
@@ -197,6 +230,7 @@ func TestRunDefaultSnapshot(t *testing.T) {
 func requireAPKVersionOrder(t *testing.T, versions []string) {
 	t.Helper()
 	for i := 1; i < len(versions); i++ {
+		require.Truef(t, semver.MustParse(versions[i-1]).LessThan(semver.MustParse(versions[i])), "%s should sort before %s", versions[i-1], versions[i])
 		older, err := toAPKVersion(versions[i-1])
 		require.NoError(t, err)
 		newer, err := toAPKVersion(versions[i])

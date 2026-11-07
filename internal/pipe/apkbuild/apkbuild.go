@@ -365,9 +365,11 @@ func toAPKVersion(version string) (string, error) {
 }
 
 func toAPKPrerelease(prerelease string) (string, error) {
-	value := strings.ToLower(prerelease)
-	label := value[:len(value)-len(strings.TrimLeft(value, "abcdefghijklmnopqrstuvwxyz"))]
-	rest := value[len(label):]
+	if prerelease != strings.ToLower(prerelease) {
+		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use a lowercase label, e.g. %q", prerelease, "rc1")
+	}
+	label := prerelease[:len(prerelease)-len(strings.TrimLeft(prerelease, "abcdefghijklmnopqrstuvwxyz"))]
+	rest := prerelease[len(label):]
 
 	switch label {
 	case "alpha", "beta", "pre", "rc":
@@ -375,8 +377,8 @@ func toAPKPrerelease(prerelease string) (string, error) {
 		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: supported labels are alpha, beta, pre, and rc", prerelease)
 	}
 
-	if strings.Trim(rest, "0123456789") != "" || (len(rest) > 1 && rest[0] == '0') {
-		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use only digits without leading zeros after the label, e.g. %q", prerelease, "rc1")
+	if strings.Trim(rest, "0123456789") != "" || len(rest) > 1 {
+		return "", fmt.Errorf("prerelease %q cannot be converted to an ordered apk version: use at most one digit after the label, e.g. %q", prerelease, "rc1")
 	}
 	return "_" + label + rest, nil
 }
