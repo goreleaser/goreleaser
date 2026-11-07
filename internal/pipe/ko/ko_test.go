@@ -165,9 +165,56 @@ func TestBuildBuildOptionsEmptyMain(t *testing.T) {
 		ID:           "default",
 		WorkingDir:   "./testdata/app/",
 		Repositories: []string{"localhost:5000/goreleasertest/testapp"},
+		Platforms:    []string{"linux/amd64"},
 	})
 	require.NoError(t, err)
 	require.Equal(t, "testapp", opts.importPath)
+}
+
+func TestBuildBuildOptionsPlatforms(t *testing.T) {
+	cfg := config.Ko{
+		ID:           "default",
+		WorkingDir:   "./testdata/app/",
+		Repositories: []string{"localhost:5000/goreleasertest/testapp"},
+		Platforms: []string{
+			"linux/amd64",
+			`{{ if not (isEnvSet "SINGLE") }}linux/arm64{{ end }}`,
+		},
+	}
+
+	t.Run("all", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{}))
+		opts, err := buildBuildOptions(ctx, cfg)
+		require.NoError(t, err)
+		require.Equal(t, []string{"linux/amd64", "linux/arm64"}, opts.platforms)
+	})
+
+	t.Run("empty platforms are ignored", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{"SINGLE": "1"}))
+		opts, err := buildBuildOptions(ctx, cfg)
+		require.NoError(t, err)
+		require.Equal(t, []string{"linux/amd64"}, opts.platforms)
+	})
+
+	t.Run("platform entries are preserved", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
+			"PLATFORMS": "linux/arm64, linux/s390x",
+		}))
+		cfg := cfg
+		cfg.Platforms = []string{"linux/amd64\n", "{{ .Env.PLATFORMS }}"}
+		opts, err := buildBuildOptions(ctx, cfg)
+		require.NoError(t, err)
+		require.Equal(t, []string{"linux/amd64\n", "linux/arm64, linux/s390x"}, opts.platforms)
+	})
+
+	t.Run("no platforms left", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{}))
+		cfg := cfg
+		cfg.WorkingDir = "./testdata/nope/"
+		cfg.Platforms = []string{`{{ if isEnvSet "NOPE" }}linux/amd64{{ end }}`}
+		_, err := buildBuildOptions(ctx, cfg)
+		testlib.AssertSkipped(t, err)
+	})
 }
 
 func TestSecondaryDestinationsUseKoNamer(t *testing.T) {
@@ -675,10 +722,15 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	require.NoError(t, validateMainPath("../../app/"))
 	require.NoError(t, validateMainPath("./testdata/app/main"))
 	require.NoError(t, validateMainPath("./testdata/app/folder.with.dots"))
+	require.NoError(t, validateMainPath(".."))
+	require.NoError(t, validateMainPath("../app"))
 
 	require.ErrorIs(t, validateMainPath("app/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/app"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("..."), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath(".app"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("..app"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainGoPath)
 
 	// testing with real context
@@ -814,6 +866,13 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("invalid tags tmpl", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].Tags = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid platforms tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].Platforms = []string{"{{.Nope}}"}
 		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})

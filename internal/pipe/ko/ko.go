@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -423,6 +422,16 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 }
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
+	// Rendered before loading the package, so an image left without platforms
+	// is skipped even if its working directory does not exist.
+	platforms, err := tmpl.New(ctx).Slice(cfg.Platforms, tmpl.NonEmpty())
+	if err != nil {
+		return nil, err
+	}
+	if len(platforms) == 0 {
+		return nil, pipe.Skipf("ko %s: no platforms to build", cfg.ID)
+	}
+
 	localImportPath := cfg.Main
 	if localImportPath == "" {
 		// ko.main is optional, and go1.27+ rejects an empty package pattern.
@@ -458,7 +467,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		bare:                cfg.Bare,
 		preserveImportPaths: cfg.PreserveImportPaths,
 		baseImportPaths:     cfg.BaseImportPaths,
-		platforms:           cfg.Platforms,
+		platforms:           platforms,
 		sbom:                cfg.SBOM,
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
@@ -606,10 +615,12 @@ func validateMainPath(path string) error {
 	if path == "" {
 		return nil
 	}
-	if matched, _ := regexp.MatchString(`^\.?(\.\/[^\/]?.*)?$`, path); !matched {
+	if path != "." && path != ".." &&
+		!strings.HasPrefix(path, "./") &&
+		!strings.HasPrefix(path, "../") {
 		return errInvalidMainPath
 	}
-	// paths sure can have dots in them, but if the path ends in .go, it's probably a file that one misundertood as a valid value
+	// paths sure can have dots in them, but if the path ends in .go, it's probably a file that one misunderstood as a valid value
 	if strings.HasSuffix(path, ".go") {
 		return errInvalidMainGoPath
 	}

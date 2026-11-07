@@ -40,6 +40,7 @@ const (
 	Iru            Key = "iru"
 	SRPM           Key = "srpm"
 	APKBuild       Key = "apkbuild"
+	Changelog      Key = "changelog"
 )
 
 func String(ctx *context.Context) string {
@@ -138,6 +139,7 @@ var Release = Keys{
 	Archive,
 	MCP,
 	Iru,
+	Changelog,
 }
 
 var Build = Keys{

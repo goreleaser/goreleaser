@@ -18,5 +18,5 @@ cask "unibin" do
 
   binary "unibin"
 
-  # No zap stanza required
+  zap :not_required
 end

@@ -2,6 +2,7 @@ package cask
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -461,6 +463,19 @@ func TestFlightString(t *testing.T) {
 	})
 	t.Run("empty", func(t *testing.T) {
 		require.Empty(t, flightString("preflight", "", ""))
+	})
+}
+
+func TestZapString(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Equal(t, "zap :not_required", zapString(config.HomebrewCaskUninstall{}))
+	})
+	t.Run("directives", func(t *testing.T) {
+		require.Equal(
+			t,
+			"zap trash: [\n      \"~/.foo\",\n    ]\n",
+			zapString(config.HomebrewCaskUninstall{Trash: []string{"~/.foo"}}),
+		)
 	})
 }
 
@@ -1019,6 +1034,67 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
+}
+
+func TestArtifactsJSONOmitsTemplatedPrivateKey(t *testing.T) {
+	const privateKey = "inline-private-key"
+	const gitURL = "ssh://git@example.invalid/homebrew-tap.git"
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        dist,
+		ProjectName: "foo",
+		Casks: []config.HomebrewCask{{
+			Name:     "foo",
+			Binaries: []string{"foo"},
+			Repository: config.RepoRef{
+				Owner: "example",
+				Name:  "homebrew-tap",
+				Git: config.GitRepoRef{
+					URL:        gitURL,
+					PrivateKey: "{{ .Env.PRIVATE_KEY }}",
+				},
+			},
+		}},
+	}, testctx.WithVersion("1.0.1"), testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithEnv(map[string]string{"PRIVATE_KEY": privateKey}))
+
+	path := filepath.Join(dist, "foo.tar.gz")
+	require.NoError(t, os.WriteFile(path, []byte("archive"), 0o600))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+
+	require.NoError(t, runAll(ctx, client.NewMock()))
+	casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
+	require.Len(t, casks, 1)
+	require.Equal(t, privateKey, artifact.MustExtra[config.HomebrewCask](*casks[0], brewConfigExtra).Repository.Git.PrivateKey)
+
+	require.NoError(t, metadata.ArtifactsPipe{}.Run(ctx))
+	data, err := os.ReadFile(filepath.Join(dist, "artifacts.json"))
+	require.NoError(t, err)
+	require.NotContains(t, string(data), privateKey)
+	require.NotContains(t, string(data), "private_key")
+
+	var artifacts []artifact.Artifact
+	require.NoError(t, json.Unmarshal(data, &artifacts))
+	for _, a := range artifacts {
+		if a.Type == artifact.BrewCask {
+			brew := artifact.MustExtra[config.HomebrewCask](a, brewConfigExtra)
+			require.Equal(t, "foo", brew.Name)
+			require.Equal(t, gitURL, brew.Repository.Git.URL)
+			return
+		}
+	}
+	t.Fatal("cask artifact missing from artifacts.json")
 }
 
 func TestRunPipeUsesNormalizedTokenForFilenames(t *testing.T) {

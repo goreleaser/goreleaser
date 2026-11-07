@@ -48,7 +48,7 @@ cask "open_pr" do
     touch "/tmp/hi"
   end
 
-  # No zap stanza required
+  zap :not_required
 
   caveats <<~EOS
     don't do this open_pr
