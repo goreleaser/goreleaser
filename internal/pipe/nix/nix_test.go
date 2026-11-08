@@ -300,6 +300,86 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "binary",
+			nix: config.Nix{
+				Name:        "foobin",
+				IDs:         []string{"binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-with-dependencies",
+			nix: config.Nix{
+				Name:        "foobin",
+				IDs:         []string{"binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Dependencies: []config.NixDependency{
+					{Name: "curl"},
+				},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-and-binary",
+			nix: config.Nix{
+				Name:        "foo",
+				IDs:         []string{"archive-and-binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-nested-name",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-nested-name"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "universal-binary-partial-archive",
+			expectRunError: requireErrorIs(ErrMixedArchivesAndBinaries),
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"universal-binary-partial-archive"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "mixed-archive-binary",
+			expectRunError: requireErrorIs(ErrMixedArchivesAndBinaries),
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"mixed-archive-binary"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name: "partial",
 			nix: config.Nix{
 				Name: "partial",
@@ -491,6 +571,45 @@ func TestRunPipe(t *testing.T) {
 				ctx.Artifacts.Add(&art)
 			}
 
+			createFakeBinary := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
+				name := "foo_" + goos + "_" + goarch + goamd64 + goarm
+				art := artifact.Artifact{
+					Name:    name,
+					Path:    filepath.Join(folder, "dist", name),
+					Goos:    goos,
+					Goarch:  goarch,
+					Goarm:   goarm,
+					Goamd64: goamd64,
+					Type:    artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     id,
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				}
+				maps.Copy(art.Extra, extra)
+				ctx.Artifacts.Add(&art)
+			}
+
+			createFakeBinary("binary", "linux", "amd64", "v1", "", nil)
+			createFakeBinary("binary", "linux", "arm64", "", "", nil)
+			createFakeBinary("binary", "linux", "arm", "", "7", nil)
+			createFakeBinary("binary", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
+			createFakeBinary("binary", "darwin", "amd64", "v1", "", map[string]any{artifact.ExtraReplaces: false})
+			createFakeBinary("binary", "darwin", "arm64", "", "", map[string]any{artifact.ExtraReplaces: false})
+			createFakeBinary("binary", "windows", "amd64", "v1", "", nil)
+			for _, goos := range []string{"linux", "darwin"} {
+				for _, goarch := range []string{"amd64", "arm64"} {
+					createFakeArtifact("archive-and-binary", goos, goarch, "v1", "", "tar.gz", nil)
+					createFakeBinary("archive-and-binary", goos, goarch, map[string]string{"amd64": "v1"}[goarch], "", nil)
+				}
+			}
+			createFakeBinary("binary-nested-name", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "bin/foo"})
+			createFakeBinary("universal-binary-partial-archive", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
+			createFakeArtifact("universal-binary-partial-archive", "darwin", "amd64", "v1", "", "tar.gz", nil)
+			createFakeArtifact("mixed-archive-binary", "darwin", "arm64", "", "", "zip", nil)
+			createFakeBinary("mixed-archive-binary", "linux", "arm64", "", "", nil)
+
 			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
 			createFakeArtifact("unibin", "darwin", "all", "", "", "tgz", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
@@ -564,6 +683,10 @@ func TestRunPipe(t *testing.T) {
 					"foo_linux_arm7.zip":        "sha14",
 					"foo_linux_386.zip":         "sha15",
 					"foo_linux_386.tar.gz":      "sha16",
+					"foo_linux_amd64v1":         "sha17",
+					"foo_linux_arm64":           "sha18",
+					"foo_linux_arm7":            "sha19",
+					"foo_darwin_all":            "sha20",
 				},
 			}
 
@@ -928,7 +1051,7 @@ func TestErrNoArchivesFound(t *testing.T) {
 func TestBinInstallFormats(t *testing.T) {
 	t.Run("no-deps", func(t *testing.T) {
 		golden.RequireEqual(t, []byte(strings.Join(
-			binInstallFormats(config.Nix{}),
+			binInstallFormats(config.Nix{}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -940,7 +1063,7 @@ func TestBinInstallFormats(t *testing.T) {
 					{Name: "bash"},
 					{Name: "zsh"},
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -951,7 +1074,7 @@ func TestBinInstallFormats(t *testing.T) {
 					linuxDep("foo"),
 					linuxDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -962,7 +1085,7 @@ func TestBinInstallFormats(t *testing.T) {
 					darwinDep("foo"),
 					darwinDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -974,7 +1097,7 @@ func TestBinInstallFormats(t *testing.T) {
 					linuxDep("foo"),
 					darwinDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})

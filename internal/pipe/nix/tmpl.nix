@@ -63,7 +63,7 @@ let
     {{- end }}
   };
 
-  {{- if not .SourceRoot }}
+  {{- if not (or .Binary .SourceRoot) }}
   sourceRootMap = {
     {{- with  .SourceRoots.linux386 }}
     i686-linux = "{{ . }}";
@@ -97,7 +97,11 @@ stdenvNoCC.mkDerivation {
     sha256 = shaMap.${system};
   };
 
+  {{ if .Binary -}}
+  dontUnpack = true;
+  {{- else -}}
   sourceRoot = {{ with .SourceRoot }}"{{ . }}"{{ else }}sourceRootMap.${system}{{ end }};
+  {{- end }}
 
   nativeBuildInputs = [ {{ range $input, $plat := .Inputs }}{{ . }} {{ end }}]{{ if .DynamicallyLinked }} ++ lib.optionals stdenvNoCC.isLinux [ autoPatchelfHook ]{{ end }};
 {{- if .DynamicallyLinked }}
