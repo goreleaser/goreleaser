@@ -3,6 +3,36 @@ title: Security Policy
 weight: 900
 ---
 
+## Security expectations
+
+GoReleaser is a release-automation CLI: it builds, packages, signs, and
+publishes software releases based on project configuration and the environment
+it runs in (typically a developer's machine or CI).
+
+**What you can expect**
+
+- Private vulnerability reporting and a documented response timeline (below).
+- Public credit for reporters unless anonymity is requested.
+- Signed release checksums (and related verification material) for GoReleaser's
+  own releases, with
+  [verification instructions](/getting-started/install/).
+- Ongoing dependency and security scanning in CI (for example govulncheck,
+  dependency review, Grype/SBOM scans, CodeQL/Semgrep, and secret scanning).
+
+**What this does not claim**
+
+- GoReleaser is **not** a sandbox for untrusted build scripts, hooks, or
+  toolchain plugins. A malicious or careless `.goreleaser` configuration, build
+  script, or CI job can execute arbitrary commands with the privileges of that
+  environment.
+- Overall release security also depends on **your** CI secrets, token scopes,
+  runner hardening, and registry/SCM permissions. Misconfigured tokens or
+  overly broad permissions are outside what GoReleaser alone can guarantee.
+
+For a longer write-up of threats, trust boundaries, and mitigations, see the
+[assurance case](/resources/assurance-case/) and the repository
+[threat model](https://github.com/goreleaser/goreleaser/blob/main/THREAT_MODEL.md).
+
 ## Supported Versions
 
 Only the last stable version at any given point.
