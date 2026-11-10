@@ -132,7 +132,7 @@ may have some extra fields:
 | `.Binary`       | artifact name (without the extension)                           |
 | `.ArtifactID`   | artifact id {{< g_inline_version "v2.3" >}}{{< g_inline_pro >}} |
 | `.ArtifactName` | artifact name                                                   |
-| `.ArtifactPath` | absolute path to artifact                                       |
+| `.ArtifactPath` | path to artifact (image reference for Docker artifacts); for a file, `abs .ArtifactPath` gives an absolute path |
 | `.ArtifactExt`  | artifact extension (e.g. `.exe`, `.dmg`, etc)                   |
 
 ## nFPM extra fields
