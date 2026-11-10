@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -110,7 +111,7 @@ func runHook(ctx *context.Context, opts *build.Options, hooks config.Hooks) erro
 			return err
 		}
 
-		log.WithField("hook", sh).Info("running hook")
+		log.WithField("hook", redact.String(sh, envs)).Info("running hook")
 		cmd, err := shellwords.Parse(sh)
 		if err != nil {
 			return err

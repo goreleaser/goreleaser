@@ -1,20 +1,112 @@
 package chocolatey
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+func TestPublishRedactsCredentials(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses a sh executable fixture")
+
+	for _, tc := range []struct {
+		name     string
+		template string
+		key      string
+	}{
+		{"default env", "{{ .Env.CHOCOLATEY_API_KEY }}", "synthetic-config-key"},
+		{"custom env", "{{ .Env.CUSTOM_AUTH }}", "synthetic-custom-key"},
+		{"literal", "synthetic-literal-key", "synthetic-literal-key"},
+	} {
+		for _, exit := range []int{0, 7} {
+			t.Run(fmt.Sprintf("%s/exit%d", tc.name, exit), func(t *testing.T) {
+				var logs bytes.Buffer
+				previous := log.Log
+				log.Log = log.New(&logs)
+				log.SetLevel(log.DebugLevel)
+				t.Cleanup(func() { log.Log = previous })
+
+				dir := t.TempDir()
+				script := fmt.Sprintf(`#!/bin/sh
+test "$#" = 6 && test "$1" = push && test "$4" = --api-key || exit 99
+test "$5" = '%s' || exit 98
+test "$CHOCOLATEY_API_KEY" = synthetic-inherited-key || exit 97
+printf '%%s' "$5" > "$6.received"
+printf 'server diagnostic: %%s %%s %%s\n' "$5" "$CHOCOLATEY_API_KEY" "$HOST_TOKEN"
+printf 'stderr diagnostic: %%s %%s\n' "$RELEASE_KEY" synthetic-context-release-key >&2
+exit %d
+`, tc.key, exit)
+				require.NoError(t, os.WriteFile(filepath.Join(dir, "choco"), []byte(script), 0o755))
+				t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+				t.Setenv("CHOCOLATEY_API_KEY", "synthetic-inherited-key")
+				t.Setenv("HOST_TOKEN", "synthetic-host-token")
+				t.Setenv("RELEASE_KEY", "synthetic-inherited-release-key")
+				ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
+					"CHOCOLATEY_API_KEY": "synthetic-config-key",
+					"CUSTOM_AUTH":        "synthetic-custom-key",
+					"RELEASE_KEY":        "synthetic-context-release-key",
+				}))
+				path := filepath.Join(dir, "app.nupkg")
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Type: artifact.PublishableChocolatey,
+					Path: path,
+					Extra: map[string]any{
+						chocoConfigExtra: config.Chocolatey{
+							Name:       "app",
+							APIKey:     tc.template,
+							SourceRepo: "https://packages.invalid/",
+						},
+					},
+				})
+
+				err := Pipe{}.Publish(ctx)
+				if exit == 0 {
+					require.NoError(t, err)
+					require.Contains(t, logs.String(), "package sent")
+				} else {
+					ee, ok := errors.AsType[*exec.ExitError](err)
+					require.True(t, ok, "expected exit error, got %v", err)
+					require.Equal(t, exit, ee.ExitCode())
+					require.ErrorContains(t, err, "failed to push chocolatey package")
+					require.ErrorContains(t, err, "server diagnostic:")
+					require.ErrorContains(t, err, "stderr diagnostic:")
+					require.ErrorContains(t, err, "$HOST_TOKEN")
+					require.ErrorContains(t, err, "$RELEASE_KEY")
+				}
+				received, readErr := os.ReadFile(path + ".received")
+				require.NoError(t, readErr)
+				require.Equal(t, tc.key, string(received))
+				require.Contains(t, logs.String(), "push")
+				require.Contains(t, logs.String(), "https://packages.invalid/")
+				require.Contains(t, logs.String(), "$CHOCOLATEY_API_KEY")
+				for _, secret := range []string{
+					tc.key, "synthetic-inherited-key", "synthetic-config-key", "synthetic-host-token",
+					"synthetic-inherited-release-key", "synthetic-context-release-key",
+				} {
+					require.NotContains(t, logs.String(), secret)
+					if err != nil {
+						require.NotContains(t, err.Error(), secret)
+					}
+				}
+			})
+		}
+	}
+}
 
 func TestContinueOnError(t *testing.T) {
 	require.True(t, Pipe{}.ContinueOnError())

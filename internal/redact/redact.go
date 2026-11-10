@@ -160,6 +160,7 @@ var keySuffixes = []string{
 	"_KEY",
 	"_SECRET",
 	"_PASSWORD",
+	"_PASSPHRASE",
 	"_TOKEN",
 }
 

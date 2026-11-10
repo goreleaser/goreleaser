@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -1019,6 +1021,39 @@ func TestTagSuffix(t *testing.T) {
 func TestIsDriverValid(t *testing.T) {
 	require.True(t, isDriverValid("docker-container"))
 	require.False(t, isDriverValid("other"))
+}
+
+func TestRunHookRedactsEffectiveEnv(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previous })
+
+	const global = "synthetic-global-token"
+	const hook = "synthetic-hook-passphrase"
+	result := filepath.Join(t.TempDir(), "received")
+	ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
+		"GLOBAL_TOKEN":            global,
+		"NFPM_APP_RPM_PASSPHRASE": "synthetic-overridden-passphrase",
+		"HOOK_RESULT":             result,
+	}))
+	err := runHook(ctx, tmpl.Fields{}, config.Hooks{{
+		Cmd:    `sh -c 'printf "%s" "{{ .Env.GLOBAL_TOKEN }} {{ .Env.NFPM_APP_RPM_PASSPHRASE }}" > "{{ .Env.HOOK_RESULT }}"; echo "diagnostic {{ .Env.NFPM_APP_RPM_PASSPHRASE }}"'`,
+		Env:    []string{"NFPM_APP_RPM_PASSPHRASE=" + hook},
+		Output: true,
+	}})
+	require.NoError(t, err)
+	received, err := os.ReadFile(result)
+	require.NoError(t, err)
+	require.Equal(t, global+" "+hook, string(received))
+	require.Contains(t, logs.String(), "running hook")
+	require.Contains(t, logs.String(), "diagnostic $NFPM_APP_RPM_PASSPHRASE")
+	require.Contains(t, logs.String(), "$GLOBAL_TOKEN")
+	require.NotContains(t, logs.String(), global)
+	require.NotContains(t, logs.String(), hook)
 }
 
 func TestRunHook(t *testing.T) {

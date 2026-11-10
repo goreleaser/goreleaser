@@ -44,6 +44,24 @@ func TestRedact(t *testing.T) {
 			want: "pass=$DB_PASSWORD",
 		},
 		{
+			name: "global nfpm passphrase",
+			env:  []string{"NFPM_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_PASSPHRASE",
+		},
+		{
+			name: "nfpm id passphrase",
+			env:  []string{"NFPM_APP_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_APP_PASSPHRASE",
+		},
+		{
+			name: "nfpm packager passphrase",
+			env:  []string{"NFPM_APP_RPM_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_APP_RPM_PASSPHRASE",
+		},
+		{
 			name: "value prefix sk-",
 			env:  []string{"OPENAI=sk-abcdef123456"},
 			in:   "token sk-abcdef123456 used",
