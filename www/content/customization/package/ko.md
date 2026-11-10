@@ -44,7 +44,8 @@ kos:
 
     # Base image to publish to use.
     #
-    # Local images will take priority over fetching remote images. {{< g_inline_version "v2.13" >}}
+    # The image is fetched from its registry first. If that fails, the image
+    # from the local Docker daemon is used instead. {{< g_inline_version "v2.13" >}}
     #
     # Default: 'cgr.dev/chainguard/static'.
     # Templates: allowed.
