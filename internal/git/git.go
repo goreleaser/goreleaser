@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -39,16 +40,27 @@ func RunWithEnv(ctx context.Context, env []string, args ...string) (string, erro
 
 	err := cmd.Run()
 
-	log.WithField("args", args).
-		WithField("stdout", strings.TrimSpace(stdout.String())).
-		WithField("stderr", strings.TrimSpace(stderr.String())).
+	logArgs := make([]string, len(args))
+	for i, arg := range args {
+		logArgs[i] = redactURLCredentials(arg)
+	}
+	stderrText := redactURLCredentials(stderr.String())
+	log.WithField("args", logArgs).
+		WithField("stdout", strings.TrimSpace(redactURLCredentials(stdout.String()))).
+		WithField("stderr", strings.TrimSpace(stderrText)).
 		Debug("git command result")
 
 	if err != nil {
-		return "", errors.New(stderr.String())
+		return "", errors.New(stderrText)
 	}
 
 	return stdout.String(), nil
+}
+
+var urlCredentials = regexp.MustCompile(`([a-zA-Z][a-zA-Z0-9+.-]*://)[^\s/]*@`)
+
+func redactURLCredentials(s string) string {
+	return urlCredentials.ReplaceAllString(s, "${1}")
 }
 
 // Run runs a git command and returns its output or errors.
