@@ -2,7 +2,9 @@ package ko
 
 import (
 	"archive/tar"
+	"bytes"
 	stdctx "context"
+	"debug/buildinfo"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -325,6 +327,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		KoDataCreationTime  string
 		LocalDomain         string
 		LinuxCapabilities   []string
+		Trimpath            bool
 	}{
 		{
 			Name:          "sbom-none",
@@ -373,6 +376,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 		{
 			Name:              "linux-capabilities",
 			LinuxCapabilities: []string{"net_bind_service"},
+		},
+		{
+			Name:     "trimpath",
+			Trimpath: true,
 		},
 		{
 			Name: "tag-templates",
@@ -428,6 +435,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						SBOM:               table.SBOM,
 						SBOMDirectory:      table.SBOMDirectory,
 						LinuxCapabilities:  table.LinuxCapabilities,
+						Trimpath:           table.Trimpath,
 						Bare:               true,
 					},
 				},
@@ -589,11 +597,31 @@ func TestPublishPipeSuccess(t *testing.T) {
 				expectedXattr = string(b)
 			}
 			require.Equal(t, expectedXattr, binaryXattr(t, image, "security.capability"))
+			require.Equal(t, table.Trimpath, binaryTrimpath(t, image))
 		})
 	}
 }
 
 func binaryXattr(tb testing.TB, image v1.Image, key string) string {
+	tb.Helper()
+	hdr, _ := findBinary(tb, image)
+	return hdr.PAXRecords["SCHILY.xattr."+key]
+}
+
+func binaryTrimpath(tb testing.TB, image v1.Image) bool {
+	tb.Helper()
+	_, bin := findBinary(tb, image)
+	info, err := buildinfo.Read(bytes.NewReader(bin))
+	require.NoError(tb, err)
+	for _, setting := range info.Settings {
+		if setting.Key == "-trimpath" {
+			return setting.Value == "true"
+		}
+	}
+	return false
+}
+
+func findBinary(tb testing.TB, image v1.Image) (*tar.Header, []byte) {
 	tb.Helper()
 	rc := mutate.Extract(image)
 	defer rc.Close()
@@ -605,11 +633,13 @@ func binaryXattr(tb testing.TB, image v1.Image, key string) string {
 		}
 		require.NoError(tb, err)
 		if strings.HasPrefix(strings.TrimPrefix(hdr.Name, "/"), "ko-app/") && hdr.Typeflag == tar.TypeReg {
-			return hdr.PAXRecords["SCHILY.xattr."+key]
+			bin, err := io.ReadAll(tr)
+			require.NoError(tb, err)
+			return hdr, bin
 		}
 	}
-	require.Fail(tb, "binary not found in image")
-	return ""
+	require.FailNow(tb, "binary not found in image")
+	return nil, nil
 }
 
 func TestSnapshot(t *testing.T) {

@@ -197,6 +197,7 @@ type buildOptions struct {
 	baseImportPaths     bool
 	localDomain         string
 	linuxCapabilities   []string
+	trimpath            bool
 }
 
 func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
@@ -210,6 +211,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 			},
 		}),
 		build.WithPlatforms(o.platforms...),
+		build.WithTrimpath(o.trimpath),
 		build.WithBaseImages(func(_ stdctx.Context, _ string) (name.Reference, build.Result, error) {
 			ref, err := name.ParseReference(o.baseImage)
 			if err != nil {
@@ -472,6 +474,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
 		linuxCapabilities:   cfg.LinuxCapabilities,
+		trimpath:            cfg.Trimpath,
 	}
 
 	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
