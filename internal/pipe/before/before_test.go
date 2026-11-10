@@ -1,7 +1,9 @@
 package before
 
 import (
+	"bytes"
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -91,6 +93,51 @@ func TestRunWithEnv(t *testing.T) {
 			},
 		})))
 	require.FileExists(t, f)
+}
+
+func TestRunRedactsHook(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	for _, exit := range []string{"0", "1"} {
+		t.Run("exit "+exit, func(t *testing.T) {
+			var logs bytes.Buffer
+			previous := log.Log
+			log.Log = log.New(&logs)
+			log.SetLevel(log.InfoLevel)
+			t.Cleanup(func() { log.Log = previous })
+
+			const secret = "synthetic-registry-password"
+			const passphrase = "synthetic-signing-passphrase"
+			result := filepath.Join(t.TempDir(), "received")
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Before: config.Before{Hooks: []string{
+					`sh -c 'printf "%s" "{{ .Env.REGISTRY_PASSWORD }}" > "{{ .Env.HOOK_RESULT }}"; echo "diagnostic {{ .Env.NFPM_PASSPHRASE }}"; exit ` + exit + `'`,
+				}},
+			}, testctx.WithEnv(map[string]string{
+				"REGISTRY_PASSWORD": secret,
+				"NFPM_PASSPHRASE":   passphrase,
+				"HOOK_RESULT":       result,
+			}))
+
+			err := Pipe{}.Run(ctx)
+			if exit == "0" {
+				require.NoError(t, err)
+			} else {
+				de, ok := errors.AsType[gerrors.ErrDetailed](err)
+				require.True(t, ok, "expected detailed hook error, got %v", err)
+				require.Contains(t, de.Output(), "diagnostic $NFPM_PASSPHRASE")
+				require.NotContains(t, de.Output(), passphrase)
+			}
+			received, err := os.ReadFile(result)
+			require.NoError(t, err)
+			require.Equal(t, secret, string(received))
+			require.Contains(t, logs.String(), "running")
+			require.Contains(t, logs.String(), "$REGISTRY_PASSWORD")
+			require.Contains(t, logs.String(), "$NFPM_PASSPHRASE")
+			require.NotContains(t, logs.String(), secret)
+			require.NotContains(t, logs.String(), passphrase)
+		})
+	}
 }
 
 func TestInvalidTemplate(t *testing.T) {
