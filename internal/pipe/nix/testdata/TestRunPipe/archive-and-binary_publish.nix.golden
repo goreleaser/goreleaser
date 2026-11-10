@@ -11,6 +11,7 @@ let
   shaMap = {
     x86_64-linux = "sha1";
     aarch64-linux = "sha2";
+    x86_64-darwin = "sha21";
     aarch64-darwin = "sha4";
   };
 

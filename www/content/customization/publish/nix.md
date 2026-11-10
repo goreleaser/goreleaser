@@ -140,6 +140,9 @@ example, with `formats: [tar.gz, binary]`), the archive is used.
 A single package cannot mix archives and binaries across platforms, so use the
 same kind for all platforms, or filter them with `ids`.
 
+The binary must have the same name on every platform, unless you set a custom
+`install` script that handles the different names.
+
 A package holds a single binary per platform. If one `archives` entry with
 `formats: binary` gets more than one build, split those builds into separate
 `archives` entries (each with its own `id`), and create one package per entry.

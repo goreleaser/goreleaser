@@ -41,6 +41,11 @@ var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one
 // platforms and raw binaries (archives.formats=binary) for others.
 var ErrMixedArchivesAndBinaries = errors.New("one nixpkg cannot mix archives and binaries, use either archives or binaries for all platforms")
 
+// ErrBinaryNamesDiffer happens when raw binaries (archives.formats=binary) have
+// different names across platforms and no custom install script is set: the
+// generated install script uses a single name for every platform.
+var ErrBinaryNamesDiffer = errors.New("one nixpkg needs the same binary name on every platform, set nix.install to handle different names")
+
 type errNoArchivesFound struct {
 	goamd64 string
 	ids     []string
@@ -313,7 +318,7 @@ func preparePkg(
 		nix.URLTemplate = url
 	}
 
-	installs, err := installs(ctx, nix, archives[0])
+	installs, err := installs(ctx, nix, archives)
 	if err != nil {
 		return "", err
 	}
@@ -591,7 +596,10 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 	return split(applied), nil
 }
 
-func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
+// installs returns the install script. The templates are applied with the
+// first artifact, and the generated script must hold for all of them.
+func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) ([]string, error) {
+	art := arts[0]
 	tpl := tmpl.New(ctx).WithArtifact(art)
 
 	extraInstall, err := tpl.Apply(nix.ExtraInstall)
@@ -610,8 +618,10 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	result := []string{"mkdir -p $out/bin"}
 	switch art.Type {
 	case artifact.UploadableBinary:
-		// builds.binary may include a directory, e.g. `bin/foo`.
-		bin := path.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))
+		bin, err := binaryName(arts)
+		if err != nil {
+			return nil, err
+		}
 		for _, format := range binInstallFormats(nix, binaryInstallFormat) {
 			result = append(result, fmt.Sprintf(format, bin))
 		}
@@ -628,6 +638,21 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 		Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
+}
+
+// binaryName returns the name shared by all the raw binaries. The artifact
+// order is not stable, so differing names are an error rather than picking one.
+func binaryName(arts []*artifact.Artifact) (string, error) {
+	set := map[string]bool{}
+	for _, art := range arts {
+		// builds.binary may include a directory, e.g. `bin/foo`.
+		set[path.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true
+	}
+	names := slices.Sorted(maps.Keys(set))
+	if len(names) > 1 {
+		return "", fmt.Errorf("%w: %s", ErrBinaryNamesDiffer, strings.Join(names, ", "))
+	}
+	return names[0], nil
 }
 
 const (
