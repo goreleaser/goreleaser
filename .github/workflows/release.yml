@@ -87,7 +87,13 @@ jobs:
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: setup-snapcraft
-        run: sudo snap install snapcraft --classic
+        id: snapcraft
+        run: |
+          if sudo snap install snapcraft --classic; then
+            exit 0
+          fi
+          echo "::warning::Snapcraft installation failed; skipping snap packages."
+          echo "skip=--skip=snapcraft" >> "$GITHUB_OUTPUT"
       - name: setup-flatpak
         run: |
           sudo apt update -q
@@ -131,7 +137,7 @@ jobs:
         with:
           distribution: goreleaser-pro
           version: nightly
-          args: release --clean --timeout 60m
+          args: release --clean --timeout 60m ${{ steps.snapcraft.outputs.skip }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -155,7 +161,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }} # on main
         run: |
           go build .
-          ./goreleaser release --clean --timeout 60m --snapshot
+          ./goreleaser release --clean --timeout 60m --snapshot ${{ steps.snapcraft.outputs.skip }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
