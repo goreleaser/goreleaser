@@ -93,6 +93,11 @@ Pipes should follow these conventions for consistent error output:
   using `fmt.Errorf("%s: %w", pipe.String(), err)`, which provides
   consistent, non-redundant context.
 
+## Adding a builder
+
+See the [builder contributor guide](https://goreleaser.com/resources/adding-a-builder/)
+for the implementation contract, registration, initial configuration, and tests.
+
 ## Creating a commit
 
 Commit messages should be well formatted, and to make that "standardized", we
