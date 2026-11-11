@@ -1,17 +1,102 @@
 package client
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
+
+func TestGitClientRedactsCredentials(t *testing.T) {
+	const secret = "synthetic-publication-token"
+	const url = "https://synthetic-user:" + secret + "@example.invalid/repo.git"
+	const safeURL = "https://example.invalid/repo.git"
+	for _, stage := range []string{"success", "add", "commit", "push"} {
+		t.Run(stage, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: t.TempDir(),
+			}, testctx.WithEnv(map[string]string{"TAP_TOKEN": secret}))
+			repo := Repo{
+				Name:       "test",
+				GitURL:     "https://synthetic-user:{{ .Env.TAP_TOKEN }}@example.invalid/repo.git",
+				PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			}
+			cwd := filepath.Join(ctx.Config.Dist, "git", checkoutDirName(repo.Name, url, ""))
+			require.NoError(t, os.MkdirAll(cwd, 0o755))
+			require.NoError(t, runGitCmd(ctx, cwd, nil, "init"))
+			remote := testlib.GitMakeBareRepository(t)
+			if stage == "push" {
+				remote = filepath.Join(t.TempDir(), "missing.git")
+			}
+			require.NoError(t, runGitCmd(ctx, cwd, nil, "remote", "add", "origin", remote))
+			author := config.CommitAuthor{Name: "Test", Email: "test@example.invalid"}
+			switch stage {
+			case "add":
+				require.NoError(t, os.WriteFile(filepath.Join(cwd, ".git", "index.lock"), nil, 0o644))
+			case "commit":
+				author.Signing.Enabled = true
+				author.Signing.Program = filepath.Join(t.TempDir(), "missing-gpg")
+			}
+
+			var logs bytes.Buffer
+			previous := log.Log
+			log.Log = log.New(&logs)
+			log.SetLevel(log.DebugLevel)
+			t.Cleanup(func() { log.Log = previous })
+
+			err := NewGitUploadClient("").CreateFile(ctx, author, repo, []byte("content"), "file.txt", "publish")
+			if stage == "success" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, "git: failed to "+stage)
+				require.Contains(t, err.Error(), safeURL)
+				require.NotContains(t, err.Error(), secret)
+				require.NotContains(t, err.Error(), "synthetic-user")
+			}
+			require.Contains(t, logs.String(), "pushing")
+			require.Contains(t, logs.String(), safeURL)
+			require.NotContains(t, logs.String(), secret)
+			require.NotContains(t, logs.String(), "synthetic-user")
+		})
+	}
+}
+
+func TestRunGitCmdRedactsCredentials(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	cwd := t.TempDir()
+	require.NoError(t, runGitCmd(ctx, cwd, nil, "init"))
+	err := runGitCmd(ctx, cwd, nil, "remote", "get-url",
+		"https://synthetic-user:synthetic-password@example.invalid/repo.git")
+	require.ErrorContains(t, err, "https://example.invalid/repo.git")
+	require.NotContains(t, err.Error(), "synthetic-user")
+	require.NotContains(t, err.Error(), "synthetic-password")
+}
+
+func TestCloneRepoRedactsCredentials(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	url := "file://synthetic-user:synthetic-password@" + filepath.ToSlash(filepath.Join(t.TempDir(), "missing.git"))
+	var logs bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previous })
+
+	err := cloneRepo(ctx, t.TempDir(), url, "clone", nil)
+	require.ErrorContains(t, err, "failed to clone local repository")
+	require.NotContains(t, err.Error(), "synthetic-user")
+	require.NotContains(t, err.Error(), "synthetic-password")
+	require.Contains(t, logs.String(), "cloning")
+	require.NotContains(t, logs.String(), "synthetic-user")
+	require.NotContains(t, logs.String(), "synthetic-password")
+}
 
 func TestGitClient(t *testing.T) {
 	t.Parallel()
