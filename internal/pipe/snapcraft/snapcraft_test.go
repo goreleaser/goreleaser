@@ -90,6 +90,9 @@ func TestRunPipeSomeDisabled(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	testlib.SkipIfWindows(t, "snap doesn't work in windows")
+	if os.Getenv("SKIP_SNAP") == "true" {
+		t.Skip("SKIP_SNAP=true")
+	}
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
