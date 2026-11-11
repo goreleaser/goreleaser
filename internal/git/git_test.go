@@ -93,6 +93,11 @@ func TestGitCredentialDiagnostics(t *testing.T) {
 			want: "https://example.invalid/repo.git",
 		},
 		{
+			name: "scheme stripped by git",
+			url:  "//synthetic-user:synthetic-password@D:/tmp/repo.git",
+			want: "//D:/tmp/repo.git",
+		},
+		{
 			name: "scp remote",
 			url:  "git@example.invalid:repo.git",
 			want: "git@example.invalid:repo.git",

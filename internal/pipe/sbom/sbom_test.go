@@ -1,6 +1,7 @@
 package sbom
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"maps"
@@ -10,8 +11,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -22,6 +25,47 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSBOMRedactsCredentials(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses /bin/sh")
+	const token = "synthetic-sbom-api-token"
+	const configToken = "synthetic-sbom-config-token"
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: t.TempDir(),
+	}, testctx.WithEnv(map[string]string{"SBOM_API_TOKEN": token}))
+	script := filepath.Join(t.TempDir(), "sbom.sh")
+	require.NoError(t, os.WriteFile(script, []byte(
+		`printf '%s\n' "$1" "$2" > "$3"; printf '%s\n' "$1" "$2"; printf '%s\n' "$1" "$2" >&2; test -z "$SBOM_API_TOKEN"`,
+	), 0o644))
+	cfg := config.SBOM{
+		Cmd: "/bin/sh",
+		Args: []string{
+			script,
+			"Authorization: Bearer {{ .Env.SBOM_API_TOKEN }}",
+			"$SBOM_CONFIG_TOKEN",
+			"$document",
+		},
+		Env:       []string{"SBOM_CONFIG_TOKEN=" + configToken},
+		Documents: []string{"test.sbom.json"},
+	}
+	var logs bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(gio.Safe(&logs))
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previous })
+
+	artifacts, err := catalogArtifact(ctx, cfg, nil)
+	require.NoError(t, err)
+	require.Len(t, artifacts, 1)
+	content, err := os.ReadFile(artifacts[0].Path)
+	require.NoError(t, err)
+	require.Equal(t, "Authorization: Bearer "+token+"\n"+configToken+"\n", string(content))
+	require.Contains(t, logs.String(), "running")
+	require.Contains(t, logs.String(), "Authorization: Bearer $SBOM_API_TOKEN")
+	require.Contains(t, logs.String(), "$SBOM_CONFIG_TOKEN")
+	require.NotContains(t, logs.String(), token)
+	require.NotContains(t, logs.String(), configToken)
+}
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
