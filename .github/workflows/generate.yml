@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
@@ -50,14 +48,17 @@ jobs:
       - run: task schema:validate
       - run: task nix:licenses:generate
       - run: task nodedist:releases:generate
-      - name: "sync fork"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: gh repo sync goreleaserbot/goreleaser --branch main --source goreleaser/goreleaser --force || true
+      - name: "create repository token"
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: repository-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
         with:
-          token: ${{ secrets.GH_PAT }}
-          push-to-fork: goreleaserbot/goreleaser
+          token: ${{ steps.repository-token.outputs.token }}
           branch: auto-update-generated-files
           base: main
           delete-branch: true
