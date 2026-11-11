@@ -14,6 +14,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -49,7 +50,7 @@ func TestSBOMRedactsCredentials(t *testing.T) {
 	}
 	var logs bytes.Buffer
 	previous := log.Log
-	log.Log = log.New(&logs)
+	log.Log = log.New(gio.Safe(&logs))
 	log.SetLevel(log.DebugLevel)
 	t.Cleanup(func() { log.Log = previous })
 
