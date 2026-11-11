@@ -57,7 +57,7 @@ func RunWithEnv(ctx context.Context, env []string, args ...string) (string, erro
 	return stdout.String(), nil
 }
 
-var urlCredentials = regexp.MustCompile(`([a-zA-Z][a-zA-Z0-9+.-]*://)[^\s/]*@`)
+var urlCredentials = regexp.MustCompile(`((?:[a-zA-Z][a-zA-Z0-9+.-]*:)?//)[^\s/]*@`)
 
 // RedactURLCredentials removes URL user information from diagnostic text.
 func RedactURLCredentials(s string) string {
