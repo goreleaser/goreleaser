@@ -52,6 +52,10 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	if strings.Contains(ctx.Version, "%") {
+		return errors.New("source RPM version must not contain '%'")
+	}
+
 	sourceArchives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableSourceArchive)).List()
 	if len(sourceArchives) == 0 {
 		return errors.New("no source archives found")

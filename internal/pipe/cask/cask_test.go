@@ -1036,8 +1036,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
-func TestArtifactsJSONOmitsTemplatedPrivateKey(t *testing.T) {
+func TestArtifactsJSONPreservesPrivateKeyTemplate(t *testing.T) {
 	const privateKey = "inline-private-key"
+	const keyTemplate = "{{ .Env.PRIVATE_KEY }}"
 	const gitURL = "ssh://git@example.invalid/homebrew-tap.git"
 
 	dist := t.TempDir()
@@ -1052,7 +1053,7 @@ func TestArtifactsJSONOmitsTemplatedPrivateKey(t *testing.T) {
 				Name:  "homebrew-tap",
 				Git: config.GitRepoRef{
 					URL:        gitURL,
-					PrivateKey: "{{ .Env.PRIVATE_KEY }}",
+					PrivateKey: keyTemplate,
 				},
 			},
 		}},
@@ -1076,13 +1077,12 @@ func TestArtifactsJSONOmitsTemplatedPrivateKey(t *testing.T) {
 	require.NoError(t, runAll(ctx, client.NewMock()))
 	casks := ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List()
 	require.Len(t, casks, 1)
-	require.Equal(t, privateKey, artifact.MustExtra[config.HomebrewCask](*casks[0], brewConfigExtra).Repository.Git.PrivateKey)
+	require.Equal(t, keyTemplate, artifact.MustExtra[config.HomebrewCask](*casks[0], brewConfigExtra).Repository.Git.PrivateKey)
 
 	require.NoError(t, metadata.ArtifactsPipe{}.Run(ctx))
 	data, err := os.ReadFile(filepath.Join(dist, "artifacts.json"))
 	require.NoError(t, err)
 	require.NotContains(t, string(data), privateKey)
-	require.NotContains(t, string(data), "private_key")
 
 	var artifacts []artifact.Artifact
 	require.NoError(t, json.Unmarshal(data, &artifacts))
@@ -1091,6 +1091,7 @@ func TestArtifactsJSONOmitsTemplatedPrivateKey(t *testing.T) {
 			brew := artifact.MustExtra[config.HomebrewCask](a, brewConfigExtra)
 			require.Equal(t, "foo", brew.Name)
 			require.Equal(t, gitURL, brew.Repository.Git.URL)
+			require.Equal(t, keyTemplate, brew.Repository.Git.PrivateKey)
 			return
 		}
 	}

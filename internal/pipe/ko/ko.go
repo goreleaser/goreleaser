@@ -9,6 +9,7 @@ import (
 	"io"
 	"path/filepath"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,7 +42,10 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const chainguardStatic = "cgr.dev/chainguard/static"
+const (
+	chainguardStatic   = "cgr.dev/chainguard/static"
+	defaultLocalDomain = "goreleaser.ko.local"
+)
 
 var (
 	baseImages     sync.Map
@@ -211,38 +215,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		}),
 		build.WithPlatforms(o.platforms...),
 		build.WithBaseImages(func(_ stdctx.Context, _ string) (name.Reference, build.Result, error) {
-			ref, err := name.ParseReference(o.baseImage)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			if cached, found := baseImages.Load(o.baseImage); found {
-				return ref, cached.(build.Result), nil
-			}
-
-			if localImage, _ := daemon.Image(ref); localImage != nil {
-				baseImages.Store(o.baseImage, localImage)
-				return ref, localImage, err
-			}
-
-			desc, err := remote.Get(
-				ref,
-				remote.WithAuthFromKeychain(keychain),
-			)
-			if err != nil {
-				return nil, nil, err
-			}
-			if desc.MediaType.IsImage() {
-				img, err := desc.Image()
-				baseImages.Store(o.baseImage, img)
-				return ref, img, err
-			}
-			if desc.MediaType.IsIndex() {
-				idx, err := desc.ImageIndex()
-				baseImages.Store(o.baseImage, idx)
-				return ref, idx, err
-			}
-			return nil, nil, fmt.Errorf("unexpected base image media type: %s", desc.MediaType)
+			return getBaseImage(o.baseImage)
 		}),
 	}
 	if o.creationTime != nil {
@@ -279,6 +252,54 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	return build.NewCaching(b)
 }
 
+// getBaseImage resolves the given base image, caching the result.
+//
+// The image is fetched from its registry first, so a stale copy in the local
+// Docker daemon never shadows the published one. The daemon is only used as a
+// fallback, so images that only exist locally can still be used.
+func getBaseImage(image string) (name.Reference, build.Result, error) {
+	ref, err := name.ParseReference(image)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if cached, found := baseImages.Load(image); found {
+		return ref, cached.(build.Result), nil
+	}
+
+	result, err := fetchBaseImage(ref)
+	if err != nil {
+		return nil, nil, err
+	}
+	baseImages.Store(image, result)
+	return ref, result, nil
+}
+
+func fetchBaseImage(ref name.Reference) (build.Result, error) {
+	desc, err := remote.Get(
+		ref,
+		remote.WithAuthFromKeychain(keychain),
+	)
+	if err != nil {
+		localImage, derr := daemon.Image(ref)
+		if derr != nil {
+			return nil, err
+		}
+		log.WithField("image", ref.Name()).
+			WithError(err).
+			Info("could not fetch remote base image, using the local docker daemon one")
+		return localImage, nil
+	}
+	switch {
+	case desc.MediaType.IsImage():
+		return desc.Image()
+	case desc.MediaType.IsIndex():
+		return desc.ImageIndex()
+	default:
+		return nil, fmt.Errorf("unexpected base image media type: %s", desc.MediaType)
+	}
+}
+
 // koVersion returns the version of the ko module GoReleaser was built with,
 // which ko uses as the creator tool version in generated SBOMs.
 func koVersion() string {
@@ -298,18 +319,6 @@ func koVersion() string {
 		}
 	}
 	return "devel"
-}
-
-func getLocalDomain(ctx *context.Context, ko config.Ko) (string, error) {
-	localDomain := "goreleaser.ko.local"
-	if ko.LocalDomain != "" {
-		var err error
-		localDomain, err = tmpl.New(ctx).Apply(ko.LocalDomain)
-		if err != nil {
-			return "", err
-		}
-	}
-	return localDomain, nil
 }
 
 func doBuild(ctx *context.Context, ko config.Ko) error {
@@ -424,7 +433,8 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
 	// Rendered before loading the package, so an image left without platforms
 	// is skipped even if its working directory does not exist.
-	platforms, err := tmpl.New(ctx).Slice(cfg.Platforms, tmpl.NonEmpty())
+	t := tmpl.New(ctx)
+	platforms, err := t.Slice(cfg.Platforms, tmpl.NonEmpty())
 	if err != nil {
 		return nil, err
 	}
@@ -472,123 +482,71 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		user:                cfg.User,
 		SBOMDirectory:       cfg.SBOMDirectory,
 		linuxCapabilities:   cfg.LinuxCapabilities,
+		baseImage:           cfg.BaseImage,
+		localDomain:         cfg.LocalDomain,
 	}
 
-	baseImage, err := tmpl.New(ctx).Apply(cfg.BaseImage)
+	if err := t.ApplyAll(&opts.baseImage, &opts.localDomain); err != nil {
+		return nil, err
+	}
+	if opts.localDomain == "" {
+		opts.localDomain = defaultLocalDomain
+	}
+
+	repos, err := t.Slice(cfg.Repositories)
 	if err != nil {
 		return nil, err
 	}
-	opts.baseImage = baseImage
-
-	if len(cfg.Repositories) > 0 {
-		repos, err := applyTemplate(ctx, cfg.Repositories)
-		if err != nil {
-			return nil, err
-		}
-		opts.imageRepos = removeEmpty(repos)
-	}
+	opts.imageRepos = removeEmpty(repos)
 	if len(opts.imageRepos) == 0 {
 		return nil, errNoRepositories
 	}
 
-	tags, err := applyTemplate(ctx, cfg.Tags)
+	tags, err := t.Slice(cfg.Tags)
 	if err != nil {
 		return nil, err
 	}
 	opts.tags = removeEmpty(tags)
 
-	if cfg.CreationTime != "" {
-		creationTime, err := getTimeFromTemplate(ctx, cfg.CreationTime)
-		if err != nil {
-			return nil, err
-		}
-		opts.creationTime = creationTime
-	}
-
-	if cfg.KoDataCreationTime != "" {
-		koDataCreationTime, err := getTimeFromTemplate(ctx, cfg.KoDataCreationTime)
-		if err != nil {
-			return nil, err
-		}
-		opts.koDataCreationTime = koDataCreationTime
-	}
-
-	if len(cfg.Labels) > 0 {
-		labels, err := applyTemplateToMapValues(ctx, cfg.Labels)
-		if err != nil {
-			return nil, err
-		}
-		opts.labels = labels
-	}
-
-	if len(cfg.Annotations) > 0 {
-		annotations, err := applyTemplateToMapValues(ctx, cfg.Annotations)
-		if err != nil {
-			return nil, err
-		}
-		opts.annotations = annotations
-	}
-
-	if len(cfg.Env) > 0 {
-		env, err := applyTemplate(ctx, cfg.Env)
-		if err != nil {
-			return nil, err
-		}
-		opts.env = env
-	}
-
-	if len(cfg.Flags) > 0 {
-		flags, err := applyTemplate(ctx, cfg.Flags)
-		if err != nil {
-			return nil, err
-		}
-		opts.flags = flags
-	}
-
-	if len(cfg.Ldflags) > 0 {
-		ldflags, err := applyTemplate(ctx, cfg.Ldflags)
-		if err != nil {
-			return nil, err
-		}
-		opts.ldflags = ldflags
-	}
-
-	localDomain, err := getLocalDomain(ctx, cfg)
-	if err != nil {
+	if opts.env, err = t.Slice(cfg.Env); err != nil {
 		return nil, err
 	}
-	opts.localDomain = localDomain
+	if opts.flags, err = t.Slice(cfg.Flags); err != nil {
+		return nil, err
+	}
+	if opts.ldflags, err = t.Slice(cfg.Ldflags); err != nil {
+		return nil, err
+	}
+	if opts.labels, err = applyTemplateToMapValues(t, cfg.Labels); err != nil {
+		return nil, err
+	}
+	if opts.annotations, err = applyTemplateToMapValues(t, cfg.Annotations); err != nil {
+		return nil, err
+	}
+	if opts.creationTime, err = getTimeFromTemplate(t, cfg.CreationTime); err != nil {
+		return nil, err
+	}
+	if opts.koDataCreationTime, err = getTimeFromTemplate(t, cfg.KoDataCreationTime); err != nil {
+		return nil, err
+	}
 
 	return opts, nil
 }
 
+// removeEmpty removes blank items.
 func removeEmpty(strs []string) []string {
-	var res []string
-	for _, s := range strs {
-		if strings.TrimSpace(s) == "" {
-			continue
-		}
-		res = append(res, s)
-	}
-	return res
+	return slices.DeleteFunc(strs, func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	})
 }
 
-func applyTemplate(ctx *context.Context, templateable []string) ([]string, error) {
-	templated := make([]string, 0, len(templateable))
-	for _, t := range templateable {
-		tlf, err := tmpl.New(ctx).Apply(t)
-		if err != nil {
-			return nil, err
-		}
-		templated = append(templated, tlf)
+func applyTemplateToMapValues(t *tmpl.Template, templateable map[string]string) (map[string]string, error) {
+	if len(templateable) == 0 {
+		return nil, nil
 	}
-	return templated, nil
-}
-
-func applyTemplateToMapValues(ctx *context.Context, templateable map[string]string) (map[string]string, error) {
 	templated := make(map[string]string, len(templateable))
 	for k, v := range templateable {
-		tv, err := tmpl.New(ctx).Apply(v)
+		tv, err := t.Apply(v)
 		if err != nil {
 			return nil, err
 		}
@@ -597,8 +555,13 @@ func applyTemplateToMapValues(ctx *context.Context, templateable map[string]stri
 	return templated, nil
 }
 
-func getTimeFromTemplate(ctx *context.Context, t string) (*v1.Time, error) {
-	epoch, err := tmpl.New(ctx).Apply(t)
+// getTimeFromTemplate applies the given template, and parses the result as
+// seconds since the Unix epoch. It returns nil if the template is empty.
+func getTimeFromTemplate(t *tmpl.Template, s string) (*v1.Time, error) {
+	if s == "" {
+		return nil, nil
+	}
+	epoch, err := t.Apply(s)
 	if err != nil {
 		return nil, err
 	}

@@ -40,10 +40,6 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 	if err != nil {
 		return ref, err
 	}
-	privateKey, err := apply(ref.Git.PrivateKey)
-	if err != nil {
-		return ref, err
-	}
 	return config.RepoRef{
 		Owner:       owner,
 		Name:        name,
@@ -52,7 +48,7 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 		PullRequest: ref.PullRequest,
 		Git: config.GitRepoRef{
 			URL:        gitURL,
-			PrivateKey: privateKey,
+			PrivateKey: ref.Git.PrivateKey,
 			SSHCommand: ref.Git.SSHCommand,
 		},
 	}, nil

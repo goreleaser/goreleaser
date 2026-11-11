@@ -7,12 +7,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"text/template"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/summary"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -357,8 +359,18 @@ type stdCmd struct{}
 var _ cmder = &stdCmd{}
 
 func (stdCmd) Exec(ctx *context.Context, name string, args ...string) ([]byte, error) {
+	command := exec.CommandContext(ctx, name, args...)
+	env := append(command.Environ(), ctx.Env.Strings()...)
+	if i := slices.Index(args, "--api-key"); i >= 0 && i+1 < len(args) {
+		env = append(env, "CHOCOLATEY_API_KEY="+args[i+1])
+	}
+	redactedArgs := make([]string, len(args))
+	for i, arg := range args {
+		redactedArgs[i] = redact.String(arg, env)
+	}
 	log.WithField("cmd", name).
-		WithField("args", args).
+		WithField("args", redactedArgs).
 		Debug("running")
-	return exec.CommandContext(ctx, name, args...).CombinedOutput()
+	out, err := command.CombinedOutput()
+	return []byte(redact.String(string(out), env)), err
 }
