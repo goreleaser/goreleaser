@@ -5,7 +5,7 @@ FROM gcr.io/projectsigstore/cosign:v3.1.4@sha256:0f06154836d2de34f887a5c273506d5
 FROM docker:29.5.3-cli-alpine3.23@sha256:873de13208aab9c1de73fe984fd45883e01464fcfcc85efa20aa56a9ccfe7aa6 AS docker
 FROM docker/buildx-bin:v0.38@sha256:bb58c7c322142f342f343755099dffb426919b9bd588ad5f3c607c96f18b77c8 AS buildx
 
-FROM golang:1.27.3-alpine@sha256:d200d2dd76b03a99b52651fd1325aff7dcd35422c35c01bac56571b0507f3deb
+FROM golang:1.27.4-alpine@sha256:0a5f7fe796599ff487605987432e7619ae45beeb2fba4c2ce0b907879932aebf
 
 ARG TARGETPLATFORM
 
