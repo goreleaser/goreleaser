@@ -922,6 +922,10 @@ func TestLinuxArch(t *testing.T) {
 		"linuxamd64v2": "amd64",
 		"linuxamd64v3": "amd64",
 		"linuxamd64v4": "amd64",
+
+		// edge cases
+		"linux":        "",         // prefix only, no arch
+		"linuxarm6v3":  "armhf",   // suffix strip then archToSnap lookup
 	} {
 		t.Run(key, func(t *testing.T) {
 			require.Equal(t, want, linuxArch(key))
