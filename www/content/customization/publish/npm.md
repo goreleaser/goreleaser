@@ -153,6 +153,10 @@ npms:
 >
 > This will not work if the user installs with `--ignore-scripts`.
 
+Downloads respect `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY`,
+including their lowercase variants.
+HTTP, HTTPS, and SOCKS proxies are supported; PAC proxies are not supported.
+
 {{< g_templates >}}
 
 ## Supported platforms and formats
