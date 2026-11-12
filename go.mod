@@ -35,7 +35,7 @@ require (
 	github.com/google/ko v0.19.1
 	github.com/goreleaser/fileglob v1.4.1
 	github.com/goreleaser/go-shellwords v1.0.13
-	github.com/goreleaser/nfpm/v2 v2.48.0
+	github.com/goreleaser/nfpm/v2 v2.49.0
 	github.com/goreleaser/quill v0.0.0-20260630015114-8310f3e9a321
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.14.0

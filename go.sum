@@ -120,6 +120,8 @@ github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f h1:tCbYj7/299ek
 github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f/go.mod h1:gcr0kNtGBqin9zDW9GOHcVntrwnjrK+qdJ06mWYBybw=
 github.com/ProtonMail/gopenpgp/v2 v2.10.0 h1:llCzLvntC9+iH+if/na4AgKTef/Zm4vpaRrR3+JdKvo=
 github.com/ProtonMail/gopenpgp/v2 v2.10.0/go.mod h1:dc0h9Pg3ftfN0U4pfRzujilfh61A2R52wgMkZWcWm2I=
+github.com/abemedia/go-cfb v0.2.0 h1:amLvu7/DX65XtcmMuc0an/t09W36gMOrnYwLxGGmwX8=
+github.com/abemedia/go-cfb v0.2.0/go.mod h1:ytSRuNKf2VMDQDs8TSZ/VmkVfS4giAdc4xl5XOnpKKA=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d/go.mod h1:asat636LX7Bqt5lYEZ27JNDcqxfjdBQuJ/MM4CN/Lzo=
 github.com/agnivade/levenshtein v1.2.2 h1:fI8RgiztYX1Nn5pBHHqQ9EMCCklhrmXqPRIedFmx5M4=
@@ -486,8 +488,8 @@ github.com/goreleaser/fileglob v1.4.1 h1:4/SXlDDzfKCorA28/S3aXd/6D8VHDZjGXGIttVS
 github.com/goreleaser/fileglob v1.4.1/go.mod h1:1pbHx7hhmJIxNZvm6fi6WVrnP0tndq6p3ayWdLn1Yf8=
 github.com/goreleaser/go-shellwords v1.0.13 h1:ivvhC/RvUyud74c0urb1ZGYWPYGibY5QiFzcwHCege4=
 github.com/goreleaser/go-shellwords v1.0.13/go.mod h1:UtDFSSvW7wQL/4jmyzZbuP6HfI6R+oSm0v63cs61oDw=
-github.com/goreleaser/nfpm/v2 v2.48.0 h1:Yvd07lX8YqDD+rtTwVqyeQiDX+7cnun/jFbZD501uB8=
-github.com/goreleaser/nfpm/v2 v2.48.0/go.mod h1:6fjcqbb3diRwI2Za+/s1QSc9QoeWGbYvV2GQZ2yVdEo=
+github.com/goreleaser/nfpm/v2 v2.49.0 h1:5Qpmh/ty0UtG2T4iu+rCjK/fhgE8ogxljlyZ/zHJHvY=
+github.com/goreleaser/nfpm/v2 v2.49.0/go.mod h1:BY8CMfuhgPsW+hKoDlVLiQCYW3CBzQJHkxqsVmgOz58=
 github.com/goreleaser/quill v0.0.0-20260630015114-8310f3e9a321 h1:/O7X5L3FuwXHT055Aar5b53A3pwUtL4z/1W8EqicJHQ=
 github.com/goreleaser/quill v0.0.0-20260630015114-8310f3e9a321/go.mod h1:uDK4XtTWv1aLqYzwZUCxCPY/tBSuUasZmu5+lLuQHoM=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
@@ -870,6 +872,8 @@ gitlab.com/digitalxero/go-conventional-commit v1.0.7 h1:8/dO6WWG+98PMhlZowt/Yjui
 gitlab.com/digitalxero/go-conventional-commit v1.0.7/go.mod h1:05Xc2BFsSyC5tKhK0y+P3bs0AwUtNuTp+mTpbCU/DZ0=
 gitlab.com/gitlab-org/api/client-go v1.46.0 h1:YxBWFZIFYKcGESCb9fpkwzouo+apyB9pr/XTWzNoL24=
 gitlab.com/gitlab-org/api/client-go v1.46.0/go.mod h1:FtgyU6g2HS5+fMhw6nLK96GBEEBx5MzntOiJWfIaiN8=
+go.digitalxero.dev/go-msi v0.5.5 h1:Bl2U3N2s4+rg7j0avl+cuKUy7xegbcqEKAXf3zBqjiw=
+go.digitalxero.dev/go-msi v0.5.5/go.mod h1:35kwoGr7xw3X4JQdNLZLsKozJiuQgLCNbadpE9dNZEk=
 go.digitalxero.dev/go-msix v1.0.1 h1:lsDicuHolFn84ZLuQljtjH2ybDaJRcAckHj/mD7TFW8=
 go.digitalxero.dev/go-msix v1.0.1/go.mod h1:lsGjKne37diRcY+7cyuAWFtFF2itmzJNUVbVoDH3saw=
 go.digitalxero.dev/rpm v0.3.4 h1:iq+rx7zB6wQeNhLQ1mcvW92v9ZqNaxCvuu0+nPVit4w=
