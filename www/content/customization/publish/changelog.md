@@ -198,6 +198,16 @@ changelog:
     # Required for Ollama.
     model: o1-mini
 
+    # Override the base URL for the provider's API endpoint.
+    # Useful when using an OpenAI-compatible third-party service.
+    #
+    # For the 'openai' provider, this replaces the default OpenAI API URL.
+    # For 'ollama', use `OLLAMA_HOST` instead (see below).
+    # Not used by the 'anthropic' provider.
+    #
+    # Templates: allowed.
+    base_url: https://api.example.com/v1
+
     # The prompt to use..
     #
     # It can be a string directly, or you can use `from_url` or `from_file` to
@@ -232,6 +242,10 @@ Don't forget to give it the current release notes as well, available as
 
 You can test this by using the
 `goreleaser changelog` command.
+
+For the `openai` provider, set `base_url` to point at any OpenAI-compatible
+`/v1` endpoint (e.g. a self-hosted inference server or a third-party gateway).
+When `base_url` is empty the default OpenAI API URL is used.
 
 For Ollama, set `model` to a model available on your server. GoReleaser uses
 Ollama's OpenAI-compatible `/v1/chat/completions` endpoint. Set `OLLAMA_HOST` to

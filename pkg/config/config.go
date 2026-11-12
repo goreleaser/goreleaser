@@ -1292,6 +1292,14 @@ type Filters struct {
 	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
+// ChangelogAI configures AI-enhanced release notes.
+type ChangelogAI struct {
+	Use     string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=anthropic,enum=openai,enum=ollama,enum=,default="`
+	Prompt  string `yaml:"prompt,omitempty" json:"prompt,omitempty"`
+	Model   string `yaml:"model,omitempty" json:"model,omitempty"`
+	BaseURL string `yaml:"base_url,omitempty" json:"base_url,omitempty"`
+}
+
 // Changelog Config.
 type Changelog struct {
 	Filters Filters          `yaml:"filters,omitempty" json:"filters,omitempty"`
@@ -1301,6 +1309,7 @@ type Changelog struct {
 	Format  string           `yaml:"format,omitempty" json:"format,omitempty"`
 	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
+	AI      ChangelogAI      `yaml:"ai,omitempty" json:"ai,omitempty"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
