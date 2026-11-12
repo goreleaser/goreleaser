@@ -1,6 +1,7 @@
 package extrafiles
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -8,6 +9,20 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
+
+func TestUploadNamesCollisions(t *testing.T) {
+	first := "testdata/file1.golden"
+	second := "testdata/file2.golden"
+	_, err := UploadNames(map[string]string{"notes.json": first, " notes.json": second})
+	require.EqualError(t, err, `extra files "testdata/file2.golden" and "testdata/file1.golden" have the same upload name "notes.json"`)
+
+	files, err := UploadNames(map[string]string{
+		"notes.json":  first,
+		" notes.json": filepath.Join("testdata", "sub", "..", "file1.golden"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{"notes.json": first}, files)
+}
 
 func TestTemplate(t *testing.T) {
 	globs := []config.ExtraFile{

@@ -31,6 +31,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/notary"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/packslip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/partial"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/publish"
@@ -144,6 +145,8 @@ var Pipeline = append(
 	checksums.Pipe{},
 	// sign artifacts
 	sign.Pipe{},
+	// describe the release in signed packslip manifests
+	packslip.Pipe{},
 	// create arch linux aur pkgbuild
 	aur.Pipe{},
 	// create arch linux aur pkgbuild (sources)

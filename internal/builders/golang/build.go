@@ -342,6 +342,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		}
 		if elf.IsDynamicallyLinked(a.Path) {
 			a.Extra[artifact.ExtranDynLink] = true
+			if libc := elf.Libc(a.Path); libc != "" {
+				a.Extra[artifact.ExtraLibcFamily] = libc
+			}
 		}
 		ctx.Artifacts.Add(a)
 	}

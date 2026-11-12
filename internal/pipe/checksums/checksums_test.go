@@ -18,6 +18,23 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
+func TestCanonicalPath(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "packslip.sigstore.json")
+	require.NoError(t, os.WriteFile(path, []byte("bundle"), 0o644))
+	workingDir, err := os.Getwd()
+	require.NoError(t, err)
+	relative, err := filepath.Rel(workingDir, path)
+	require.NoError(t, err)
+	require.Equal(t, canonicalPath(path), canonicalPath(relative))
+
+	link := filepath.Join(dir, "bundle-link.json")
+	if err := os.Symlink(path, link); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	require.Equal(t, canonicalPath(path), canonicalPath(link))
+}
+
 func TestPipe(t *testing.T) {
 	const binary = "binary"
 	const archive = binary + ".tar.gz"
