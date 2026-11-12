@@ -911,28 +911,28 @@ func TestLinuxArch(t *testing.T) {
 		"linuxs390x": "s390x",
 		"linuxmips":  "mips",
 
-		// suffix stripping
-		"linuxamd64hardfloat":  "amd64",
-		"linuxamd64softfloat":  "amd64",
-		"linuxmips64softfloat": "mips64",
-		"linuxarm7hardfloat":   "armhf",
-
-		// versioned suffixes
-		"linuxamd64v1": "amd64",
-		"linuxamd64v2": "amd64",
-		"linuxamd64v3": "amd64",
-		"linuxamd64v4": "amd64",
+		// real platform keys with variant suffixes
+		// (from GroupByPlatform: goos + goarch + one variant field)
+		//
+		// linuxArch only strips: hardfloat, softfloat, v1-v4.
+		// Other suffixes (sse2, power8, rva*, v8.0) pass through.
+		"linuxamd64v1":         "amd64",
+		"linuxamd64v2":         "amd64",
+		"linuxamd64v3":         "amd64",
+		"linuxamd64v4":         "amd64",
+		"linuxmipssoftfloat":   "mips",
+		"linuxmipshardfloat":   "mips",
+		"linux386softfloat":    "i386",          // softfloat stripped, 386 mapped
+		"linux386sse2":         "386sse2",       // sse2 not stripped, no map hit
+		"linuxarm64v8.0":       "arm64v8.0",    // v8.0 not stripped (not v1-v4)
+		"linuxarm64v9.0":       "arm64v9.0",
+		"linuxppc64power8":     "ppc64power8",  // power8 not stripped
+		"linuxppc64power9":     "ppc64power9",
+		"linuxriscv64rva20u64": "riscv64rva20u64", // rva* not stripped
+		"linuxriscv64rva22u64": "riscv64rva22u64",
 
 		// edge cases
-		"linux":        "",         // prefix only, no arch
-		"linuxarm6v3":  "armhf",   // suffix strip then archToSnap lookup
-
-		// combined suffixes: the loop is a single pass in order
-		// (hardfloat, softfloat, v1…v4), so the outermost suffix
-		// must appear last in the string for both to be stripped.
-		"linuxamd64v3hardfloat": "amd64", // hardfloat stripped first, then v3
-		"linuxamd64v2softfloat": "amd64", // softfloat stripped first, then v2
-		"linuxarm7v4hardfloat":  "armhf", // both stripped, then archToSnap hit
+		"linux": "", // prefix only, no arch
 	} {
 		t.Run(key, func(t *testing.T) {
 			require.Equal(t, want, linuxArch(key))
