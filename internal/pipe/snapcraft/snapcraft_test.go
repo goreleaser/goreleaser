@@ -895,6 +895,40 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
 }
 
+func TestLinuxArch(t *testing.T) {
+	for key, want := range map[string]string{
+		// direct mapping via archToSnap
+		"linux386":   "i386",
+		"linuxarm":   "armhf",
+		"linuxarm6":  "armhf",
+		"linuxarm7":  "armhf",
+		"linuxppc64le": "ppc64el",
+
+		// pass-through (not in archToSnap)
+		"linuxamd64": "amd64",
+		"linuxarm64": "arm64",
+		"linuxriscv64": "riscv64",
+		"linuxs390x": "s390x",
+		"linuxmips":  "mips",
+
+		// suffix stripping
+		"linuxamd64hardfloat":  "amd64",
+		"linuxamd64softfloat":  "amd64",
+		"linuxmips64softfloat": "mips64",
+		"linuxarm7hardfloat":   "armhf",
+
+		// versioned suffixes
+		"linuxamd64v1": "amd64",
+		"linuxamd64v2": "amd64",
+		"linuxamd64v3": "amd64",
+		"linuxamd64v4": "amd64",
+	} {
+		t.Run(key, func(t *testing.T) {
+			require.Equal(t, want, linuxArch(key))
+		})
+	}
+}
+
 func requireEqualFileContents(tb testing.TB, a, b string) {
 	tb.Helper()
 	eq, err := gio.EqualFileContents(a, b)
