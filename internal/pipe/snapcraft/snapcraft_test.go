@@ -926,6 +926,13 @@ func TestLinuxArch(t *testing.T) {
 		// edge cases
 		"linux":        "",         // prefix only, no arch
 		"linuxarm6v3":  "armhf",   // suffix strip then archToSnap lookup
+
+		// combined suffixes: the loop is a single pass in order
+		// (hardfloat, softfloat, v1…v4), so the outermost suffix
+		// must appear last in the string for both to be stripped.
+		"linuxamd64v3hardfloat": "amd64", // hardfloat stripped first, then v3
+		"linuxamd64v2softfloat": "amd64", // softfloat stripped first, then v2
+		"linuxarm7v4hardfloat":  "armhf", // both stripped, then archToSnap hit
 	} {
 		t.Run(key, func(t *testing.T) {
 			require.Equal(t, want, linuxArch(key))
