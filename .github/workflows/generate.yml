@@ -64,8 +64,8 @@ jobs:
           delete-branch: true
           title: "chore: auto-update generated files"
           commit-message: "chore: auto-update generated files"
-          author: goreleaserbot <bot@goreleaser.com>
-          committer: goreleaserbot <bot@goreleaser.com>
+          author: goreleaser[bot] <297416636+goreleaser[bot]@users.noreply.github.com>
+          committer: goreleaser[bot] <297416636+goreleaser[bot]@users.noreply.github.com>
           body: |
             Automated update of generated files.
 
