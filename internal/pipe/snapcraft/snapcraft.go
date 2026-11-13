@@ -531,7 +531,6 @@ var archToSnap = map[string]string{
 	"ppc64le": "ppc64el",
 }
 
-// TODO: write tests for this
 func linuxArch(key string) string {
 	// XXX: list of all linux arches: `go tool dist list | grep linux`
 	arch := strings.TrimPrefix(key, "linux")
