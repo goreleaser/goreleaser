@@ -17,7 +17,6 @@ import (
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
 	"github.com/caarlos0/log"
-	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
 	"github.com/google/go-containerregistry/pkg/crane"
@@ -39,6 +38,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/osscontainertools/docker-credential-acr/pkg/credhelper"
 	"golang.org/x/tools/go/packages"
 )
 
