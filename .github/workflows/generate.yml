@@ -56,6 +56,14 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           permission-contents: write
           permission-pull-requests: write
+      - name: "get repository app identity"
+        id: repository-identity
+        env:
+          GH_TOKEN: ${{ steps.repository-token.outputs.token }}
+          APP_SLUG: ${{ steps.repository-token.outputs.app-slug }}
+        run: |
+          user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          echo "identity=${APP_SLUG}[bot] <${user_id}+${APP_SLUG}[bot]@users.noreply.github.com>" >> "$GITHUB_OUTPUT"
       - uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
         with:
           token: ${{ steps.repository-token.outputs.token }}
@@ -64,8 +72,8 @@ jobs:
           delete-branch: true
           title: "chore: auto-update generated files"
           commit-message: "chore: auto-update generated files"
-          author: goreleaserbot <bot@goreleaser.com>
-          committer: goreleaserbot <bot@goreleaser.com>
+          author: ${{ steps.repository-identity.outputs.identity }}
+          committer: ${{ steps.repository-identity.outputs.identity }}
           body: |
             Automated update of generated files.
 
