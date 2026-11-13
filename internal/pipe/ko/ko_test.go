@@ -23,6 +23,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/ko/pkg/caps"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -30,6 +31,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -40,6 +42,8 @@ const (
 	registry1     = "localhost:5052/"
 	registry2Port = "5053"
 	registry2     = "localhost:5053/"
+	registry3Port = "5054"
+	registry3     = "localhost:5054/"
 )
 
 func TestDefault(t *testing.T) {
@@ -451,7 +455,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 			require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
 			require.Equal(t, "default", manifests[0].Extra[artifact.ExtraID])
 
-			tags, err := applyTemplate(ctx, table.Tags)
+			tags, err := tmpl.New(ctx).Slice(table.Tags)
 			require.NoError(t, err)
 			tags = removeEmpty(tags)
 			require.Len(t, tags, 1)
@@ -811,6 +815,47 @@ func TestPublishLocalBaseImage(t *testing.T) {
 	})
 }
 
+func TestGetBaseImageRemoteTakesPriority(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	testlib.StartRegistry(t, "ko_registry3", registry3Port)
+
+	image := registry3 + "ko-base:latest"
+	ref, err := name.ParseReference(image)
+	require.NoError(t, err)
+
+	remoteImage, err := random.Image(1024, 1)
+	require.NoError(t, err)
+	require.NoError(t, remote.Write(ref, remoteImage))
+	remoteDigest, err := remoteImage.Digest()
+	require.NoError(t, err)
+
+	// a different image, with the same name, in the local daemon.
+	cmd := exec.Command("docker", "build", "-t", image, "-f", "./testdata/Dockerfile", ".")
+	output, err := cmd.CombinedOutput()
+	t.Cleanup(func() {
+		_ = exec.Command("docker", "rmi", image).Run()
+		baseImages.Delete(image)
+	})
+	require.NoError(t, err, string(output))
+
+	_, result, err := getBaseImage(image)
+	require.NoError(t, err)
+	img, ok := result.(v1.Image)
+	require.True(t, ok)
+	digest, err := img.Digest()
+	require.NoError(t, err)
+	require.Equal(t, remoteDigest, digest)
+}
+
+func TestGetBaseImageDoesNotCacheErrors(t *testing.T) {
+	image := "localhost:1/nope:latest"
+	_, _, err := getBaseImage(image)
+	require.Error(t, err)
+	_, found := baseImages.Load(image)
+	require.False(t, found)
+}
+
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
 		return testctx.WrapWithCfg(t.Context(), config.Project{
@@ -955,54 +1000,47 @@ func TestPublishPipeError(t *testing.T) {
 	})
 }
 
-func TestApplyTemplate(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		foo, err := applyTemplate(testctx.WrapWithCfg(t.Context(), config.Project{
-			Env: []string{"FOO=bar"},
-		}),
-
-			[]string{"{{ .Env.FOO }}"})
-		require.NoError(t, err)
-		require.Equal(t, []string{"bar"}, foo)
-	})
-	t.Run("error", func(t *testing.T) {
-		_, err := applyTemplate(testctx.Wrap(t.Context()), []string{"{{ .Nope}}"})
-		require.Error(t, err)
-	})
+func TestRemoveEmpty(t *testing.T) {
+	require.Equal(t, []string{"a", " b"}, removeEmpty([]string{"", "a", " ", "\n", " b"}))
+	require.Empty(t, removeEmpty(nil))
 }
 
-func TestGetLocalDomain(t *testing.T) {
+func TestBuildBuildOptionsLocalDomain(t *testing.T) {
+	build := func(tb testing.TB, ctx *context.Context, localDomain string) (*buildOptions, error) {
+		tb.Helper()
+		return buildBuildOptions(ctx, config.Ko{
+			ID:           "default",
+			WorkingDir:   "./testdata/app/",
+			Repositories: []string{"localhost:5000/goreleasertest/testapp"},
+			Platforms:    []string{"linux/amd64"},
+			LocalDomain:  localDomain,
+		})
+	}
+
 	t.Run("default local domain", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
-		ko := config.Ko{}
-		got, err := getLocalDomain(ctx, ko)
+		opts, err := build(t, testctx.Wrap(t.Context()), "")
 		require.NoError(t, err)
-		require.Equal(t, "goreleaser.ko.local", got)
+		require.Equal(t, "goreleaser.ko.local", opts.localDomain)
 	})
 
 	t.Run("custom local domain", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
-		ko := config.Ko{LocalDomain: "custom.domain"}
-		got, err := getLocalDomain(ctx, ko)
+		opts, err := build(t, testctx.Wrap(t.Context()), "custom.domain")
 		require.NoError(t, err)
-		require.Equal(t, "custom.domain", got)
+		require.Equal(t, "custom.domain", opts.localDomain)
 	})
 
 	t.Run("templated local domain", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"REGISTRY=kind.local"},
 		})
-		ko := config.Ko{LocalDomain: `{{ envOrDefault "REGISTRY" "goreleaser.ko.local" }}`}
-		got, err := getLocalDomain(ctx, ko)
+		opts, err := build(t, ctx, `{{ envOrDefault "REGISTRY" "goreleaser.ko.local" }}`)
 		require.NoError(t, err)
-		require.Equal(t, "kind.local", got)
+		require.Equal(t, "kind.local", opts.localDomain)
 	})
 
 	t.Run("invalid template local domain", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
-		ko := config.Ko{LocalDomain: "{{.Nope}}"}
-		_, err := getLocalDomain(ctx, ko)
-		require.Error(t, err)
+		_, err := build(t, testctx.Wrap(t.Context()), "{{.Nope}}")
+		testlib.RequireTemplateError(t, err)
 	})
 }
 

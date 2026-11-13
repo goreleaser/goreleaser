@@ -58,6 +58,7 @@ func (g *gitClient) CreateFiles(
 	if url == "" {
 		return pipe.Skip("url is empty")
 	}
+	safeURL := redact.String(git.RedactURLCredentials(url), ctx.Env.Strings())
 
 	repo.Name = cmp.Or(repo.Name, nameFromURL(url))
 
@@ -116,24 +117,24 @@ func (g *gitClient) CreateFiles(
 			return fmt.Errorf("failed to write %s: %w", file.Path, err)
 		}
 		log.
-			WithField("repository", url).
+			WithField("repository", safeURL).
 			WithField("name", repo.Name).
 			WithField("file", file.Path).
 			Info("pushing")
 	}
 
 	if err := runGitCmd(ctx, cwd, env, "add", "-A", "."); err != nil {
-		return fmt.Errorf("git: failed to add files %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("git: failed to add files %q (%q): %w", repo.Name, safeURL, err)
 	}
 	if err := runGitCmdWith(
 		ctx, cwd, env,
 		commitConfigFlags(commitAuthor),
 		"commit", "-m", message,
 	); err != nil {
-		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, safeURL, err)
 	}
 	if err := pushRepo(ctx, cwd, env); err != nil {
-		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, safeURL, err)
 	}
 
 	return nil
@@ -230,7 +231,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			if err := os.RemoveAll(dir); err != nil {
 				return fmt.Errorf("failed to remove partial clone directory %q: %w", dir, err)
 			}
-			log.WithField("url", redact.String(url, ctx.Env.Strings())).
+			log.WithField("url", redact.String(git.RedactURLCredentials(url), ctx.Env.Strings())).
 				WithField("dir", dir).
 				Info("cloning")
 			return runGitCmd(ctx, parent, env, "clone", url, name)
@@ -269,7 +270,8 @@ func runGitCmdWith(ctx *context.Context, cwd string, env []string, globals []str
 	args := append([]string{"-C", cwd}, globals...)
 	args = append(args, cmd...)
 	if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
-		return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
+		command := git.RedactURLCredentials(strings.Join(cmd, " "))
+		return fmt.Errorf("%q failed: %w", redact.String(command, ctx.Env.Strings()), err)
 	}
 	return nil
 }

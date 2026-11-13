@@ -5,6 +5,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -34,8 +35,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			return err
 		}
 
-		log.WithField("hook", s).Info("running")
-		if err := shell.Run(ctx, "", args, ctx.Env.Strings(), false); err != nil {
+		env := ctx.Env.Strings()
+		log.WithField("hook", redact.String(s, env)).Info("running")
+		if err := shell.Run(ctx, "", args, env, false); err != nil {
 			return gerrors.Wrap(err, gerrors.WithMessage("hook failed"))
 		}
 	}

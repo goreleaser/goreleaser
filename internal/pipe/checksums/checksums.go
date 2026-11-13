@@ -59,6 +59,9 @@ func (Pipe) Run(ctx *context.Context) error {
 func splitChecksum(ctx *context.Context) error {
 	artifactList, err := buildArtifactList(ctx)
 	if err != nil {
+		if errors.Is(err, errNoArtifacts) {
+			return nil
+		}
 		return err
 	}
 

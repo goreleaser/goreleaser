@@ -23,6 +23,9 @@ archive and a `.spec` file that describes how to build binary RPMs from the sour
 > Make sure to enable `source.enabled: true` and set
 > `source.prefix_template` appropriately in your configuration.
 
+Source RPM versions, including snapshot versions, must not contain `%`, because
+RPM interprets it as macro syntax.
+
 ## Configuration
 
 ```yaml {filename=".goreleaser.yaml"}

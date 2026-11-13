@@ -997,7 +997,7 @@ func runHook(ctx *context.Context, fields tmpl.Fields, hooks config.Hooks) error
 			return err
 		}
 
-		log.WithField("hook", sh).Info("running hook")
+		log.WithField("hook", redact.String(sh, envs)).Info("running hook")
 		cmd, err := shellwords.Parse(sh)
 		if err != nil {
 			return err

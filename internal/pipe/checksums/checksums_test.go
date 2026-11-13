@@ -289,6 +289,16 @@ func TestPipeWhenNoArtifacts(t *testing.T) {
 	require.Empty(t, ctx.Artifacts.List())
 }
 
+func TestPipeSplitWhenNoArtifacts(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Checksum: config.Checksum{
+			Split: true,
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Empty(t, ctx.Artifacts.List())
+}
+
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Checksum: config.Checksum{},

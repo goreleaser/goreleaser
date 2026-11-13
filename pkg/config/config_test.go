@@ -158,3 +158,23 @@ func TestPrivateKeyOmittedFromJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestGitPrivateKeyTemplateJSON(t *testing.T) {
+	for _, key := range []string{
+		"{{ .Env.PRIVATE_KEY }}",
+		"{{ readFile .Env.PRIVATE_KEY_PATH }}",
+		"{{ .Env.HOME }}/.ssh/id_ed25519",
+	} {
+		t.Run(key, func(t *testing.T) {
+			ref := GitRepoRef{
+				URL:        "ssh://example.invalid/repo.git",
+				PrivateKey: key,
+			}
+			data, err := json.Marshal(ref)
+			require.NoError(t, err)
+			var restored GitRepoRef
+			require.NoError(t, json.Unmarshal(data, &restored))
+			require.Equal(t, ref, restored)
+		})
+	}
+}
