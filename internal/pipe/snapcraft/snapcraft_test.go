@@ -898,18 +898,18 @@ func TestDependencies(t *testing.T) {
 func TestLinuxArch(t *testing.T) {
 	for key, want := range map[string]string{
 		// direct mapping via archToSnap
-		"linux386":   "i386",
-		"linuxarm":   "armhf",
-		"linuxarm6":  "armhf",
-		"linuxarm7":  "armhf",
+		"linux386":     "i386",
+		"linuxarm":     "armhf",
+		"linuxarm6":    "armhf",
+		"linuxarm7":    "armhf",
 		"linuxppc64le": "ppc64el",
 
 		// pass-through (not in archToSnap)
-		"linuxamd64": "amd64",
-		"linuxarm64": "arm64",
+		"linuxamd64":   "amd64",
+		"linuxarm64":   "arm64",
 		"linuxriscv64": "riscv64",
-		"linuxs390x": "s390x",
-		"linuxmips":  "mips",
+		"linuxs390x":   "s390x",
+		"linuxmips":    "mips",
 
 		// real platform keys with variant suffixes
 		// (from GroupByPlatform: goos + goarch + one variant field)
@@ -922,11 +922,11 @@ func TestLinuxArch(t *testing.T) {
 		"linuxamd64v4":         "amd64",
 		"linuxmipssoftfloat":   "mips",
 		"linuxmipshardfloat":   "mips",
-		"linux386softfloat":    "i386",          // softfloat stripped, 386 mapped
-		"linux386sse2":         "386sse2",       // sse2 not stripped, no map hit
-		"linuxarm64v8.0":       "arm64v8.0",    // v8.0 not stripped (not v1-v4)
+		"linux386softfloat":    "i386",      // softfloat stripped, 386 mapped
+		"linux386sse2":         "386sse2",   // sse2 not stripped, no map hit
+		"linuxarm64v8.0":       "arm64v8.0", // v8.0 not stripped (not v1-v4)
 		"linuxarm64v9.0":       "arm64v9.0",
-		"linuxppc64power8":     "ppc64power8",  // power8 not stripped
+		"linuxppc64power8":     "ppc64power8", // power8 not stripped
 		"linuxppc64power9":     "ppc64power9",
 		"linuxriscv64rva20u64": "riscv64rva20u64", // rva* not stripped
 		"linuxriscv64rva22u64": "riscv64rva22u64",
