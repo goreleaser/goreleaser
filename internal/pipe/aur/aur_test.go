@@ -854,6 +854,74 @@ func TestRunPipeDefaultPackageInstallsAllBinaries(t *testing.T) {
 	require.Contains(t, pkgbuild, `install -Dm755 "./foo_linux_amd64/foo-helper" "${pkgdir}/usr/bin/foo-helper"`)
 }
 
+func TestRunPipeDefaultPackageBinaryInSubdirectory(t *testing.T) {
+	for name, tt := range map[string]struct {
+		art    artifact.Artifact
+		source string
+	}{
+		"archive": {
+			art: artifact.Artifact{
+				Name: "foo_linux_amd64.tar.gz",
+				Type: artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo",
+					artifact.ExtraFormat:    "tar.gz",
+					artifact.ExtraBinaries:  []string{"bin/foo"},
+					artifact.ExtraWrappedIn: "foo_linux_amd64",
+				},
+			},
+			source: "foo_linux_amd64/bin/foo",
+		},
+		"binary": {
+			art: artifact.Artifact{
+				Name: "foo_linux_amd64",
+				Type: artifact.UploadableBinary,
+				Extra: map[string]any{
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "binary",
+					artifact.ExtraBinary: "bin/foo",
+				},
+			},
+			source: "foo-bin_1.2.1_x86_64.binary",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					AURs:        []config.AUR{{}},
+				},
+				testctx.GitHubTokenType,
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithSemver(1, 2, 1, ""),
+			)
+
+			art := tt.art
+			art.Path = filepath.Join(folder, art.Name)
+			art.Goos = "linux"
+			art.Goarch = "amd64"
+			art.Goamd64 = "v1"
+			ctx.Artifacts.Add(&art)
+			f, err := os.Create(art.Path)
+			require.NoError(t, err)
+			require.NoError(t, f.Close())
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, runAll(ctx, client.NewMock()))
+
+			pkgbuild := filepath.Join(folder, "aur", "foo-bin.pkgbuild")
+			bts, err := os.ReadFile(pkgbuild)
+			require.NoError(t, err)
+			require.Contains(t, string(bts), `"${pkgdir}/usr/bin/foo"`)
+			runPackageWithSource(t, pkgbuild, "x86_64", tt.source, "payload")
+		})
+	}
+}
+
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
