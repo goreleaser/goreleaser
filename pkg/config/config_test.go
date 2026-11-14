@@ -35,6 +35,47 @@ nfpms:
 	require.Equal(t, "http://goreleaser.github.io", prop.NFPMs[0].Homepage, "yaml did not load correctly")
 }
 
+func TestChangelogAIBaseURL(t *testing.T) {
+	t.Run("with base_url", func(t *testing.T) {
+		project, err := LoadReader(strings.NewReader(`
+version: 2
+changelog:
+  ai:
+    use: openai
+    model: gpt-4o
+    base_url: https://api.example.com/v1
+`))
+		require.NoError(t, err)
+		require.Equal(t, "openai", project.Changelog.AI.Use)
+		require.Equal(t, "gpt-4o", project.Changelog.AI.Model)
+		require.Equal(t, "https://api.example.com/v1", project.Changelog.AI.BaseURL)
+	})
+
+	t.Run("without base_url", func(t *testing.T) {
+		project, err := LoadReader(strings.NewReader(`
+version: 2
+changelog:
+  ai:
+    use: openai
+    model: gpt-4o
+`))
+		require.NoError(t, err)
+		require.Equal(t, "openai", project.Changelog.AI.Use)
+		require.Empty(t, project.Changelog.AI.BaseURL)
+	})
+
+	t.Run("empty ai block", func(t *testing.T) {
+		project, err := LoadReader(strings.NewReader(`
+version: 2
+changelog:
+  sort: asc
+`))
+		require.NoError(t, err)
+		require.Empty(t, project.Changelog.AI.Use)
+		require.Empty(t, project.Changelog.AI.BaseURL)
+	})
+}
+
 func TestArchiveZstdConfig(t *testing.T) {
 	project, err := LoadReader(strings.NewReader(`
 version: 2

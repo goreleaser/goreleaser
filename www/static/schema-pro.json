@@ -1039,6 +1039,9 @@
 					},
 					"model": {
 						"type": "string"
+					},
+					"base_url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

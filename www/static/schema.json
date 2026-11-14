@@ -870,6 +870,34 @@
 					},
 					"abbrev": {
 						"type": "integer"
+					},
+					"ai": {
+						"$ref": "#/$defs/ChangelogAI"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogAI": {
+				"properties": {
+					"use": {
+						"type": "string",
+						"enum": [
+							"anthropic",
+							"openai",
+							"ollama",
+							""
+						],
+						"default": ""
+					},
+					"prompt": {
+						"type": "string"
+					},
+					"model": {
+						"type": "string"
+					},
+					"base_url": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
