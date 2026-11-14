@@ -44,6 +44,19 @@ go build -o goreleaser .
 ./goreleaser --version
 ```
 
+## Coding standards
+
+Contributions should follow [Effective Go](https://go.dev/doc/effective_go)
+and match the style already used in this repository.
+
+- Format Go code with [`gofumpt`](https://github.com/mvdan/gofumpt) (a stricter
+  `gofmt`). Run `task fmt` before you commit.
+- Organize imports consistently with the surrounding code (`goimports`-compatible
+  grouping is fine; `gofumpt` / CI will keep formatting honest).
+- Satisfy the linters configured in [`.golangci.yaml`](./.golangci.yaml).
+  `task lint` runs the same class of checks locally; CI runs `golangci-lint` on
+  pull requests.
+
 ## Testing your changes
 
 You can create a branch for your changes and try to build from the source as you go:
@@ -63,6 +76,11 @@ Before you commit the changes, we also suggest you run:
 ```sh
 task fmt
 ```
+
+### Testing policy
+
+- Major new functionality **MUST** add automated tests to the test suite.
+- Bug fixes **SHOULD** include a regression test when practical.
 
 ### A note about Docker multi-arch builds
 
