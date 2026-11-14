@@ -37,6 +37,15 @@ const nixConfigExtra = "NixConfig"
 // archives for the same platform.
 var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
 
+// ErrMixedArchivesAndBinaries happens when the config yields archives for some
+// platforms and raw binaries (archives.formats=binary) for others.
+var ErrMixedArchivesAndBinaries = errors.New("one nixpkg cannot mix archives and binaries, use either archives or binaries for all platforms")
+
+// ErrBinaryNamesDiffer happens when raw binaries (archives.formats=binary) have
+// different names across platforms and no custom install script is set: the
+// generated install script uses a single name for every platform.
+var ErrBinaryNamesDiffer = errors.New("one nixpkg needs the same binary name on every platform, set nix.install to handle different names")
+
 type errNoArchivesFound struct {
 	goamd64 string
 	ids     []string
@@ -273,9 +282,12 @@ func preparePkg(
 			artifact.ByGoarch("386"),
 			artifact.ByGoarch("all"),
 		),
-		artifact.And(
-			artifact.Not(artifact.ByFormats("gz")),
-			artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.Not(artifact.ByFormats("gz")),
+				artifact.ByType(artifact.UploadableArchive),
+			),
+			artifact.ByType(artifact.UploadableBinary),
 		),
 		artifact.OnlyReplacingUnibins,
 	}
@@ -283,11 +295,18 @@ func preparePkg(
 		filters = append(filters, artifact.ByIDs(nix.IDs...))
 	}
 
-	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	archives := preferArchives(ctx.Artifacts.Filter(artifact.And(filters...)).List())
 	if len(archives) == 0 {
 		return "", errNoArchivesFound{
 			goamd64: nix.Goamd64,
 			ids:     nix.IDs,
+		}
+	}
+
+	binary := archives[0].Type == artifact.UploadableBinary
+	for _, art := range archives {
+		if (art.Type == artifact.UploadableBinary) != binary {
+			return "", ErrMixedArchivesAndBinaries
 		}
 	}
 
@@ -299,7 +318,7 @@ func preparePkg(
 		nix.URLTemplate = url
 	}
 
-	installs, err := installs(ctx, nix, archives[0])
+	installs, err := installs(ctx, nix, archives)
 	if err != nil {
 		return "", err
 	}
@@ -344,6 +363,7 @@ func preparePkg(
 		Inputs:            inputs,
 		Dependencies:      dependencies,
 		DynamicallyLinked: dynamicallyLinked,
+		Binary:            binary,
 	}
 
 	platforms := map[string]bool{}
@@ -366,8 +386,10 @@ func preparePkg(
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
-			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
-			data.SourceRoots[key] = folder
+			if !binary {
+				folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
+				data.SourceRoots[key] = folder
+			}
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			if plat == "" {
@@ -383,6 +405,38 @@ func preparePkg(
 	data.Platforms = slices.Sorted(maps.Keys(platforms))
 
 	return doBuildPkg(ctx, data)
+}
+
+// preferArchives drops the raw binaries whose platforms all have an archive,
+// so that `archives.formats: [tar.gz, binary]` keeps yielding a package built
+// from the archives. A universal binary is only dropped when archives cover
+// every architecture it provides.
+func preferArchives(arts []*artifact.Artifact) []*artifact.Artifact {
+	withArchive := map[string]bool{}
+	for _, art := range arts {
+		if art.Type != artifact.UploadableArchive {
+			continue
+		}
+		for _, key := range platformKeys(art) {
+			withArchive[key] = true
+		}
+	}
+	return slices.DeleteFunc(arts, func(art *artifact.Artifact) bool {
+		if art.Type != artifact.UploadableBinary {
+			return false
+		}
+		return !slices.ContainsFunc(platformKeys(art), func(key string) bool {
+			return !withArchive[key]
+		})
+	})
+}
+
+func platformKeys(art *artifact.Artifact) []string {
+	var keys []string
+	for _, goarch := range expandGoarch(art.Goarch) {
+		keys = append(keys, art.Goos+goarch+art.Goarm)
+	}
+	return keys
 }
 
 func expandGoarch(goarch string) []string {
@@ -542,7 +596,10 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 	return split(applied), nil
 }
 
-func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
+// installs returns the install script. The templates are applied with the
+// first artifact, and the generated script must hold for all of them.
+func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) ([]string, error) {
+	art := arts[0]
 	tpl := tmpl.New(ctx).WithArtifact(art)
 
 	extraInstall, err := tpl.Apply(nix.ExtraInstall)
@@ -559,10 +616,21 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	}
 
 	result := []string{"mkdir -p $out/bin"}
-	binInstallFormat := binInstallFormats(nix)
-	for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-		for _, format := range binInstallFormat {
+	switch art.Type {
+	case artifact.UploadableBinary:
+		bin, err := binaryName(arts)
+		if err != nil {
+			return nil, err
+		}
+		for _, format := range binInstallFormats(nix, binaryInstallFormat) {
 			result = append(result, fmt.Sprintf(format, bin))
+		}
+	default:
+		binInstallFormat := binInstallFormats(nix, archiveInstallFormat)
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			for _, format := range binInstallFormat {
+				result = append(result, fmt.Sprintf(format, bin))
+			}
 		}
 	}
 
@@ -572,8 +640,31 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	return append(result, split(extraInstall)...), nil
 }
 
-func binInstallFormats(nix config.Nix) []string {
-	formats := []string{"cp -vr ./%[1]s $out/bin/%[1]s"}
+// binaryName returns the name shared by all the raw binaries. The artifact
+// order is not stable, so differing names are an error rather than picking one.
+func binaryName(arts []*artifact.Artifact) (string, error) {
+	set := map[string]bool{}
+	for _, art := range arts {
+		// builds.binary may include a directory, e.g. `bin/foo`.
+		set[path.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true
+	}
+	names := slices.Sorted(maps.Keys(set))
+	if len(names) > 1 {
+		return "", fmt.Errorf("%w: %s", ErrBinaryNamesDiffer, strings.Join(names, ", "))
+	}
+	return names[0], nil
+}
+
+const (
+	// archiveInstallFormat copies a binary extracted from an archive.
+	archiveInstallFormat = "cp -vr ./%[1]s $out/bin/%[1]s"
+	// binaryInstallFormat installs a raw binary (archives.formats=binary),
+	// which nix does not unpack and fetches without the executable bit.
+	binaryInstallFormat = "install -m755 $src $out/bin/%[1]s"
+)
+
+func binInstallFormats(nix config.Nix, copyFormat string) []string {
+	formats := []string{copyFormat}
 	if len(nix.Dependencies) == 0 {
 		return formats
 	}
