@@ -155,7 +155,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 		return err
 	}
 	if strings.TrimSpace(pkg) == "" {
-		pkg = inferPackage(archives)
+		pkg, err = inferPackage(archives)
+		if err != nil {
+			return err
+		}
 		log.Warnf("guessing package to be %q", pkg)
 	}
 	aur.Package = pkg
@@ -205,10 +208,14 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 	return nil
 }
 
-func inferPackage(archives []*artifact.Artifact) string {
+func inferPackage(archives []*artifact.Artifact) (string, error) {
 	packages := map[string]string{}
 	for _, art := range archives {
-		packages[toPkgBuildArch(art.Goarch+art.Goarm)] = inferPackageForArtifact(art)
+		pkg, err := inferPackageForArtifact(art)
+		if err != nil {
+			return "", err
+		}
+		packages[toPkgBuildArch(art.Goarch+art.Goarm)] = pkg
 	}
 
 	arches := slices.Sorted(maps.Keys(packages))
@@ -225,28 +232,34 @@ func inferPackage(archives []*artifact.Artifact) string {
 				out.WriteString("\n;;")
 			}
 			out.WriteString("\nesac")
-			return out.String()
+			return out.String(), nil
 		}
 	}
-	return first
+	return first, nil
 }
 
-func inferPackageForArtifact(art *artifact.Artifact) string {
+func inferPackageForArtifact(art *artifact.Artifact) (string, error) {
 	switch art.Type {
 	case artifact.UploadableBinary:
 		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
 		source := fmt.Sprintf("${pkgname}_${pkgver}_%s.%s", toPkgBuildArch(art.Goarch+art.Goarm), art.Format())
-		return fmt.Sprintf("install -Dm755 %q %q", "./"+source, "${pkgdir}/usr/bin/"+bin)
+		return fmt.Sprintf("install -Dm755 %q %q", "./"+source, "${pkgdir}/usr/bin/"+path.Base(filepath.ToSlash(bin))), nil
 	case artifact.UploadableArchive:
 		folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 		var lines []string
+		sources := map[string]string{}
 		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-			path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
-			lines = append(lines, fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin))
+			src := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
+			name := path.Base(src)
+			if other, ok := sources[name]; ok {
+				return "", fmt.Errorf("%s: binaries %q and %q would both be installed as /usr/bin/%s, set package to install them", art.Name, other, bin, name)
+			}
+			sources[name] = bin
+			lines = append(lines, fmt.Sprintf("install -Dm755 %q %q", "./"+src, "${pkgdir}/usr/bin/"+name))
 		}
-		return strings.Join(lines, "\n")
+		return strings.Join(lines, "\n"), nil
 	}
-	return ""
+	return "", nil
 }
 
 func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact, tpl string) (string, error) {
