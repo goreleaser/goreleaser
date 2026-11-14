@@ -922,6 +922,56 @@ func TestRunPipeDefaultPackageBinaryInSubdirectory(t *testing.T) {
 	}
 }
 
+func TestRunPipeDefaultPackageSameBinaryNameInSubdirectories(t *testing.T) {
+	for name, pkg := range map[string]string{
+		"default": "",
+		"custom":  `install -Dm755 "./foo_linux_amd64/client/foo" "${pkgdir}/usr/bin/foo-client"`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := testctx.WrapWithCfg(
+				t.Context(),
+				config.Project{
+					Dist:        folder,
+					ProjectName: "foo",
+					AURs:        []config.AUR{{Package: pkg}},
+				},
+				testctx.GitHubTokenType,
+				testctx.WithVersion("1.2.1"),
+				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithSemver(1, 2, 1, ""),
+			)
+
+			path := filepath.Join(folder, "foo_linux_amd64.tar.gz")
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "foo_linux_amd64.tar.gz",
+				Path:    path,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo",
+					artifact.ExtraFormat:    "tar.gz",
+					artifact.ExtraBinaries:  []string{"client/foo", "server/foo"},
+					artifact.ExtraWrappedIn: "foo_linux_amd64",
+				},
+			})
+			f, err := os.Create(path)
+			require.NoError(t, err)
+			require.NoError(t, f.Close())
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			err = runAll(ctx, client.NewMock())
+			if pkg != "" {
+				require.NoError(t, err)
+				return
+			}
+			require.EqualError(t, err, `foo_linux_amd64.tar.gz: binaries "client/foo" and "server/foo" would both be installed as /usr/bin/foo, set package to install them`)
+		})
+	}
+}
+
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
