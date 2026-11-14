@@ -335,7 +335,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Extra: map[string]any{
 				artifact.ExtraID:     archive.ID,
 				artifact.ExtraFormat: "binary",
-				artifact.ExtraBinary: binary.Name,
+				// binary.Name keeps the directory of a build "binary" such
+				// as "bin/foo"; publishers install this file by this name.
+				artifact.ExtraBinary: filepath.Base(binary.Name),
 			},
 		}
 		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
