@@ -281,6 +281,12 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestInvalidEnvReleaseSkipped(t *testing.T) {
+	isolateEnv(t)
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.SCMRelease))
+	require.NoError(t, Pipe{}.Run(ctx))
+}
+
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
 	isolateEnv(t)
 	t.Run("true", func(t *testing.T) {

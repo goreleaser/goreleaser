@@ -23,7 +23,7 @@ func (Preflight) Skip(ctx *context.Context) (bool, error) {
 	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish) {
 		return true, nil
 	}
-	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
+	return (Pipe{}).Skip(ctx)
 }
 
 func (Preflight) Run(ctx *context.Context) error {
