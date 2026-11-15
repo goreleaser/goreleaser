@@ -801,6 +801,62 @@ func TestRunPipeBinary(t *testing.T) {
 	testlib.RequireNoExtraField(t, windows2, artifact.ExtraReplaces)
 }
 
+func TestRunPipeBinaryInSubdirectory(t *testing.T) {
+	t.Parallel()
+	dist := t.TempDir()
+	for _, bin := range []string{"bin/mybin", "bin/mybin.exe"} {
+		path := filepath.Join(dist, "build", bin)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte("binary"), 0o755))
+	}
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					Formats:      []string{"binary"},
+					NameTemplate: defaultBinaryNameTemplate,
+				},
+			},
+		},
+		testctx.WithVersion("0.0.1"),
+		testctx.WithCurrentTag("v0.0.1"))
+
+	// a build with "binary: bin/mybin"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "build", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraID:     "default",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "bin/mybin.exe",
+		Path:   filepath.Join(dist, "build", "bin", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	binaries := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
+	linux := binaries.Filter(artifact.ByGoos("linux")).List()[0]
+	require.Equal(t, "mybin_0.0.1_linux_amd64", linux.Name)
+	require.Equal(t, "mybin", artifact.MustExtra[string](*linux, artifact.ExtraBinary))
+	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
+	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
+	require.Equal(t, "mybin.exe", artifact.MustExtra[string](*windows, artifact.ExtraBinary))
+}
+
 func TestRunPipeDistRemoved(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
