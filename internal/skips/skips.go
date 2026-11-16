@@ -39,6 +39,7 @@ const (
 	MCP            Key = "mcp"
 	Iru            Key = "iru"
 	SRPM           Key = "srpm"
+	SCMRelease     Key = "release"
 	Changelog      Key = "changelog"
 )
 
@@ -137,6 +138,7 @@ var Release = Keys{
 	Archive,
 	MCP,
 	Iru,
+	SCMRelease,
 	Changelog,
 }
 
