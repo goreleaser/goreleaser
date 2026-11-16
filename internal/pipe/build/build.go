@@ -220,11 +220,19 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
-	t, err := builders.For(build.Builder).Parse(target)
+	builder := builders.For(build.Builder)
+	t, err := builder.Parse(target)
 	if err != nil {
 		return nil, err
 	}
-	return base.OptionsForTarget(ctx, build, t, extFor(target, build.BuildDetails))
+	details := build.BuildDetails
+	if overrider, ok := builder.(builders.DetailsOverrider); ok {
+		details, err = overrider.DetailsFor(ctx, build, t)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return base.OptionsForTarget(ctx, build, t, extFor(target, details))
 }
 
 // TODO: this should probably be the responsibility of each builder.

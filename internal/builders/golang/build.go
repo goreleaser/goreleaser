@@ -274,13 +274,15 @@ var go118FirstClassTargets = []string{
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	mains, allbinaries, err := checkBuild(build, options)
+	t := options.Target.(Target)
+	details, err := withOverrides(ctx, build, t)
 	if err != nil {
 		return err
 	}
 
-	t := options.Target.(Target)
-	details, err := withOverrides(ctx, build, t)
+	// The artifact types depend on the buildmode, which can be overridden.
+	build.Buildmode = details.Buildmode
+	mains, allbinaries, err := checkBuild(build, options)
 	if err != nil {
 		return err
 	}
@@ -348,12 +350,28 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+// DetailsFor implements build.DetailsOverrider.
+func (*Builder) DetailsFor(ctx *context.Context, build config.Build, target api.Target) (config.BuildDetails, error) {
+	dets, _, err := findOverride(ctx, build, target.(Target))
+	return dets, err
+}
+
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
+	dets, ok, err := findOverride(ctx, build, target)
+	if ok {
+		log.WithField("details", dets).Infof("overridden build details for %s", target.Target)
+	}
+	return dets, err
+}
+
+// findOverride returns the build details for the given target, and whether
+// an override matched it.
+func findOverride(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, bool, error) {
 	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
 		overrideTarget, err := tmpl.New(ctx).Apply(formatBuildTarget(o))
 		if err != nil {
-			return build.BuildDetails, err
+			return build.BuildDetails, false, err
 		}
 		overrideTarget = fixTarget(overrideTarget)
 
@@ -367,7 +385,7 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 				Gcflags:   build.Gcflags,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
-				return build.BuildDetails, err
+				return build.BuildDetails, false, err
 			}
 
 			// keep the definition order: entries may reference the ones
@@ -375,13 +393,12 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 			env := make([]string, 0, len(build.Env)+len(o.Env))
 			env = append(env, build.Env...)
 			dets.Env = append(env, o.Env...)
-			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
-			return dets, nil
+			return dets, true, nil
 		}
 		log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 	}
 
-	return build.BuildDetails, nil
+	return build.BuildDetails, false, nil
 }
 
 func buildGoBuildLine(

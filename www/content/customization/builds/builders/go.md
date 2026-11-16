@@ -543,6 +543,10 @@ GoReleaser will:
 - set the correct file extension for the target OS.
 - package the generated header file (`.h`) in the release bundle.
 
+The `buildmode` can also be set per target with `overrides`
+{{< g_inline_version "v2.21-unreleased" >}}, e.g. to only build a shared
+library for Windows.
+
 Example usage:
 
 ```yaml {filename=".goreleaser.yaml"}
