@@ -675,6 +675,36 @@ func TestPublishPipeSecondaryRepositories(t *testing.T) {
 		registry6 + "secondary:latest",
 		registry6 + "secondary:1.2.0",
 	}, secondary)
+
+	t.Run("no tags", func(t *testing.T) {
+		// every tag renders empty: nothing is pushed, so nothing is copied.
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			ProjectName: "test",
+			Builds: []config.Build{
+				{
+					ID:  "foo",
+					Env: []string{"GOCACHE=" + gocacheOnce()},
+				},
+			},
+			Kos: []config.Ko{
+				{
+					ID:         "default",
+					Build:      "foo",
+					WorkingDir: "./testdata/app/",
+					Repositories: []string{
+						registry5 + "notags",
+						registry6 + "notags",
+					},
+					Tags: []string{"{{ if .Prerelease }}{{ .Version }}{{ end }}"},
+					SBOM: "none",
+					Bare: true,
+				},
+			},
+		}, testctx.WithVersion("1.2.0"))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Publish(ctx))
+	})
 }
 
 func TestSnapshot(t *testing.T) {

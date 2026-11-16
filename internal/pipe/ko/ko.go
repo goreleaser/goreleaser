@@ -371,29 +371,30 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		return fmt.Errorf("close: %w", err)
 	}
 
-	digest := ref.Context().Digest(ref.Identifier()).DigestStr()
-	ctx.Artifacts.Add(makeArtifact(ko.ID, ref.Name(), digest))
+	ctx.Artifacts.Add(makeArtifact(
+		ko.ID,
+		ref.Name(),
+		ref.Context().Digest(ref.Identifier()).DigestStr(),
+	))
 	if !ctx.Snapshot {
 		// snapshots only load the image into the local daemon.
 		summary.Appendf("Pushed Docker image `%s`", ref.Name())
 	}
 
-	if ctx.Snapshot || len(opts.imageRepos) == 1 {
+	if ctx.Snapshot {
 		// do not copy images when snapshoting, as these images will be
 		// local only anyway.
 		return nil
 	}
 
 	dsts := secondaryDestinations(opts)
-	if err := copyImage(ctx, ref, dsts); err != nil {
-		return err
+	if len(dsts) == 0 {
+		return nil
 	}
-	for _, dst := range dsts {
+	return copyImage(ctx, ref.Name(), dsts, func(dst, digest string) {
 		ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
 		summary.Appendf("Pushed Docker image `%s`", dst)
-	}
-
-	return nil
+	})
 }
 
 func secondaryDestinations(opts *buildOptions) []string {
@@ -585,31 +586,42 @@ func validateMainPath(path string) error {
 	return nil
 }
 
-// copyImage copies src to every dst.
+// copyImage copies src to every dst, calling copied after each copy.
 //
 // The source is fetched once and pushed with a single pusher, which only
-// uploads blobs and manifests missing from each repository. Copies keep the
-// manifest bytes, so every dst has the digest of src.
-func copyImage(ctx stdctx.Context, src name.Reference, dsts []string) error {
-	desc, err := remote.Get(src, remote.WithContext(ctx), remote.WithAuthFromKeychain(keychain))
+// uploads blobs and manifests missing from each repository.
+func copyImage(ctx stdctx.Context, src string, dsts []string, copied func(dst, digest string)) error {
+	// Parsed from its name, so a digest reference is fetched by digest, and
+	// the fetched manifest is verified against it.
+	srcRef, err := name.ParseReference(src)
+	if err != nil {
+		return fmt.Errorf("could not parse %q: %w", src, err)
+	}
+	dstRefs := make([]name.Tag, 0, len(dsts))
+	for _, dst := range dsts {
+		ref, err := name.NewTag(dst)
+		if err != nil {
+			return fmt.Errorf("could not parse %q: %w", dst, err)
+		}
+		dstRefs = append(dstRefs, ref)
+	}
+
+	desc, err := remote.Get(srcRef, remote.WithContext(ctx), remote.WithAuthFromKeychain(keychain))
 	if err != nil {
 		return fmt.Errorf("could not fetch %q: %w", src, err)
 	}
 	pusher, err := remote.NewPusher(remote.WithAuthFromKeychain(keychain))
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create pusher: %w", err)
 	}
-	for _, dst := range dsts {
+	for i, dst := range dstRefs {
 		log.WithField("src", src).
-			WithField("dst", dst).
+			WithField("dst", dsts[i]).
 			Info("copying manifest")
-		ref, err := name.NewTag(dst)
-		if err != nil {
-			return fmt.Errorf("could not parse %q: %w", dst, err)
+		if err := pusher.Push(ctx, dst, desc); err != nil {
+			return fmt.Errorf("could not copy %q to %q: %w", src, dsts[i], err)
 		}
-		if err := pusher.Push(ctx, ref, desc); err != nil {
-			return fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
-		}
+		copied(dsts[i], desc.Digest.String())
 	}
 	return nil
 }
