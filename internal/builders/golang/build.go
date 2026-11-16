@@ -353,26 +353,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 
 // DetailsFor implements build.DetailsOverrider.
 func (*Builder) DetailsFor(ctx *context.Context, build config.Build, target api.Target) (config.BuildDetails, error) {
-	dets, _, err := findOverride(ctx, build, target.(Target))
-	return dets, err
+	return withOverrides(ctx, build, target.(Target))
 }
 
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
-	dets, ok, err := findOverride(ctx, build, target)
-	if ok {
-		log.WithField("details", dets).Infof("overridden build details for %s", target.Target)
-	}
-	return dets, err
-}
-
-// findOverride returns the build details for the given target, and whether
-// an override matched it.
-func findOverride(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, bool, error) {
 	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
 		overrideTarget, err := tmpl.New(ctx).Apply(formatBuildTarget(o))
 		if err != nil {
-			return build.BuildDetails, false, err
+			return build.BuildDetails, err
 		}
 		overrideTarget = fixTarget(overrideTarget)
 
@@ -386,7 +375,7 @@ func findOverride(ctx *context.Context, build config.Build, target Target) (conf
 				Gcflags:   build.Gcflags,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
-				return build.BuildDetails, false, err
+				return build.BuildDetails, err
 			}
 
 			// keep the definition order: entries may reference the ones
@@ -394,12 +383,14 @@ func findOverride(ctx *context.Context, build config.Build, target Target) (conf
 			env := make([]string, 0, len(build.Env)+len(o.Env))
 			env = append(env, build.Env...)
 			dets.Env = append(env, o.Env...)
-			return dets, true, nil
+			// debug, as both the build pipe and Build resolve the overrides.
+			log.WithField("details", dets).Debugf("overridden build details for %s", optsTarget)
+			return dets, nil
 		}
 		log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 	}
 
-	return build.BuildDetails, false, nil
+	return build.BuildDetails, nil
 }
 
 func buildGoBuildLine(
