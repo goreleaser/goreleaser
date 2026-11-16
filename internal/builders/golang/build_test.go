@@ -2292,6 +2292,64 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 	}
 }
 
+func TestBuildCgoLibraryBuildmodeOverride(t *testing.T) {
+	folder := t.TempDir()
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeCExportMain(t, folder)
+
+	target := mustParse(t, fixTarget(runtimeTarget))
+	ext := cArchiveExt()
+	build := config.Build{
+		ID:      "cexport",
+		Dir:     folder,
+		Main:    ".",
+		Tool:    "go",
+		Command: "build",
+		Env:     []string{"CGO_ENABLED=1"},
+		BuildDetailsOverrides: []config.BuildDetailsOverride{{
+			Goos:         runtime.GOOS,
+			Goarch:       runtime.GOARCH,
+			BuildDetails: config.BuildDetails{Buildmode: "c-archive"},
+		}},
+	}
+	options := api.Options{
+		Target: target,
+		Name:   "cexport" + ext,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
+		Ext:    ext,
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+	require.NoError(t, Default.Build(ctx, build, options))
+
+	libraries := ctx.Artifacts.Filter(artifact.ByType(artifact.CArchive)).List()
+	require.Len(t, libraries, 1)
+	require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
+	require.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List(), 1)
+	require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List())
+}
+
+func TestDetailsFor(t *testing.T) {
+	build := config.Build{
+		BuildDetails: config.BuildDetails{Buildmode: "pie"},
+		BuildDetailsOverrides: []config.BuildDetailsOverride{{
+			Goos:         "windows",
+			Goarch:       "amd64",
+			BuildDetails: config.BuildDetails{Buildmode: "c-shared"},
+		}},
+	}
+	ctx := testctx.Wrap(t.Context())
+
+	dets, err := Default.DetailsFor(ctx, build, mustParse(t, "windows_amd64_v1"))
+	require.NoError(t, err)
+	require.Equal(t, "c-shared", dets.Buildmode)
+
+	dets, err = Default.DetailsFor(ctx, build, mustParse(t, "linux_amd64_v1"))
+	require.NoError(t, err)
+	require.Equal(t, "pie", dets.Buildmode)
+}
+
 func TestBuildCgoLibraryFailureDoesNotRegisterStaleHeader(t *testing.T) {
 	folder := t.TempDir()
 	writeGoMod(t, folder, "github.com/foo/bar")
