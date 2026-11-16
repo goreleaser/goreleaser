@@ -71,6 +71,8 @@ func TestHasher(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	// the goldens assume ARM artifacts without goarm are ARMv6.
+	t.Setenv("GORELEASER_EXPERIMENTAL", "")
 	for _, tt := range []struct {
 		name                 string
 		expectDefaultErrorIs error
@@ -350,6 +352,75 @@ func TestRunPipe(t *testing.T) {
 			nix: config.Nix{
 				Name: "foobin",
 				IDs:  []string{"binary-nested-name"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-host-nested-names",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-host-nested-names"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-name-with-space",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-name-with-space"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-name-with-space-with-dependencies",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-name-with-space"},
+				Dependencies: []config.NixDependency{
+					{Name: "curl"},
+				},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-arm-default",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-arm-default"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-arm6-binary-arm-default",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"archive-arm6-binary-arm-default"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-arm6-binary-arm-default-reversed",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"archive-arm6-binary-arm-default-reversed"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -645,6 +716,17 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 			createFakeBinary("binary-nested-name", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "bin/foo"})
+			// host-native separators, e.g. `bin\linux\foo` on windows.
+			createFakeBinary("binary-host-nested-names", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: filepath.Join("bin", "linux", "foo")})
+			createFakeBinary("binary-host-nested-names", "darwin", "arm64", "", "", map[string]any{artifact.ExtraBinary: filepath.Join("bin", "darwin", "foo")})
+			createFakeBinary("binary-name-with-space", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "my app"})
+			// an ARM binary without goarm (e.g. built by zig) targets the
+			// default GOARM, which an explicit arm6 archive covers.
+			createFakeBinary("binary-arm-default", "linux", "arm", "", "", nil)
+			createFakeBinary("archive-arm6-binary-arm-default", "linux", "arm", "", "", nil)
+			createFakeArtifact("archive-arm6-binary-arm-default", "linux", "arm", "", "6", "tar.gz", nil)
+			createFakeArtifact("archive-arm6-binary-arm-default-reversed", "linux", "arm", "", "6", "tar.gz", nil)
+			createFakeBinary("archive-arm6-binary-arm-default-reversed", "linux", "arm", "", "", nil)
 			createFakeBinary("universal-binary-partial-archive", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
 			createFakeArtifact("universal-binary-partial-archive", "darwin", "amd64", "v1", "", "tar.gz", nil)
 			createFakeArtifact("mixed-archive-binary", "darwin", "arm64", "", "", "zip", nil)
@@ -732,6 +814,7 @@ func TestRunPipe(t *testing.T) {
 					"foo_linux_arm.tar.gz":      "sha22",
 					"foo_linux_arm.zip":         "sha23",
 					"foo_darwin_arm64":          "sha24",
+					"foo_linux_arm":             "sha25",
 					"foo_linux_amd64v1":         "sha17",
 					"foo_linux_arm64":           "sha18",
 					"foo_linux_arm7":            "sha19",
@@ -1180,6 +1263,43 @@ func linuxDep(s string) config.NixDependency {
 		Name: s,
 		OS:   "linux",
 	}
+}
+
+func TestShellWord(t *testing.T) {
+	for in, want := range map[string]string{
+		"foo":        "foo",
+		"foo-1.2_x+": "foo-1.2_x+",
+		"my app":     `"my app"`,
+		"it's":       `"it's"`,
+		"a''b":       `"a'''b"`,
+		"''${x}":     `"'''\''${x}"`,
+		"$x `y`":     "\"\\$x \\`y\\`\"",
+		`a"b\c`:      `"a\"b\\c"`,
+	} {
+		t.Run(in, func(t *testing.T) {
+			got, err := shellWord(in)
+			require.NoError(t, err)
+			require.Equal(t, want, got)
+		})
+	}
+	for _, in := range []string{"a\nb", "a\r\nb", "a\rb"} {
+		_, err := shellWord(in)
+		require.ErrorContains(t, err, "contains a line break")
+	}
+}
+
+func TestPlatformKeys(t *testing.T) {
+	arm := &artifact.Artifact{Goos: "linux", Goarch: "arm"}
+	arm7 := &artifact.Artifact{Goos: "linux", Goarch: "arm", Goarm: "7"}
+	unibin := &artifact.Artifact{Goos: "darwin", Goarch: "all"}
+
+	t.Setenv("GORELEASER_EXPERIMENTAL", "")
+	require.Equal(t, []string{"linuxarm6"}, platformKeys(arm))
+	require.Equal(t, []string{"linuxarm7"}, platformKeys(arm7))
+	require.Equal(t, []string{"darwinamd64", "darwinarm64"}, platformKeys(unibin))
+
+	t.Setenv("GORELEASER_EXPERIMENTAL", "defaultgoarm")
+	require.Equal(t, []string{"linuxarm7"}, platformKeys(arm))
 }
 
 type fakeHasher map[string]string

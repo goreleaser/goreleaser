@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"text/template"
@@ -381,8 +382,7 @@ func preparePkg(
 			Sha: sha,
 		}
 
-		for _, goarch := range expandGoarch(art.Goarch) {
-			key := art.Goos + goarch + art.Goarm
+		for _, key := range platformKeys(art) {
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
@@ -391,9 +391,9 @@ func preparePkg(
 				data.SourceRoots[key] = folder
 			}
 			data.Archives[key] = archive
-			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
+			plat := goosToPlatform[key]
 			if plat == "" {
-				return "", errors.New("invalid platform: " + art.Goos + goarch + art.Goarm)
+				return "", errors.New("invalid platform: " + key)
 			}
 			platforms[plat] = true
 		}
@@ -431,10 +431,17 @@ func preferArchives(arts []*artifact.Artifact) []*artifact.Artifact {
 	})
 }
 
+// platformKeys returns the platforms an artifact provides, as goos+goarch+goarm.
+// An ARM artifact without goarm (e.g. built by zig) targets the default GOARM,
+// as in artifact.ByGoarm.
 func platformKeys(art *artifact.Artifact) []string {
 	var keys []string
 	for _, goarch := range expandGoarch(art.Goarch) {
-		keys = append(keys, art.Goos+goarch+art.Goarm)
+		goarm := art.Goarm
+		if goarch == "arm" && goarm == "" {
+			goarm = experimental.DefaultGOARM()
+		}
+		keys = append(keys, art.Goos+goarch+goarm)
 	}
 	return keys
 }
@@ -449,7 +456,6 @@ func expandGoarch(goarch string) []string {
 var goosToPlatform = map[string]string{
 	"linuxamd64":  "x86_64-linux",
 	"linuxarm64":  "aarch64-linux",
-	"linuxarm":    "armv" + experimental.DefaultGOARM() + "l-linux",
 	"linuxarm6":   "armv6l-linux",
 	"linuxarm7":   "armv7l-linux",
 	"linux386":    "i686-linux",
@@ -622,14 +628,22 @@ func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) (
 		if err != nil {
 			return nil, err
 		}
+		word, err := shellWord(bin)
+		if err != nil {
+			return nil, err
+		}
 		for _, format := range binInstallFormats(nix, binaryInstallFormat) {
-			result = append(result, fmt.Sprintf(format, bin))
+			result = append(result, fmt.Sprintf(format, word))
 		}
 	default:
 		binInstallFormat := binInstallFormats(nix, archiveInstallFormat)
 		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			word, err := shellWord(bin)
+			if err != nil {
+				return nil, err
+			}
 			for _, format := range binInstallFormat {
-				result = append(result, fmt.Sprintf(format, bin))
+				result = append(result, fmt.Sprintf(format, word))
 			}
 		}
 	}
@@ -645,14 +659,38 @@ func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) (
 func binaryName(arts []*artifact.Artifact) (string, error) {
 	set := map[string]bool{}
 	for _, art := range arts {
-		// builds.binary may include a directory, e.g. `bin/foo`.
-		set[path.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true
+		// builds.binary may include a directory, e.g. `bin/foo`, written with
+		// the separators of the host that runs the release.
+		set[filepath.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true
 	}
 	names := slices.Sorted(maps.Keys(set))
 	if len(names) > 1 {
 		return "", fmt.Errorf("%w: %s", ErrBinaryNamesDiffer, strings.Join(names, ", "))
 	}
 	return names[0], nil
+}
+
+var shellSafe = regexp.MustCompile(`^[A-Za-z0-9_.,:/@%+=-]+$`)
+
+// shellWord returns s as a single shell word, for an install script inside a
+// nix indented string (installPhase). Names that need no quoting are unchanged.
+// Line breaks are rejected: nix strips the indentation that follows them.
+func shellWord(s string) (string, error) {
+	if shellSafe.MatchString(s) {
+		return s, nil
+	}
+	if strings.ContainsAny(s, "\r\n") {
+		return "", fmt.Errorf("nix: binary name %q contains a line break", s)
+	}
+	quoted := `"` + strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"$", `\$`,
+		"`", "\\`",
+	).Replace(s) + `"`
+	// In a nix indented string, '' ends the string and ${ interpolates.
+	// Every $ is now preceded by \, so no ' comes before an escaped ${.
+	return strings.NewReplacer("''", "'''", "${", "''${").Replace(quoted), nil
 }
 
 const (
