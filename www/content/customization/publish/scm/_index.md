@@ -70,7 +70,8 @@ release:
   # You can create the tag locally, but not push it, and run GoReleaser.
   # It'll then set the `target_commitish` portion of the GitHub release to the
   # value of this field.
-  # It is also used to generate the 'github-native' changelog
+  # It is also used to generate the 'github-native' changelog, if the
+  # release is published to the same repository
   # {{< g_inline_version "v2.21-unreleased" >}}.
   # Only works on GitHub.
   #

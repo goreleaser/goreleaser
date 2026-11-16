@@ -19,6 +19,7 @@ import (
 
 	"github.com/google/go-github/v93/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -430,6 +431,8 @@ func TestGitHubReleaseNotesRequest(t *testing.T) {
 	for name, tt := range map[string]struct {
 		release     config.Release
 		changelog   config.Changelog
+		opts        []testctx.Opt
+		prev        string
 		want        string
 		wantTmplErr bool
 	}{
@@ -440,6 +443,27 @@ func TestGitHubReleaseNotesRequest(t *testing.T) {
 		"target commitish": {
 			release: config.Release{GitHub: release, TargetCommitish: "{{ .Env.SHA }}"},
 			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","target_commitish":"abc123"}`,
+		},
+		"target commitish with different casing": {
+			release: config.Release{
+				GitHub:          config.Repo{Owner: "SomeOne", Name: "SomeThing"},
+				TargetCommitish: "abc123",
+			},
+			want: `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","target_commitish":"abc123"}`,
+		},
+		"target commitish with publishing skipped": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
+			opts:    []testctx.Opt{testctx.Skip(skips.Publish)},
+			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+		},
+		"target commitish with release disabled": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}", Disable: "true"},
+			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+		},
+		"first release": {
+			release: config.Release{GitHub: release},
+			prev:    "-",
+			want:    `{"tag_name":"v1.1.0"}`,
 		},
 		"target commitish of another repository": {
 			release: config.Release{
@@ -481,11 +505,15 @@ func TestGitHubReleaseNotesRequest(t *testing.T) {
 				GitHubURLs: config.GitHubURLs{API: srv.URL},
 				Release:    tt.release,
 				Changelog:  tt.changelog,
-			}, testctx.WithEnv(map[string]string{"SHA": "abc123", "NOTES": "notes"}))
+			}, append(tt.opts, testctx.WithEnv(map[string]string{"SHA": "abc123", "NOTES": "notes"}))...)
 			client, err := newGitHub(ctx, "test-token")
 			require.NoError(t, err)
 
-			_, err = client.GenerateReleaseNotes(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+			prev := "v1.0.0"
+			if tt.prev == "-" {
+				prev = ""
+			}
+			_, err = client.GenerateReleaseNotes(ctx, Repo{Owner: "someone", Name: "something"}, prev, "v1.1.0")
 			if tt.wantTmplErr {
 				testlib.RequireTemplateError(t, err)
 				return

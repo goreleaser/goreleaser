@@ -29,14 +29,14 @@ changelog:
   # Default: 'git'.
   use: github
 
-  # Options for the 'github-native' changelog.
+  # Options for the 'github-native' changelog, ignored otherwise.
   #
-  # When `release.target_commitish` is set, it is also used to generate the
-  # notes, so they are correct even if the tag is not pushed yet
-  # {{< g_inline_version "v2.21-unreleased" >}}.
+  # When the release is published to the same repository, its
+  # `target_commitish` is also used to generate the notes, so they are correct
+  # even if the tag is not pushed yet {{< g_inline_version "v2.21-unreleased" >}}.
   github_native:
     # Path of the file in the repository to configure the generated release
-    # notes, instead of the default '.github/release.yml'.
+    # notes, instead of the default '.github/release.yml' (or '.yaml').
     #
     # {{< g_inline_version "v2.21-unreleased" >}}
     # Templates: allowed.
