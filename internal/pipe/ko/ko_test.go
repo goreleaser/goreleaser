@@ -86,7 +86,7 @@ func TestDefault(t *testing.T) {
 	}, ctx.Config.Kos[0])
 }
 
-func TestDefaultGoToolchain(t *testing.T) {
+func TestGoToolchain(t *testing.T) {
 	for name, tt := range map[string]struct {
 		tool     string
 		buildEnv []string
@@ -117,23 +117,33 @@ func TestDefaultGoToolchain(t *testing.T) {
 			koEnv: []string{"GOTOOLCHAIN=go1.26.0"},
 			want:  []string{"GOTOOLCHAIN=go1.26.0"},
 		},
+		"explicit templated toolchain": {
+			tool:  "go1.25.3",
+			koEnv: []string{"{{ if .IsSnapshot }}GOTOOLCHAIN=go1.26.0{{ else }}GOTOOLCHAIN=local{{ end }}"},
+			want:  []string{"GOTOOLCHAIN=local"},
+		},
+		"inherited templated toolchain": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"GOTOOLCHAIN={{ .Env.TOOLCHAIN }}"},
+			want:     []string{"GOTOOLCHAIN=local"},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				ProjectName: "test",
-				Env:         []string{"KO_DOCKER_REPO=" + registry1},
 				Builds: []config.Build{
 					{ID: "test", Tool: tt.tool, Env: tt.buildEnv},
 				},
-				Kos: []config.Ko{
-					{Env: tt.koEnv},
-				},
-			})
+				Kos: []config.Ko{{
+					WorkingDir:   "./testdata/app/",
+					Repositories: []string{registry1 + "goreleasertest/testapp"},
+					Env:          tt.koEnv,
+				}},
+			}, testctx.WithEnv(map[string]string{"TOOLCHAIN": "local"}))
 			require.NoError(t, Pipe{}.Default(ctx))
-			require.Equal(t, tt.want, ctx.Config.Kos[0].Env)
-			if len(tt.buildEnv) > 0 {
-				require.Equal(t, tt.buildEnv, ctx.Config.Builds[0].Env, "build env must not be modified")
-			}
+			opts, err := buildBuildOptions(ctx, ctx.Config.Kos[0])
+			require.NoError(t, err)
+			require.Equal(t, tt.want, opts.env)
 		})
 	}
 }

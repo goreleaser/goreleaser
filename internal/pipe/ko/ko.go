@@ -103,8 +103,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.Env = build.Env
 		}
 
-		ko.Env = withGoToolchain(ko.Env, build.Tool)
-
 		if ko.Main == "" {
 			ko.Main = build.Main
 		}
@@ -430,18 +428,18 @@ var goToolchainRe = regexp.MustCompile(`^go1(\.\d+){1,2}((rc|beta)\d+)?$`)
 
 // withGoToolchain maps a versioned Go build tool to GOTOOLCHAIN, since ko
 // always runs the default go binary.
-// It does nothing if env already sets GOTOOLCHAIN.
+// It does nothing if the rendered env already sets GOTOOLCHAIN.
 func withGoToolchain(env []string, tool string) []string {
 	tool = filepath.Base(tool)
 	if !goToolchainRe.MatchString(tool) {
 		return env
 	}
-	for _, e := range env {
-		if strings.HasPrefix(e, "GOTOOLCHAIN=") {
-			return env
-		}
+	if slices.ContainsFunc(env, func(e string) bool {
+		return strings.HasPrefix(e, "GOTOOLCHAIN=")
+	}) {
+		return env
 	}
-	return append(slices.Clone(env), "GOTOOLCHAIN="+tool)
+	return append(env, "GOTOOLCHAIN="+tool)
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
@@ -533,6 +531,10 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 
 	if opts.env, err = t.Slice(cfg.Env); err != nil {
 		return nil, err
+	}
+	// Applied to the rendered env, so a templated GOTOOLCHAIN is honored.
+	if build, err := findBuild(ctx, cfg); err == nil {
+		opts.env = withGoToolchain(opts.env, build.Tool)
 	}
 	if opts.flags, err = t.Slice(cfg.Flags); err != nil {
 		return nil, err
