@@ -433,49 +433,49 @@ func TestGitHubReleaseNotesRequest(t *testing.T) {
 		changelog   config.Changelog
 		opts        []testctx.Opt
 		prev        string
-		want        string
+		want        github.GenerateNotesRequest
 		wantTmplErr bool
 	}{
 		"defaults": {
 			release: config.Release{GitHub: release},
-			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+			prev:    "v1.0.0",
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0", PreviousTagName: new("v1.0.0")},
+		},
+		"first release": {
+			release: config.Release{GitHub: release},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
 		},
 		"target commitish": {
 			release: config.Release{GitHub: release, TargetCommitish: "{{ .Env.SHA }}"},
-			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","target_commitish":"abc123"}`,
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0", TargetCommitish: new("abc123")},
 		},
 		"target commitish with different casing": {
 			release: config.Release{
 				GitHub:          config.Repo{Owner: "SomeOne", Name: "SomeThing"},
 				TargetCommitish: "abc123",
 			},
-			want: `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","target_commitish":"abc123"}`,
-		},
-		"target commitish with publishing skipped": {
-			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
-			opts:    []testctx.Opt{testctx.Skip(skips.Publish)},
-			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
-		},
-		"target commitish with release disabled": {
-			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}", Disable: "true"},
-			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
-		},
-		"first release": {
-			release: config.Release{GitHub: release},
-			prev:    "-",
-			want:    `{"tag_name":"v1.1.0"}`,
+			want: github.GenerateNotesRequest{TagName: "v1.1.0", TargetCommitish: new("abc123")},
 		},
 		"target commitish of another repository": {
 			release: config.Release{
 				GitHub:          config.Repo{Owner: "someone", Name: "else"},
 				TargetCommitish: "abc123",
 			},
-			want: `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+			want: github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"target commitish with publishing skipped": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
+			opts:    []testctx.Opt{testctx.Skip(skips.Publish)},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"target commitish with release disabled": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}", Disable: "true"},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
 		},
 		"configuration file path": {
 			release:   config.Release{GitHub: release},
 			changelog: config.Changelog{GitHubNative: config.ChangelogGitHubNative{ConfigurationFilePath: ".github/{{ .Env.NOTES }}.yml"}},
-			want:      `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","configuration_file_path":".github/notes.yml"}`,
+			want:      github.GenerateNotesRequest{TagName: "v1.1.0", ConfigurationFilePath: new(".github/notes.yml")},
 		},
 		"invalid target commitish template": {
 			release:     config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
@@ -489,36 +489,18 @@ func TestGitHubReleaseNotesRequest(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-				defer r.Body.Close()
-				if r.URL.Path != "/api/v3/repos/someone/something/releases/generate-notes" {
-					t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
-					return
-				}
-				body, err := io.ReadAll(r.Body)
-				assert.NoError(t, err)
-				assert.JSONEq(t, tt.want, string(body))
-				serveTestFile(t, w, "testdata/github/releasenotes.json")
-			})
-
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-				GitHubURLs: config.GitHubURLs{API: srv.URL},
-				Release:    tt.release,
-				Changelog:  tt.changelog,
+				Release:   tt.release,
+				Changelog: tt.changelog,
 			}, append(tt.opts, testctx.WithEnv(map[string]string{"SHA": "abc123", "NOTES": "notes"}))...)
-			client, err := newGitHub(ctx, "test-token")
-			require.NoError(t, err)
 
-			prev := "v1.0.0"
-			if tt.prev == "-" {
-				prev = ""
-			}
-			_, err = client.GenerateReleaseNotes(ctx, Repo{Owner: "someone", Name: "something"}, prev, "v1.1.0")
+			req, err := releaseNotesRequest(ctx, Repo{Owner: "someone", Name: "something"}, tt.prev, "v1.1.0")
 			if tt.wantTmplErr {
 				testlib.RequireTemplateError(t, err)
 				return
 			}
 			require.NoError(t, err)
+			require.Equal(t, tt.want, req)
 		})
 	}
 }

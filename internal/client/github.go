@@ -184,15 +184,16 @@ func releaseNotesRequest(ctx *context.Context, repo Repo, prev, current string) 
 		req.PreviousTagName = &prev
 	}
 
-	if usesTargetCommitish(ctx, repo) {
-		target, err := targetCommitish(ctx)
+	tpl := tmpl.New(ctx)
+	if usesTargetCommitish(ctx, tpl, repo) {
+		target, err := targetCommitish(ctx, tpl)
 		if err != nil {
 			return req, err
 		}
 		req.TargetCommitish = target
 	}
 
-	path, err := tmpl.New(ctx).Apply(ctx.Config.Changelog.GitHubNative.ConfigurationFilePath)
+	path, err := tpl.Apply(ctx.Config.Changelog.GitHubNative.ConfigurationFilePath)
 	if err != nil {
 		return req, fmt.Errorf("templating changelog.github_native.configuration_file_path: %w", err)
 	}
@@ -208,11 +209,11 @@ func releaseNotesRequest(ctx *context.Context, repo Repo, prev, current string) 
 // GitHub uses it when the tag does not exist yet, so the notes are generated
 // for the commit the release will tag. It only applies if that release is
 // published, and created in the same repository.
-func usesTargetCommitish(ctx *context.Context, repo Repo) bool {
+func usesTargetCommitish(ctx *context.Context, tpl *tmpl.Template, repo Repo) bool {
 	if ctx.Config.Release.TargetCommitish == "" || skips.Any(ctx, skips.Publish) {
 		return false
 	}
-	if disabled, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable); err != nil || disabled {
+	if disabled, err := tpl.Bool(ctx.Config.Release.Disable); err != nil || disabled {
 		return false
 	}
 	release := ctx.Config.Release.GitHub
@@ -225,8 +226,8 @@ func usesTargetCommitish(ctx *context.Context, repo Repo) bool {
 
 // targetCommitish returns the templated release target commitish, or nil if
 // it is empty.
-func targetCommitish(ctx *context.Context) (*string, error) {
-	target, err := tmpl.New(ctx).Apply(ctx.Config.Release.TargetCommitish)
+func targetCommitish(ctx *context.Context, tpl *tmpl.Template) (*string, error) {
+	target, err := tpl.Apply(ctx.Config.Release.TargetCommitish)
 	if err != nil {
 		return nil, fmt.Errorf("templating release.target_commitish: %w", err)
 	}
@@ -604,7 +605,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		Prerelease: &ctx.PreRelease,
 	}
 
-	data.TargetCommitish, err = targetCommitish(ctx)
+	data.TargetCommitish, err = targetCommitish(ctx, tpl)
 	if err != nil {
 		return "", err
 	}
