@@ -390,10 +390,6 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		summary.Appendf("Pushed Docker image `%s`", dst)
 	}
 
-	if len(opts.imageRepos) == 1 {
-		return nil
-	}
-
 	src := ref.Name()
 	for _, dst := range secondaryDestinations(opts) {
 		digest, err := copyImage(src, dst)
