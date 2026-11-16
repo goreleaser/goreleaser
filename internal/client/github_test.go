@@ -424,6 +424,77 @@ func TestGitHubReleaseNotes(t *testing.T) {
 	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
 }
 
+func TestGitHubReleaseNotesRequest(t *testing.T) {
+	t.Parallel()
+	release := config.Repo{Owner: "someone", Name: "something"}
+	for name, tt := range map[string]struct {
+		release     config.Release
+		changelog   config.Changelog
+		want        string
+		wantTmplErr bool
+	}{
+		"defaults": {
+			release: config.Release{GitHub: release},
+			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+		},
+		"target commitish": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Env.SHA }}"},
+			want:    `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","target_commitish":"abc123"}`,
+		},
+		"target commitish of another repository": {
+			release: config.Release{
+				GitHub:          config.Repo{Owner: "someone", Name: "else"},
+				TargetCommitish: "abc123",
+			},
+			want: `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0"}`,
+		},
+		"configuration file path": {
+			release:   config.Release{GitHub: release},
+			changelog: config.Changelog{GitHubNative: config.ChangelogGitHubNative{ConfigurationFilePath: ".github/{{ .Env.NOTES }}.yml"}},
+			want:      `{"tag_name":"v1.1.0","previous_tag_name":"v1.0.0","configuration_file_path":".github/notes.yml"}`,
+		},
+		"invalid target commitish template": {
+			release:     config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
+			wantTmplErr: true,
+		},
+		"invalid configuration file path template": {
+			release:     config.Release{GitHub: release},
+			changelog:   config.Changelog{GitHubNative: config.ChangelogGitHubNative{ConfigurationFilePath: "{{ .Nope }}"}},
+			wantTmplErr: true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				if r.URL.Path != "/api/v3/repos/someone/something/releases/generate-notes" {
+					t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+					return
+				}
+				body, err := io.ReadAll(r.Body)
+				assert.NoError(t, err)
+				assert.JSONEq(t, tt.want, string(body))
+				serveTestFile(t, w, "testdata/github/releasenotes.json")
+			})
+
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				GitHubURLs: config.GitHubURLs{API: srv.URL},
+				Release:    tt.release,
+				Changelog:  tt.changelog,
+			}, testctx.WithEnv(map[string]string{"SHA": "abc123", "NOTES": "notes"}))
+			client, err := newGitHub(ctx, "test-token")
+			require.NoError(t, err)
+
+			_, err = client.GenerateReleaseNotes(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0", "v1.1.0")
+			if tt.wantTmplErr {
+				testlib.RequireTemplateError(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestGitHubReleaseNotesError(t *testing.T) {
 	t.Parallel()
 	srv := githubTestServer(t, func(w http.ResponseWriter, r *http.Request) {

@@ -164,16 +164,48 @@ func (c *githubClient) rateLimitChecker(
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	c.checkRateLimit(ctx)
+	req, err := releaseNotesRequest(ctx, repo, prev, current)
+	if err != nil {
+		return "", err
+	}
 	notes, _, err := githubDo(ctx, func() (*github.RepositoryReleaseNotes, *github.Response, error) {
-		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, github.GenerateNotesRequest{
-			TagName:         current,
-			PreviousTagName: &prev,
-		})
+		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, req)
 	})
 	if err != nil {
 		return "", err
 	}
 	return notes.Body, err
+}
+
+func releaseNotesRequest(ctx *context.Context, repo Repo, prev, current string) (github.GenerateNotesRequest, error) {
+	req := github.GenerateNotesRequest{
+		TagName:         current,
+		PreviousTagName: &prev,
+	}
+	tpl := tmpl.New(ctx)
+
+	// GitHub uses the target commitish when the tag does not exist yet, so
+	// the notes are generated for the same commit the release will tag.
+	// It is only valid for the repository the release is created in.
+	release := ctx.Config.Release.GitHub
+	if repo.Owner == release.Owner && repo.Name == release.Name {
+		target, err := tpl.Apply(ctx.Config.Release.TargetCommitish)
+		if err != nil {
+			return req, err
+		}
+		if target != "" {
+			req.TargetCommitish = &target
+		}
+	}
+
+	path, err := tpl.Apply(ctx.Config.Changelog.GitHubNative.ConfigurationFilePath)
+	if err != nil {
+		return req, err
+	}
+	if path != "" {
+		req.ConfigurationFilePath = &path
+	}
+	return req, nil
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {

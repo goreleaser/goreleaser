@@ -870,6 +870,18 @@
 					},
 					"abbrev": {
 						"type": "integer"
+					},
+					"github_native": {
+						"$ref": "#/$defs/ChangelogGitHubNative"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogGitHubNative": {
+				"properties": {
+					"configuration_file_path": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
