@@ -46,6 +46,7 @@ var (
 	_ api.Builder          = &Builder{}
 	_ api.DependingBuilder = &Builder{}
 	_ api.TargetFixer      = &Builder{}
+	_ api.DetailsOverrider = &Builder{}
 )
 
 //nolint:gochecknoinits

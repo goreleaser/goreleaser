@@ -332,6 +332,10 @@ builds:
           - foobaz
         env:
           - CGO_ENABLED=1
+        # Build mode for this target, e.g. to only build a shared library on some
+        # targets. An empty value keeps the build's 'buildmode'.
+        # {{< g_inline_version "v2.21-unreleased" >}}
+        buildmode: c-shared
 
     # Set a specific go binary to use when building.
     # It is safe to ignore this option in most cases.
