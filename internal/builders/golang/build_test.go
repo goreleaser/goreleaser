@@ -2297,7 +2297,7 @@ func TestBuildCgoLibraryBuildmodeOverride(t *testing.T) {
 	writeGoMod(t, folder, "github.com/foo/bar")
 	writeCExportMain(t, folder)
 
-	target := mustParse(t, fixTarget(runtimeTarget))
+	target := mustParse(t, runtimeTarget)
 	ext := cArchiveExt()
 	build := config.Build{
 		ID:      "cexport",
