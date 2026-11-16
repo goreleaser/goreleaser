@@ -19,7 +19,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
-	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/daemon"
@@ -372,11 +371,8 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		return fmt.Errorf("close: %w", err)
 	}
 
-	ctx.Artifacts.Add(makeArtifact(
-		ko.ID,
-		ref.Name(),
-		ref.Context().Digest(ref.Identifier()).DigestStr(),
-	))
+	digest := ref.Context().Digest(ref.Identifier()).DigestStr()
+	ctx.Artifacts.Add(makeArtifact(ko.ID, ref.Name(), digest))
 	if !ctx.Snapshot {
 		// snapshots only load the image into the local daemon.
 		summary.Appendf("Pushed Docker image `%s`", ref.Name())
@@ -388,12 +384,11 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		return nil
 	}
 
-	src := ref.Name()
-	for _, dst := range secondaryDestinations(opts) {
-		digest, err := copyImage(src, dst)
-		if err != nil {
-			return err
-		}
+	dsts := secondaryDestinations(opts)
+	if err := copyImage(ctx, ref, dsts); err != nil {
+		return err
+	}
+	for _, dst := range dsts {
 		ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
 		summary.Appendf("Pushed Docker image `%s`", dst)
 	}
@@ -590,18 +585,33 @@ func validateMainPath(path string) error {
 	return nil
 }
 
-func copyImage(src, dst string) (string, error) {
-	log.WithField("src", src).
-		WithField("dst", dst).
-		Info("copying manifest")
-	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
-		return "", fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
-	}
-	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+// copyImage copies src to every dst.
+//
+// The source is fetched once and pushed with a single pusher, which only
+// uploads blobs and manifests missing from each repository. Copies keep the
+// manifest bytes, so every dst has the digest of src.
+func copyImage(ctx stdctx.Context, src name.Reference, dsts []string) error {
+	desc, err := remote.Get(src, remote.WithContext(ctx), remote.WithAuthFromKeychain(keychain))
 	if err != nil {
-		return "", fmt.Errorf("could not get digest of %q: %w", dst, err)
+		return fmt.Errorf("could not fetch %q: %w", src, err)
 	}
-	return digest, nil
+	pusher, err := remote.NewPusher(remote.WithAuthFromKeychain(keychain))
+	if err != nil {
+		return err
+	}
+	for _, dst := range dsts {
+		log.WithField("src", src).
+			WithField("dst", dst).
+			Info("copying manifest")
+		ref, err := name.NewTag(dst)
+		if err != nil {
+			return fmt.Errorf("could not parse %q: %w", dst, err)
+		}
+		if err := pusher.Push(ctx, ref, desc); err != nil {
+			return fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
+		}
+	}
+	return nil
 }
 
 func makeArtifact(id, name, digest string) *artifact.Artifact {

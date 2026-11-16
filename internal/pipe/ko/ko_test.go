@@ -44,6 +44,10 @@ const (
 	registry2     = "localhost:5053/"
 	registry3Port = "5054"
 	registry3     = "localhost:5054/"
+	registry5Port = "5056"
+	registry5     = "localhost:5056/"
+	registry6Port = "5057"
+	registry6     = "localhost:5057/"
 )
 
 func TestDefault(t *testing.T) {
@@ -614,6 +618,63 @@ func binaryXattr(tb testing.TB, image v1.Image, key string) string {
 	}
 	require.Fail(tb, "binary not found in image")
 	return ""
+}
+
+func TestPublishPipeSecondaryRepositories(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	testlib.StartRegistry(t, "ko_registry5", registry5Port)
+	testlib.StartRegistry(t, "ko_registry6", registry6Port)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				ID:  "foo",
+				Env: []string{"GOCACHE=" + gocacheOnce()},
+			},
+		},
+		Kos: []config.Ko{
+			{
+				ID:         "default",
+				Build:      "foo",
+				WorkingDir: "./testdata/app/",
+				Repositories: []string{
+					registry5 + "primary",
+					registry6 + "secondary",
+				},
+				Tags: []string{"latest", "{{.Version}}"},
+				SBOM: "none",
+				Bare: true,
+			},
+		},
+	}, testctx.WithVersion("1.2.0"))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
+	require.NotEmpty(t, manifests)
+	digest := manifests[0].Extra[artifact.ExtraDigest]
+	require.NotEmpty(t, digest)
+
+	var secondary []string
+	for _, m := range manifests {
+		require.Equal(t, digest, m.Extra[artifact.ExtraDigest])
+		if !strings.HasPrefix(m.Name, registry6) {
+			continue
+		}
+		secondary = append(secondary, m.Name)
+		ref, err := name.ParseReference(m.Name, name.Insecure)
+		require.NoError(t, err)
+		desc, err := remote.Head(ref)
+		require.NoError(t, err)
+		require.Equal(t, digest, desc.Digest.String())
+	}
+	require.ElementsMatch(t, []string{
+		registry6 + "secondary:latest",
+		registry6 + "secondary:1.2.0",
+	}, secondary)
 }
 
 func TestSnapshot(t *testing.T) {
