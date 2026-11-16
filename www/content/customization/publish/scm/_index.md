@@ -63,7 +63,12 @@ release:
   # that matches the one we're trying to upload.
   # GoReleaser will then retry its upload.
   #
-  # Available for GitHub and GitLab.
+  # Gitea accepts several files with the same name, so GoReleaser checks the
+  # files of an existing release instead: unless this is set, uploading a file
+  # whose name is already taken fails. If set, the existing file is deleted
+  # once the new one is uploaded.
+  #
+  # Available for GitHub, GitLab, and Gitea.
   replace_existing_artifacts: true
 
   # Useful if you want to delay the creation of the tag in the remote.

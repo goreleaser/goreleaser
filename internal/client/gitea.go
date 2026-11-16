@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/caarlos0/log"
@@ -22,6 +23,14 @@ import (
 
 type giteaClient struct {
 	client *gitea.Client
+
+	// Gitea accepts several assets with the same name, so Upload checks names
+	// itself instead of waiting for the API to refuse a duplicate. Both maps
+	// are by release ID and asset name: assets holds what existing releases
+	// already had, and uploads what this run is uploading.
+	mu      sync.Mutex
+	assets  map[int64]map[string][]int64
+	uploads map[int64]map[string]bool
 }
 
 var (
@@ -315,6 +324,7 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	}
 
 	if release != nil {
+		c.rememberAssets(release)
 		body = getReleaseNotes(release.Note, body, ctx.Config.Release.ReleaseNotesMode)
 		release, err = c.updateRelease(ctx, title, body, release.ID)
 		if err != nil {
@@ -378,7 +388,15 @@ func (c *giteaClient) Upload(
 	owner := releaseConfig.Gitea.Owner
 	repoName := releaseConfig.Gitea.Name
 
-	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+	previous, claimed := c.claimAsset(giteaReleaseID, artifact.Name)
+	if !claimed {
+		return fmt.Errorf("another artifact is also named %q, only one of them can be uploaded", artifact.Name)
+	}
+	if len(previous) > 0 && !releaseConfig.ReplaceExistingArtifacts {
+		return fmt.Errorf("release already has an asset named %q, delete it or set release.replace_existing_artifacts", artifact.Name)
+	}
+
+	if err := retryx.Do(ctx, ctx.Config.Retry, func() error {
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return retryx.Unrecoverable(err)
@@ -386,5 +404,59 @@ func (c *giteaClient) Upload(
 		defer file.Close()
 		_, resp, err := c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
 		return retryx.HTTP(err, must(resp).Response)
-	}, retryx.IsRetriable)
+	}, retryx.IsRetriable); err != nil {
+		return err
+	}
+
+	// Gitea does not specify which of several assets with the same name it
+	// serves, so the previous ones must go. Deleting them only after the
+	// upload keeps the asset downloadable throughout.
+	for _, id := range previous {
+		_, resp, err := giteaDo(ctx, func() (struct{}, *gitea.Response, error) {
+			resp, err := c.client.DeleteReleaseAttachment(owner, repoName, giteaReleaseID, id)
+			return struct{}{}, resp, err
+		})
+		if err != nil && (resp == nil || resp.StatusCode != http.StatusNotFound) {
+			return fmt.Errorf("uploaded %q, but could not delete the asset it replaces: %w", artifact.Name, err)
+		}
+		log.WithField("name", artifact.Name).
+			WithField("id", id).
+			Debug("deleted replaced release asset")
+	}
+	return nil
+}
+
+// rememberAssets records the assets of an existing release for Upload.
+func (c *giteaClient) rememberAssets(release *gitea.Release) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.assets == nil {
+		c.assets = map[int64]map[string][]int64{}
+	}
+	byName := map[string][]int64{}
+	for _, asset := range release.Attachments {
+		if asset != nil {
+			byName[asset.Name] = append(byName[asset.Name], asset.ID)
+		}
+	}
+	c.assets[release.ID] = byName
+}
+
+// claimAsset reserves name for one upload into the release, and returns the
+// IDs of the assets with that name the release already had. It returns false
+// if another upload of this run already claimed the name.
+func (c *giteaClient) claimAsset(releaseID int64, name string) ([]int64, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.uploads[releaseID][name] {
+		return nil, false
+	}
+	if c.uploads == nil {
+		c.uploads = map[int64]map[string]bool{}
+	}
+	if c.uploads[releaseID] == nil {
+		c.uploads[releaseID] = map[string]bool{}
+	}
+	c.uploads[releaseID][name] = true
+	return c.assets[releaseID][name], true
 }
