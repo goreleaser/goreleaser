@@ -42,7 +42,9 @@ pkgrel={{ .Rel }}
 pkgdesc={{ quoteField .Desc }}
 url={{ quoteField .Homepage }}
 arch=({{ pkgArray .Arches }})
-license=({{ quoteField .License }})
+{{- with .License }}
+license=({{ quoteField . }})
+{{- end }}
 {{- with .Provides }}
 provides=({{ pkgArray . }})
 {{- end }}
