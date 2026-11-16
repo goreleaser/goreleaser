@@ -456,7 +456,7 @@ type Ko struct {
 	// v2.19+
 	LinuxCapabilities []string `yaml:"linux_capabilities,omitempty" json:"linux_capabilities,omitempty"`
 
-	// v2.20+
+	// v2.21+
 	Trimpath bool `yaml:"trimpath,omitempty" json:"trimpath,omitempty"`
 
 	// Deprecated: use [Repositories].

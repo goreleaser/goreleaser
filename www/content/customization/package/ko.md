@@ -172,7 +172,7 @@ kos:
     # Whether to build with '-trimpath', removing file system paths from the
     # resulting binary, which helps with reproducible builds.
     #
-    # {{< g_inline_version "v2.20-unreleased" >}}
+    # {{< g_inline_version "v2.21-unreleased" >}}
     trimpath: true
 
     # Whether to disable this particular Ko configuration.
