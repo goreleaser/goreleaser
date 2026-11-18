@@ -423,15 +423,22 @@ func secondaryDestinations(opts *buildOptions) []string {
 }
 
 // goToolchainRe matches versioned Go binaries, such as the ones installed by
-// golang.org/dl (e.g. go1.25.3, go1.26rc1).
-var goToolchainRe = regexp.MustCompile(`^go1(\.\d+){1,2}((rc|beta)\d+)?$`)
+// golang.org/dl (e.g. go1.25.3, go1.26rc1, go1.20).
+var goToolchainRe = regexp.MustCompile(`^go1\.(\d+)(\.\d+)?((rc|beta)\d+)?$`)
 
 // withGoToolchain maps a versioned Go build tool to GOTOOLCHAIN, since ko
 // always runs the default go binary.
+// The '+auto' suffix lets Go switch to a newer toolchain if go.mod requires
+// it, just like running the versioned binary directly does.
 // It does nothing if the rendered env already sets GOTOOLCHAIN.
 func withGoToolchain(env []string, tool string) []string {
 	tool = filepath.Base(tool)
-	if !goToolchainRe.MatchString(tool) {
+	m := goToolchainRe.FindStringSubmatch(tool)
+	if m == nil {
+		return env
+	}
+	// Since Go 1.21, 'go1.N' is a language version, not a toolchain name.
+	if minor, _ := strconv.Atoi(m[1]); minor >= 21 && m[2] == "" && m[3] == "" {
 		return env
 	}
 	if slices.ContainsFunc(env, func(e string) bool {
@@ -439,7 +446,7 @@ func withGoToolchain(env []string, tool string) []string {
 	}) {
 		return env
 	}
-	return append(env, "GOTOOLCHAIN="+tool)
+	return append(env, "GOTOOLCHAIN="+tool+"+auto")
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
