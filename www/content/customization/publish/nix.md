@@ -135,10 +135,10 @@ Packages can also be generated from archives using `formats: binary`.
 In that case, the binary is downloaded as is: the package sets
 `dontUnpack = true` and installs `$src` into `$out/bin`.
 
-If both an archive and a binary are available for the same platform (for
-example, with `formats: [tar.gz, binary]`), the archive is used.
-A single package cannot mix archives and binaries across platforms, so use the
-same kind for all platforms, or filter them with `ids`.
+Archives take precedence: if the package selects at least one archive, raw
+binaries are ignored, on every platform. Raw binaries are used only when no
+archive is selected, for example when `ids` selects only `formats: binary`
+archives.
 
 The binary must have the same name on every platform, unless you set a custom
 `install` script that handles the different names.

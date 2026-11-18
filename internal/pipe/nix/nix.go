@@ -38,10 +38,6 @@ const nixConfigExtra = "NixConfig"
 // archives for the same platform.
 var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
 
-// ErrMixedArchivesAndBinaries happens when the config yields archives for some
-// platforms and raw binaries (archives.formats=binary) for others.
-var ErrMixedArchivesAndBinaries = errors.New("one nixpkg cannot mix archives and binaries, use either archives or binaries for all platforms")
-
 // ErrBinaryNamesDiffer happens when raw binaries (archives.formats=binary) have
 // different names across platforms and no custom install script is set: the
 // generated install script uses a single name for every platform.
@@ -305,11 +301,6 @@ func preparePkg(
 	}
 
 	binary := archives[0].Type == artifact.UploadableBinary
-	for _, art := range archives {
-		if (art.Type == artifact.UploadableBinary) != binary {
-			return "", ErrMixedArchivesAndBinaries
-		}
-	}
 
 	if nix.URLTemplate == "" {
 		url, err := cli.ReleaseURLTemplate(ctx)
@@ -407,27 +398,17 @@ func preparePkg(
 	return doBuildPkg(ctx, data)
 }
 
-// preferArchives drops the raw binaries whose platforms all have an archive,
-// so that `archives.formats: [tar.gz, binary]` keeps yielding a package built
-// from the archives. A universal binary is only dropped when archives cover
-// every architecture it provides.
+// preferArchives drops every raw binary when at least one archive is selected,
+// so configs that also publish raw binaries keep yielding the package built
+// from their archives. Raw binaries are used only when there is no archive.
 func preferArchives(arts []*artifact.Artifact) []*artifact.Artifact {
-	withArchive := map[string]bool{}
-	for _, art := range arts {
-		if art.Type != artifact.UploadableArchive {
-			continue
-		}
-		for _, key := range platformKeys(art) {
-			withArchive[key] = true
-		}
+	if !slices.ContainsFunc(arts, func(art *artifact.Artifact) bool {
+		return art.Type == artifact.UploadableArchive
+	}) {
+		return arts
 	}
 	return slices.DeleteFunc(arts, func(art *artifact.Artifact) bool {
-		if art.Type != artifact.UploadableBinary {
-			return false
-		}
-		return !slices.ContainsFunc(platformKeys(art), func(key string) bool {
-			return !withArchive[key]
-		})
+		return art.Type == artifact.UploadableBinary
 	})
 }
 
@@ -656,9 +637,18 @@ func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) (
 
 // binaryName returns the name shared by all the raw binaries. The artifact
 // order is not stable, so differing names are an error rather than picking one.
+// Several binaries on one platform are reported first: nix.install cannot
+// handle them, so they must not be reported as differing names.
 func binaryName(arts []*artifact.Artifact) (string, error) {
 	set := map[string]bool{}
+	platforms := map[string]bool{}
 	for _, art := range arts {
+		for _, key := range platformKeys(art) {
+			if platforms[key] {
+				return "", ErrMultipleArchivesSamePlatform
+			}
+			platforms[key] = true
+		}
 		// builds.binary may include a directory, e.g. `bin/foo`, written with
 		// the separators of the host that runs the release.
 		set[filepath.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true

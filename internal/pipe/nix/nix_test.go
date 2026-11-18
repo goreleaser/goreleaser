@@ -428,8 +428,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:           "universal-binary-partial-archive",
-			expectRunError: requireErrorIs(ErrMixedArchivesAndBinaries),
+			name: "universal-binary-partial-archive",
 			nix: config.Nix{
 				Name: "foo",
 				IDs:  []string{"universal-binary-partial-archive"},
@@ -479,11 +478,22 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:           "mixed-archive-binary",
-			expectRunError: requireErrorIs(ErrMixedArchivesAndBinaries),
+			name: "mixed-archive-binary",
 			nix: config.Nix{
 				Name: "foo",
 				IDs:  []string{"mixed-archive-binary"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "binaries-same-platform",
+			expectRunError: requireErrorIs(ErrMultipleArchivesSamePlatform),
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"binaries-same-platform"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -729,8 +739,12 @@ func TestRunPipe(t *testing.T) {
 			createFakeBinary("archive-arm6-binary-arm-default-reversed", "linux", "arm", "", "", nil)
 			createFakeBinary("universal-binary-partial-archive", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
 			createFakeArtifact("universal-binary-partial-archive", "darwin", "amd64", "v1", "", "tar.gz", nil)
+			// archives win: the binary on a platform no archive covers is ignored.
 			createFakeArtifact("mixed-archive-binary", "darwin", "arm64", "", "", "zip", nil)
 			createFakeBinary("mixed-archive-binary", "linux", "arm64", "", "", nil)
+			// two builds in one `formats: binary` entry: one platform, two names.
+			createFakeBinary("binaries-same-platform", "linux", "amd64", "v1", "", map[string]any{artifact.ExtraBinary: "foo"})
+			createFakeBinary("binaries-same-platform", "linux", "amd64", "v1", "", map[string]any{artifact.ExtraBinary: "bar"})
 			// same platforms, differing binary names, in both artifact orders.
 			createFakeBinary("binary-names-differ", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-linux"})
 			createFakeBinary("binary-names-differ", "darwin", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-darwin"})
