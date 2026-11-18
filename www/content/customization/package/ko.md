@@ -157,6 +157,13 @@ kos:
 
     # Env to use on build.
     #
+    # If build.tool is a versioned Go binary (e.g. 'go1.25.3', as installed by
+    # golang.org/dl), 'GOTOOLCHAIN' is set to it, unless already set here
+    # {{< g_inline_version "v2.21-unreleased" >}}.
+    # The '+auto' suffix is added (e.g. 'go1.25.3+auto'), so Go can still
+    # switch to a newer toolchain if go.mod requires it, like when running the
+    # versioned binary directly. Set 'GOTOOLCHAIN=go1.25.3' here to pin it.
+    #
     # Default: build.env.
     # Templates: allowed.
     env:
