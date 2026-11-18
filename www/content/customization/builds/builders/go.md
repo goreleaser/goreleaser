@@ -551,6 +551,19 @@ The `buildmode` can also be set per target with `overrides`
 {{< g_inline_version "v2.21-unreleased" >}}, e.g. to only build a shared
 library for Windows.
 
+> [!NOTE]
+>
+> The outputs of an overridden `c-shared` or `c-archive` build mode are
+> libraries, just like with the top-level `buildmode`. This means that:
+>
+> - Targets using the overridden build mode also produce a header file, so
+>   their archives contain a different number of files than the other targets.
+>   Set `allow_different_binary_count: true` in your
+>   [archives](/customization/package/archives/) configuration, otherwise the
+>   archive step will fail.
+> - Steps that only handle binaries, such as `binary_signs`, `upx` and
+>   `universal_binaries`, will not pick them up.
+
 Example usage:
 
 ```yaml {filename=".goreleaser.yaml"}
