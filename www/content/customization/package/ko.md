@@ -71,6 +71,9 @@ kos:
     # First one will be used on Ko build, the other ones will be copied from the
     # first one using crane.
     #
+    # If the '$KO_DOCKER_REPO' environment variable is set, it replaces this
+    # list (and 'repository') for every ko build, like it does on the ko CLI.
+    #
     # Default: [ '$KO_DOCKER_REPO' ].
     # Templates: allowed.
     repositories:
@@ -79,7 +82,8 @@ kos:
 
     # Repository to push to.
     #
-    # Default: '$KO_DOCKER_REPO'.
+    # Replaced by '$KO_DOCKER_REPO' when it is set.
+    #
     # Deprecated: use 'repositories' instead.
     # Templates: allowed.
     repository: ghcr.io/foo/bar
