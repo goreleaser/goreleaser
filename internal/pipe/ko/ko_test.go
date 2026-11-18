@@ -961,6 +961,14 @@ func TestPublishPipeError(t *testing.T) {
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})
 
+	t.Run("empty tags", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].Tags = []string{"{{ .Env.EXTRA_TAG }}"}
+		ctx.Env["EXTRA_TAG"] = ""
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.ErrorIs(t, Pipe{}.Publish(ctx), errNoTags)
+	})
+
 	t.Run("invalid platforms tmpl", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].Platforms = []string{"{{.Nope}}"}

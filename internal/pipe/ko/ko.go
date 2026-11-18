@@ -60,6 +60,7 @@ var (
 	)
 
 	errNoRepositories    = errors.New("ko: missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errNoTags            = errors.New("ko: all tags rendered empty, so no image would be pushed: please set at least one non-empty tag")
 	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
 	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
 )
@@ -325,6 +326,10 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 	opts, err := buildBuildOptions(ctx, ko)
 	if err != nil {
 		return err
+	}
+	if len(opts.tags) == 0 {
+		// ko only pushes the given tags, so it would not push anything.
+		return errNoTags
 	}
 
 	b, err := opts.makeBuilder(ctx)
