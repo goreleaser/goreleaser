@@ -3859,6 +3859,37 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Packslip": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name_template": {
+						"type": "string"
+					},
+					"project": {
+						"type": "string"
+					},
+					"url_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Project": {
 				"properties": {
 					"version": {
@@ -3975,6 +4006,12 @@
 					},
 					"checksum": {
 						"$ref": "#/$defs/Checksum"
+					},
+					"packslips": {
+						"items": {
+							"$ref": "#/$defs/Packslip"
+						},
+						"type": "array"
 					},
 					"dockers_v2": {
 						"items": {
