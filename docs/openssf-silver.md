@@ -75,7 +75,7 @@ Do **not** invent maintainer-only facts.
 | --- | --- | --- |
 | `dco` | Gap | No DCO/CLA workflow documented in-repo today |
 | `bus_factor` | Maintainer-only / Likely Met | Multiple named maintainers publicly, but release/admin continuity is maintainer-confirmed |
-| `version_tags_signed` | Likely Met | https://github.com/goreleaser/goreleaser/releases/tag/v2.20.0 | Recent stable tags are annotated + SSH-signed (`git cat-file -t refs/tags/v2.20.0` → `tag`; same for `v2.19.0` / `v2.18.3`). GitHub tag object `56188bf4…` reports `verification.verified: true`. Release *artifacts* remain signed via cosign. Remaining check: document consumer tag-verify steps / signer identity if badge wording needs it |
+| `version_tags_signed` | Likely Met | Recent stable tags are annotated + SSH-signed (`git cat-file -t refs/tags/v2.20.0` → `tag`; same for `v2.19.0` / `v2.18.3`). GitHub tag object `56188bf4…` reports `verification.verified: true`. Release artifacts remain signed via cosign. Remaining check: document consumer tag-verify steps / signer identity if badge wording needs it. Evidence: https://github.com/goreleaser/goreleaser/releases/tag/v2.20.0 |
 | `hardening` | Likely Met | Go memory safety, least-privilege workflow tokens, fuzz tasks — document on badge if desired |
 | `crypto_algorithm_agility` | Likely Met / N/A | Signing delegated to Sigstore/cosign; not a custom crypto suite |
 | `crypto_used_network` / `crypto_tls12` | Likely Met | Outbound HTTPS to forges/registries via Go TLS |
