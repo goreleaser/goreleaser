@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"text/template"
@@ -36,6 +37,11 @@ const nixConfigExtra = "NixConfig"
 // ErrMultipleArchivesSamePlatform happens when the config yields multiple
 // archives for the same platform.
 var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
+
+// ErrBinaryNamesDiffer happens when raw binaries (archives.formats=binary) have
+// different names across platforms and no custom install script is set: the
+// generated install script uses a single name for every platform.
+var ErrBinaryNamesDiffer = errors.New("one nixpkg needs the same binary name on every platform, set nix.install to handle different names")
 
 type errNoArchivesFound struct {
 	goamd64 string
@@ -273,9 +279,12 @@ func preparePkg(
 			artifact.ByGoarch("386"),
 			artifact.ByGoarch("all"),
 		),
-		artifact.And(
-			artifact.Not(artifact.ByFormats("gz")),
-			artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.Not(artifact.ByFormats("gz")),
+				artifact.ByType(artifact.UploadableArchive),
+			),
+			artifact.ByType(artifact.UploadableBinary),
 		),
 		artifact.OnlyReplacingUnibins,
 	}
@@ -283,13 +292,15 @@ func preparePkg(
 		filters = append(filters, artifact.ByIDs(nix.IDs...))
 	}
 
-	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	archives := preferArchives(ctx.Artifacts.Filter(artifact.And(filters...)).List())
 	if len(archives) == 0 {
 		return "", errNoArchivesFound{
 			goamd64: nix.Goamd64,
 			ids:     nix.IDs,
 		}
 	}
+
+	binary := archives[0].Type == artifact.UploadableBinary
 
 	if nix.URLTemplate == "" {
 		url, err := cli.ReleaseURLTemplate(ctx)
@@ -299,7 +310,7 @@ func preparePkg(
 		nix.URLTemplate = url
 	}
 
-	installs, err := installs(ctx, nix, archives[0])
+	installs, err := installs(ctx, nix, archives)
 	if err != nil {
 		return "", err
 	}
@@ -344,6 +355,7 @@ func preparePkg(
 		Inputs:            inputs,
 		Dependencies:      dependencies,
 		DynamicallyLinked: dynamicallyLinked,
+		Binary:            binary,
 	}
 
 	platforms := map[string]bool{}
@@ -361,17 +373,18 @@ func preparePkg(
 			Sha: sha,
 		}
 
-		for _, goarch := range expandGoarch(art.Goarch) {
-			key := art.Goos + goarch + art.Goarm
+		for _, key := range platformKeys(art) {
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
-			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
-			data.SourceRoots[key] = folder
+			if !binary {
+				folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
+				data.SourceRoots[key] = folder
+			}
 			data.Archives[key] = archive
-			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
+			plat := goosToPlatform[key]
 			if plat == "" {
-				return "", errors.New("invalid platform: " + art.Goos + goarch + art.Goarm)
+				return "", errors.New("invalid platform: " + key)
 			}
 			platforms[plat] = true
 		}
@@ -385,6 +398,35 @@ func preparePkg(
 	return doBuildPkg(ctx, data)
 }
 
+// preferArchives drops every raw binary when at least one archive is selected,
+// so configs that also publish raw binaries keep yielding the package built
+// from their archives. Raw binaries are used only when there is no archive.
+func preferArchives(arts []*artifact.Artifact) []*artifact.Artifact {
+	if !slices.ContainsFunc(arts, func(art *artifact.Artifact) bool {
+		return art.Type == artifact.UploadableArchive
+	}) {
+		return arts
+	}
+	return slices.DeleteFunc(arts, func(art *artifact.Artifact) bool {
+		return art.Type == artifact.UploadableBinary
+	})
+}
+
+// platformKeys returns the platforms an artifact provides, as goos+goarch+goarm.
+// An ARM artifact without goarm (e.g. built by zig) targets the default GOARM,
+// as in artifact.ByGoarm.
+func platformKeys(art *artifact.Artifact) []string {
+	var keys []string
+	for _, goarch := range expandGoarch(art.Goarch) {
+		goarm := art.Goarm
+		if goarch == "arm" && goarm == "" {
+			goarm = experimental.DefaultGOARM()
+		}
+		keys = append(keys, art.Goos+goarch+goarm)
+	}
+	return keys
+}
+
 func expandGoarch(goarch string) []string {
 	if goarch == "all" {
 		return []string{"amd64", "arm64"}
@@ -395,7 +437,6 @@ func expandGoarch(goarch string) []string {
 var goosToPlatform = map[string]string{
 	"linuxamd64":  "x86_64-linux",
 	"linuxarm64":  "aarch64-linux",
-	"linuxarm":    "armv" + experimental.DefaultGOARM() + "l-linux",
 	"linuxarm6":   "armv6l-linux",
 	"linuxarm7":   "armv7l-linux",
 	"linux386":    "i686-linux",
@@ -542,7 +583,10 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 	return split(applied), nil
 }
 
-func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
+// installs returns the install script. The templates are applied with the
+// first artifact, and the generated script must hold for all of them.
+func installs(ctx *context.Context, nix config.Nix, arts []*artifact.Artifact) ([]string, error) {
+	art := arts[0]
 	tpl := tmpl.New(ctx).WithArtifact(art)
 
 	extraInstall, err := tpl.Apply(nix.ExtraInstall)
@@ -559,10 +603,29 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	}
 
 	result := []string{"mkdir -p $out/bin"}
-	binInstallFormat := binInstallFormats(nix)
-	for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-		for _, format := range binInstallFormat {
-			result = append(result, fmt.Sprintf(format, bin))
+	switch art.Type {
+	case artifact.UploadableBinary:
+		bin, err := binaryName(arts)
+		if err != nil {
+			return nil, err
+		}
+		word, err := shellWord(bin)
+		if err != nil {
+			return nil, err
+		}
+		for _, format := range binInstallFormats(nix, binaryInstallFormat) {
+			result = append(result, fmt.Sprintf(format, word))
+		}
+	default:
+		binInstallFormat := binInstallFormats(nix, archiveInstallFormat)
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
+			word, err := shellWord(bin)
+			if err != nil {
+				return nil, err
+			}
+			for _, format := range binInstallFormat {
+				result = append(result, fmt.Sprintf(format, word))
+			}
 		}
 	}
 
@@ -572,8 +635,64 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	return append(result, split(extraInstall)...), nil
 }
 
-func binInstallFormats(nix config.Nix) []string {
-	formats := []string{"cp -vr ./%[1]s $out/bin/%[1]s"}
+// binaryName returns the name shared by all the raw binaries. The artifact
+// order is not stable, so differing names are an error rather than picking one.
+// Several binaries on one platform are reported first: nix.install cannot
+// handle them, so they must not be reported as differing names.
+func binaryName(arts []*artifact.Artifact) (string, error) {
+	set := map[string]bool{}
+	platforms := map[string]bool{}
+	for _, art := range arts {
+		for _, key := range platformKeys(art) {
+			if platforms[key] {
+				return "", ErrMultipleArchivesSamePlatform
+			}
+			platforms[key] = true
+		}
+		// builds.binary may include a directory, e.g. `bin/foo`, written with
+		// the separators of the host that runs the release.
+		set[filepath.Base(artifact.MustExtra[string](*art, artifact.ExtraBinary))] = true
+	}
+	names := slices.Sorted(maps.Keys(set))
+	if len(names) > 1 {
+		return "", fmt.Errorf("%w: %s", ErrBinaryNamesDiffer, strings.Join(names, ", "))
+	}
+	return names[0], nil
+}
+
+var shellSafe = regexp.MustCompile(`^[A-Za-z0-9_.,:/@%+=-]+$`)
+
+// shellWord returns s as a single shell word, for an install script inside a
+// nix indented string (installPhase). Names that need no quoting are unchanged.
+// Line breaks are rejected: nix strips the indentation that follows them.
+func shellWord(s string) (string, error) {
+	if shellSafe.MatchString(s) {
+		return s, nil
+	}
+	if strings.ContainsAny(s, "\r\n") {
+		return "", fmt.Errorf("nix: binary name %q contains a line break", s)
+	}
+	quoted := `"` + strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"$", `\$`,
+		"`", "\\`",
+	).Replace(s) + `"`
+	// In a nix indented string, '' ends the string and ${ interpolates.
+	// Every $ is now preceded by \, so no ' comes before an escaped ${.
+	return strings.NewReplacer("''", "'''", "${", "''${").Replace(quoted), nil
+}
+
+const (
+	// archiveInstallFormat copies a binary extracted from an archive.
+	archiveInstallFormat = "cp -vr ./%[1]s $out/bin/%[1]s"
+	// binaryInstallFormat installs a raw binary (archives.formats=binary),
+	// which nix does not unpack and fetches without the executable bit.
+	binaryInstallFormat = "install -m755 $src $out/bin/%[1]s"
+)
+
+func binInstallFormats(nix config.Nix, copyFormat string) []string {
+	formats := []string{copyFormat}
 	if len(nix.Dependencies) == 0 {
 		return formats
 	}

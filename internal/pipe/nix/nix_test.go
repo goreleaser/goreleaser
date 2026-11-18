@@ -2,6 +2,7 @@ package nix
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -70,6 +71,8 @@ func TestHasher(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	// the goldens assume ARM artifacts without goarm are ARMv6.
+	t.Setenv("GORELEASER_EXPERIMENTAL", "")
 	for _, tt := range []struct {
 		name                 string
 		expectDefaultErrorIs error
@@ -300,6 +303,204 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "binary",
+			nix: config.Nix{
+				Name:        "foobin",
+				IDs:         []string{"binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-with-dependencies",
+			nix: config.Nix{
+				Name:        "foobin",
+				IDs:         []string{"binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Dependencies: []config.NixDependency{
+					{Name: "curl"},
+				},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-and-binary",
+			nix: config.Nix{
+				Name:        "foo",
+				IDs:         []string{"archive-and-binary"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-nested-name",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-nested-name"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-host-nested-names",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-host-nested-names"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-name-with-space",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-name-with-space"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-name-with-space-with-dependencies",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-name-with-space"},
+				Dependencies: []config.NixDependency{
+					{Name: "curl"},
+				},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-arm-default",
+			nix: config.Nix{
+				Name: "foobin",
+				IDs:  []string{"binary-arm-default"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-arm6-binary-arm-default",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"archive-arm6-binary-arm-default"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "archive-arm6-binary-arm-default-reversed",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"archive-arm6-binary-arm-default-reversed"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "universal-binary-partial-archive",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"universal-binary-partial-archive"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "binary-names-differ",
+			expectRunError: requireBinaryNamesDiffer,
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"binary-names-differ"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "binary-names-differ-reversed",
+			expectRunError: requireBinaryNamesDiffer,
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"binary-names-differ-reversed"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "binary-names-differ-custom-install",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"binary-names-differ"},
+				Install: `
+					mkdir -p $out/bin
+					install -m755 $src $out/bin/foo
+				`,
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "mixed-archive-binary",
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"mixed-archive-binary"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:           "binaries-same-platform",
+			expectRunError: requireErrorIs(ErrMultipleArchivesSamePlatform),
+			nix: config.Nix{
+				Name: "foo",
+				IDs:  []string{"binaries-same-platform"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name: "partial",
 			nix: config.Nix{
 				Name: "partial",
@@ -491,6 +692,65 @@ func TestRunPipe(t *testing.T) {
 				ctx.Artifacts.Add(&art)
 			}
 
+			createFakeBinary := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
+				name := "foo_" + goos + "_" + goarch + goamd64 + goarm
+				art := artifact.Artifact{
+					Name:    name,
+					Path:    filepath.Join(folder, "dist", name),
+					Goos:    goos,
+					Goarch:  goarch,
+					Goarm:   goarm,
+					Goamd64: goamd64,
+					Type:    artifact.UploadableBinary,
+					Extra: map[string]any{
+						artifact.ExtraID:     id,
+						artifact.ExtraFormat: "binary",
+						artifact.ExtraBinary: "foo",
+					},
+				}
+				maps.Copy(art.Extra, extra)
+				ctx.Artifacts.Add(&art)
+			}
+
+			createFakeBinary("binary", "linux", "amd64", "v1", "", nil)
+			createFakeBinary("binary", "linux", "arm64", "", "", nil)
+			createFakeBinary("binary", "linux", "arm", "", "7", nil)
+			createFakeBinary("binary", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
+			createFakeBinary("binary", "darwin", "amd64", "v1", "", map[string]any{artifact.ExtraReplaces: false})
+			createFakeBinary("binary", "darwin", "arm64", "", "", map[string]any{artifact.ExtraReplaces: false})
+			createFakeBinary("binary", "windows", "amd64", "v1", "", nil)
+			for _, goos := range []string{"linux", "darwin"} {
+				for _, goarch := range []string{"amd64", "arm64"} {
+					createFakeArtifact("archive-and-binary", goos, goarch, "v1", "", "tar.gz", nil)
+					createFakeBinary("archive-and-binary", goos, goarch, map[string]string{"amd64": "v1"}[goarch], "", nil)
+				}
+			}
+			createFakeBinary("binary-nested-name", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "bin/foo"})
+			// host-native separators, e.g. `bin\linux\foo` on windows.
+			createFakeBinary("binary-host-nested-names", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: filepath.Join("bin", "linux", "foo")})
+			createFakeBinary("binary-host-nested-names", "darwin", "arm64", "", "", map[string]any{artifact.ExtraBinary: filepath.Join("bin", "darwin", "foo")})
+			createFakeBinary("binary-name-with-space", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "my app"})
+			// an ARM binary without goarm (e.g. built by zig) targets the
+			// default GOARM, which an explicit arm6 archive covers.
+			createFakeBinary("binary-arm-default", "linux", "arm", "", "", nil)
+			createFakeBinary("archive-arm6-binary-arm-default", "linux", "arm", "", "", nil)
+			createFakeArtifact("archive-arm6-binary-arm-default", "linux", "arm", "", "6", "tar.gz", nil)
+			createFakeArtifact("archive-arm6-binary-arm-default-reversed", "linux", "arm", "", "6", "tar.gz", nil)
+			createFakeBinary("archive-arm6-binary-arm-default-reversed", "linux", "arm", "", "", nil)
+			createFakeBinary("universal-binary-partial-archive", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
+			createFakeArtifact("universal-binary-partial-archive", "darwin", "amd64", "v1", "", "tar.gz", nil)
+			// archives win: the binary on a platform no archive covers is ignored.
+			createFakeArtifact("mixed-archive-binary", "darwin", "arm64", "", "", "zip", nil)
+			createFakeBinary("mixed-archive-binary", "linux", "arm64", "", "", nil)
+			// two builds in one `formats: binary` entry: one platform, two names.
+			createFakeBinary("binaries-same-platform", "linux", "amd64", "v1", "", map[string]any{artifact.ExtraBinary: "foo"})
+			createFakeBinary("binaries-same-platform", "linux", "amd64", "v1", "", map[string]any{artifact.ExtraBinary: "bar"})
+			// same platforms, differing binary names, in both artifact orders.
+			createFakeBinary("binary-names-differ", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-linux"})
+			createFakeBinary("binary-names-differ", "darwin", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-darwin"})
+			createFakeBinary("binary-names-differ-reversed", "darwin", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-darwin"})
+			createFakeBinary("binary-names-differ-reversed", "linux", "arm64", "", "", map[string]any{artifact.ExtraBinary: "foo-linux"})
+
 			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
 			createFakeArtifact("unibin", "darwin", "all", "", "", "tgz", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
@@ -564,6 +824,15 @@ func TestRunPipe(t *testing.T) {
 					"foo_linux_arm7.zip":        "sha14",
 					"foo_linux_386.zip":         "sha15",
 					"foo_linux_386.tar.gz":      "sha16",
+					"foo_darwin_amd64v1.tar.gz": "sha21",
+					"foo_linux_arm.tar.gz":      "sha22",
+					"foo_linux_arm.zip":         "sha23",
+					"foo_darwin_arm64":          "sha24",
+					"foo_linux_arm":             "sha25",
+					"foo_linux_amd64v1":         "sha17",
+					"foo_linux_arm64":           "sha18",
+					"foo_linux_arm7":            "sha19",
+					"foo_darwin_all":            "sha20",
 				},
 			}
 
@@ -928,7 +1197,7 @@ func TestErrNoArchivesFound(t *testing.T) {
 func TestBinInstallFormats(t *testing.T) {
 	t.Run("no-deps", func(t *testing.T) {
 		golden.RequireEqual(t, []byte(strings.Join(
-			binInstallFormats(config.Nix{}),
+			binInstallFormats(config.Nix{}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -940,7 +1209,7 @@ func TestBinInstallFormats(t *testing.T) {
 					{Name: "bash"},
 					{Name: "zsh"},
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -951,7 +1220,7 @@ func TestBinInstallFormats(t *testing.T) {
 					linuxDep("foo"),
 					linuxDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -962,7 +1231,7 @@ func TestBinInstallFormats(t *testing.T) {
 					darwinDep("foo"),
 					darwinDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -974,7 +1243,7 @@ func TestBinInstallFormats(t *testing.T) {
 					linuxDep("foo"),
 					darwinDep("bar"),
 				},
-			}),
+			}, archiveInstallFormat),
 			"\n",
 		)))
 	})
@@ -986,6 +1255,14 @@ func requireErrorIs(target error) func(testing.TB, error) {
 		tb.Helper()
 		require.ErrorIs(tb, err, target)
 	}
+}
+
+// requireBinaryNamesDiffer checks that the error lists the differing binary
+// names sorted, so the message does not depend on the artifact order.
+func requireBinaryNamesDiffer(tb testing.TB, err error) {
+	tb.Helper()
+	require.ErrorIs(tb, err, ErrBinaryNamesDiffer)
+	require.ErrorContains(tb, err, ErrBinaryNamesDiffer.Error()+": foo-darwin, foo-linux")
 }
 
 func darwinDep(s string) config.NixDependency {
@@ -1002,10 +1279,53 @@ func linuxDep(s string) config.NixDependency {
 	}
 }
 
+func TestShellWord(t *testing.T) {
+	for in, want := range map[string]string{
+		"foo":        "foo",
+		"foo-1.2_x+": "foo-1.2_x+",
+		"my app":     `"my app"`,
+		"it's":       `"it's"`,
+		"a''b":       `"a'''b"`,
+		"''${x}":     `"'''\''${x}"`,
+		"$x `y`":     "\"\\$x \\`y\\`\"",
+		`a"b\c`:      `"a\"b\\c"`,
+	} {
+		t.Run(in, func(t *testing.T) {
+			got, err := shellWord(in)
+			require.NoError(t, err)
+			require.Equal(t, want, got)
+		})
+	}
+	for _, in := range []string{"a\nb", "a\r\nb", "a\rb"} {
+		_, err := shellWord(in)
+		require.ErrorContains(t, err, "contains a line break")
+	}
+}
+
+func TestPlatformKeys(t *testing.T) {
+	arm := &artifact.Artifact{Goos: "linux", Goarch: "arm"}
+	arm7 := &artifact.Artifact{Goos: "linux", Goarch: "arm", Goarm: "7"}
+	unibin := &artifact.Artifact{Goos: "darwin", Goarch: "all"}
+
+	t.Setenv("GORELEASER_EXPERIMENTAL", "")
+	require.Equal(t, []string{"linuxarm6"}, platformKeys(arm))
+	require.Equal(t, []string{"linuxarm7"}, platformKeys(arm7))
+	require.Equal(t, []string{"darwinamd64", "darwinarm64"}, platformKeys(unibin))
+
+	t.Setenv("GORELEASER_EXPERIMENTAL", "defaultgoarm")
+	require.Equal(t, []string{"linuxarm7"}, platformKeys(arm))
+}
+
 type fakeHasher map[string]string
 
+// Hash fails on files it has no hash for, so that a fixture missing an entry
+// cannot silently drop a platform from the generated shaMap.
 func (m fakeHasher) Hash(path string) (string, error) {
-	return m[filepath.Base(path)], nil
+	sha, ok := m[filepath.Base(path)]
+	if !ok {
+		return "", fmt.Errorf("fakeHasher: no hash for %s", filepath.Base(path))
+	}
+	return sha, nil
 }
 
 const zeroHash = "0000000000000000000000000000000000000000000000000000"

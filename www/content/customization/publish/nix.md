@@ -94,6 +94,8 @@ nix:
     #
     # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary', and
     #   `makeWrapper` if `dependencies` were provided.
+    #   When using `archives.formats: binary`, the default is
+    #   'mkdir -p $out/bin; install -m755 $src $out/bin/$binary' instead.
     # Templates: allowed.
     install: |
       mkdir -p $out/bin
@@ -125,10 +127,29 @@ nix:
 
 {{< g_templates >}}
 
+## Binary archives
+
+{{< g_version "v2.21" >}}
+
+Packages can also be generated from archives using `formats: binary`.
+In that case, the binary is downloaded as is: the package sets
+`dontUnpack = true` and installs `$src` into `$out/bin`.
+
+Archives take precedence: if the package selects at least one archive, raw
+binaries are ignored, on every platform. Raw binaries are used only when no
+archive is selected, for example when `ids` selects only `formats: binary`
+archives.
+
+The binary must have the same name on every platform, unless you set a custom
+`install` script that handles the different names.
+
+A raw-binary package holds a single binary per platform. If one `archives` entry with
+`formats: binary` gets more than one build, split those builds into separate
+`archives` entries (each with its own `id`), and create one package per entry.
+
 ## Things not supported
 
 - Generating packages that compile from source (using `buildGoModule`)
-- Generating packages when `archives.format` is `binary`
 
 ## Dependencies
 

@@ -25,4 +25,5 @@ type templateData struct {
 	Inputs            []string
 	Dependencies      []string
 	DynamicallyLinked bool
+	Binary            bool
 }
