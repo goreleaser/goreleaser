@@ -595,6 +595,39 @@ func TestRunPipeExtraFileWhitespaceAlias(t *testing.T) {
 	require.Equal(t, []string{"packslip.sigstore.json"}, client.UploadedFileNames)
 }
 
+// A broad glob with a name_template matched a single file until the packslip
+// pipe registered its manifest next to it. The registered manifest must not
+// make the glob ambiguous, and must not be uploaded twice.
+func TestRunPipeExtraFileNameTemplateIgnoresRegisteredManifest(t *testing.T) {
+	distPath := t.TempDir()
+	workingDir, err := os.Getwd()
+	require.NoError(t, err)
+	dist, err := filepath.Rel(workingDir, distPath)
+	require.NoError(t, err)
+	manifest := filepath.Join(distPath, "packslip.sigstore.json")
+	require.NoError(t, os.WriteFile(manifest, []byte(`{"bundle":true}`), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(distPath, "metadata.json"), []byte(`{}`), 0o644))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: dist,
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "test", Name: "test"},
+			ExtraFiles: []config.ExtraFile{{
+				Glob:         filepath.Join(dist, "*.json"),
+				NameTemplate: "meta.json",
+			}},
+		},
+	}, testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableFile,
+		Name: "packslip.sigstore.json",
+		Path: manifest,
+	})
+
+	client := &client.Mock{}
+	require.NoError(t, doPublish(ctx, client))
+	require.ElementsMatch(t, []string{"packslip.sigstore.json", "meta.json"}, client.UploadedFileNames)
+}
+
 func TestRunPipeExtraFileUploadNameCollision(t *testing.T) {
 	first := filepath.Join(t.TempDir(), "first.json")
 	second := filepath.Join(t.TempDir(), "second.json")

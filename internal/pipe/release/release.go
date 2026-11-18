@@ -161,15 +161,6 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return pipe.Skip("release.skip_upload is set")
 	}
 
-	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
-	if err != nil {
-		return err
-	}
-	extraFiles, err = extrafiles.UploadNames(extraFiles)
-	if err != nil {
-		return err
-	}
-
 	types := artifact.ReleaseUploadableTypes()
 	if ctx.Config.Release.IncludeMeta {
 		types = append(types, artifact.Metadata)
@@ -180,9 +171,24 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	)
 
 	// a broad glob can match a file that an earlier pipe already registered
-	// for upload, such as the checksums or a signature in dist. Uploading it
-	// again under its own name would be rejected by the forge.
+	// for upload, such as the checksums, a signature or a packslip manifest in
+	// dist. Uploading it again under its own name would be rejected by the
+	// forge, and it must not make a glob with a name_template ambiguous.
 	registered := ctx.Artifacts.Filter(filters).List()
+	registeredPaths := make([]string, 0, len(registered))
+	for _, a := range registered {
+		registeredPaths = append(registeredPaths, a.Path)
+	}
+
+	extraFiles, err := extrafiles.FindExcept(ctx, ctx.Config.Release.ExtraFiles, registeredPaths)
+	if err != nil {
+		return err
+	}
+	extraFiles, err = extrafiles.UploadNames(extraFiles)
+	if err != nil {
+		return err
+	}
+
 	for name, path := range extraFiles {
 		if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
 			return fmt.Errorf("failed to upload %s: %w", name, err)

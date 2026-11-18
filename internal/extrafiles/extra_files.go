@@ -18,6 +18,15 @@ import (
 
 // Find resolves extra files globs et al into a map of names/paths or an error.
 func Find(ctx *context.Context, files []config.ExtraFile) (map[string]string, error) {
+	return FindExcept(ctx, files, nil)
+}
+
+// FindExcept is like [Find], but when a glob with a name_template matches
+// several files, the files in except are not counted towards that ambiguity.
+// Callers pass the files they already upload, so that a broad glob keeps
+// resolving to the one file it did before another pipe added its own output
+// next to it.
+func FindExcept(ctx *context.Context, files []config.ExtraFile, except []string) (map[string]string, error) {
 	t := tmpl.New(ctx)
 	result := map[string]string{}
 	for _, extra := range files {
@@ -32,6 +41,13 @@ func Find(ctx *context.Context, files []config.ExtraFile) (map[string]string, er
 		files, err := fileglob.Glob(glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", extra.Glob, err)
+		}
+		if len(files) > 1 && extra.NameTemplate != "" {
+			files = slices.DeleteFunc(slices.Clone(files), func(file string) bool {
+				return slices.ContainsFunc(except, func(e string) bool {
+					return gio.SamePath(e, file)
+				})
+			})
 		}
 		if len(files) > 1 && extra.NameTemplate != "" {
 			return result, fmt.Errorf("failed to add extra_file: %q -> %q: glob matches multiple files", extra.Glob, extra.NameTemplate)
