@@ -98,7 +98,8 @@ kos:
       - linux/arm64
 
     # Tag to build and push.
-    # Empty tags are ignored.
+    # Empty tags are ignored, but at least one tag must be non-empty
+    # {{< g_inline_version "v2.21-unreleased" >}}.
     #
     # Default: 'latest'.
     # Templates: allowed.
