@@ -192,3 +192,31 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 
 	return nil
 }
+
+// MarshalJSON omits the private key so it is never serialized into
+// artifacts.json or other JSON output.
+func (a AUR) MarshalJSON() ([]byte, error) {
+	type plain AUR
+	v := plain(a)
+	v.PrivateKey = ""
+	return json.Marshal(v)
+}
+
+// MarshalJSON omits the private key so it is never serialized into
+// artifacts.json or other JSON output.
+func (a AURSource) MarshalJSON() ([]byte, error) {
+	type plain AURSource
+	v := plain(a)
+	v.PrivateKey = ""
+	return json.Marshal(v)
+}
+
+// MarshalJSON omits literal private keys but preserves templates for publishing.
+func (g GitRepoRef) MarshalJSON() ([]byte, error) {
+	type plain GitRepoRef
+	v := plain(g)
+	if !strings.Contains(v.PrivateKey, "{{") {
+		v.PrivateKey = ""
+	}
+	return json.Marshal(v)
+}

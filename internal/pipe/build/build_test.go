@@ -1,6 +1,7 @@
 package build
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -883,4 +885,41 @@ func TestRunHookFailWithLogs(t *testing.T) {
 	err := Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "pre hook failed")
 	require.Empty(t, ctx.Artifacts.List())
+}
+
+func TestRunHookRedactsEffectiveEnv(t *testing.T) {
+	testlib.SkipIfWindows(t, "uses sh")
+
+	var logs bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&logs)
+	log.SetLevel(log.DebugLevel)
+	t.Cleanup(func() { log.Log = previous })
+
+	const global = "synthetic-global-token"
+	const build = "synthetic-build-password"
+	const hook = "synthetic-hook-password"
+	result := filepath.Join(t.TempDir(), "received")
+	ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
+		"GLOBAL_TOKEN":   global,
+		"LOCAL_PASSWORD": "synthetic-overridden-password",
+		"HOOK_RESULT":    result,
+	}))
+	err := runHook(ctx, api.Options{Target: fakeTarget{"linux_amd64"}}, []string{"BUILD_PASSWORD=" + build}, config.Hooks{{
+		Cmd:    `sh -c 'printf "%s" "{{ .Env.GLOBAL_TOKEN }} {{ .Env.BUILD_PASSWORD }} {{ .Env.LOCAL_PASSWORD }}" > "{{ .Env.HOOK_RESULT }}"; echo "diagnostic {{ .Env.LOCAL_PASSWORD }}"'`,
+		Env:    []string{"LOCAL_PASSWORD=" + hook},
+		Output: true,
+	}})
+	require.NoError(t, err)
+	received, err := os.ReadFile(result)
+	require.NoError(t, err)
+	require.Equal(t, global+" "+build+" "+hook, string(received))
+	require.Contains(t, logs.String(), "running hook")
+	require.Contains(t, logs.String(), "diagnostic $LOCAL_PASSWORD")
+	for _, secret := range []string{global, build, hook} {
+		require.NotContains(t, logs.String(), secret)
+	}
+	for _, name := range []string{"GLOBAL_TOKEN", "BUILD_PASSWORD", "LOCAL_PASSWORD"} {
+		require.Contains(t, logs.String(), "$"+name)
+	}
 }

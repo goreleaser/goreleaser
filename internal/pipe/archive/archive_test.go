@@ -1119,6 +1119,115 @@ func TestArchivePreservesRecordedLibc(t *testing.T) {
 	}
 }
 
+// Plain GOARM=6 records no ABI but is hardfloat, so a softfloat build sharing
+// its archive must not make the archive look softfloat, in either order.
+func TestRunPipeMixedARMFloatABI(t *testing.T) {
+	t.Parallel()
+	build := func(dist, name string, extra map[string]any) *artifact.Artifact {
+		path := filepath.Join(dist, name)
+		require.NoError(t, os.WriteFile(path, []byte(name), 0o755))
+		extra[artifact.ExtraBinary] = name
+		extra[artifact.ExtraID] = name
+		return &artifact.Artifact{
+			Goos: "linux", Goarch: "arm", Goarm: "6",
+			Name: name, Path: path, Type: artifact.Binary, Extra: extra,
+		}
+	}
+	for name, tt := range map[string]struct {
+		softfloat, hardfloat int // how many of each, in order
+		want                 string
+	}{
+		"soft first":    {softfloat: 1, hardfloat: 1, want: "hardfloat"},
+		"hard first":    {softfloat: -1, hardfloat: 1, want: "hardfloat"},
+		"all softfloat": {softfloat: 2, hardfloat: 0, want: "softfloat"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dist := t.TempDir()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Dist: dist,
+				Archives: []config.Archive{{
+					Formats:      []string{"tar.gz"},
+					NameTemplate: "mixed",
+				}},
+			}, testctx.WithVersion("0.0.1"), testctx.WithCurrentTag("v0.0.1"))
+			soft := build(dist, "soft", map[string]any{artifact.ExtraABI: "softfloat"})
+			bins := []*artifact.Artifact{soft}
+			switch {
+			case tt.softfloat == 2:
+				bins = append(bins, build(dist, "soft2", map[string]any{artifact.ExtraABI: "softfloat"}))
+			case tt.softfloat < 0:
+				bins = []*artifact.Artifact{build(dist, "hard", map[string]any{}), soft}
+			default:
+				bins = append(bins, build(dist, "hard", map[string]any{}))
+			}
+			for _, b := range bins {
+				ctx.Artifacts.Add(b)
+			}
+			require.NoError(t, Pipe{}.Run(ctx))
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			require.Len(t, archives, 1)
+			require.Equal(t, tt.want, artifact.ExtraOr(*archives[0], artifact.ExtraABI, ""))
+		})
+	}
+}
+
+func TestRunPipeBinaryInSubdirectory(t *testing.T) {
+	t.Parallel()
+	dist := t.TempDir()
+	for _, bin := range []string{"bin/mybin", "bin/mybin.exe"} {
+		path := filepath.Join(dist, "build", bin)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte("binary"), 0o755))
+	}
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					Formats:      []string{"binary"},
+					NameTemplate: defaultBinaryNameTemplate,
+				},
+			},
+		},
+		testctx.WithVersion("0.0.1"),
+		testctx.WithCurrentTag("v0.0.1"))
+
+	// a build with "binary: bin/mybin"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "build", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraID:     "default",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "bin/mybin.exe",
+		Path:   filepath.Join(dist, "build", "bin", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	binaries := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
+	linux := binaries.Filter(artifact.ByGoos("linux")).List()[0]
+	require.Equal(t, "mybin_0.0.1_linux_amd64", linux.Name)
+	require.Equal(t, "mybin", artifact.MustExtra[string](*linux, artifact.ExtraBinary))
+	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
+	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
+	require.Equal(t, "mybin.exe", artifact.MustExtra[string](*windows, artifact.ExtraBinary))
+}
+
 func TestRunPipeDistRemoved(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{

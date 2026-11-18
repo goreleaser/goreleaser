@@ -29,9 +29,10 @@ type redactWriter struct {
 func (w *redactWriter) Write(p []byte) (int, error) {
 	s := w.pending + string(p)
 	redacted, pending := w.re.replacePartial(s)
-	_, err := io.WriteString(w.w, redacted)
-	if err != nil {
-		return 0, err
+	if redacted != "" {
+		if _, err := io.WriteString(w.w, redacted); err != nil {
+			return 0, err
+		}
 	}
 	w.pending = pending
 	return len(p), nil
@@ -160,6 +161,7 @@ var keySuffixes = []string{
 	"_KEY",
 	"_SECRET",
 	"_PASSWORD",
+	"_PASSPHRASE",
 	"_TOKEN",
 }
 

@@ -18,6 +18,7 @@ import (
 
 const (
 	defaultMessageTemplate = `{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}`
+	defaultHTMLTemplate    = `{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | html }}`
 	parseModeHTML          = "HTML"
 	parseModeMarkdown      = "MarkdownV2"
 )
@@ -41,13 +42,17 @@ type SendMessageResponse struct {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
-		ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
-	}
 	switch ctx.Config.Announce.Telegram.ParseMode {
 	case parseModeHTML, parseModeMarkdown:
 	default:
 		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
+	}
+	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
+		if ctx.Config.Announce.Telegram.ParseMode == parseModeHTML {
+			ctx.Config.Announce.Telegram.MessageTemplate = defaultHTMLTemplate
+		} else {
+			ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
+		}
 	}
 	return nil
 }

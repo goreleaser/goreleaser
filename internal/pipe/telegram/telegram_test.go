@@ -131,4 +131,38 @@ func TestGetMessageDetails(t *testing.T) {
 		require.Equal(t, "1230212", args["chat_id"])
 		require.Equal(t, "foo v1\\.0\\.0 is out\\! Check it out at ", args["text"])
 	})
+
+	t.Run("default message template html", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(),
+			config.Project{
+				ProjectName: "my_app<b>&",
+				Announce: config.Announce{
+					Telegram: config.Telegram{
+						ChatID:    "1230212",
+						ParseMode: parseModeHTML,
+					},
+				},
+			},
+			testctx.WithCurrentTag("v1.0.0"))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, defaultHTMLTemplate, ctx.Config.Announce.Telegram.MessageTemplate)
+		args, err := getMessageDetails(ctx)
+		require.NoError(t, err)
+		require.Equal(t, "my_app&lt;b&gt;&amp; v1.0.0 is out! Check it out at ", args["text"])
+	})
+
+	t.Run("custom message template html is kept", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(),
+			config.Project{
+				Announce: config.Announce{
+					Telegram: config.Telegram{
+						ParseMode:       parseModeHTML,
+						MessageTemplate: "<b>hi</b>",
+					},
+				},
+			})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, "<b>hi</b>", ctx.Config.Announce.Telegram.MessageTemplate)
+	})
 }

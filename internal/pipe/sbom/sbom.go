@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -210,14 +211,19 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	cmd.Env = append(cmd.Env, envs...)
 	cmd.Dir = ctx.Config.Dist
 
+	redactEnv := slices.Concat(ctx.Env.Strings(), cmd.Env)
+	redactedArgs := make([]string, len(cmd.Args))
+	for i, arg := range cmd.Args {
+		redactedArgs[i] = redact.String(arg, redactEnv)
+	}
 	log.WithField("dir", cmd.Dir).
-		WithField("cmd", cmd.Args).
+		WithField("cmd", redactedArgs).
 		Debug("running")
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), redactEnv)
+	stdout := redact.Writer(io.MultiWriter(logext.NewWriter(), w), redactEnv)
 	cmd.Stderr = stderr
 	cmd.Stdout = stdout
 

@@ -293,9 +293,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 				break
 			}
 		}
-		if abi := firstSet(binaries, func(a *artifact.Artifact) string {
-			return artifact.ExtraOr(*a, artifact.ExtraABI, "")
-		}); abi != "" {
+		if abi := archiveABI(binaries); abi != "" {
 			art.Extra[artifact.ExtraABI] = abi
 		}
 		if slices.ContainsFunc(binaries, dynamicallyLinked) {
@@ -323,6 +321,37 @@ func listExtraFiles(files []config.File) []string {
 		result = append(result, f.Destination)
 	}
 	return result
+}
+
+// archiveABI is the float ABI the whole archive needs. The Go builder records
+// an ABI only for "softfloat" and leaves it empty for the default, which on
+// ARMv6 and ARMv7 is hardfloat. One hardfloat executable makes the archive
+// need an FPU even when another one runs without it, so a hardfloat member
+// wins over softfloat ones whatever their order. Otherwise the first ABI set
+// is used.
+func archiveABI(binaries []*artifact.Artifact) string {
+	var abis []string
+	for _, b := range binaries {
+		if !isPackslipExecutable(b) {
+			continue
+		}
+		abi := artifact.ExtraOr(*b, artifact.ExtraABI, "")
+		if abi == "" && b.Goarch == "arm" && (b.Goarm == "6" || b.Goarm == "7") {
+			abi = "hardfloat"
+		}
+		if abi != "" {
+			abis = append(abis, abi)
+		}
+	}
+	for _, abi := range abis {
+		if abi == "hardfloat" || strings.HasSuffix(abi, "hf") {
+			return abi
+		}
+	}
+	if len(abis) > 0 {
+		return abis[0]
+	}
+	return ""
 }
 
 // firstSet returns the first non-empty value get reads from the binaries.
@@ -372,7 +401,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		extra := map[string]any{
 			artifact.ExtraID:     archive.ID,
 			artifact.ExtraFormat: "binary",
-			artifact.ExtraBinary: binary.Name,
+			// binary.Name keeps the directory of a build "binary" such
+			// as "bin/foo"; publishers install this file by this name.
+			artifact.ExtraBinary: filepath.Base(binary.Name),
 		}
 		if !isPackslipExecutable(binary) {
 			extra[artifact.ExtraSkipPackslip] = true

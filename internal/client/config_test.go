@@ -48,10 +48,15 @@ func TestTemplateRef(t *testing.T) {
 			if s == "token" {
 				return "", fmt.Errorf("nope")
 			}
-			return s, nil
+			return strings.ToUpper(s), nil
 		}, expected)
 		require.NoError(t, err)
-		require.Equal(t, expected, ref)
+		templated := expected
+		templated.Owner = "OWNER"
+		templated.Name = "NAME"
+		templated.Branch = "BRANCH"
+		templated.Git.URL = "GITURL"
+		require.Equal(t, templated, ref)
 	})
 
 	t.Run("fail owner", func(t *testing.T) {
@@ -94,15 +99,16 @@ func TestTemplateRef(t *testing.T) {
 		}, expected)
 		require.Error(t, err)
 	})
-	t.Run("fail privatekey", func(t *testing.T) {
+	t.Run("private key is not templated", func(t *testing.T) {
 		t.Parallel()
-		_, err := TemplateRef(func(s string) (string, error) {
+		ref, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "privatekey" {
 				return "", fmt.Errorf("nope")
 			}
 			return s, nil
 		}, expected)
-		require.Error(t, err)
+		require.NoError(t, err)
+		require.Equal(t, "privatekey", ref.Git.PrivateKey)
 	})
 }
 

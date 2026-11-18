@@ -270,8 +270,6 @@
 /customization/builds/uv   /customization/builds/builders/uv/  301
 /customization/builds/zig/  /customization/builds/builders/zig/  301
 /customization/builds/zig   /customization/builds/builders/zig/  301
-/customization/prebuilt/  /customization/builds/builders/prebuilt/  301
-/customization/prebuilt   /customization/builds/builders/prebuilt/  301
 
 # Aliases migrated from Hugo frontmatter
 /customization/build/  /customization/builds/  301

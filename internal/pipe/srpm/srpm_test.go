@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -113,6 +114,80 @@ func TestRunPipe(t *testing.T) {
 	require.True(t, regexp.MustCompile(`(?m)^Summary:\s+Example summary$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%doc\s+README\.md$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%license\s+LICENSE$`).Match(rpmSpecContents))
+}
+
+func TestRunPipeSnapshotVersion(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		version string
+		wantErr bool
+	}{
+		{name: "default snapshot", version: "1.0.0-SNAPSHOT-abc123"},
+		{name: "non semver snapshot", version: "nightly"},
+		{name: "build metadata", version: "1.0.0-dev+abc123"},
+		{name: "shell macro", version: "0.2.0%(echo safe-marker)", wantErr: true},
+		{name: "lua macro", version: "0.2.0%{lua:print(1)}", wantErr: true},
+		{name: "escaped macro", version: "0.2.0%%(echo safe-marker)", wantErr: true},
+		{name: "bare percent", version: "0.2.0%", wantErr: true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			folder := t.TempDir()
+			dist := filepath.Join(folder, "dist")
+			sourcePath := filepath.Join(folder, "source.tar.gz")
+			require.NoError(t, os.WriteFile(sourcePath, nil, 0o644))
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "example",
+				Dist:        dist,
+				Snapshot: config.Snapshot{
+					VersionTemplate: "{{ .Env.SNAPSHOT_VERSION }}",
+				},
+				SRPM: config.SRPM{
+					Enabled:    true,
+					Summary:    "Example summary",
+					License:    "MIT",
+					ImportPath: "github.com/example/example",
+					SpecFile:   "testdata/example.spec.tmpl",
+				},
+			}, testctx.Snapshot)
+			ctx.Env["SNAPSHOT_VERSION"] = tt.version
+			require.NoError(t, snapshot.Pipe{}.Run(ctx))
+			require.Equal(t, tt.version, ctx.Version)
+			sourceName := "example-" + ctx.Version + ".tar.gz"
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: sourceName,
+				Path: sourcePath,
+				Type: artifact.UploadableSourceArchive,
+			})
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			err := Pipe{}.Run(ctx)
+			specPath := filepath.Join(dist, "example.srpm.spec")
+			if tt.wantErr {
+				if err == nil {
+					spec, readErr := os.ReadFile(specPath)
+					require.NoError(t, readErr)
+					for line := range strings.SplitSeq(string(spec), "\n") {
+						if strings.HasPrefix(line, "Version:") || strings.HasPrefix(line, "Source:") {
+							t.Log(line)
+						}
+					}
+				}
+				require.EqualError(t, err, "source RPM version must not contain '%'")
+				require.NoDirExists(t, dist)
+				require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.SourceRPM)).List())
+				return
+			}
+
+			require.NoError(t, err)
+			spec, err := os.ReadFile(specPath)
+			require.NoError(t, err)
+			require.Contains(t, string(spec), "Version:        "+tt.version+"\n")
+			require.Contains(t, string(spec), "Source:         "+sourceName+"\n")
+			sourceRPMs := ctx.Artifacts.Filter(artifact.ByType(artifact.SourceRPM)).List()
+			require.Len(t, sourceRPMs, 1)
+			require.Equal(t, "example-"+tt.version+".src.rpm", sourceRPMs[0].Name)
+		})
+	}
 }
 
 func TestRunPipeConventionalFileName(t *testing.T) {

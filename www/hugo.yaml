@@ -126,9 +126,9 @@ params:
     enable: true
     base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
   banner:
-    key: "announcement-v2.19"
+    key: "announcement-v2.20"
     message: |
-      🎉 [GoReleaser v2.19 is out!](/blog/goreleaser-v2.19) with Zstandard settings, declarative Homebrew cask hooks, Nix without Nix, and more!
+      [GoReleaser v2.20 is out!](/blog/goreleaser-v2.20) with an SSH key disclosure fix, ko platform templates, GitLab asset types, and more!
 
 permalinks:
   page:

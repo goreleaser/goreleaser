@@ -68,9 +68,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Text:      msg,
 	}
 
-	// if there is a reference to the release URL, create a link to it
+	// if there is a reference to the release URL, create a link to it.
+	// An empty URL is "found" at the start of any message, but is no link.
 	startIdx := strings.Index(msg, ctx.ReleaseURL)
-	if startIdx >= 0 {
+	if ctx.ReleaseURL != "" && startIdx >= 0 {
 		post.Facets = []*bsky.RichtextFacet{
 			{
 				Index: &bsky.RichtextFacet_ByteSlice{

@@ -38,6 +38,7 @@ announce:
     # Message template to use while publishing.
     #
     # Default: '{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}'.
+    # When `parse_mode` is `HTML`, the default uses `| html` instead of `| mdv2escape`.
     # Templates: allowed.
     message_template: '<a href="{{.ReleaseURL}}">{{ .ProjectName }} {{.Tag}}</a> is out!'
 

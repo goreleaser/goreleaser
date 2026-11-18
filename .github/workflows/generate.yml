@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
@@ -25,7 +23,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: "install gofumpt"
-        uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8 # v3.0.0
+        uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: mvdan/gofumpt
           tag: v0.10.0
@@ -33,7 +31,7 @@ jobs:
           rename-to: gofumpt
           chmod: 0755
       - name: "install jv"
-        uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8 # v3.0.0
+        uses: jaxxstorm/action-install-gh-release@b82b2052fdf822192f2119b7e289a6f63e668bc8 # v4.0.0
         with:
           repo: santhosh-tekuri/jsonschema
           tag: v6.0.2
@@ -50,21 +48,32 @@ jobs:
       - run: task schema:validate
       - run: task nix:licenses:generate
       - run: task nodedist:releases:generate
-      - name: "sync fork"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: gh repo sync goreleaserbot/goreleaser --branch main --source goreleaser/goreleaser --force || true
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+      - name: "create repository token"
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: repository-token
         with:
-          token: ${{ secrets.GH_PAT }}
-          push-to-fork: goreleaserbot/goreleaser
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: "get repository app identity"
+        id: repository-identity
+        env:
+          GH_TOKEN: ${{ steps.repository-token.outputs.token }}
+          APP_SLUG: ${{ steps.repository-token.outputs.app-slug }}
+        run: |
+          user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          echo "identity=${APP_SLUG}[bot] <${user_id}+${APP_SLUG}[bot]@users.noreply.github.com>" >> "$GITHUB_OUTPUT"
+      - uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
+        with:
+          token: ${{ steps.repository-token.outputs.token }}
           branch: auto-update-generated-files
           base: main
           delete-branch: true
           title: "chore: auto-update generated files"
           commit-message: "chore: auto-update generated files"
-          author: goreleaserbot <bot@goreleaser.com>
-          committer: goreleaserbot <bot@goreleaser.com>
+          author: ${{ steps.repository-identity.outputs.identity }}
+          committer: ${{ steps.repository-identity.outputs.identity }}
           body: |
             Automated update of generated files.
 
@@ -78,7 +87,7 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Notify
-        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
+        uses: appleboy/telegram-action@68ac04bda0e0f4755e24649161566b4b6732cc83 # v1.1.2
         with:
           to: ${{ secrets.TELEGRAM_NIGHTLY_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_TOKEN }}

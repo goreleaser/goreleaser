@@ -180,7 +180,11 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		}
 
 		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-			return retryx.HTTP(fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body)), resp)
+			err := retryx.HTTP(fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body)), resp)
+			if resp.StatusCode == http.StatusBadRequest && isTransientValidationError(string(body)) {
+				return retryx.Retriable(err)
+			}
+			return err
 		}
 
 		var serverResponse apiv0.ServerResponse
@@ -196,6 +200,17 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 		return nil
 	}, retryx.IsRetriable)
+}
+
+// isTransientValidationError reports whether a registry 400 body describes a
+// package that exists upstream while the requested version is not yet visible
+// — propagation lag right after a new version is published, which a retry can
+// outlast. These markers match the messages the registry emits for that case;
+// other validation failures (including a package that does not exist at all)
+// stay terminal.
+func isTransientValidationError(body string) bool {
+	return strings.Contains(body, "exists, but version") || // npm, pypi
+		strings.Contains(body, "exists but version") // nuget
 }
 
 // cleanSubfolder normalizes the repository subfolder path so it passes the MCP

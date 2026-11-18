@@ -44,7 +44,8 @@ kos:
 
     # Base image to publish to use.
     #
-    # Local images will take priority over fetching remote images. {{< g_inline_version "v2.13" >}}
+    # The image is fetched from its registry first. If that fails, the image
+    # from the local Docker daemon is used instead. {{< g_inline_version "v2.13" >}}
     #
     # Default: 'cgr.dev/chainguard/static'.
     # Templates: allowed.
@@ -84,8 +85,10 @@ kos:
     repository: ghcr.io/foo/bar
 
     # Platforms to build and publish.
+    # Empty platforms are ignored, and the image is skipped if none are left.
     #
     # Default: 'linux/amd64'.
+    # Templates: allowed. {{< g_inline_version "v2.20" >}}
     platforms:
       - linux/amd64
       - linux/arm64

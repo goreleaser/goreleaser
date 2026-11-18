@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,6 +43,24 @@ func TestRedact(t *testing.T) {
 			env:  []string{"DB_PASSWORD=hunter2hunter2"},
 			in:   "pass=hunter2hunter2",
 			want: "pass=$DB_PASSWORD",
+		},
+		{
+			name: "global nfpm passphrase",
+			env:  []string{"NFPM_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_PASSPHRASE",
+		},
+		{
+			name: "nfpm id passphrase",
+			env:  []string{"NFPM_APP_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_APP_PASSPHRASE",
+		},
+		{
+			name: "nfpm packager passphrase",
+			env:  []string{"NFPM_APP_RPM_PASSPHRASE=synthetic-signing-passphrase"},
+			in:   "signing with synthetic-signing-passphrase",
+			want: "signing with $NFPM_APP_RPM_PASSPHRASE",
 		},
 		{
 			name: "value prefix sk-",
@@ -237,6 +256,33 @@ func TestRedactWriter(t *testing.T) {
 		require.ErrorIs(t, err, io.ErrShortWrite)
 		require.Equal(t, 0, n)
 	})
+}
+
+func TestRedactWriterWithLogger(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name   string
+		chunks []string
+		want   string
+	}{
+		{name: "empty write", chunks: []string{""}},
+		{name: "incomplete prefix", chunks: []string{"abc"}, want: "abc"},
+		{name: "split secret", chunks: []string{"ab", "c", "def"}, want: "$FOO_TOKEN"},
+		{name: "prefix mismatch", chunks: []string{"abc", "xyz"}, want: "abcxyz"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var buf bytes.Buffer
+			w := Writer(io.MultiWriter(log.New(io.Discard).Writer(), &buf), []string{"FOO_TOKEN=abcdef"})
+			for _, chunk := range tt.chunks {
+				n, err := io.WriteString(w, chunk)
+				require.NoError(t, err)
+				require.Equal(t, len(chunk), n)
+			}
+			require.NoError(t, w.Close())
+			require.Equal(t, tt.want, buf.String())
+		})
+	}
 }
 
 func TestRedactString(t *testing.T) {

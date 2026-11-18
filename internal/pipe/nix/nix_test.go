@@ -2,7 +2,6 @@ package nix
 
 import (
 	"crypto/sha256"
-	"html/template"
 	"maps"
 	"os"
 	"path/filepath"
@@ -74,7 +73,7 @@ func TestRunPipe(t *testing.T) {
 	for _, tt := range []struct {
 		name                 string
 		expectDefaultErrorIs error
-		expectRunErrorIs     error
+		expectRunError       func(testing.TB, error)
 		expectPublishErrorIs error
 		nix                  config.Nix
 	}{
@@ -194,8 +193,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-main-program-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-main-program-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name:        "foo",
 				MainProgram: "{{ .Nope }}",
@@ -251,8 +250,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "unibin",
-			expectRunErrorIs: ErrMultipleArchivesSamePlatform,
+			name:           "unibin",
+			expectRunError: requireErrorIs(ErrMultipleArchivesSamePlatform),
 			nix: config.Nix{
 				Name:        "unibin",
 				IDs:         []string{"unibin"},
@@ -267,9 +266,14 @@ func TestRunPipe(t *testing.T) {
 		},
 		{
 			name: "no-archives",
-			expectRunErrorIs: errNoArchivesFound{
-				goamd64: "v2",
-				ids:     []string{"nopenopenope"},
+			expectRunError: func(tb testing.TB, err error) {
+				tb.Helper()
+				var notFound errNoArchivesFound
+				require.ErrorAs(tb, err, &notFound)
+				require.Equal(tb, errNoArchivesFound{
+					goamd64: "v2",
+					ids:     []string{"nopenopenope"},
+				}, notFound)
 			},
 			nix: config.Nix{
 				Name:    "no-archives",
@@ -307,8 +311,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "no-repo-name",
-			expectRunErrorIs: errNoRepoName,
+			name:           "no-repo-name",
+			expectRunError: requireErrorIs(errNoRepoName),
 			nix: config.Nix{
 				Name: "doesnotmatter",
 				Repository: config.RepoRef{
@@ -317,8 +321,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-name-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-name-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name: "{{ .Nope }}",
 				Repository: config.RepoRef{
@@ -328,8 +332,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-description-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-description-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Description: "{{ .Nope }}",
 				Repository: config.RepoRef{
@@ -339,8 +343,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-homepage-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-homepage-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Homepage: "{{ .Nope }}",
 				Repository: config.RepoRef{
@@ -350,8 +354,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-repo-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-repo-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name: "doesnotmatter",
 				Repository: config.RepoRef{
@@ -361,8 +365,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-skip-upload-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-skip-upload-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name:       "doesnotmatter",
 				SkipUpload: "{{ .Nope }}",
@@ -373,8 +377,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-install-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-install-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name:    "foo",
 				Install: `{{.NoInstall}}`,
@@ -385,8 +389,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-post-install-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-post-install-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name:        "foo",
 				PostInstall: `{{.NoPostInstall}}`,
@@ -397,8 +401,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-path-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-path-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name: "foo",
 				Path: `{{.Foo}}/bar/foo.nix`,
@@ -409,8 +413,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:             "bad-release-url-tmpl",
-			expectRunErrorIs: &template.Error{},
+			name:           "bad-release-url-tmpl",
+			expectRunError: testlib.RequireTemplateError,
 			nix: config.Nix{
 				Name:        "foo",
 				URLTemplate: "{{.BadURL}}",
@@ -566,15 +570,14 @@ func TestRunPipe(t *testing.T) {
 			// default
 			if tt.expectDefaultErrorIs != nil {
 				err := bpipe.Default(ctx)
-				require.ErrorAs(t, err, &tt.expectDefaultErrorIs)
+				require.ErrorIs(t, err, tt.expectDefaultErrorIs)
 				return
 			}
 			require.NoError(t, bpipe.Default(ctx))
 
 			// run
-			if tt.expectRunErrorIs != nil {
-				err := bpipe.runAll(ctx, client)
-				require.ErrorAs(t, err, &tt.expectRunErrorIs)
+			if tt.expectRunError != nil {
+				tt.expectRunError(t, bpipe.runAll(ctx, client))
 				return
 			}
 			require.NoError(t, bpipe.runAll(ctx, client))
@@ -585,7 +588,7 @@ func TestRunPipe(t *testing.T) {
 			// publish
 			if tt.expectPublishErrorIs != nil {
 				err := ppipe.publishAll(ctx, client)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				require.ErrorIs(t, err, tt.expectPublishErrorIs)
 				return
 			}
 			require.NoError(t, ppipe.publishAll(ctx, client))
@@ -975,6 +978,14 @@ func TestBinInstallFormats(t *testing.T) {
 			"\n",
 		)))
 	})
+}
+
+// requireErrorIs returns a check asserting that the error wraps target.
+func requireErrorIs(target error) func(testing.TB, error) {
+	return func(tb testing.TB, err error) {
+		tb.Helper()
+		require.ErrorIs(tb, err, target)
+	}
 }
 
 func darwinDep(s string) config.NixDependency {

@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -44,7 +45,7 @@ type Pipe struct{}
 func (Pipe) String() string { return "generating changelog" }
 
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
-	if ctx.Snapshot {
+	if ctx.Snapshot || skips.Any(ctx, skips.Changelog) {
 		return true, nil
 	}
 
