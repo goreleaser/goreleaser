@@ -1301,6 +1301,14 @@ type Changelog struct {
 	Format  string           `yaml:"format,omitempty" json:"format,omitempty"`
 	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
+
+	// v2.21+
+	GitHubNative ChangelogGitHubNative `yaml:"github_native,omitempty" json:"github_native,omitempty"`
+}
+
+// ChangelogGitHubNative holds options for the 'github-native' changelog.
+type ChangelogGitHubNative struct {
+	ConfigurationFilePath string `yaml:"configuration_file_path,omitempty" json:"configuration_file_path,omitempty"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.

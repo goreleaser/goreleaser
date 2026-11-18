@@ -29,6 +29,19 @@ changelog:
   # Default: 'git'.
   use: github
 
+  # Options for the 'github-native' changelog, ignored otherwise.
+  #
+  # When the release is published to the same repository, its
+  # `target_commitish` is also used to generate the notes, so they are correct
+  # even if the tag is not pushed yet {{< g_inline_version "v2.21-unreleased" >}}.
+  github_native:
+    # Path of the file in the repository to configure the generated release
+    # notes, instead of the default '.github/release.yml' (or '.yaml').
+    #
+    # {{< g_inline_version "v2.21-unreleased" >}}
+    # Templates: allowed.
+    configuration_file_path: ".github/release-notes.yml"
+
   # Format to use for commit formatting.
   #
   # Templates: allowed.

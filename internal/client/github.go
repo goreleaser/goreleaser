@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -163,17 +164,77 @@ func (c *githubClient) rateLimitChecker(
 }
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	req, err := releaseNotesRequest(ctx, repo, prev, current)
+	if err != nil {
+		return "", err
+	}
 	c.checkRateLimit(ctx)
 	notes, _, err := githubDo(ctx, func() (*github.RepositoryReleaseNotes, *github.Response, error) {
-		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, github.GenerateNotesRequest{
-			TagName:         current,
-			PreviousTagName: &prev,
-		})
+		return c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, req)
 	})
 	if err != nil {
 		return "", err
 	}
 	return notes.Body, err
+}
+
+func releaseNotesRequest(ctx *context.Context, repo Repo, prev, current string) (github.GenerateNotesRequest, error) {
+	req := github.GenerateNotesRequest{TagName: current}
+	if prev != "" {
+		req.PreviousTagName = &prev
+	}
+
+	tpl := tmpl.New(ctx)
+	if usesTargetCommitish(ctx, tpl, repo) {
+		target, err := targetCommitish(ctx, tpl)
+		if err != nil {
+			return req, err
+		}
+		req.TargetCommitish = target
+	}
+
+	path, err := tpl.Apply(ctx.Config.Changelog.GitHubNative.ConfigurationFilePath)
+	if err != nil {
+		return req, fmt.Errorf("templating changelog.github_native.configuration_file_path: %w", err)
+	}
+	if path != "" {
+		req.ConfigurationFilePath = &path
+	}
+	return req, nil
+}
+
+// usesTargetCommitish reports whether the release notes for repo should use
+// the release target commitish.
+//
+// GitHub uses it when the tag does not exist yet, so the notes are generated
+// for the commit the release will tag. It only applies if that release is
+// published, and created in the same repository.
+func usesTargetCommitish(ctx *context.Context, tpl *tmpl.Template, repo Repo) bool {
+	if ctx.Config.Release.TargetCommitish == "" || skips.Any(ctx, skips.Publish) {
+		return false
+	}
+	if disabled, err := tpl.Bool(ctx.Config.Release.Disable); err != nil || disabled {
+		return false
+	}
+	release := ctx.Config.Release.GitHub
+	if !strings.EqualFold(repo.Owner, release.Owner) || !strings.EqualFold(repo.Name, release.Name) {
+		log.Debugf("not using the target commitish of %s/%s for the %s/%s release notes", release.Owner, release.Name, repo.Owner, repo.Name)
+		return false
+	}
+	return true
+}
+
+// targetCommitish returns the templated release target commitish, or nil if
+// it is empty.
+func targetCommitish(ctx *context.Context, tpl *tmpl.Template) (*string, error) {
+	target, err := tpl.Apply(ctx.Config.Release.TargetCommitish)
+	if err != nil {
+		return nil, fmt.Errorf("templating release.target_commitish: %w", err)
+	}
+	if target == "" {
+		return nil, nil
+	}
+	return &target, nil
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
@@ -544,14 +605,9 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		Prerelease: &ctx.PreRelease,
 	}
 
-	if target := ctx.Config.Release.TargetCommitish; target != "" {
-		target, err := tpl.Apply(target)
-		if err != nil {
-			return "", err
-		}
-		if target != "" {
-			data.TargetCommitish = &target
-		}
+	data.TargetCommitish, err = targetCommitish(ctx, tpl)
+	if err != nil {
+		return "", err
 	}
 
 	release, err := c.createOrUpdateRelease(ctx, data, body)
