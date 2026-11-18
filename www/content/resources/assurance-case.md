@@ -51,9 +51,10 @@ boundary can still harm the pipeline; see
 - **Separate credentials from code:** tokens and keys are expected via
   environment / CI secrets, not compiled into the binary
   (`crypto_credential_agility`).
-- **Integrity for first-party releases:** release checksums are signed with
-  Sigstore/cosign; install docs explain verification; the release workflow
-  includes a `verify` job
+- **Integrity for first-party releases:** recent stable `v*` tags are annotated
+  and SSH-signed (GitHub reports verified signatures, e.g. `v2.20.0`); release
+  checksums are signed with Sigstore/cosign; install docs explain artifact
+  verification; the release workflow includes a `verify` job
   ([install](/getting-started/install/), `.github/workflows/release.yml`).
 - **Defense in depth on contributions:** tests, `golangci-lint`, CodeQL,
   Semgrep, govulncheck, dependency review, Grype/SBOM scans, gitleaks, and
@@ -73,7 +74,7 @@ boundary can still harm the pipeline; see
 | Injection / unexpected exec | Typed config; explicit hook/script configuration; users must treat build scripts as trusted code |
 | Secrets in artifacts or VCS | gitleaks in CI; security advisories and fixes when leakage bugs are found; documented expectation to use env-based secrets |
 | Vulnerable dependencies | `go.mod`/`go.sum`, Dependabot, govulncheck, dependency-review, Grype, SBOM scan |
-| Weak or ad-hoc release crypto | Sigstore/cosign for checksum bundles; SHA-256 checksums; optional attestations documented for users |
+| Weak or ad-hoc release crypto | SSH-signed annotated stable tags; Sigstore/cosign for checksum bundles; SHA-256 checksums; optional attestations documented for users |
 | Memory-unsafety in the product language | Primary implementation is Go (memory-safe); fuzz helpers exist for sensitive parsing paths (`task fuzz`) |
 | Over-privileged automation | Per-workflow GitHub token permissions; OIDC/`id-token` used for signing rather than long-lived keys where applicable |
 | Silent quality regressions | Required-style CI via tests + lint; contributing policy requires tests for major new functionality |

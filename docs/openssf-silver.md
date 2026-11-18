@@ -75,7 +75,7 @@ Do **not** invent maintainer-only facts.
 | --- | --- | --- |
 | `dco` | Gap | No DCO/CLA workflow documented in-repo today |
 | `bus_factor` | Maintainer-only / Likely Met | Multiple named maintainers publicly, but release/admin continuity is maintainer-confirmed |
-| `version_tags_signed` | Gap | Recent `v*` tags observed as lightweight (unsigned) commit tags; release *artifacts* are signed via cosign |
+| `version_tags_signed` | Likely Met | https://github.com/goreleaser/goreleaser/releases/tag/v2.20.0 | Recent stable tags are annotated + SSH-signed (`git cat-file -t refs/tags/v2.20.0` → `tag`; same for `v2.19.0` / `v2.18.3`). GitHub tag object `56188bf4…` reports `verification.verified: true`. Release *artifacts* remain signed via cosign. Remaining check: document consumer tag-verify steps / signer identity if badge wording needs it |
 | `hardening` | Likely Met | Go memory safety, least-privilege workflow tokens, fuzz tasks — document on badge if desired |
 | `crypto_algorithm_agility` | Likely Met / N/A | Signing delegated to Sigstore/cosign; not a custom crypto suite |
 | `crypto_used_network` / `crypto_tls12` | Likely Met | Outbound HTTPS to forges/registries via Go TLS |
@@ -86,7 +86,7 @@ Do **not** invent maintainer-only facts.
 2. Confirm or revise **`ROADMAP.md` / site roadmap** (what is commitment vs proposal).
 3. Publish an **access continuity** statement (who can issue/PR/release if the BDFL is unavailable; where critical secrets/DNS/org ownership live — without publishing secret material).
 4. Decide whether to adopt **DCO** (`Signed-off-by`) or document another contribution license mechanism.
-5. Optionally start **signing annotated git tags** for `version_tags_signed`.
+5. Optionally document how consumers **verify SSH-signed release tags** (`git verify-tag` / GitHub verified badge) and which signer identity to trust — stable tags are already annotated + signed.
 6. Spot-check **regression test rate** for the last six months of bug fixes before marking `regression_tests_added50`.
 7. After URLs are live on `main`, mark matching Silver criteria Met on https://www.bestpractices.dev/en/projects/5420/silver
 

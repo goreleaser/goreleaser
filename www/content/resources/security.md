@@ -13,11 +13,15 @@ it runs in (typically a developer's machine or CI).
 
 - Private vulnerability reporting and a documented response timeline (below).
 - Public credit for reporters unless anonymity is requested.
-- Signed release checksums (and related verification material) for GoReleaser's
-  own releases, with
-  [verification instructions](/getting-started/install/).
+- Annotated, cryptographically signed stable release tags (SSH signatures on
+  recent `v*` tags such as `v2.20.0`), plus signed release checksums and related
+  verification material for GoReleaser's own releases, with
+  [verification instructions](https://goreleaser.com/getting-started/install/).
 - Ongoing dependency and security scanning in CI (for example govulncheck,
   dependency review, Grype/SBOM scans, CodeQL/Semgrep, and secret scanning).
+- A documented
+  [incident response](https://github.com/goreleaser/goreleaser/blob/main/INCIDENT_RESPONSE.md)
+  process for security incidents affecting the project.
 
 **What this does not claim**
 
@@ -30,8 +34,8 @@ it runs in (typically a developer's machine or CI).
   overly broad permissions are outside what GoReleaser alone can guarantee.
 
 For a longer write-up of threats, trust boundaries, and mitigations, see the
-[assurance case](/resources/assurance-case/) and the repository
-[threat model](https://github.com/goreleaser/goreleaser/blob/main/THREAT_MODEL.md).
+[assurance case](https://goreleaser.com/resources/assurance-case/) and
+[THREAT_MODEL.md](https://github.com/goreleaser/goreleaser/blob/main/THREAT_MODEL.md).
 
 ## Supported Versions
 

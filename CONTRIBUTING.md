@@ -53,7 +53,8 @@ and match the style already used in this repository.
   `gofmt`). Run `task fmt` before you commit.
 - Organize imports consistently with the surrounding code (`goimports`-compatible
   grouping is fine; `gofumpt` / CI will keep formatting honest).
-- Satisfy the linters configured in [`.golangci.yaml`](./.golangci.yaml).
+- Satisfy the linters configured in
+  [`.golangci.yaml`](https://github.com/goreleaser/goreleaser/blob/main/.golangci.yaml).
   `task lint` runs the same class of checks locally; CI runs `golangci-lint` on
   pull requests.
 
