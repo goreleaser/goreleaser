@@ -94,6 +94,16 @@ func TestSingleCommit(t *testing.T) {
 	require.Equal(t, time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC), ctx.Git.CommitDate)
 }
 
+func TestUnsafeTagVersion(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, `v1.0.0";touch${IFS}pwned;"`)
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Validate))
+	require.ErrorContains(t, Pipe{}.Run(ctx), "invalid characters")
+}
+
 func TestAnnotatedTags(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

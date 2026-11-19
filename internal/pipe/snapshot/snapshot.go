@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/internal/version"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -36,6 +37,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	if name == "" {
 		return errors.New("empty snapshot name")
+	}
+	if err := version.Check(name); err != nil {
+		return err
 	}
 	ctx.Version = name
 	log.WithField("version", ctx.Version).Infof("building snapshot...")
