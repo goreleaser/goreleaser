@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -183,7 +184,22 @@ func (p Publish) Publish(ctx *context.Context) error {
 			if err != nil {
 				return fmt.Errorf("dockers_v2.sbom: %w", err)
 			}
-			return buildImage(ctx, d, extraArgs...)
+			err = buildImage(ctx, d, extraArgs...)
+			if err == nil || pipe.IsSkip(err) {
+				return err
+			}
+			if _, ok := errors.AsType[registryDownError](err); !ok {
+				return err
+			}
+			allow, terr := tmpl.New(ctx).Bool(d.AllowRegistryDown)
+			if terr != nil {
+				return fmt.Errorf("dockers_v2.allow_registry_down: %w", terr)
+			}
+			if !allow {
+				return err
+			}
+			log.WithField("id", d.ID).WithError(err).Warn("registry is down, skipping push")
+			return pipe.Skipf("%s: registry is down", d.ID)
 		})
 	}
 	err = g.Wait()
@@ -330,6 +346,9 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 		},
 		IsRetriableBuild,
 	); err != nil {
+		if isRegistryDown(err) {
+			err = registryDownError{err}
+		}
 		return "", err
 	}
 
@@ -894,6 +913,32 @@ var retriableBuildOutputs = []string{
 	"unable to connect to",
 	"hash sum mismatch",
 	"temporary error (try again later)",
+}
+
+// registryDownRE matches a failed push answered with an HTTP 5xx status.
+var registryDownRE = regexp.MustCompile(`(?i)failed to push[^\n]*unexpected status[^\n]*:\s+5\d\d\b`)
+
+// registryDownError marks a docker build that failed because the registry
+// answered the push with a 5xx status.
+type registryDownError struct{ error }
+
+func (e registryDownError) Unwrap() error { return e.error }
+
+// isRegistryDown reports whether the terminal error of a failed docker build
+// is a push answered with a 5xx status. Earlier output lines are ignored, as
+// buildkit logs retried 5xx responses before failing for another reason.
+func isRegistryDown(err error) bool {
+	de, ok := errors.AsType[gerrors.ErrDetailed](err)
+	if !ok {
+		return false
+	}
+	var last string
+	for line := range strings.SplitSeq(de.Output(), "\n") {
+		if line = strings.TrimSpace(line); strings.HasPrefix(line, "ERROR:") {
+			last = line
+		}
+	}
+	return registryDownRE.MatchString(last)
 }
 
 func isFileNotFoundError(out string) bool {

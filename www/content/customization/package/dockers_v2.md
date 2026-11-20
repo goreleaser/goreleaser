@@ -160,6 +160,15 @@ dockers_v2:
     # {{< g_inline_version "v2.12" >}}
     sbom: "{{ not .IsNightly }}"
 
+    # Whether to skip this configuration, instead of failing the release, when
+    # the registry is down, i.e. it answers the push with a 5xx status.
+    # Any other failure, including 4xx responses, is still an error.
+    # The other configurations are always attempted, regardless of this option.
+    #
+    # Templates: allowed.
+    # {{< g_inline_version "v2.19-unreleased" >}}
+    allow_registry_down: true
+
     # Additional `--build-arg`s to be passed.
     #
     # Templates: allowed.
