@@ -11,6 +11,8 @@ weight: 9000
 - Follow us on [LinkedIn](https://linkedin.com/company/goreleaser)
 - Ask questions on [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
 - Before contributing, read the [Contributing Guidelines](/resources/contributing/)
+- [Security policy](/resources/security/) and [assurance case](/resources/assurance-case/)
+- [Roadmap (draft)](/resources/roadmap/)
 
 This project adheres to the Contributor Covenant
 [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
