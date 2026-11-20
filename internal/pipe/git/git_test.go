@@ -95,6 +95,7 @@ func TestSingleCommit(t *testing.T) {
 }
 
 func TestUnsafeTagVersion(t *testing.T) {
+	testlib.SkipIfWindows(t, "git cannot create refs with quotes on windows")
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
