@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -609,6 +611,117 @@ func (s *GiteaUploadSuite) TestSuccess() {
 
 func TestGiteaUploadSuite(t *testing.T) {
 	suite.Run(t, new(GiteaUploadSuite))
+}
+
+// GiteaReplaceAssetsSuite uploads into an existing release that already has
+// assets: Gitea accepts several assets with the same name, so the client must
+// find them itself.
+type GiteaReplaceAssetsSuite struct {
+	GiteaReleasesTestSuite
+	mu       sync.Mutex
+	requests []string
+	deleted  int
+}
+
+func (s *GiteaReplaceAssetsSuite) SetupTest() {
+	s.GiteaReleasesTestSuite.SetupTest()
+	s.requests = nil
+	s.deleted = http.StatusNoContent
+	s.handleJSON(http.MethodGet, s.releasesPath, []gitea.Release{{
+		ID:      s.releaseID,
+		TagName: s.tag,
+		Attachments: []*gitea.Attachment{
+			{ID: 1, Name: "app.tar.gz"},
+			{ID: 2, Name: "app.tar.gz"},
+			{ID: 3, Name: "checksums.txt"},
+		},
+	}})
+	s.handleJSON(http.MethodPatch, s.releasePath, &gitea.Release{ID: s.releaseID, TagName: s.tag})
+	s.handle(http.MethodPost, s.releasePath+"/assets", func(w http.ResponseWriter, r *http.Request) {
+		_, header, err := r.FormFile("attachment")
+		if !s.NoError(err) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		s.record("upload " + header.Filename)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = fmt.Fprintf(w, `{"id":4,"name":%q}`, header.Filename)
+	})
+	for _, id := range []int{1, 2, 3} {
+		s.handle(http.MethodDelete, fmt.Sprintf("%s/assets/%d", s.releasePath, id), func(w http.ResponseWriter, _ *http.Request) {
+			s.record(fmt.Sprintf("delete %d", id))
+			w.WriteHeader(s.deleted)
+		})
+	}
+
+	releaseID, err := s.client.CreateRelease(s.ctx, s.description)
+	s.Require().NoError(err)
+	s.Require().Equal(fmt.Sprint(s.releaseID), releaseID)
+}
+
+func (s *GiteaReplaceAssetsSuite) record(request string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.requests = append(s.requests, request)
+}
+
+func (s *GiteaReplaceAssetsSuite) upload(name string) error {
+	s.T().Helper()
+	path := filepath.Join(s.T().TempDir(), name)
+	s.Require().NoError(os.WriteFile(path, []byte("new "+name), 0o644))
+	return s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), &artifact.Artifact{Name: name, Path: path})
+}
+
+func (s *GiteaReplaceAssetsSuite) TestRefusesDuplicateByDefault() {
+	err := s.upload("app.tar.gz")
+	s.Require().EqualError(err, `release already has an asset named "app.tar.gz", delete it or set release.replace_existing_artifacts`)
+	s.Require().Empty(s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestUploadsNewName() {
+	s.Require().NoError(s.upload("app.zip"))
+	s.Require().Equal([]string{"upload app.zip"}, s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestReplacesAfterUploading() {
+	s.ctx.Config.Release.ReplaceExistingArtifacts = true
+	s.Require().NoError(s.upload("app.tar.gz"))
+	s.Require().Equal([]string{"upload app.tar.gz", "delete 1", "delete 2"}, s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestReplaceIgnoresAlreadyDeletedAsset() {
+	s.ctx.Config.Release.ReplaceExistingArtifacts = true
+	s.deleted = http.StatusNotFound
+	s.Require().NoError(s.upload("checksums.txt"))
+	s.Require().Equal([]string{"upload checksums.txt", "delete 3"}, s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestReplaceDeleteError() {
+	s.ctx.Config.Release.ReplaceExistingArtifacts = true
+	s.deleted = http.StatusForbidden
+	err := s.upload("checksums.txt")
+	s.Require().ErrorContains(err, `uploaded "checksums.txt", but could not delete the asset it replaces`)
+	s.Require().Equal([]string{"upload checksums.txt", "delete 3"}, s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestRefusesSameNameTwiceInOneRun() {
+	s.ctx.Config.Release.ReplaceExistingArtifacts = true
+	s.Require().NoError(s.upload("app.zip"))
+	err := s.upload("app.zip")
+	s.Require().EqualError(err, `another artifact is also named "app.zip", only one of them can be uploaded`)
+	s.Require().Equal([]string{"upload app.zip"}, s.requests)
+}
+
+func (s *GiteaReplaceAssetsSuite) TestKeepsPreviousAssetWhenUploadFails() {
+	s.ctx.Config.Release.ReplaceExistingArtifacts = true
+	s.handleString(http.MethodPost, s.releasePath+"/assets", http.StatusBadRequest, "")
+	s.Require().Error(s.upload("app.tar.gz"))
+	s.Require().Empty(s.requests)
+}
+
+func TestGiteaReplaceAssetsSuite(t *testing.T) {
+	suite.Run(t, new(GiteaReplaceAssetsSuite))
 }
 
 func TestGiteaReleaseURLTemplate(t *testing.T) {
