@@ -988,6 +988,7 @@ func TestIsRetriableBuild(t *testing.T) {
 			"E: Failed to fetch http://deb.debian.org/... Connection timed out",
 			"WARNING: fetching https://dl-cdn.alpinelinux.org: temporary error (try again later)",
 			"context deadline exceeded",
+			"ERROR: failed to push ghcr.io/foo/bar:v1: unexpected status from PUT request to https://ghcr.io/v2/foo/bar/manifests/v1: 404 Not Found\nunknown: blob unknown to registry",
 		} {
 			t.Run(out, func(t *testing.T) {
 				require.True(t, IsRetriableBuild(gerrors.Wrap(errors.New("exit status 1"), gerrors.WithOutput(out))))

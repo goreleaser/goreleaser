@@ -3,6 +3,7 @@ package docker
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1765,6 +1766,16 @@ func TestRunWithSelectedWheelID(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, int32(1), im.calls.Load())
+}
+
+func TestIsRetriablePush(t *testing.T) {
+	require.True(t, isRetriablePush(fmt.Errorf("failed to push %s: %w", "ghcr.io/foo/bar:v1",
+		errors.New("exit status 1: unknown blob\nThe push refers to repository [ghcr.io/foo/bar]"))))
+	require.True(t, isRetriablePush(fmt.Errorf("failed to push %s: %w", "ghcr.io/foo/bar:v1",
+		errors.New("exit status 1: unknown: blob unknown to registry"))))
+	require.True(t, isRetriablePush(errors.New("received unexpected HTTP status: 503 Service Unavailable")))
+	require.True(t, isRetriablePush(io.EOF))
+	require.False(t, isRetriablePush(errors.New("denied: permission_denied: write_package")))
 }
 
 func TestDockerBuildRetries(t *testing.T) {

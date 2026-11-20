@@ -433,6 +433,10 @@ func isRetriablePush(err error) bool {
 	if retryx.IsNetworkError(err) {
 		return true
 	}
+	if strings.Contains(err.Error(), "unknown blob") ||
+		strings.Contains(err.Error(), "blob unknown") {
+		return true
+	}
 	for _, code := range []int{
 		http.StatusInternalServerError,
 		// http.StatusNotImplemented,
