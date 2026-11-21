@@ -290,6 +290,7 @@ var validLicenses = []string{
 	"tsl",
 	"tcltk",
 	"tost",
+	"ttyp0",
 	"ubdlException",
 	"ucd",
 	"ufl",

@@ -25,6 +25,10 @@ snapshot:
 > Do not use the `{{.Tag}}` field in the `version_template`, as the version
 > should not have the leading `v`.
 
+The version must have only letters, digits, `.`, `_`, `+`, and `-`, because it
+is embedded in generated files, such as Homebrew formulas, PKGBUILDs, and RPM
+spec files.
+
 ## How it works
 
 When you run GoReleaser with `--snapshot`, it will set the `Version` template

@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -19,19 +20,40 @@ func TestDependencies(t *testing.T) {
 	require.NotEmpty(t, Default.Dependencies())
 }
 
+func TestArchTemplateField(t *testing.T) {
+	// the .Arch template field must expose the Go arch (e.g. amd64, arm64),
+	// like the go/rust/zig builders do, and not the raw target triple arch
+	// (x86_64, aarch64). This is what gets templated into binary names and
+	// build hooks before the artifact exists.
+	for target, want := range map[string]string{
+		"x86_64-apple-darwin":  "amd64",
+		"aarch64-apple-darwin": "arm64",
+	} {
+		t.Run(target, func(t *testing.T) {
+			parsed, err := Default.Parse(target)
+			require.NoError(t, err)
+			rendered, err := tmpl.New(testctx.Wrap(t.Context())).
+				WithBuildOptions(api.Options{Target: parsed}).
+				Apply("{{ .Arch }}")
+			require.NoError(t, err)
+			require.Equal(t, want, rendered)
+		})
+	}
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"x86_64-pc-windows-msvc": {
 			Target: "x86_64-pc-windows-msvc",
 			Os:     "windows",
-			Arch:   "x86_64",
+			Arch:   "amd64",
 			Abi:    "msvc",
 			Vendor: "pc",
 		},
 		"aarch64-apple-darwin": {
 			Target: "aarch64-apple-darwin",
 			Os:     "darwin",
-			Arch:   "aarch64",
+			Arch:   "arm64",
 			Vendor: "apple",
 		},
 	} {

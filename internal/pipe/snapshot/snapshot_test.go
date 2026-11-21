@@ -75,6 +75,19 @@ func TestSnapshot(t *testing.T) {
 	require.Equal(t, "1.2.4", ctx.Version)
 }
 
+func TestSnapshotUnsafeVersion(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Snapshot: config.Snapshot{
+			VersionTemplate: "{{ .Env.V }}",
+		},
+	}, testctx.WithVersion("1.2.3"), testctx.WithEnv(map[string]string{
+		"V": `1.0.0"; system("id"); x = "`,
+	}))
+
+	require.ErrorContains(t, Pipe{}.Run(ctx), "invalid characters")
+	require.Equal(t, "1.2.3", ctx.Version)
+}
+
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))

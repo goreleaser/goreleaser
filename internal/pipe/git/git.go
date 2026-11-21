@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/internal/version"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -57,6 +58,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		WithField("current", info.CurrentTag).
 		Info("using tags")
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
+	if err := version.Check(ctx.Version); err != nil {
+		return err
+	}
 	return validate(ctx)
 }
 

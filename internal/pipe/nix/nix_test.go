@@ -564,6 +564,8 @@ func TestRunPipe(t *testing.T) {
 					"foo_linux_arm7.zip":        "sha14",
 					"foo_linux_386.zip":         "sha15",
 					"foo_linux_386.tar.gz":      "sha16",
+					"foo_linux_arm.zip":         "sha17",
+					"foo_linux_arm.tar.gz":      "sha18",
 				},
 			}
 
@@ -916,6 +918,49 @@ func TestPreparePkgInstallPhaseRunsHooks(t *testing.T) {
 	require.Contains(t, content, `  postInstall = ''
     printf 'post-install ran\n' > "$out/post-install.marker"
   '';`)
+}
+
+func TestPreparePkgArmWithoutGoarm(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(
+		t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+
+	// non-go builders (e.g. zig) do not set Goarm.
+	archiveName := "foo_linux_arm.tar.gz"
+	archivePath := filepath.Join(folder, "dist", archiveName)
+	require.NoError(t, os.MkdirAll(filepath.Dir(archivePath), 0o755))
+	require.NoError(t, os.WriteFile(archivePath, nil, 0o644))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   archiveName,
+		Path:   archivePath,
+		Goos:   "linux",
+		Goarch: "arm",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "tar.gz",
+			artifact.ExtraBinaries:  []string{"foo"},
+			artifact.ExtraBuilder:   "zig",
+			artifact.ExtraWrappedIn: "",
+		},
+	})
+
+	content, err := preparePkg(ctx, config.Nix{
+		Name:        "foo",
+		IDs:         []string{"foo"},
+		URLTemplate: "https://example.com/{{ .ArtifactName }}",
+	}, client.NewMock(), fakeHasher{archiveName: "sha"})
+	require.NoError(t, err)
+	require.Contains(t, content, `armv6l-linux = "sha";`)
+	require.Contains(t, content, `armv6l-linux = "https://example.com/foo_linux_arm.tar.gz";`)
+	require.Contains(t, content, `"armv6l-linux"`)
 }
 
 func TestErrNoArchivesFound(t *testing.T) {

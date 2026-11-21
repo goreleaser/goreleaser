@@ -55,7 +55,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	t := Target{
 		Target: target,
 		Os:     parts[2],
-		Arch:   parts[0],
+		Arch:   convertToGoarch(parts[0]),
 		Vendor: parts[1],
 	}
 
