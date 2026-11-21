@@ -39,6 +39,7 @@ const (
 	MCP            Key = "mcp"
 	Iru            Key = "iru"
 	SRPM           Key = "srpm"
+	APKBuild       Key = "apkbuild"
 	Changelog      Key = "changelog"
 )
 
@@ -128,6 +129,7 @@ var Release = Keys{
 	Nix,
 	AUR,
 	AURSource,
+	APKBuild,
 	NFPM,
 	Makeself,
 	Flatpak,
