@@ -46,6 +46,7 @@ var (
 	_ api.Builder          = &Builder{}
 	_ api.DependingBuilder = &Builder{}
 	_ api.TargetFixer      = &Builder{}
+	_ api.DetailsOverrider = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -274,13 +275,15 @@ var go118FirstClassTargets = []string{
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	mains, allbinaries, err := checkBuild(build, options)
+	t := options.Target.(Target)
+	details, err := withOverrides(ctx, build, t)
 	if err != nil {
 		return err
 	}
 
-	t := options.Target.(Target)
-	details, err := withOverrides(ctx, build, t)
+	// The artifact types depend on the buildmode, which can be overridden.
+	build.Buildmode = details.Buildmode
+	mains, allbinaries, err := checkBuild(build, options)
 	if err != nil {
 		return err
 	}
@@ -348,6 +351,11 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+// DetailsFor implements build.DetailsOverrider.
+func (*Builder) DetailsFor(ctx *context.Context, build config.Build, target api.Target) (config.BuildDetails, error) {
+	return withOverrides(ctx, build, target.(Target))
+}
+
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
 	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
@@ -375,7 +383,8 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 			env := make([]string, 0, len(build.Env)+len(o.Env))
 			env = append(env, build.Env...)
 			dets.Env = append(env, o.Env...)
-			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
+			// debug, as both the build pipe and Build resolve the overrides.
+			log.WithField("details", dets).Debugf("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
 		log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
