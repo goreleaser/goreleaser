@@ -42,7 +42,8 @@ what actually happened, not what was configured:
   [Nix](/customization/publish/nix/) packages, whether GoReleaser pushed them
   directly or opened a pull request.
 - [AUR](/customization/publish/aur/) and [AUR
-  source](/customization/publish/aursources/) packages pushed to their
+  source](/customization/publish/aursources/) packages, and Alpine Linux
+  [`APKBUILD`](/customization/publish/apkbuilds/) files, pushed to their
   repositories.
 - Container images pushed by [Docker](/customization/package/docker/),
   [Docker v2](/customization/package/dockers_v2/), and
