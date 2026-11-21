@@ -180,6 +180,30 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
+	for name, f := range map[string]config.File{
+		"parent destination":   {Source: "./testdata/a/b/a.txt", Destination: "../foo"},
+		"nested parent":        {Source: "./testdata/a/b/a.txt", Destination: "foo/../../bar"},
+		"absolute destination": {Source: "./testdata/a/b/a.txt", Destination: "/foo/bar"},
+		"strip parent":         {Source: "./testdata/a/b/a.txt", Destination: "../foo", StripParent: true},
+		"parent source":        {Source: "../archivefiles/testdata/a/b/a.txt"},
+	} {
+		t.Run("invalid destination/"+name, func(t *testing.T) {
+			_, err := Eval(tmpl, []config.File{f})
+			require.ErrorContains(t, err, "invalid destination")
+		})
+	}
+
+	t.Run("dot prefix destination", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{
+			Source:      "./testdata/a/b/a.txt",
+			Destination: "./foo/../bar/",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "bar"},
+		}, result)
+	})
+
 	t.Run("rlcp no results", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{
 			Source:      "./testdata/abc/**/*",

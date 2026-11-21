@@ -55,6 +55,9 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			if err != nil {
 				return nil, err
 			}
+			if !filepath.IsLocal(dst) {
+				return nil, fmt.Errorf("invalid destination %q for %q: must be a relative path inside the archive", dst, file)
+			}
 			result = append(result, config.File{
 				Source:      filepath.ToSlash(file),
 				Destination: filepath.ToSlash(dst),
