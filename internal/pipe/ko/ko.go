@@ -17,10 +17,8 @@ import (
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
 	"github.com/caarlos0/log"
-	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
-	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/daemon"
@@ -39,6 +37,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/osscontainertools/docker-credential-acr/pkg/credhelper"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -382,18 +381,21 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		summary.Appendf("Pushed Docker image `%s`", ref.Name())
 	}
 
-	if ctx.Snapshot || len(opts.imageRepos) == 1 {
+	if ctx.Snapshot {
 		// do not copy images when snapshoting, as these images will be
 		// local only anyway.
 		return nil
 	}
 
-	src := ref.Name()
-	for _, dst := range secondaryDestinations(opts) {
-		digest, err := copyImage(src, dst)
-		if err != nil {
-			return err
-		}
+	dsts := secondaryDestinations(opts)
+	if len(dsts) == 0 {
+		return nil
+	}
+	digest, err := copyImage(ctx, ref.Name(), dsts)
+	if err != nil {
+		return err
+	}
+	for _, dst := range dsts {
 		ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
 		summary.Appendf("Pushed Docker image `%s`", dst)
 	}
@@ -590,18 +592,41 @@ func validateMainPath(path string) error {
 	return nil
 }
 
-func copyImage(src, dst string) (string, error) {
-	log.WithField("src", src).
-		WithField("dst", dst).
-		Info("copying manifest")
-	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
-		return "", fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
-	}
-	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+// copyImage copies src to every dst, and returns the digest it copied.
+//
+// The source is fetched once, and pushed to every dst in parallel, only
+// uploading what each repository is missing.
+func copyImage(ctx stdctx.Context, src string, dsts []string) (string, error) {
+	// Parsed from its name, so a digest reference is fetched by digest, and
+	// the fetched manifest is verified against it.
+	srcRef, err := name.ParseReference(src)
 	if err != nil {
-		return "", fmt.Errorf("could not get digest of %q: %w", dst, err)
+		return "", fmt.Errorf("could not parse %q: %w", src, err)
 	}
-	return digest, nil
+	refs := make([]name.Reference, 0, len(dsts))
+	for _, dst := range dsts {
+		ref, err := name.NewTag(dst)
+		if err != nil {
+			return "", fmt.Errorf("could not parse %q: %w", dst, err)
+		}
+		refs = append(refs, ref)
+	}
+
+	desc, err := remote.Get(srcRef, remote.WithContext(ctx), remote.WithAuthFromKeychain(keychain))
+	if err != nil {
+		return "", fmt.Errorf("could not fetch %q: %w", src, err)
+	}
+	todo := make(map[name.Reference]remote.Taggable, len(refs))
+	for _, ref := range refs {
+		todo[ref] = desc
+	}
+	log.WithField("src", src).
+		WithField("dsts", dsts).
+		Info("copying manifest")
+	if err := remote.MultiWrite(todo, remote.WithContext(ctx), remote.WithAuthFromKeychain(keychain)); err != nil {
+		return "", fmt.Errorf("could not copy %q: %w", src, err)
+	}
+	return desc.Digest.String(), nil
 }
 
 func makeArtifact(id, name, digest string) *artifact.Artifact {

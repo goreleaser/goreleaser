@@ -6,7 +6,6 @@ pkgrel=1
 pkgdesc=''
 url=''
 arch=('x86_64')
-license=('')
 provides=('foo')
 conflicts=('foo')
 

@@ -361,17 +361,22 @@ func preparePkg(
 			Sha: sha,
 		}
 
+		goarm := art.Goarm
+		if art.Goarch == "arm" && goarm == "" {
+			// non-go builders (e.g. zig) do not set Goarm.
+			goarm = experimental.DefaultGOARM()
+		}
 		for _, goarch := range expandGoarch(art.Goarch) {
-			key := art.Goos + goarch + art.Goarm
+			key := art.Goos + goarch + goarm
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
 			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
 			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
-			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
+			plat := goosToPlatform[key]
 			if plat == "" {
-				return "", errors.New("invalid platform: " + art.Goos + goarch + art.Goarm)
+				return "", errors.New("invalid platform: " + key)
 			}
 			platforms[plat] = true
 		}
@@ -395,7 +400,6 @@ func expandGoarch(goarch string) []string {
 var goosToPlatform = map[string]string{
 	"linuxamd64":  "x86_64-linux",
 	"linuxarm64":  "aarch64-linux",
-	"linuxarm":    "armv" + experimental.DefaultGOARM() + "l-linux",
 	"linuxarm6":   "armv6l-linux",
 	"linuxarm7":   "armv7l-linux",
 	"linux386":    "i686-linux",

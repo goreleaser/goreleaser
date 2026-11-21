@@ -71,19 +71,6 @@ These are the companies and individuals that help make GoReleaser happen:
     <div class="goreleaser-sponsors-tier-label">Silver</div>
     <div class="goreleaser-sponsors-grid">
         <a class="goreleaser-sponsor-item" 
-          href="https://buytiktokfollowers.co/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://images.opencollective.com/buy-tiktok-followers-co/82431fe/logo.png?height=80" 
-            alt="BuyTikTokFollowers.co" 
-            width="80" 
-            height="80"
-          />
-          BuyTikTokFollowers.co
-        </a>
-        <a class="goreleaser-sponsor-item" 
           href="https://www.n-ix.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" 
           target="_blank" 
           rel="noopener sponsored"
@@ -159,7 +146,6 @@ These are the companies and individuals that help make GoReleaser happen:
 
 ### Backers
 
-- [Dharsan Baskar](https://github.com/dharsanb?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [James Blackwell](https://www.linuxguru.net?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Automatio AI](https://automatio.ai/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [BackupDrill](https://backupdrill.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
@@ -202,6 +188,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [buonanotte immagini](https://buonanotteimmagini.org/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [buongiorno immagini](https://buongiornoimmagine.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [BuyTikTokFollowers.co](https://buytiktokfollowers.co/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Kredi](https://kredibankare.al/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Paw Pampering](https://pawpampering.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
