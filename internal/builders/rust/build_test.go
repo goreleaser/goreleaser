@@ -390,13 +390,14 @@ func TestBuild(t *testing.T) {
 		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:   "proj",
-			artifact.ExtraBuilder:  "rust",
-			artifact.ExtraExt:      "",
-			artifact.ExtraID:       "default",
-			artifact.ExtranDynLink: true,
-			keyAbi:                 "gnu",
-			keyLibc:                "2.17",
+			artifact.ExtraBinary:     "proj",
+			artifact.ExtraBuilder:    "rust",
+			artifact.ExtraExt:        "",
+			artifact.ExtraID:         "default",
+			artifact.ExtranDynLink:   true,
+			keyAbi:                   "gnu",
+			keyLibc:                  "2.17",
+			artifact.ExtraLibcFamily: "gnu",
 		},
 	}, *bin)
 
@@ -463,13 +464,14 @@ func TestBuildArm(t *testing.T) {
 		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:   "proj",
-			artifact.ExtraBuilder:  "rust",
-			artifact.ExtraExt:      "",
-			artifact.ExtraID:       "default",
-			artifact.ExtranDynLink: true,
-			keyAbi:                 "gnueabihf",
-			keyLibc:                "2.17",
+			artifact.ExtraBinary:     "proj",
+			artifact.ExtraBuilder:    "rust",
+			artifact.ExtraExt:        "",
+			artifact.ExtraID:         "default",
+			artifact.ExtranDynLink:   true,
+			keyAbi:                   "gnueabihf",
+			keyLibc:                  "2.17",
+			artifact.ExtraLibcFamily: "gnu",
 		},
 	}, *bin)
 
@@ -570,4 +572,24 @@ func TestIsSettingPackage(t *testing.T) {
 			require.Equal(t, tt.expect, got)
 		})
 	}
+}
+
+// A target with a glibc suffix keeps the version under keyLibc, so the detected
+// family must not replace it.
+func TestRecordLinkageKeepsGlibcVersion(t *testing.T) {
+	const target = "armv7-unknown-linux-gnueabihf.2.17"
+	parsed, err := Default.Parse(target)
+	require.NoError(t, err)
+
+	path := filepath.Join(t.TempDir(), "proj")
+	testlib.WriteDynamicELF(t, path, "/lib/ld-linux-armhf.so.3")
+	a := makeArtifact(config.Build{ID: "default"}, api.Options{Name: "proj", Path: path, Target: parsed})
+
+	recordLinkage(a)
+
+	require.Equal(t, "2.17", a.Extra[keyLibc])
+	require.Equal(t, "gnueabihf", a.Extra[keyAbi])
+	require.Equal(t, "gnu", a.Extra[artifact.ExtraLibcFamily])
+	require.Equal(t, true, a.Extra[artifact.ExtranDynLink])
+	require.NotEqual(t, keyLibc, artifact.ExtraLibcFamily)
 }

@@ -571,6 +571,8 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jbenet/goprocess v0.1.4 h1:DRGOFReOMqqDNXwW70QkacFW0YN9QnwLV0Vqk+3oU0o=
 github.com/jbenet/goprocess v0.1.4/go.mod h1:5yspPrukOVuOLORacaBi858NqyClJPQxYZlqdZVfqY4=
+github.com/jdx/packslip/go v1.11.1 h1:VRN76wKv18Truer7XFl9/ERihpyhw6Vp7FST5U8l148=
+github.com/jdx/packslip/go v1.11.1/go.mod h1:OTRTgLPyyu6ZAHEg4CdSTYo9EwLV1xoNLtdwDosuLhw=
 github.com/jedisct1/go-minisign v0.0.0-20241212093149-d2f9f49435c7 h1:FWpSWRD8FbVkKQu8M1DM9jF5oXFLyE+XpisIYfdzbic=
 github.com/jedisct1/go-minisign v0.0.0-20241212093149-d2f9f49435c7/go.mod h1:BMxO138bOokdgt4UaxZiEfypcSHX0t6SIFimVP1oRfk=
 github.com/jellydator/ttlcache/v3 v3.4.1 h1:bOdXmXiycyK6E6Qjyuj5vl+/vU3SCOoDs8a86NbHjAQ=

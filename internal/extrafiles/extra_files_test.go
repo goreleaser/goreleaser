@@ -1,13 +1,29 @@
 package extrafiles
 
 import (
+	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/fileglob"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
+
+func TestUploadNamesCollisions(t *testing.T) {
+	first := "testdata/file1.golden"
+	second := "testdata/file2.golden"
+	_, err := UploadNames(map[string]string{"notes.json": first, " notes.json": second})
+	require.EqualError(t, err, `extra files "testdata/file2.golden" and "testdata/file1.golden" have the same upload name "notes.json"`)
+
+	files, err := UploadNames(map[string]string{
+		"notes.json":  first,
+		" notes.json": filepath.Join("testdata", "sub", "..", "file1.golden"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{"notes.json": first}, files)
+}
 
 func TestTemplate(t *testing.T) {
 	globs := []config.ExtraFile{
@@ -140,6 +156,26 @@ func TestTargetNameMatchesMultipleFiles(t *testing.T) {
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `failed to add extra_file: "./testdata/*" -> "file1.golden": glob matches multiple files`)
+}
+
+func TestFindExceptIgnoresExcludedFilesWhenRenaming(t *testing.T) {
+	ctx := testctx.Wrap(t.Context())
+	globs := []config.ExtraFile{{Glob: "./testdata/*", NameTemplate: "renamed.golden"}}
+
+	all, err := fileglob.Glob("./testdata/*")
+	require.NoError(t, err)
+	require.Greater(t, len(all), 1)
+
+	// excluding all but one match leaves it unambiguous
+	files, err := FindExcept(ctx, globs, all[1:])
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{"renamed.golden": all[0]}, files)
+
+	// excluding too few still fails
+	if len(all) > 2 {
+		_, err = FindExcept(ctx, globs, all[2:])
+		require.ErrorContains(t, err, "glob matches multiple files")
+	}
 }
 
 func TestTargetNameNoMatches(t *testing.T) {
