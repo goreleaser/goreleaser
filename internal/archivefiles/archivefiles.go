@@ -56,12 +56,13 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			if err != nil {
 				return nil, err
 			}
+			dst = filepath.ToSlash(dst)
 			if !isLocal(dst) {
 				return nil, fmt.Errorf("invalid destination %q for %q: must be a relative path inside the archive", dst, file)
 			}
 			result = append(result, config.File{
 				Source:      filepath.ToSlash(file),
-				Destination: filepath.ToSlash(dst),
+				Destination: dst,
 				Info:        f.Info,
 			})
 		}
@@ -114,9 +115,10 @@ func unique(in []config.File) []config.File {
 	return result
 }
 
-// isLocal reports whether name stays inside the archive root. Backslashes are
-// treated as separators on every OS, as the archive pipe converts them to
-// slashes when writing entry names.
+// isLocal reports whether the slash-separated name stays inside the archive
+// root. filepath.ToSlash only handles the OS separator, but the archive pipe
+// turns every backslash into a slash when writing entry names, so they must be
+// treated as separators on every OS.
 func isLocal(name string) bool {
 	return filepath.IsLocal(strings.ReplaceAll(name, `\`, "/"))
 }
