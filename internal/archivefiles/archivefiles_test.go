@@ -186,12 +186,25 @@ func TestEval(t *testing.T) {
 		"absolute destination": {Source: "./testdata/a/b/a.txt", Destination: "/foo/bar"},
 		"strip parent":         {Source: "./testdata/a/b/a.txt", Destination: "../foo", StripParent: true},
 		"parent source":        {Source: "../archivefiles/testdata/a/b/a.txt"},
+		"backslash parent":     {Source: "./testdata/a/b/a.txt", Destination: `..\foo`},
+		"backslash absolute":   {Source: "./testdata/a/b/a.txt", Destination: `\foo`},
 	} {
 		t.Run("invalid destination/"+name, func(t *testing.T) {
 			_, err := Eval(tmpl, []config.File{f})
 			require.ErrorContains(t, err, "invalid destination")
 		})
 	}
+
+	t.Run("dots inside a name", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{
+			Source:      "./testdata/a/b/a.txt",
+			Destination: "a..b/..c",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "a..b/..c"},
+		}, result)
+	})
 
 	t.Run("dot prefix destination", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{

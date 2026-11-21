@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -55,7 +56,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 			if err != nil {
 				return nil, err
 			}
-			if !filepath.IsLocal(dst) {
+			if !isLocal(dst) {
 				return nil, fmt.Errorf("invalid destination %q for %q: must be a relative path inside the archive", dst, file)
 			}
 			result = append(result, config.File{
@@ -111,6 +112,13 @@ func unique(in []config.File) []config.File {
 	}
 
 	return result
+}
+
+// isLocal reports whether name stays inside the archive root. Backslashes are
+// treated as separators on every OS, as the archive pipe converts them to
+// slashes when writing entry names.
+func isLocal(name string) bool {
+	return filepath.IsLocal(strings.ReplaceAll(name, `\`, "/"))
 }
 
 func destinationFor(f config.File, prefix, path string) (string, error) {
