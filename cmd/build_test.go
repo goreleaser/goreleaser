@@ -208,6 +208,28 @@ func TestWithOutputPipe(t *testing.T) {
 		require.Equal(t, "A", string(bts))
 	})
 
+	t.Run("library with header", func(t *testing.T) {
+		mktmp(t)
+		createFile(t, "a.so", "A")
+		createFile(t, "a.h", "H")
+		ctx := testctx.Wrap(t.Context())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a.so",
+			Path: "a.so",
+			Type: artifact.CShared,
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a.h",
+			Path: "a.h",
+			Type: artifact.Header,
+		})
+
+		require.NoError(t, (withOutputPipe{"picked"}).Run(ctx))
+		bts, err := os.ReadFile("picked")
+		require.NoError(t, err)
+		require.Equal(t, "A", string(bts))
+	})
+
 	for name, binaries := range map[string][]string{
 		"a first": {"a", "b"},
 		"b first": {"b", "a"},
