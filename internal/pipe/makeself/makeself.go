@@ -199,7 +199,7 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 	arg := makeArg(name, filename, compression, "./"+filepath.Base(script), extraArgs)
 	cmd := exec.CommandContext(ctx, "makeself", arg...)
 	cmd.Dir = dir
-	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+	cmd.Env = append(cmd.Environ(), ctx.Env.Strings()...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 	stderr := redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)

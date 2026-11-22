@@ -202,3 +202,64 @@ func requireRunMakeself(tb testing.TB, path string) {
 	require.NoError(tb, err, string(out))
 	require.Contains(tb, string(out), "hello world, from the binary")
 }
+
+func TestRunEnvPrecedence(t *testing.T) {
+	testlib.SkipIfWindows(t, "fake makeself is a shell script")
+
+	for name, tt := range map[string]struct {
+		ambient string
+		project string
+		want    string
+	}{
+		"conflicting": {
+			ambient: "ambient-config",
+			project: "project-config",
+			want:    "project-config",
+		},
+		"configured-only": {
+			project: "project-config",
+			want:    "project-config",
+		},
+		"inherited-only": {
+			ambient: "ambient-config",
+			want:    "ambient-config",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			const key = "GORELEASER_TEST_MAKESELF_ENV"
+			t.Setenv(key, "")
+			require.NoError(t, os.Unsetenv(key))
+			if tt.ambient != "" {
+				t.Setenv(key, tt.ambient)
+			}
+
+			// a fake makeself that records the value it received.
+			record := filepath.Join(t.TempDir(), "record")
+			bin := t.TempDir()
+			require.NoError(t, os.WriteFile(
+				filepath.Join(bin, "makeself"),
+				[]byte("#!/bin/sh\nprintf '%s' \"$"+key+"\" > '"+record+"'\n"),
+				0o755,
+			))
+			t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			ctx := makeContext(t)
+			if tt.project != "" {
+				// same as the env pipe does with the configured env.
+				ctx.Env[key] = tt.project
+			}
+			ctx.Config.Makeselfs = append(ctx.Config.Makeselfs, config.Makeself{
+				ID:     "env",
+				Script: "./testdata/setup.sh",
+				Goos:   []string{"linux"},
+				Goarch: []string{"amd64"},
+			})
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			bts, err := os.ReadFile(record)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, string(bts))
+		})
+	}
+}
