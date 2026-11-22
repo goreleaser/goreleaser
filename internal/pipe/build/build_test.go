@@ -847,9 +847,9 @@ func TestBuildOptionsForTarget(t *testing.T) {
 					"windows_amd64",
 				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{{
-					Goos:         "windows",
-					Goarch:       "amd64",
-					BuildDetails: config.BuildDetails{Buildmode: "c-shared"},
+					Goos:      "windows",
+					Goarch:    "amd64",
+					Buildmode: "c-shared",
 				}},
 			},
 			expectedOpts: api.Options{
@@ -867,9 +867,9 @@ func TestBuildOptionsForTarget(t *testing.T) {
 					"windows_amd64",
 				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{{
-					Goos:         "linux",
-					Goarch:       "amd64",
-					BuildDetails: config.BuildDetails{Buildmode: "c-shared"},
+					Goos:      "linux",
+					Goarch:    "amd64",
+					Buildmode: "c-shared",
 				}},
 			},
 			expectedOpts: api.Options{

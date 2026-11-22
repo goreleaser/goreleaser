@@ -2260,9 +2260,9 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 				}
 				if override {
 					build.BuildDetailsOverrides = []config.BuildDetailsOverride{{
-						Goos:         runtime.GOOS,
-						Goarch:       runtime.GOARCH,
-						BuildDetails: config.BuildDetails{Buildmode: mode},
+						Goos:      runtime.GOOS,
+						Goarch:    runtime.GOARCH,
+						Buildmode: mode,
 					}}
 				} else {
 					build.Buildmode = mode
