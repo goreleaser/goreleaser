@@ -281,8 +281,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	// The artifact types depend on the buildmode, which can be overridden.
-	build.Buildmode = details.Buildmode
+	// keep build consistent with the overrides, e.g. the artifact types
+	// depend on the (overridable) buildmode.
+	build.BuildDetails = details
 	mains, allbinaries, err := checkBuild(build, options)
 	if err != nil {
 		return err
