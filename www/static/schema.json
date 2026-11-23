@@ -1797,6 +1797,125 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"HomebrewBottle": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"caveats": {
+						"type": "string"
+					},
+					"install": {
+						"type": "string"
+					},
+					"extra_install": {
+						"type": "string"
+					},
+					"post_install": {
+						"type": "string"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/HomebrewDependency"
+						},
+						"type": "array"
+					},
+					"test": {
+						"type": "string"
+					},
+					"conflicts": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"custom_block": {
+						"type": "string"
+					},
+					"service": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"bottles": {
+						"$ref": "#/$defs/HomebrewBottleSpec"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewBottleFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"src",
+					"dst"
+				]
+			},
+			"HomebrewBottleSpec": {
+				"properties": {
+					"macos": {
+						"type": "string"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/HomebrewBottleFile"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"HomebrewCask": {
 				"properties": {
 					"name": {
@@ -3892,6 +4011,12 @@
 					"homebrew_casks": {
 						"items": {
 							"$ref": "#/$defs/HomebrewCask"
+						},
+						"type": "array"
+					},
+					"homebrew_bottles": {
+						"items": {
+							"$ref": "#/$defs/HomebrewBottle"
 						},
 						"type": "array"
 					},

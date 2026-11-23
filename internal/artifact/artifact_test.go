@@ -1252,6 +1252,7 @@ func TestReleaseUploadableTypes(t *testing.T) {
 		MSIX,
 		Flatpak,
 		SourceRPM,
+		HomebrewBottle,
 		SBOM,
 		PyWheel,
 		PySdist,

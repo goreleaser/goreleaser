@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/bluesky"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/bottle"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
@@ -108,6 +109,7 @@ var Defaulters = []Defaulter{
 	winget.Pipe{},
 	brew.Pipe{},
 	cask.Pipe{},
+	bottle.Archive{},
 	krew.Pipe{},
 	ko.Pipe{},
 	scoop.Pipe{},
