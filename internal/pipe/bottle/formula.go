@@ -297,25 +297,33 @@ func installFor(ctx *context.Context, cfg config.HomebrewBottle) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	seen := map[string]bool{}
-	var lines []string
+	// One go build per binary name, checked against every target it was
+	// bottled for: the formula builds the same way on every platform.
+	var names []string
+	byName := map[string][]*artifact.Artifact{}
 	for _, tag := range slices.Sorted(maps.Keys(byTag)) {
 		for _, bin := range byTag[tag] {
-			if seen[bin.Name] {
-				continue
+			if _, ok := byName[bin.Name]; !ok {
+				names = append(names, bin.Name)
 			}
-			seen[bin.Name] = true
-			l, err := goBuildLines(ctx, bin)
-			if err != nil {
-				return nil, err
-			}
-			lines = append(lines, l...)
+			byName[bin.Name] = append(byName[bin.Name], bin)
 		}
+	}
+	var lines []string
+	for _, name := range names {
+		l, err := goBuildLines(ctx, byName[name])
+		if err != nil {
+			return nil, err
+		}
+		lines = append(lines, l...)
 	}
 	return append(lines, split(extra)...), nil
 }
 
-func goBuildLines(ctx *context.Context, bin *artifact.Artifact) ([]string, error) {
+// goBuildLines returns the go build for one binary name. bins are that
+// binary's artifacts for every bottled target, all from the same build.
+func goBuildLines(ctx *context.Context, bins []*artifact.Artifact) ([]string, error) {
+	bin := bins[0]
 	id := artifact.ExtraOr(*bin, artifact.ExtraID, "")
 	idx := slices.IndexFunc(ctx.Config.Builds, func(b config.Build) bool { return b.ID == id })
 	if idx < 0 {
@@ -325,10 +333,20 @@ func goBuildLines(ctx *context.Context, bin *artifact.Artifact) ([]string, error
 	if build.Builder != "" && build.Builder != "go" {
 		return nil, fmt.Errorf("build %q uses the %s builder; set install", id, build.Builder)
 	}
-
-	ldflags, err := tmpl.New(ctx).WithArtifact(bin).Apply(strings.Join(build.Ldflags, " "))
-	if err != nil {
+	if err := checkReproducible(build); err != nil {
 		return nil, err
+	}
+
+	var ldflags string
+	for i, b := range bins {
+		l, err := tmpl.New(ctx).WithArtifact(b).Apply(strings.Join(build.Ldflags, " "))
+		if err != nil {
+			return nil, err
+		}
+		if i > 0 && l != ldflags {
+			return nil, fmt.Errorf("build %q renders different ldflags per target (%q and %q), which a single formula cannot reproduce; set install", id, ldflags, l)
+		}
+		ldflags = l
 	}
 	main := cmp.Or(build.UnproxiedMain, build.Main, ".")
 	if !strings.HasPrefix(main, ".") && !strings.HasPrefix(main, "/") {
@@ -351,6 +369,43 @@ func goBuildLines(ctx *context.Context, bin *artifact.Artifact) ([]string, error
 		return append(lines, fmt.Sprintf("cd %s do", rubyQuote(dir)), "  "+cmd, "end"), nil
 	}
 	return append(lines, cmd), nil
+}
+
+// checkReproducible fails when the build uses settings the default install
+// block does not carry over, so a source build would silently differ from
+// the bottle. The default install only reproduces main, dir, ldflags,
+// CGO_ENABLED and -trimpath.
+func checkReproducible(build config.Build) error {
+	var unsupported []string
+	for name, set := range map[string]bool{
+		"tags":      len(build.Tags) > 0,
+		"gcflags":   len(build.Gcflags) > 0,
+		"asmflags":  len(build.Asmflags) > 0,
+		"buildmode": build.Buildmode != "",
+		"overrides": len(build.BuildDetailsOverrides) > 0,
+		"tool":      build.Tool != "" && build.Tool != "go",
+		"command":   build.Command != "" && build.Command != "build",
+	} {
+		if set {
+			unsupported = append(unsupported, name)
+		}
+	}
+	// std_go_args always passes -trimpath; -v and -x only print.
+	if slices.ContainsFunc(build.Flags, func(f string) bool {
+		return !slices.Contains([]string{"-trimpath", "-v", "-x"}, f)
+	}) {
+		unsupported = append(unsupported, "flags")
+	}
+	for _, env := range build.Env {
+		if k, _, _ := strings.Cut(env, "="); k != "CGO_ENABLED" {
+			unsupported = append(unsupported, "env "+k)
+		}
+	}
+	if len(unsupported) == 0 {
+		return nil
+	}
+	slices.Sort(unsupported)
+	return fmt.Errorf("build %q sets %s, which the default install block does not reproduce; set install", build.ID, strings.Join(unsupported, ", "))
 }
 
 func render(data templateData) (string, error) {

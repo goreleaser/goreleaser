@@ -4,6 +4,8 @@ linkTitle: Homebrew Bottles
 weight: 91
 ---
 
+{{< g_version "v2.21" >}}
+
 GoReleaser can publish a regular _Homebrew Formula_ that works the way
 `homebrew-core` formulas do:
 
@@ -51,6 +53,14 @@ By default the formula's `install` block rebuilds each bottled binary with
 `go build` and Homebrew's `std_go_args`, reusing the build's `main`, `dir`,
 rendered `ldflags` and `CGO_ENABLED` setting, and `go` is added as a build
 dependency. Set `install` to replace that, for example for non-Go builders.
+
+The default only works when it builds the same binary as the bottle, so
+GoReleaser fails and asks you to set `install` if a build uses anything it
+cannot carry over: `tags`, `gcflags`, `asmflags`, `buildmode`, `overrides`,
+a custom `tool` or `command`, `env` other than `CGO_ENABLED`, `flags` other
+than `-trimpath` (which `std_go_args` already passes), `-v` and `-x`, or
+`ldflags` that render differently per target (for example using `.Os` or
+`.Arch`).
 
 Bottles contain only what GoReleaser packs into them. Files you add with
 `bottles.files` (completions, manpages) are not in the source archive unless

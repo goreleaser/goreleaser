@@ -181,6 +181,56 @@ func TestFormulaCustomInstall(t *testing.T) {
 	require.NotContains(t, out, `depends_on "go"`)
 }
 
+func TestFormulaDefaultInstallNotReproducible(t *testing.T) {
+	for name, tt := range map[string]struct {
+		edit func(*config.Build)
+		want string
+	}{
+		"tags":      {func(b *config.Build) { b.Tags = []string{"netgo"} }, "sets tags"},
+		"flags":     {func(b *config.Build) { b.Flags = []string{"-trimpath", "-mod=vendor"} }, "sets flags"},
+		"gcflags":   {func(b *config.Build) { b.Gcflags = []string{"-N"} }, "sets gcflags"},
+		"asmflags":  {func(b *config.Build) { b.Asmflags = []string{"-D=X"} }, "sets asmflags"},
+		"buildmode": {func(b *config.Build) { b.Buildmode = "pie" }, "sets buildmode"},
+		"env":       {func(b *config.Build) { b.Env = append(b.Env, "GOFLAGS=-trimpath") }, "sets env GOFLAGS"},
+		"overrides": {func(b *config.Build) {
+			b.BuildDetailsOverrides = []config.BuildDetailsOverride{{Goos: "linux"}}
+		}, "sets overrides"},
+		"tool":    {func(b *config.Build) { b.Tool = "go1.22" }, "sets tool"},
+		"command": {func(b *config.Build) { b.Command = "test" }, "sets command"},
+		"several": {func(b *config.Build) {
+			b.Tags = []string{"netgo"}
+			b.Gcflags = []string{"-N"}
+		}, "sets gcflags, tags"},
+		"per-target ldflags": {func(b *config.Build) {
+			b.Ldflags = []string{"-X main.os={{ .Os }}-{{ .Arch }}"}
+		}, "renders different ldflags per target"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := setup(t, baseConfig(), true)
+			tt.edit(&ctx.Config.Builds[0])
+			require.NoError(t, Archive{}.Run(ctx))
+			_, err := buildFormula(ctx, ctx.Config.HomebrewBottles[0], client.NewMock())
+			require.ErrorContains(t, err, tt.want)
+			require.ErrorContains(t, err, "set install")
+
+			// a custom install is the way out.
+			cfg := ctx.Config.HomebrewBottles[0]
+			cfg.Install = `system "make", "install"`
+			_, err = buildFormula(ctx, cfg, client.NewMock())
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestFormulaDefaultInstallAllowedFlags(t *testing.T) {
+	ctx := setup(t, baseConfig(), true)
+	ctx.Config.Builds[0].Flags = []string{"-trimpath", "-v", "-x"}
+	require.NoError(t, Archive{}.Run(ctx))
+	out, err := buildFormula(ctx, ctx.Config.HomebrewBottles[0], client.NewMock())
+	require.NoError(t, err)
+	require.Contains(t, out, `system "go", "build", *std_go_args(`)
+}
+
 func TestFormulaRequiresSource(t *testing.T) {
 	ctx := setup(t, baseConfig(), false)
 	require.NoError(t, Archive{}.Run(ctx))
