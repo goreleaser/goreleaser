@@ -25,7 +25,7 @@ In fields that support templates, these fields are usually available:
 | `.Commit`          | the git commit hash (deprecated)                                                                           |
 | `.CommitDate`      | the UTC commit date in RFC 3339 format                                                                     |
 | `.CommitTimestamp` | the UTC commit date in Unix format                                                                         |
-| `.GitURL`          | the git remote url                                                                                         |
+| `.GitURL`          | the git remote url (empty if the repository has no remotes)                                                |
 | `.GitTreeState`    | either 'clean' or 'dirty'                                                                                  |
 | `.IsGitClean`      | whether or not current git state is clean                                                                  |
 | `.IsGitDirty`      | whether or not current git state is dirty                                                                  |
