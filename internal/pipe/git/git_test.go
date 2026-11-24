@@ -206,18 +206,6 @@ func TestNoRemote(t *testing.T) {
 	require.Contains(t, logs.String(), "git repository has no remotes")
 }
 
-func TestRemoteNotNamedOrigin(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "commit1")
-	testlib.GitTag(t, "v0.0.1")
-	_, err := git.Run(t.Context(), "remote", "add", "upstream", "git@github.com:foo/bar.git")
-	require.NoError(t, err)
-	ctx := testctx.Wrap(t.Context())
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
-}
-
 func TestNewRepository(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

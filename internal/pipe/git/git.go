@@ -366,20 +366,20 @@ func previousTagSha(ctx *context.Context, current string, excluding []string) (s
 	return git.Clean(git.Run(ctx, "rev-list", "-n1", tag))
 }
 
-// getURL returns the URL of the default remote, or an empty string if the
-// repository has no remotes, e.g. a CI checkout that only fetched a commit.
-// Pipes that need the remote (e.g. the SCM release when the repository is not
-// set in the config) look it up themselves, and fail there.
+// getURL returns the default remote's URL, or "" if the repository has no
+// remotes (e.g. a CI checkout that only fetched a commit).
 func getURL(ctx *context.Context) (string, error) {
-	remotes, err := git.CleanAllLines(git.Run(ctx, "remote"))
-	if err != nil {
-		return "", err
+	remoteURL, err := git.Clean(git.Run(ctx, "ls-remote", "--get-url"))
+	if err == nil {
+		return remoteURL, nil
 	}
-	if len(remotes) == 0 {
+	// Only the failing path pays for telling "no remotes" apart from other
+	// errors, without matching git's (translatable) error message.
+	if remotes, rerr := git.CleanAllLines(git.Run(ctx, "remote")); rerr == nil && len(remotes) == 0 {
 		log.Warn("git repository has no remotes, .GitURL will be empty")
 		return "", nil
 	}
-	return git.Clean(git.Run(ctx, "ls-remote", "--get-url"))
+	return "", err
 }
 
 func getFromEnv(s string) func() ([]string, error) {
