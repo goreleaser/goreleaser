@@ -152,8 +152,7 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Bruno P](https://brunopaz.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Calculators](https://calculator.now/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Feetpedia](https://feetpedia.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
-- [Jared Allard](https://git.rgst.io/jaredallard?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
-- [Love My Puppy](https://lovemypuppy.store/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
+- [Love My Puppy](https://pawspurrfection.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Network Tools](https://gf.dev/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [OhMyFacts](https://ohmyfacts.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [TeknikGeek](https://www.teknikgeek.se/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
@@ -186,11 +185,11 @@ These are the companies and individuals that help make GoReleaser happen:
 - [Kazuma Watanabe](https://sil.hatenablog.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
 - [Love You](https://love.you/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Ethan Troy](https://ethantroy.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github)
+- [INSTABOOST.COM](https://instaboost.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [buonanotte immagini](https://buonanotteimmagini.org/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [buongiorno immagini](https://buongiornoimmagine.net/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [BuyTikTokFollowers.co](https://buytiktokfollowers.co/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 - [Kredi](https://kredibankare.al/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
-- [Paw Pampering](https://pawpampering.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective)
 
 
 <!-- sponsors:end -->
