@@ -102,6 +102,8 @@ nfpms:
       - zsh
 
     # Packages it provides. (overridable)
+    #
+    # Templates: allowed.
     provides:
       - bar
 
