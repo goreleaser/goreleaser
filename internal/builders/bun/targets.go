@@ -55,7 +55,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	t := Target{
 		Target: "bun-" + target,
 		Os:     parts[0],
-		Arch:   parts[1],
+		Arch:   convertToGoarch(parts[1]),
 	}
 
 	if len(parts) > 2 {
