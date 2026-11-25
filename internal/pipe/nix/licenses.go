@@ -125,6 +125,7 @@ var validLicenses = []string{
 	"ffsl",
 	"fontException",
 	"fraunhofer-fdk",
+	"fraunhofer-fdk-mpeg-h",
 	"free",
 	"fsl11Mit",
 	"fsl11Asl20",
