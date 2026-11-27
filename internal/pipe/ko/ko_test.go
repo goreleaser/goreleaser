@@ -90,6 +90,69 @@ func TestDefault(t *testing.T) {
 	}, ctx.Config.Kos[0])
 }
 
+func TestGoToolchain(t *testing.T) {
+	for name, tt := range map[string]struct {
+		tool     string
+		buildEnv []string
+		koEnv    []string
+		want     []string
+	}{
+		"default tool":      {tool: "", want: nil},
+		"go":                {tool: "go", want: nil},
+		"custom binary":     {tool: "/opt/mygo/bin/go", want: nil},
+		"templated":         {tool: "{{ .Env.GOBIN }}", want: nil},
+		"versioned":         {tool: "go1.25.3", want: []string{"GOTOOLCHAIN=go1.25.3+auto"}},
+		"language version":  {tool: "go1.26", want: nil},
+		"old minor":         {tool: "go1.20", want: []string{"GOTOOLCHAIN=go1.20+auto"}},
+		"release candidate": {tool: "go1.26rc1", want: []string{"GOTOOLCHAIN=go1.26rc1+auto"}},
+		"versioned path":    {tool: "/home/me/go/bin/go1.25.3", want: []string{"GOTOOLCHAIN=go1.25.3+auto"}},
+		"inherited env": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"FOO=bar"},
+			want:     []string{"FOO=bar", "GOTOOLCHAIN=go1.25.3+auto"},
+		},
+		"ko env": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"FOO=bar"},
+			koEnv:    []string{"BAR=foo"},
+			want:     []string{"BAR=foo", "GOTOOLCHAIN=go1.25.3+auto"},
+		},
+		"explicit toolchain": {
+			tool:  "go1.25.3",
+			koEnv: []string{"GOTOOLCHAIN=go1.26.0"},
+			want:  []string{"GOTOOLCHAIN=go1.26.0"},
+		},
+		"explicit templated toolchain": {
+			tool:  "go1.25.3",
+			koEnv: []string{"{{ if .IsSnapshot }}GOTOOLCHAIN=go1.26.0{{ else }}GOTOOLCHAIN=local{{ end }}"},
+			want:  []string{"GOTOOLCHAIN=local"},
+		},
+		"inherited templated toolchain": {
+			tool:     "go1.25.3",
+			buildEnv: []string{"GOTOOLCHAIN={{ .Env.TOOLCHAIN }}"},
+			want:     []string{"GOTOOLCHAIN=local"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				ProjectName: "test",
+				Builds: []config.Build{
+					{ID: "test", Tool: tt.tool, Env: tt.buildEnv},
+				},
+				Kos: []config.Ko{{
+					WorkingDir:   "./testdata/app/",
+					Repositories: []string{registry1 + "goreleasertest/testapp"},
+					Env:          tt.koEnv,
+				}},
+			}, testctx.WithEnv(map[string]string{"TOOLCHAIN": "local"}))
+			require.NoError(t, Pipe{}.Default(ctx))
+			opts, err := buildBuildOptions(ctx, ctx.Config.Kos[0])
+			require.NoError(t, err)
+			require.Equal(t, tt.want, opts.env)
+		})
+	}
+}
+
 func TestDefaultCycloneDX(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
