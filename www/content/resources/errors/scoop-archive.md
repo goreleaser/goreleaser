@@ -44,6 +44,10 @@ scoops:
     # ...
 ```
 
+The same applies to `goarm64` and `go386` variants of the same GOARCH (e.g.
+`goarm64: [v8.0, v9.0]`): a Scoop manifest has a single `arm64` (and a single
+`32bit`) entry, so use `ids` to choose which archives go into each manifest.
+
 ## Footnotes
 
 Also notice the `goamd64` option: it must match the one from your build.

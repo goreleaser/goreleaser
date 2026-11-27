@@ -126,6 +126,88 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
+			"multiple_goarm64_variants",
+			args{
+				testctx.WrapWithCfg(t.Context(),
+					config.Project{
+						Dist:        t.TempDir(),
+						ProjectName: "multi-arm64",
+						Scoops: []config.Scoop{{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Directory:   "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						}},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1")),
+
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file, Extra: map[string]any{artifact.ExtraBinaries: []string{"foo"}}},
+				{Name: "foo_1.0.1_windows_arm64v8.0.tar.gz", Goos: "windows", Goarch: "arm64", Goarm64: "v8.0", Path: file, Extra: map[string]any{artifact.ExtraBinaries: []string{"foo"}}},
+				{Name: "foo_1.0.1_windows_arm64v9.0.tar.gz", Goos: "windows", Goarch: "arm64", Goarm64: "v9.0", Path: file, Extra: map[string]any{artifact.ExtraBinaries: []string{"foo"}}},
+			},
+			func(tb testing.TB, err error) {
+				tb.Helper()
+				require.EqualError(tb, err, ErrIncorrectArchiveCount{
+					goamd64: "v1",
+					archives: []*artifact.Artifact{
+						{Name: "foo_1.0.1_windows_amd64.tar.gz"},
+						{Name: "foo_1.0.1_windows_arm64v8.0.tar.gz"},
+						{Name: "foo_1.0.1_windows_arm64v9.0.tar.gz"},
+					},
+				}.Error())
+			},
+			nil,
+			noAssertions,
+		},
+		{
+			"multiple_go386_variants",
+			args{
+				testctx.WrapWithCfg(t.Context(),
+					config.Project{
+						Dist:        t.TempDir(),
+						ProjectName: "multi-386",
+						Scoops: []config.Scoop{{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Directory:   "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						}},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1")),
+
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_386_sse2.tar.gz", Goos: "windows", Goarch: "386", Go386: "sse2", Path: file, Extra: map[string]any{artifact.ExtraBinaries: []string{"foo"}}},
+				{Name: "foo_1.0.1_windows_386_softfloat.tar.gz", Goos: "windows", Goarch: "386", Go386: "softfloat", Path: file, Extra: map[string]any{artifact.ExtraBinaries: []string{"foo"}}},
+			},
+			func(tb testing.TB, err error) {
+				tb.Helper()
+				require.EqualError(tb, err, ErrIncorrectArchiveCount{
+					goamd64: "v1",
+					archives: []*artifact.Artifact{
+						{Name: "foo_1.0.1_windows_386_sse2.tar.gz"},
+						{Name: "foo_1.0.1_windows_386_softfloat.tar.gz"},
+					},
+				}.Error())
+			},
+			nil,
+			noAssertions,
+		},
+		{
 			"multiple_binaries",
 			args{
 				testctx.WrapWithCfg(t.Context(),

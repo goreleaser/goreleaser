@@ -131,11 +131,15 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplat
 		filters = append(filters, artifact.ByIDs(scoop.IDs...))
 	}
 
-	filtered := ctx.Artifacts.Filter(artifact.And(filters...))
-	archives := filtered.List()
-	for _, platArchives := range filtered.GroupByPlatform() {
-		// there might be multiple archives, but only of for each platform
-		if len(platArchives) != 1 {
+	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	// there might be multiple archives, but only one for each scoop
+	// architecture (32bit, 64bit, arm64), so count them by goarch: grouping by
+	// platform would tell goarm64 and go386 variants apart, and the manifest
+	// would then silently keep only one of them.
+	archCounts := map[string]int{}
+	for _, archive := range archives {
+		archCounts[archive.Goarch]++
+		if archCounts[archive.Goarch] > 1 {
 			return ErrIncorrectArchiveCount{scoop.Goamd64, scoop.IDs, archives}
 		}
 	}
