@@ -1,6 +1,7 @@
 package artifact
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/assert"
@@ -58,6 +60,19 @@ func TestAdd(t *testing.T) {
 	binaries := artifacts.Filter(ByType(UploadableBinary)).List()
 	require.Len(t, binaries, 1)
 	require.Equal(t, "whitespaces", binaries[0].Name)
+}
+
+func TestAddUploadableBinaryDoesNotWarnForSourceBinary(t *testing.T) {
+	var out bytes.Buffer
+	previous := log.Log
+	log.Log = log.New(&out)
+	t.Cleanup(func() { log.Log = previous })
+
+	artifacts := New()
+	artifacts.Add(&Artifact{Name: "foo", Type: Binary, Path: "dist/foo"})
+	artifacts.Add(&Artifact{Name: "foo", Type: UploadableBinary, Path: "dist/foo"})
+
+	require.NotContains(t, out.String(), "artifact already present in the list")
 }
 
 func TestFilter(t *testing.T) {

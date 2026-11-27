@@ -579,7 +579,7 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 	a.Path = filepath.ToSlash(a.Path)
 	if a.Type.isUploadable() &&
 		slices.ContainsFunc(artifacts.items, func(b *Artifact) bool {
-			return a.Name == b.Name
+			return a.Name == b.Name && b.Type.isUploadable()
 		}) {
 		log.WithField("name", a.Name).
 			WithField("details", `this might cause errors when publishing
