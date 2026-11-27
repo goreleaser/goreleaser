@@ -2334,6 +2334,43 @@ func TestDebArchVariant(t *testing.T) {
 	}, got)
 }
 
+func TestProvidesTemplating(t *testing.T) {
+	dist := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	require.NoError(t, os.WriteFile(binPath, []byte("binary"), 0o755))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:          "someid",
+				Maintainer:  "me@me",
+				IDs:         []string{"default"},
+				Formats:     []string{"deb"},
+				PackageName: "foo",
+				Provides:    []string{"bar (= {{ .Version }})"},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra:  map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 1)
+	require.Equal(t, "bar (= 1.0.0)", debControlField(t, packages[0].Path, "Provides"))
+}
+
 func TestRunPipeMSIX(t *testing.T) {
 	dist := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))

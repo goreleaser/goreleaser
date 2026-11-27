@@ -390,6 +390,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		return err
 	}
 
+	provides, err := t.Slice(overridden.Provides)
+	if err != nil {
+		return err
+	}
+
 	libdirs := config.Libdirs{}
 
 	libdirs.Header, err = t.Apply(fpm.Libdirs.Header)
@@ -491,7 +496,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Conflicts:       overridden.Conflicts,
 		Depends:         overridden.Dependencies,
 		Recommends:      overridden.Recommends,
-		Provides:        overridden.Provides,
+		Provides:        provides,
 		Suggests:        overridden.Suggests,
 		Replaces:        overridden.Replaces,
 		Contents:        contents,
