@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -23,12 +24,35 @@ func TestAllowConcurrentBuilds(t *testing.T) {
 	require.False(t, Default.AllowConcurrentBuilds())
 }
 
+func TestArchTemplateField(t *testing.T) {
+	// the .Arch template field must expose the Go arch (amd64), like the
+	// other builders do, and not bun's own name for it (x64). It's what gets
+	// templated into binary names and build hooks before the artifact exists.
+	for target, want := range map[string]string{
+		"linux-x64-modern":      "amd64",
+		"bun-windows-x64":       "amd64",
+		"darwin-arm64":          "arm64",
+		"bun-linux-arm64-musl":  "arm64",
+		"linux-x64-musl-modern": "amd64",
+	} {
+		t.Run(target, func(t *testing.T) {
+			parsed, err := Default.Parse(target)
+			require.NoError(t, err)
+			rendered, err := tmpl.New(testctx.Wrap(t.Context())).
+				WithBuildOptions(api.Options{Target: parsed}).
+				Apply("{{ .Arch }}")
+			require.NoError(t, err)
+			require.Equal(t, want, rendered)
+		})
+	}
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"linux-x64-modern": {
 			Target: "bun-linux-x64-modern",
 			Os:     "linux",
-			Arch:   "x64",
+			Arch:   "amd64",
 			Type:   "modern",
 		},
 		"darwin-arm64": {
@@ -56,14 +80,14 @@ func TestParse(t *testing.T) {
 		"bun-linux-x64-musl-modern": {
 			Target: "bun-linux-x64-musl-modern",
 			Os:     "linux",
-			Arch:   "x64",
+			Arch:   "amd64",
 			Abi:    "musl",
 			Type:   "modern",
 		},
 		"linux-x64-musl-modern": {
 			Target: "bun-linux-x64-musl-modern",
 			Os:     "linux",
-			Arch:   "x64",
+			Arch:   "amd64",
 			Abi:    "musl",
 			Type:   "modern",
 		},
