@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -57,7 +56,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 				return nil, err
 			}
 			dst = filepath.ToSlash(dst)
-			if !isLocal(dst) {
+			if !filepath.IsLocal(dst) {
 				return nil, fmt.Errorf("invalid destination %q for %q: must be a relative path inside the archive", dst, file)
 			}
 			result = append(result, config.File{
@@ -113,14 +112,6 @@ func unique(in []config.File) []config.File {
 	}
 
 	return result
-}
-
-// isLocal reports whether the slash-separated name stays inside the archive
-// root. filepath.ToSlash only handles the OS separator, but the archive pipe
-// turns every backslash into a slash when writing entry names, so they must be
-// treated as separators on every OS.
-func isLocal(name string) bool {
-	return filepath.IsLocal(strings.ReplaceAll(name, `\`, "/"))
 }
 
 func destinationFor(f config.File, prefix, path string) (string, error) {
