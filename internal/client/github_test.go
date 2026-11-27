@@ -19,6 +19,7 @@ import (
 
 	"github.com/google/go-github/v93/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -422,6 +423,86 @@ func TestGitHubReleaseNotes(t *testing.T) {
 	log, err := client.GenerateReleaseNotes(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
 	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
+}
+
+func TestGitHubReleaseNotesRequest(t *testing.T) {
+	t.Parallel()
+	release := config.Repo{Owner: "someone", Name: "something"}
+	for name, tt := range map[string]struct {
+		release     config.Release
+		changelog   config.Changelog
+		opts        []testctx.Opt
+		prev        string
+		want        github.GenerateNotesRequest
+		wantTmplErr bool
+	}{
+		"defaults": {
+			release: config.Release{GitHub: release},
+			prev:    "v1.0.0",
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0", PreviousTagName: new("v1.0.0")},
+		},
+		"first release": {
+			release: config.Release{GitHub: release},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"target commitish": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Env.SHA }}"},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0", TargetCommitish: new("abc123")},
+		},
+		"target commitish with different casing": {
+			release: config.Release{
+				GitHub:          config.Repo{Owner: "SomeOne", Name: "SomeThing"},
+				TargetCommitish: "abc123",
+			},
+			want: github.GenerateNotesRequest{TagName: "v1.1.0", TargetCommitish: new("abc123")},
+		},
+		"target commitish of another repository": {
+			release: config.Release{
+				GitHub:          config.Repo{Owner: "someone", Name: "else"},
+				TargetCommitish: "abc123",
+			},
+			want: github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"target commitish with publishing skipped": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
+			opts:    []testctx.Opt{testctx.Skip(skips.Publish)},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"target commitish with release disabled": {
+			release: config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}", Disable: "true"},
+			want:    github.GenerateNotesRequest{TagName: "v1.1.0"},
+		},
+		"configuration file path": {
+			release:   config.Release{GitHub: release},
+			changelog: config.Changelog{GitHubNative: config.ChangelogGitHubNative{ConfigurationFilePath: ".github/{{ .Env.NOTES }}.yml"}},
+			want:      github.GenerateNotesRequest{TagName: "v1.1.0", ConfigurationFilePath: new(".github/notes.yml")},
+		},
+		"invalid target commitish template": {
+			release:     config.Release{GitHub: release, TargetCommitish: "{{ .Nope }}"},
+			wantTmplErr: true,
+		},
+		"invalid configuration file path template": {
+			release:     config.Release{GitHub: release},
+			changelog:   config.Changelog{GitHubNative: config.ChangelogGitHubNative{ConfigurationFilePath: "{{ .Nope }}"}},
+			wantTmplErr: true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Release:   tt.release,
+				Changelog: tt.changelog,
+			}, append(tt.opts, testctx.WithEnv(map[string]string{"SHA": "abc123", "NOTES": "notes"}))...)
+
+			req, err := releaseNotesRequest(ctx, Repo{Owner: "someone", Name: "something"}, tt.prev, "v1.1.0")
+			if tt.wantTmplErr {
+				testlib.RequireTemplateError(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, req)
+		})
+	}
 }
 
 func TestGitHubReleaseNotesError(t *testing.T) {
