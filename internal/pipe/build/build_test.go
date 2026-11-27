@@ -838,6 +838,46 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Path: filepath.Join(tmpDir, "testid_linux_amd64_v3", "testbinary"),
 			},
 		},
+		{
+			name: "with overridden buildmode",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"windows_amd64",
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{{
+					Goos:      "windows",
+					Goarch:    "amd64",
+					Buildmode: "c-shared",
+				}},
+			},
+			expectedOpts: api.Options{
+				Name: "testbinary.dll",
+				Path: filepath.Join(tmpDir, "testid_windows_amd64_v1", "testbinary.dll"),
+				Ext:  ".dll",
+			},
+		},
+		{
+			name: "with buildmode overridden for another target",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"windows_amd64",
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{{
+					Goos:      "linux",
+					Goarch:    "amd64",
+					Buildmode: "c-shared",
+				}},
+			},
+			expectedOpts: api.Options{
+				Name: "testbinary.exe",
+				Path: filepath.Join(tmpDir, "testid_windows_amd64_v1", "testbinary.exe"),
+				Ext:  ".exe",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

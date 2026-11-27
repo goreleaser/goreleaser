@@ -332,6 +332,10 @@ builds:
           - foobaz
         env:
           - CGO_ENABLED=1
+        # Build mode for this target, e.g. to only build a shared library on some
+        # targets. An empty value keeps the build's 'buildmode'.
+        # {{< g_inline_version "v2.21-unreleased" >}}
+        buildmode: c-shared
 
     # Set a specific go binary to use when building.
     # It is safe to ignore this option in most cases.
@@ -542,6 +546,23 @@ GoReleaser will:
 
 - set the correct file extension for the target OS.
 - package the generated header file (`.h`) in the release bundle.
+
+The `buildmode` can also be set per target with `overrides`
+{{< g_inline_version "v2.21-unreleased" >}}, e.g. to only build a shared
+library for Windows.
+
+> [!NOTE]
+>
+> The outputs of an overridden `c-shared` or `c-archive` build mode are
+> libraries, just like with the top-level `buildmode`. This means that:
+>
+> - Targets using the overridden build mode also produce a header file, so
+>   their archives contain a different number of files than the other targets.
+>   Set `allow_different_binary_count: true` in your
+>   [archives](/customization/package/archives/) configuration, otherwise the
+>   archive step will fail.
+> - Steps that only handle binaries, such as `binary_signs`, `upx` and
+>   `universal_binaries`, will not pick them up.
 
 Example usage:
 

@@ -241,7 +241,13 @@ func (w withOutputPipe) String() string {
 }
 
 func (w withOutputPipe) Run(ctx *context.Context) error {
-	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	// libraries (c-shared, c-archive) count as the binary, but their
+	// headers do not.
+	bins := ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.Binary,
+		artifact.CShared,
+		artifact.CArchive,
+	)).List()
 	if len(bins) == 0 {
 		return errors.New("no binary found")
 	}

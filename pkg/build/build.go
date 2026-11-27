@@ -95,3 +95,10 @@ type ConcurrentBuilder interface {
 type TargetFixer interface {
 	FixTarget(target string) string
 }
+
+// DetailsOverrider can be implemented by builders that allow overriding the
+// build details per target, so the details that apply to a target (e.g. the
+// buildmode, which defines the file extension) are known before it is built.
+type DetailsOverrider interface {
+	DetailsFor(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error)
+}

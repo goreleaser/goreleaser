@@ -2242,53 +2242,63 @@ func TestBuildCgoLibraryRegistersGeneratedHeader(t *testing.T) {
 		"c-archive": cArchiveExt(),
 		"c-shared":  cSharedExt(),
 	} {
-		t.Run(mode, func(t *testing.T) {
-			folder := t.TempDir()
-			writeGoMod(t, folder, "github.com/foo/bar")
-			writeCExportMain(t, folder)
+		for _, override := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/override=%t", mode, override), func(t *testing.T) {
+				folder := t.TempDir()
+				writeGoMod(t, folder, "github.com/foo/bar")
+				writeCExportMain(t, folder)
 
-			target := mustParse(t, runtimeTarget)
-			build := config.Build{
-				ID:           "cexport",
-				Dir:          folder,
-				Main:         ".",
-				Tool:         "go",
-				Command:      "build",
-				Buildmode:    mode,
-				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				Env:          []string{"CGO_ENABLED=1"},
-			}
-			options := api.Options{
-				Target: target,
-				Name:   "cexport" + ext,
-				Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
-				Ext:    ext,
-			}
-			require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
+				target := mustParse(t, runtimeTarget)
+				build := config.Build{
+					ID:           "cexport",
+					Dir:          folder,
+					Main:         ".",
+					Tool:         "go",
+					Command:      "build",
+					ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+					Env:          []string{"CGO_ENABLED=1"},
+				}
+				if override {
+					build.BuildDetailsOverrides = []config.BuildDetailsOverride{{
+						Goos:      runtime.GOOS,
+						Goarch:    runtime.GOARCH,
+						Buildmode: mode,
+					}}
+				} else {
+					build.Buildmode = mode
+				}
+				options := api.Options{
+					Target: target,
+					Name:   "cexport" + ext,
+					Path:   filepath.Join(folder, "dist", runtimeTarget, "cexport"+ext),
+					Ext:    ext,
+				}
+				require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755))
 
-			ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
-			require.NoError(t, Default.Build(ctx, build, options))
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{Builds: []config.Build{build}})
+				require.NoError(t, Default.Build(ctx, build, options))
 
-			libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
-			require.Len(t, libraries, 1)
-			require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
+				libraries := ctx.Artifacts.Filter(artifact.ByType(artifactType(target, mode))).List()
+				require.Len(t, libraries, 1)
+				require.Equal(t, filepath.ToSlash(options.Path), libraries[0].Path)
 
-			headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
-			require.Len(t, headers, 1)
-			require.Equal(t, filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, "cexport.h")), headers[0].Path)
-			require.Equal(t, "cexport.h", headers[0].Name)
-			require.Equal(t, target.Target, headers[0].Target)
-			require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
-			require.Equal(t, "cexport.h", headers[0].Extra[artifact.ExtraBinary])
-			require.Equal(t, ".h", headers[0].Extra[artifact.ExtraExt])
+				headers := ctx.Artifacts.Filter(artifact.ByType(artifact.Header)).List()
+				require.Len(t, headers, 1)
+				require.Equal(t, filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, "cexport.h")), headers[0].Path)
+				require.Equal(t, "cexport.h", headers[0].Name)
+				require.Equal(t, target.Target, headers[0].Target)
+				require.Equal(t, build.ID, headers[0].Extra[artifact.ExtraID])
+				require.Equal(t, "cexport.h", headers[0].Extra[artifact.ExtraBinary])
+				require.Equal(t, ".h", headers[0].Extra[artifact.ExtraExt])
 
-			// headers go into the archives, so they need the same mod
-			// timestamp the library gets, otherwise archives stop being
-			// reproducible.
-			info, err := os.Stat(headers[0].Path)
-			require.NoError(t, err)
-			require.Equal(t, modTime, info.ModTime().UTC())
-		})
+				// headers go into the archives, so they need the same mod
+				// timestamp the library gets, otherwise archives stop being
+				// reproducible.
+				info, err := os.Stat(headers[0].Path)
+				require.NoError(t, err)
+				require.Equal(t, modTime, info.ModTime().UTC())
+			})
+		}
 	}
 }
 
