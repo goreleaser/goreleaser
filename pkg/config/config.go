@@ -214,6 +214,53 @@ type Homebrew struct {
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
 }
 
+// HomebrewBottle contains the homebrew_bottles section.
+//
+// It generates a regular Homebrew formula that builds from the release's
+// source archive, plus a bottle block that points at bottles built from the
+// release's binaries, so users get prebuilt binaries by default and
+// `brew install --build-from-source` still works.
+type HomebrewBottle struct {
+	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
+	Repository            RepoRef              `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor         `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Directory             string               `yaml:"directory,omitempty" json:"directory,omitempty"`
+	Description           string               `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string               `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string               `yaml:"license,omitempty" json:"license,omitempty"`
+	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
+	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
+	ExtraInstall          string               `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
+	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
+	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Test                  string               `yaml:"test,omitempty" json:"test,omitempty"`
+	Conflicts             []string             `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	CustomBlock           string               `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
+	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
+	SkipUpload            string               `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string               `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	IDs                   []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Bottles               HomebrewBottleSpec   `yaml:"bottles,omitempty" json:"bottles,omitempty"`
+}
+
+// HomebrewBottleSpec configures the bottles of a homebrew_bottles formula.
+type HomebrewBottleSpec struct {
+	// MacOS is the oldest macOS codename the bottles are tagged for (e.g.
+	// monterey). Homebrew pours a bottle on that release and every newer one.
+	MacOS string `yaml:"macos,omitempty" json:"macos,omitempty"`
+	// Files are extra files to put in the bottle, relative to the keg.
+	Files []HomebrewBottleFile `yaml:"files,omitempty" json:"files,omitempty"`
+}
+
+// HomebrewBottleFile is an extra file packed into a bottle.
+type HomebrewBottleFile struct {
+	Src string `yaml:"src" json:"src"`
+	// Dst is relative to the keg, e.g. share/zsh/site-functions/_foo.
+	Dst string `yaml:"dst" json:"dst"`
+}
+
 // HomebrewCask contains the homebrew_casks section.
 type HomebrewCask struct {
 	Name                  string                   `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1401,6 +1448,7 @@ type Project struct {
 	Release           Release           `yaml:"release,omitempty" json:"release,omitempty"`
 	Milestones        []Milestone       `yaml:"milestones,omitempty" json:"milestones,omitempty"`
 	Casks             []HomebrewCask    `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
+	HomebrewBottles   []HomebrewBottle  `yaml:"homebrew_bottles,omitempty" json:"homebrew_bottles,omitempty"`
 	Nix               []Nix             `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget            []Winget          `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs              []AUR             `yaml:"aurs,omitempty" json:"aurs,omitempty"`

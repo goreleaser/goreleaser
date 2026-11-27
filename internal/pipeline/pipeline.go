@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/before"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/bottle"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
@@ -128,6 +129,8 @@ var Pipeline = append(
 	archive.Pipe{},
 	// archive the source code using git-archive
 	sourcearchive.Pipe{},
+	// homebrew bottles (before checksums, so they get checksummed and signed)
+	bottle.Archive{},
 	// archive via fpm (deb, rpm) using "native" go impl
 	nfpm.Pipe{},
 	// create source RPMs
@@ -156,6 +159,8 @@ var Pipeline = append(
 	brew.Pipe{},
 	// homebrew cask
 	cask.Pipe{},
+	// homebrew formula that pours bottles and builds from source
+	bottle.Formula{},
 	// krew plugins
 	krew.Pipe{},
 	// create scoop buckets
