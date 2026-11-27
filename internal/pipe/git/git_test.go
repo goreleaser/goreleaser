@@ -192,8 +192,18 @@ func TestNoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
+
+	var logs bytes.Buffer
+	previousLog := log.Log
+	log.Log = log.New(&logs)
+	t.Cleanup(func() { log.Log = previousLog })
+
 	ctx := testctx.Wrap(t.Context())
-	require.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Empty(t, ctx.Git.URL)
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.NotEmpty(t, ctx.Git.FullCommit)
+	require.Contains(t, logs.String(), "git repository has no remotes")
 }
 
 func TestNewRepository(t *testing.T) {
