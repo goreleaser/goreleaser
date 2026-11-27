@@ -251,5 +251,12 @@
     "node-v27.0.0-alpha.0.1.1-linux-x64.tar.gz": "42ac750e1601cfc41399c5cebf03520d32cf7af3c8d210b14aaf7d2d5ec85f3f",
     "win-arm64/node.exe": "8418295cb381ef700e6cc81e02592e64fb9fc2ed54bfb31f2e1fbcb7a5b3d2da",
     "win-x64/node.exe": "ea6ee30722f37473fb95d4b252c157431aabc77315769f3c0b4d3f536dfc2ffb"
+  },
+  "v27.0.0-alpha.0.2.0": {
+    "node-v27.0.0-alpha.0.2.0-darwin-arm64.tar.gz": "6cdb0bb6197e61d456b6161e259c5fe534c3ef516fbbb9a24eb86a59ba132e20",
+    "node-v27.0.0-alpha.0.2.0-linux-arm64.tar.gz": "844ae340fdcd1acc8942368d2e2adf745ac86b0c21a308cc00ff7c93b130a215",
+    "node-v27.0.0-alpha.0.2.0-linux-x64.tar.gz": "98fbc9921291f969514c2a37a0b9b5bd84dcb84eb9a6f3303292a1ca3fbcc1ed",
+    "win-arm64/node.exe": "19a0cf6152369f523d0be0f84fc1fa70c88ecd6b55ce77efd7e8d462ce847e33",
+    "win-x64/node.exe": "c095f56cf42078df0af081cc426643b1812c52462e6c83deae81857d8d6e6087"
   }
 }
