@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -123,6 +124,33 @@ func TestSkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
+	})
+}
+
+func TestPublishSkipSCMRelease(t *testing.T) {
+	run := func(tb testing.TB, opts ...testctx.Opt) (*testPublisher, error) {
+		tb.Helper()
+		ctx := testctx.Wrap(tb.Context(), opts...)
+		other := &testPublisher{}
+		err := Pipe{
+			pipeline: []Publisher{
+				release.Pipe{},
+				other,
+			},
+		}.Run(ctx)
+		return other, err
+	}
+
+	t.Run("skip release", func(t *testing.T) {
+		other, err := run(t, testctx.Skip(skips.SCMRelease))
+		require.NoError(t, err)
+		require.True(t, other.ran)
+	})
+
+	t.Run("no skip", func(t *testing.T) {
+		other, err := run(t)
+		require.ErrorContains(t, err, "scm releases: failed to publish artifacts")
+		require.False(t, other.ran)
 	})
 }
 
