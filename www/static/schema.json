@@ -2376,6 +2376,9 @@
 						},
 						"type": "array"
 					},
+					"trimpath": {
+						"type": "boolean"
+					},
 					"repository": {
 						"type": "string"
 					}
