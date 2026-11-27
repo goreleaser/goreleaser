@@ -388,7 +388,7 @@ type EnhancedArchive struct {
 
 // Add adds a file.
 func (d EnhancedArchive) Add(f config.File) error {
-	name := strings.ReplaceAll(filepath.Join(d.wrap, f.Destination), "\\", "/")
+	name := filepath.ToSlash(filepath.Join(d.wrap, f.Destination))
 	log.Debugf("adding file: %s as %s", f.Source, name)
 	ff := config.File{
 		Source:      f.Source,

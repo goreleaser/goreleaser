@@ -140,6 +140,8 @@ archives:
       - templates/**/*
       # a more complete example, check the globbing deep dive below
       - src: "*.md"
+        # Must be a relative path inside the archive: absolute paths and
+        # paths that escape the archive root (`..`) are rejected.
         dst: docs
 
         # Strip parent directories when adding files to the archive.

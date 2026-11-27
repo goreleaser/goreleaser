@@ -1,6 +1,7 @@
 package archivefiles
 
 import (
+	"runtime"
 	"testing"
 	"time"
 
@@ -177,6 +178,49 @@ func TestEval(t *testing.T) {
 		require.Equal(t, []config.File{
 			{Source: "testdata/a/b/a.txt", Destination: "testdata/a/b/a.txt"},
 			{Source: "testdata/a/b/c/d.txt", Destination: "testdata/a/b/c/d.txt"},
+		}, result)
+	})
+
+	for name, f := range map[string]config.File{
+		"parent destination":   {Source: "./testdata/a/b/a.txt", Destination: "../foo"},
+		"nested parent":        {Source: "./testdata/a/b/a.txt", Destination: "foo/../../bar"},
+		"absolute destination": {Source: "./testdata/a/b/a.txt", Destination: "/foo/bar"},
+		"strip parent":         {Source: "./testdata/a/b/a.txt", Destination: "../foo", StripParent: true},
+		"parent source":        {Source: "../archivefiles/testdata/a/b/a.txt"},
+	} {
+		t.Run("invalid destination/"+name, func(t *testing.T) {
+			_, err := Eval(tmpl, []config.File{f})
+			require.ErrorContains(t, err, "invalid destination")
+		})
+	}
+
+	t.Run("invalid destination/backslash parent on windows", func(t *testing.T) {
+		if runtime.GOOS != "windows" {
+			t.Skip("backslash is only a path separator on windows")
+		}
+		_, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b/a.txt", Destination: `..\foo`}})
+		require.ErrorContains(t, err, "invalid destination")
+	})
+
+	t.Run("dots inside a name", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{
+			Source:      "./testdata/a/b/a.txt",
+			Destination: "a..b/..c",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "a..b/..c"},
+		}, result)
+	})
+
+	t.Run("dot prefix destination", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{
+			Source:      "./testdata/a/b/a.txt",
+			Destination: "./foo/../bar/",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "bar"},
 		}, result)
 	})
 
