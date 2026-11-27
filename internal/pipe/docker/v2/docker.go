@@ -877,6 +877,7 @@ var retriableBuildOutputs = []string{
 	"too many requests",
 	"failed to do request",
 	"error pulling image",
+	"blob unknown",
 	"internal server error",
 	"bad gateway",
 	"service unavailable",
