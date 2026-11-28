@@ -55,6 +55,29 @@ func TestParse(t *testing.T) {
 	})
 }
 
+func TestOsArchTemplateFields(t *testing.T) {
+	// .Os and .Arch must use the Go names (windows, amd64), like the
+	// artifact and the other builders do, and not the Node.js ones (win,
+	// x64). They are used in the binary name and in the build hooks,
+	// before the artifact exists.
+	for target, want := range map[string]string{
+		"linux-x64":    "linux_amd64",
+		"darwin-arm64": "darwin_arm64",
+		"win-x64":      "windows_amd64",
+		"win-arm64":    "windows_arm64",
+	} {
+		t.Run(target, func(t *testing.T) {
+			parsed, err := Default.Parse(target)
+			require.NoError(t, err)
+			rendered, err := tmpl.New(testctx.Wrap(t.Context())).
+				WithBuildOptions(api.Options{Target: parsed}).
+				Apply("{{ .Os }}_{{ .Arch }}")
+			require.NoError(t, err)
+			require.Equal(t, want, rendered)
+		})
+	}
+}
+
 func TestWithDefaults(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
