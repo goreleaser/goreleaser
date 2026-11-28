@@ -1017,6 +1017,26 @@ func TestSignAllExcludesSignaturesAndCertificates(t *testing.T) {
 	}, signed)
 }
 
+func TestTemplateEnvS(t *testing.T) {
+	ctx := testctx.Wrap(t.Context(), testctx.WithEnv(map[string]string{
+		"KEY_ID": "abc123",
+		"FOO":    "ctx",
+	}))
+
+	got, err := templateEnvS(ctx, []string{
+		"SIGN_KEY={{ .Env.KEY_ID }}",
+		"FOO=sign",
+		"BAR={{ .Env.SIGN_KEY }}-{{ .Env.FOO }}",
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{
+		"SIGN_KEY=abc123",
+		"FOO=sign",
+		"BAR=abc123-sign",
+	}, got)
+	require.Equal(t, "ctx", ctx.Env["FOO"])
+}
+
 func setGpg(tb testing.TB, ctx *context.Context, p string) {
 	tb.Helper()
 	_, err := git.Run(ctx, "config", "--local", "--add", "gpg.program", p)

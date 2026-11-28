@@ -100,6 +100,9 @@ binary_signs:
 
     # List of environment variables that will be passed to the signing command
     # as well as the templates.
+    #
+    # Templates: allowed.
+    # Entries can use `.Env`, including the entries defined before them.
     env:
       - FOO=bar
       - HONK=honkhonk

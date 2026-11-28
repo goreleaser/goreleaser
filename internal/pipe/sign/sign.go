@@ -347,12 +347,14 @@ func expand(s string, env map[string]string) string {
 
 func templateEnvS(ctx *context.Context, s []string) ([]string, error) {
 	var out []string
+	tpl := tmpl.New(ctx).WithEnv(ctx.Env.Copy())
 	for _, s := range s {
-		ts, err := tmpl.New(ctx).WithEnvS(out).Apply(s)
+		ts, err := tpl.Apply(s)
 		if err != nil {
 			return nil, err
 		}
 		out = append(out, ts)
+		tpl = tpl.SetEnv(ts)
 	}
 	return out, nil
 }
