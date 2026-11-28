@@ -208,10 +208,10 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	if len(snap.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(snap.IDs...))
 	}
-	for platform, binaries := range ctx.Artifacts.Filter(
+	for _, binaries := range ctx.Artifacts.Filter(
 		artifact.And(filters...),
 	).GroupByPlatform() {
-		arch := linuxArch(platform)
+		arch := snapArch(binaries[0])
 		if !isValidArch(arch) {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
@@ -529,6 +529,14 @@ var archToSnap = map[string]string{
 	"arm6":    "armhf",
 	"arm7":    "armhf",
 	"ppc64le": "ppc64el",
+}
+
+// snapArch returns the snap architecture of the given binary.
+//
+// It does not use the key from GroupByPlatform, as it might contain variants
+// that mean nothing to snapcraft, e.g. GOARM64, GO386 or GOPPC64.
+func snapArch(a *artifact.Artifact) string {
+	return linuxArch(a.Goos + a.Goarch)
 }
 
 func linuxArch(key string) string {
