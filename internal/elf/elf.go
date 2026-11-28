@@ -2,8 +2,11 @@
 package elf
 
 import (
+	"bytes"
 	"debug/elf"
+	"io"
 	"slices"
+	"strings"
 )
 
 // IsDynamicallyLinked checks if the given binary is dynamically linked.
@@ -20,4 +23,66 @@ func IsDynamicallyLinked(path string) bool {
 	return slices.ContainsFunc(f.Progs, func(prog *elf.Prog) bool {
 		return prog.Type == elf.PT_INTERP
 	})
+}
+
+// IsStaticallyLinked checks if the given binary is known to be statically
+// linked. It returns true only for an ELF executable without a PT_INTERP
+// segment, which loads no shared libraries. Unlike !IsDynamicallyLinked, it
+// returns false for files that are not ELF or cannot be read, so callers do not
+// take a file they could not inspect for a static one.
+func IsStaticallyLinked(path string) bool {
+	f, err := elf.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	if f.Type != elf.ET_EXEC && f.Type != elf.ET_DYN {
+		return false
+	}
+	return !slices.ContainsFunc(f.Progs, func(prog *elf.Prog) bool {
+		return prog.Type == elf.PT_INTERP
+	})
+}
+
+// Libc reports the libc family selected by an ELF program interpreter. It
+// returns an empty string for statically linked, non-ELF, and unknown dynamic
+// binaries so callers do not guess a compatible runtime.
+func Libc(path string) string {
+	return libcFromInterpreter(interpreter(path))
+}
+
+func interpreter(path string) string {
+	f, err := elf.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	for _, prog := range f.Progs {
+		if prog.Type != elf.PT_INTERP {
+			continue
+		}
+		b, err := io.ReadAll(prog.Open())
+		if err != nil {
+			return ""
+		}
+		return string(bytes.TrimRight(b, "\x00"))
+	}
+	return ""
+}
+
+func libcFromInterpreter(interpreter string) string {
+	name := strings.ToLower(interpreter)
+	switch {
+	case strings.Contains(name, "ld-musl-"):
+		return "musl"
+	case strings.Contains(name, "ld-linux"),
+		strings.HasSuffix(name, "/ld.so.1"),
+		strings.HasSuffix(name, "/ld64.so.1"),
+		strings.HasSuffix(name, "/ld64.so.2"):
+		return "gnu"
+	default:
+		return ""
+	}
 }
