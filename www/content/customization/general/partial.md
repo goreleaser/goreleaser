@@ -55,6 +55,20 @@ Those commands will create the needed artifacts for each platform in
 You can also specify `GOARCH` and `GGOARCH`, which only take effect if you set
 `partial.by` to `target`.
 
+When splitting by target, set `TARGET` to select a target explicitly. Use the
+target spelling for your builder. For example, a Rust build targeting Linux
+on ARM64 can use:
+
+```bash
+TARGET=aarch64-unknown-linux-gnu goreleaser release --clean --split
+```
+
+`TARGET` takes precedence over OS and architecture variables. Without it,
+GoReleaser uses `GGOOS` and `GGOARCH`, falling back independently to `GOOS`
+and `GOARCH`, then to the host OS and architecture. For non-Go builders,
+GoReleaser tries to match that pair to a configured target. Set `TARGET` when
+the pair is ambiguous, such as when both GNU and musl targets are configured.
+
 Now, to continue, run:
 
 ```bash
