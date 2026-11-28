@@ -895,6 +895,47 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
 }
 
+func TestSnapArchWithMultipleVariants(t *testing.T) {
+	// building more than one variant of any architecture makes
+	// GroupByPlatform add all the variants to its keys.
+	ctx := testctx.Wrap(t.Context())
+	for _, a := range []*artifact.Artifact{
+		{Goarch: "amd64", Goamd64: "v1"},
+		{Goarch: "arm64", Goarm64: "v8.0"},
+		{Goarch: "386", Go386: "sse2"},
+		{Goarch: "ppc64le", Goppc64: "power8"},
+		{Goarch: "s390x"},
+		{Goarch: "arm", Goarm: "6"},
+		{Goarch: "arm", Goarm: "7"},
+	} {
+		a.Name = "foo"
+		a.Goos = "linux"
+		a.Type = artifact.Binary
+		a.Extra = map[string]any{artifact.ExtraID: "foo"}
+		ctx.Artifacts.Add(a)
+	}
+
+	want := map[string]string{
+		"linuxamd64v1":       "amd64",
+		"linuxarm64v8.0":     "arm64",
+		"linux386sse2":       "i386",
+		"linuxppc64lepower8": "ppc64el",
+		"linuxs390x":         "s390x",
+		"linuxarm6":          "armhf",
+		"linuxarm7":          "armhf",
+	}
+	groups := ctx.Artifacts.GroupByPlatform()
+	require.Len(t, groups, len(want))
+	for platform, binaries := range groups {
+		t.Run(platform, func(t *testing.T) {
+			require.Contains(t, want, platform)
+			arch := snapArch(binaries[0])
+			require.Equal(t, want[platform], arch)
+			require.True(t, isValidArch(arch))
+		})
+	}
+}
+
 func TestLinuxArch(t *testing.T) {
 	for key, want := range map[string]string{
 		// direct mapping via archToSnap
