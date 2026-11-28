@@ -105,6 +105,8 @@ The following template variables are available in the per-target build
 context: `.Os`, `.Arch`, `.Target`, `.Name`,
 `.Path`, `.Ext`, `.Env.*`.
 Use them in `main`, `env`, and the `hooks` recipes.
+`.Os` and `.Arch` use the Go names (e.g. `windows` and `amd64`), while
+`.Target` is the Node.js target (e.g. `win-x64`).
 
 ## Tuning the SEA blob (`sea-config.json`)
 

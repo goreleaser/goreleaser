@@ -32,10 +32,13 @@ type Target struct {
 }
 
 // Fields implements build.Target.
+//
+// Os and Arch use the Go names (e.g. windows/amd64 instead of win/x64), so
+// they match the artifact's Goos/Goarch and the other builders.
 func (t Target) Fields() map[string]string {
 	return map[string]string{
-		tmpl.KeyOS:   t.Os,
-		tmpl.KeyArch: t.Arch,
+		tmpl.KeyOS:   t.Goos(),
+		tmpl.KeyArch: t.Goarch(),
 	}
 }
 
