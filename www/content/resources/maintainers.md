@@ -17,6 +17,23 @@ GoReleaser is maintained by:
 {{< card link="https://github.com/vedantmgoyal9" title="Vedant Mohan Goyal" image="https://avatars.githubusercontent.com/u/83997633?s=200&v=4" subtitle="Made several contributions to the winget integration and several builders." >}}
 {{< /cards >}}
 
+## Roles and responsibilities
+
+These responsibilities reflect how people are already described on this page
+and in related project docs. They do not invent new ownership or access claims.
+
+| Role | Who (from this page) | Responsibilities |
+| --- | --- | --- |
+| Project lead (BDFL) | Carlos Alexandro Becker | Overall project direction, final decisions, and releases for the core project; default incident lead per `INCIDENT_RESPONSE.md` |
+| Brand / website design | Carine Meyer Becker | Visual identity and website art |
+| GitHub Action maintainer | crazy-max | GoReleaser GitHub Action |
+| Azure DevOps extension maintainer | Engin Diri | Azure DevOps extension |
+| GoReleaser Cross maintainer | Artur Troian | GoReleaser Cross |
+| Contributors / domain helpers | Others listed above | Historical or ongoing contributions in the areas noted in each card |
+
+Governance overview (draft):
+[`GOVERNANCE.md`](https://github.com/goreleaser/goreleaser/blob/main/GOVERNANCE.md).
+
 ## Emeritus
 
 These people helped along the way, but have now moved on into other things.
